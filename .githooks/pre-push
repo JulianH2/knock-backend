@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+# Knock — no se empuja a ramas fijas y el nombre de la rama debe seguir el esquema.
+. "$(dirname "$0")/lib-python.sh"
+knock_select_python pre-push || exit 1
+ROOT=$(git rev-parse --show-toplevel)
+BRANCH=$(git branch --show-current)
+case "$BRANCH" in
+  main|release|develop|sprint-[0-9][0-9]) echo "[pre-push] No se empuja directo a $BRANCH: abre un PR."; exit 1 ;;
+esac
+$PY "$ROOT/scripts/ci/branch_rules.py" branch --head "$BRANCH"
