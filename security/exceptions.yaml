@@ -1,0 +1,17 @@
+# Registro de excepciones de seguridad y calidad (constitución §8). Lo valida scripts/ci/check_exceptions.py.
+# Reglas: máximo 90 días, responsable con nombre, evidencia en la justificación, plan de remediación.
+# En el código, la supresión cita el ID en la misma línea:  // nosemgrep: knock-random-inseguro -- EXC-001
+#
+# Campos: id · herramienta · regla · alcance (rutas) · justificacion · responsable · creada (AAAA-MM-DD) · vence · plan
+#
+# Ejemplo (no activo):
+#  - id: EXC-001
+#    herramienta: semgrep
+#    regla: knock-random-inseguro
+#    alcance: tests/perf/data_builder.cs
+#    justificacion: generador de datos ficticios para k6; no protege nada (evidencia en PR #123)
+#    responsable: Ángel Alexis Blas Castillo
+#    creada: 2026-10-20
+#    vence: 2026-12-04
+#    plan: reemplazar por Bogus en TT-QA-02
+excepciones: []
