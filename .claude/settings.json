@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
+  "permissions": {
+    "deny": [
+      "Edit(/.github/**)",
+      "Edit(/.claude/**)",
+      "Edit(/.githooks/**)",
+      "Edit(/.specify/memory/**)",
+      "Edit(/scripts/**)",
+      "Edit(/constitution.md)",
+      "Edit(/CLAUDE.md)",
+      "Edit(/.semgrep/**)",
+      "Edit(/stryker-config.json)",
+      "Edit(/security/exceptions.yaml)",
+      "Edit(/.agents/knock.json)",
+      "Edit(/docs/openapi.v1.json)",
+      "Edit(/tests/**/Fixtures/**)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(**/appsettings.Development.json)",
+      "Read(**/*.keystore)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard *)",
+      "Bash(* --no-verify *)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "Bash(dotnet ef database *)",
+      "Bash(docker system prune *)"
+    ],
+    "allow": [
+      "Bash(python3 scripts/*)",
+      "Bash(python scripts/*)",
+      "Bash(dotnet restore *)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet test *)",
+      "Bash(flutter analyze *)",
+      "Bash(flutter test *)",
+      "Bash(dart format *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/hooks/knock_guard.py\" session-start --tool claude",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/hooks/knock_guard.py\" pre-tool --tool claude",
+            "timeout": 90
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/hooks/knock_guard.py\" stop --tool claude",
+            "timeout": 900,
+            "statusMessage": "knock-guard: verificando antes de terminar"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/hooks/knock_guard.py\" stop --tool claude",
+            "timeout": 900
+          }
+        ]
+      }
+    ]
+  }
+}

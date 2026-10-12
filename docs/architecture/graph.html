@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mapa de código</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"></script>
+<style>
+:root{--bg:#FBF5E9;--ink:#231A15;--accent:#E9682D;--muted:#1C3A4C;--card:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#1a1512;--ink:#f3ece2;--card:#241d19;--muted:#8fb3c7}}
+body{margin:0;font:14px/1.4 system-ui,sans-serif;background:var(--bg);color:var(--ink);display:grid;grid-template-columns:320px 1fr;height:100vh}
+aside{padding:16px;overflow:auto;border-right:1px solid #0002}#cy{width:100%;height:100vh}
+input{width:100%;padding:8px;border-radius:8px;border:1px solid #0003;box-sizing:border-box;background:var(--card);color:var(--ink)}
+h1{font-size:18px;margin:0 0 8px}h2{font-size:14px;margin:16px 0 6px;color:var(--muted)}
+.item{padding:6px 8px;border-radius:6px;cursor:pointer}.item:hover{background:#0001}.warn{color:var(--accent)}
+code{font-size:12px}#info{white-space:pre-wrap;font-size:12px;background:var(--card);padding:8px;border-radius:8px;min-height:40px}
+@media (max-width:700px){body{grid-template-columns:1fr;grid-template-rows:45vh 55vh}aside{border-right:0}}
+</style></head><body>
+<aside><h1>Mapa de código</h1><input id="q" placeholder="Buscar clase o módulo…">
+<h2>Seleccionado</h2><div id="info">Toca un nodo.</div>
+<h2>Resultados</h2><div id="res"></div><h2 class="warn">Alertas</h2><div id="alerts"></div></aside>
+<div id="cy"></div>
+<script>
+const DATA = {"files": [], "typeEdges": [], "violations": [], "clones": []};
+const els=[], typeFile={}, palette=["#E9682D","#1C3A4C","#3c8d5a","#8e5ea2","#c4a000","#2a7ab0","#b5443b","#5d6d7e"];
+const modules=[...new Set(DATA.files.filter(f=>!f.is_test).map(f=>f.module))].sort();
+modules.forEach((m,i)=>els.push({data:{id:"m:"+m,label:m,color:palette[i%palette.length]}}));
+DATA.files.filter(f=>!f.is_test).forEach(f=>f.symbols.filter(s=>!["method","constructor","function"].includes(s.kind)).forEach(s=>{
+  if(typeFile[s.name])return; typeFile[s.name]=f;
+  const methods=f.symbols.filter(x=>x.container===s.name&&x.visibility!=="private").map(x=>x.name);
+  els.push({data:{id:"t:"+s.name,label:s.name,parent:"m:"+f.module,kind:s.kind,path:f.path+":"+s.line,layer:f.layer,methods}});
+}));
+DATA.typeEdges.forEach(([a,b],i)=>{if(typeFile[a]&&typeFile[b])els.push({data:{id:"e"+i,source:"t:"+a,target:"t:"+b}})});
+const cy=cytoscape({container:document.getElementById("cy"),elements:els,layout:{name:"cose",animate:false,nodeRepulsion:9000},
+ style:[{selector:"node",style:{label:"data(label)","font-size":9,color:"#888","background-color":"#bbb",width:12,height:12}},
+ {selector:"node:parent",style:{"background-opacity":0.08,"background-color":"data(color)","border-color":"data(color)","border-width":2,label:"data(label)","font-size":14,color:"data(color)","text-valign":"top"}},
+ {selector:"edge",style:{width:1,"line-color":"#9995","target-arrow-shape":"triangle","target-arrow-color":"#9995","curve-style":"bezier","arrow-scale":0.6}},
+ {selector:".hl",style:{"background-color":"#E9682D","line-color":"#E9682D","target-arrow-color":"#E9682D",width:3}}]});
+const info=document.getElementById("info");
+cy.on("tap","node",e=>{const d=e.target.data();cy.elements().removeClass("hl");e.target.addClass("hl");e.target.connectedEdges().addClass("hl");
+ info.textContent=d.path?`${d.kind} ${d.label}\n${d.path}\ncapa: ${d.layer}\nmétodos: ${(d.methods||[]).join(", ")||"—"}\nusa: ${e.target.outgoers("node").map(n=>n.data("label")).join(", ")||"—"}\nlo usan: ${e.target.incomers("node").map(n=>n.data("label")).join(", ")||"—"}`:`módulo ${d.label}`});
+document.getElementById("q").addEventListener("input",ev=>{const q=ev.target.value.toLowerCase(),res=document.getElementById("res");res.innerHTML="";if(!q)return;
+ cy.nodes().filter(n=>n.data("label").toLowerCase().includes(q)).slice(0,30).forEach(n=>{const div=document.createElement("div");div.className="item";div.innerHTML=`<code>${n.data("label")}</code> <small>${n.data("path")||""}</small>`;div.onclick=()=>{cy.animate({center:{eles:n},zoom:2});n.emit("tap")};res.appendChild(div)})});
+const al=document.getElementById("alerts");
+DATA.violations.forEach(v=>al.insertAdjacentHTML("beforeend",`<div class="item warn">${v.rule}: <code>${v.file}</code></div>`));
+DATA.clones.forEach(c=>al.insertAdjacentHTML("beforeend",`<div class="item warn">duplicado: <code>${c.places.join(" · ")}</code></div>`));
+if(!al.innerHTML)al.textContent="Sin alertas.";
+</script></body></html>
