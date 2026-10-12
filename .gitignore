@@ -44,3 +44,14 @@ tests/chaos/results/
 tests/perf/*-summary.json
 efbundle
 *.trx
+
+# Python y herramientas locales
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.orig
+*.rej
+
+# Configuracion local de agentes (cada persona la suya)
+.claude/settings.local.json

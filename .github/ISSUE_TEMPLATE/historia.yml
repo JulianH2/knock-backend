@@ -1,0 +1,30 @@
+name: Historia de usuario
+description: Una HU del backlog (se gestiona en Jira; úsala si se registra también en GitHub)
+title: "HU-NNN · "
+labels: [historia]
+body:
+  - type: input
+    id: jira
+    attributes:
+      label: Clave de Jira
+      placeholder: KNOCK-45
+    validations:
+      required: true
+  - type: textarea
+    id: historia
+    attributes:
+      label: Historia
+      placeholder: Como …, quiero …, para …
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de aceptación (Dado / Cuando / Entonces)
+    validations:
+      required: true
+  - type: input
+    id: spec
+    attributes:
+      label: Spec
+      placeholder: specs/HU-024-pedir-cotizacion/spec.md
