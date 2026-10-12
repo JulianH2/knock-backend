@@ -1,0 +1,46 @@
+# .NET
+bin/
+obj/
+*.user
+TestResults/
+coverage*/
+StrykerOutput/
+backend/**/appsettings.json
+backend/**/appsettings.Development.json
+!backend/**/appsettings.Example.json
+
+# Flutter / Dart
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+**/android/app/google-services.json
+**/ios/Runner/GoogleService-Info.plist
+*.keystore
+*.jks
+key.properties
+
+# Secretos y entorno
+.env
+.env.*
+!.env.example
+*.pfx
+*.pem
+
+# Editores y SO
+.vs/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Reportes
+reports/
+
+# knock-backend
+deploy/.env
+StrykerOutput/
+tests/fuzz/results/
+tests/chaos/results/
+tests/perf/*-summary.json
+efbundle
+*.trx
