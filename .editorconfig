@@ -1,0 +1,45 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+[*.{json,yml,yaml,md,props,csproj,slnx}]
+indent_size = 2
+
+[*.cs]
+# Estilo
+csharp_style_namespace_declarations = file_scoped:error
+csharp_style_var_for_built_in_types = true:suggestion
+dotnet_sort_system_directives_first = true
+dotnet_style_qualification_for_field = false:error
+dotnet_naming_rule.private_fields_underscore.severity = error
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_camel
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel.capitalization = camel_case
+dotnet_naming_style.underscore_camel.required_prefix = _
+# Calidad
+dotnet_diagnostic.CA1062.severity = error      # validar argumentos públicos
+dotnet_diagnostic.CA2007.severity = none       # ConfigureAwait innecesario en ASP.NET Core
+dotnet_diagnostic.CA1848.severity = warning    # LoggerMessage para rendimiento
+dotnet_diagnostic.CA5394.severity = error      # Random inseguro
+dotnet_diagnostic.CA2100.severity = error      # SQL con entrada del usuario
+dotnet_diagnostic.CA3003.severity = error      # path traversal
+dotnet_diagnostic.CA5350.severity = error      # criptografía débil
+dotnet_diagnostic.CA5351.severity = error
+dotnet_diagnostic.S1135.severity = error       # TODO sin resolver
+dotnet_diagnostic.S3776.severity = error       # complejidad cognitiva
+dotnet_diagnostic.S138.severity = warning      # métodos demasiado largos
+
+[tests/**.cs]
+dotnet_diagnostic.CA1707.severity = none       # guiones bajos en nombres de prueba (…_TC_HU_024_03)
+dotnet_diagnostic.CA1062.severity = none
+
+[**/Migrations/**.cs]
+generated_code = true
