@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+# Knock — valida el mensaje del commit (la misma lógica que el CI: scripts/ci/branch_rules.py).
+#   type(scope): description in english, imperative, lowercase (KNOCK-N)
+#   p. ej. feat(requests): upload up to 5 photos with the request (KNOCK-45)
+# Rechaza: formato inválido, falta de (KNOCK-N), clave distinta de la de la rama y atribución a IA
+# (Co-Authored-By de agentes o líneas «Generated with…»). Un Co-Authored-By de una persona sí se permite.
+# Funciona con Git Bash (Windows) y en Linux/macOS. Activar: git config core.hooksPath .githooks
+. "$(dirname "$0")/lib-python.sh"
+knock_select_python commit-msg || exit 1
+# shellcheck disable=SC2086  # $PY puede ser "py -3"
+exec $PY "$(git rev-parse --show-toplevel)/scripts/ci/branch_rules.py" msg --file "$1" --branch "$(git branch --show-current 2>/dev/null)"
