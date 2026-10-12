@@ -1,0 +1,36 @@
+name: Defecto
+description: Algo no funciona como dice la spec (BUG-NNN). Para vulnerabilidades usa SECURITY.md, no un issue público.
+title: "BUG-NNN · "
+labels: [bug]
+body:
+  - type: input
+    id: origen
+    attributes:
+      label: HU o TT donde se encontró
+      placeholder: HU-024
+    validations:
+      required: true
+  - type: textarea
+    id: pasos
+    attributes:
+      label: Pasos para reproducir
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Esperado vs. obtenido (cita el caso TC si aplica)
+    validations:
+      required: true
+  - type: dropdown
+    id: severidad
+    attributes:
+      label: Severidad
+      options: [Crítica, Alta, Media, Baja]
+    validations:
+      required: true
+  - type: textarea
+    id: entorno
+    attributes:
+      label: Entorno y versión
+      placeholder: Staging · app-v1.2.0 · Android 14

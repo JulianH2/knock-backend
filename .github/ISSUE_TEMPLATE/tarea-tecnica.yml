@@ -1,0 +1,24 @@
+name: Tarea técnica
+description: Infraestructura, CI/CD, seguridad o calidad (TT-ÁREA-NN)
+title: "TT-AREA-NN · "
+labels: [tarea-tecnica]
+body:
+  - type: input
+    id: jira
+    attributes:
+      label: Clave de Jira
+      placeholder: KNOCK-12
+    validations:
+      required: true
+  - type: textarea
+    id: tarea
+    attributes:
+      label: Qué hay que hacer
+    validations:
+      required: true
+  - type: textarea
+    id: terminada
+    attributes:
+      label: Terminada cuando
+    validations:
+      required: true
