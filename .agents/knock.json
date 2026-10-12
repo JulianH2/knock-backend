@@ -1,0 +1,23 @@
+{
+  "repo": "knock-backend",
+  "layer_scope": "base de datos (migraciones, semillas y scripts) y API (módulo, endpoints, eventos) con sus pruebas",
+  "code_dirs": ["src/**", "db/**"],
+  "generated": [],
+  "protected": ["docs/openapi.v1.json", "tests/**/Fixtures/**"],
+  "test_globs": ["tests/**/*.cs", "tests/perf/**/*.js"],
+  "test_types": ["UB", "INT", "ACC", "NEG", "CON", "MUT", "PERF"],
+  "layers": {"BD": "db-builder", "Back": "api-builder"},
+  "default_skills": ["vertical-slice-api", "testing-strategy-backend", "security-core"],
+  "scopes": ["identity", "catalog", "requests", "messaging", "reputation", "trust", "notifications", "assistant", "app", "panel", "ci", "infra", "docs"],
+  "technical_tasks": ["TT-REPO-01", "TT-REPO-02", "TT-REPO-03", "TT-STD-01", "TT-SDD-01", "TT-API-01", "TT-API-02", "TT-API-03",
+                      "TT-API-04", "TT-API-05", "TT-BD-01", "TT-BD-02", "TT-BD-03", "TT-BD-04", "TT-CI-01", "TT-AZ-01", "TT-AZ-02",
+                      "TT-FB-01", "TT-CD-01", "TT-CD-02", "TT-CD-03", "TT-SEC-01", "TT-SEC-02", "TT-SEC-03", "TT-OBS-01", "TT-RT-01",
+                      "TT-IA-01", "TT-ML-01", "TT-QA-01", "TT-QA-02", "TT-QA-04", "TT-PRU-01", "TT-PRU-04"],
+  "stop_checks": [
+    {"name": "dotnet build", "when": "\\.(cs|csproj|props|json)$", "cmd": ["dotnet", "build", "Knock.slnx", "-c", "Release", "-nologo", "-v", "q"], "requires": "Knock.slnx"},
+    {"name": "dotnet format", "when": "\\.cs$", "cmd": ["dotnet", "format", "Knock.slnx", "--verify-no-changes", "--no-restore", "-v", "q"], "requires": "Knock.slnx"},
+    {"name": "pruebas de arquitectura", "when": "\\.cs$", "cmd": ["dotnet", "test", "tests/UnitTest", "-c", "Release", "--no-build", "--filter", "FullyQualifiedName~Architecture", "-nologo"], "requires": "tests/UnitTest"},
+    {"name": "pruebas unitarias", "when": "\\.cs$", "cmd": ["dotnet", "test", "tests/UnitTest", "-c", "Release", "--no-build", "-nologo"], "requires": "tests/UnitTest", "mode": "full"},
+    {"name": "SQL (sqlfluff)", "when": "^db/.*\\.sql$", "cmd": ["sqlfluff", "lint", "db", "--dialect", "postgres"], "requires": "db"}
+  ]
+}

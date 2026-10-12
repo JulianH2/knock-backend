@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "python3 scripts/hooks/knock_guard.py session-start --tool copilot",
+        "powershell": "python scripts/hooks/knock_guard.py session-start --tool copilot",
+        "timeoutSec": 30
+      }
+    ],
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "python3 scripts/hooks/knock_guard.py pre-tool --tool copilot",
+        "powershell": "python scripts/hooks/knock_guard.py pre-tool --tool copilot",
+        "timeoutSec": 90
+      }
+    ],
+    "agentStop": [
+      {
+        "type": "command",
+        "bash": "python3 scripts/hooks/knock_guard.py stop --tool copilot",
+        "powershell": "python scripts/hooks/knock_guard.py stop --tool copilot",
+        "timeoutSec": 900
+      }
+    ]
+  }
+}

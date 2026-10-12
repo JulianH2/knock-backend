@@ -1,0 +1,31 @@
+#!/usr/bin/env sh
+# Knock — verificación previa al commit. Aplica a personas y a CUALQUIER agente que haga commit.
+# Instalar una vez: python scripts/install_githooks.py
+set -e
+. "$(dirname "$0")/lib-python.sh"
+knock_select_python pre-commit || exit 1
+ROOT=$(git rev-parse --show-toplevel)
+cd "$ROOT"
+STAGED=$(git diff --cached --name-only --diff-filter=ACMR)
+
+echo "[pre-commit] adaptadores de agentes";   $PY scripts/sync_agents.py --check
+echo "[pre-commit] specs SDD";                $PY scripts/sdd_lint.py
+echo "[pre-commit] excepciones de seguridad"; $PY scripts/ci/check_exceptions.py
+
+if echo "$STAGED" | grep -qE '\.(cs|dart|ts)$'; then
+  echo "[pre-commit] mapa de código (regenera, valida arquitectura y duplicados)"
+  $PY scripts/codemap.py
+  git add docs/architecture/ 2>/dev/null || true
+  $PY scripts/codemap.py --check
+fi
+
+if command -v gitleaks >/dev/null 2>&1; then
+  echo "[pre-commit] secretos (gitleaks)"
+  gitleaks protect --staged --redact -c .gitleaks.toml
+else
+  echo "[pre-commit] AVISO: gitleaks no está instalado; el CI sí lo ejecuta."
+fi
+
+# Comprobaciones propias del repositorio (formato, lints rápidos)
+[ -x scripts/hooks/pre-commit.local.sh ] && sh scripts/hooks/pre-commit.local.sh "$STAGED"
+echo "[pre-commit] OK"
