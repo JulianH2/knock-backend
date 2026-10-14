@@ -1,0 +1,372 @@
+name: ci-pr
+
+# Nivel rápido: corre en cada PR y en cada push a las ramas fijas. El job `gate` es el check requerido
+# por la protección de ramas (docs/BRANCH_PROTECTION.md). Los jobs de código se saltan solos mientras
+# el proyecto no exista (antes de TT-API-01); el resto aplica desde el primer commit.
+# Seguridad del workflow: pull_request (no pull_request_target), permisos mínimos por job, sin secretos
+# en jobs que ejecutan código del PR, acciones fijadas a SHA (scripts/ci/pin_actions.py).
+# Repos privados sin GitHub Advanced Security: la revisión de dependencias y la subida de SARIF se saltan
+# (no se quitan los escáneres); con la variable de repositorio GHAS_ENABLED=true se activan.
+
+on:
+  pull_request:
+    branches: [main, release, develop, "sprint-*"]
+  push:
+    branches: [main, release, develop, "sprint-*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  MIN_LINES: "60"
+  MIN_BRANCHES: "50"
+
+jobs:
+  detect:
+    name: Detectar proyecto, cambios y spec
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      api: ${{ steps.d.outputs.api }}
+      docker: ${{ steps.d.outputs.docker }}
+      sql: ${{ steps.d.outputs.sql }}
+      iac: ${{ steps.d.outputs.iac }}
+      spec: ${{ steps.d.outputs.spec }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: d
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          echo "api=$([ -f Knock.slnx ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "docker=$([ -f src/Knock.Api/Dockerfile ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "sql=$(ls db/**/*.sql db/*.sql >/dev/null 2>&1 && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "iac=$([ -d deploy/bicep ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          KEY=$(echo "$HEAD_REF" | grep -oE 'KNOCK-[0-9]+' || true)
+          SPEC=""
+          if [ -n "$KEY" ]; then
+            SPEC=$(grep -lE "\b$KEY\b" specs/*/spec.md 2>/dev/null | head -1 | cut -d/ -f2 | grep -oE '^(HU-[0-9]{3}|TT-[A-Z]+-[0-9]{2}|BUG-[0-9]{3})' || true)
+          fi
+          echo "spec=$SPEC" >> "$GITHUB_OUTPUT"
+
+  pr-meta:
+    name: Rama, commits y PR (branch-name)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - name: Nombre de rama y combinación origen → destino
+        run: python scripts/ci/branch_rules.py branch --head "$HEAD_REF" --base "$BASE_REF"
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+      - name: Mensajes de commit
+        run: python scripts/ci/branch_rules.py commits --range "origin/$BASE_REF..HEAD"
+        env:
+          BASE_REF: ${{ github.base_ref }}
+      - name: Título y plantilla del PR (incluye «Uso de IA»)
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          printf '%s' "$PR_BODY" > pr_body.md
+          python scripts/ci/branch_rules.py pr --head "$HEAD_REF" --title "$PR_TITLE" --body-file pr_body.md
+
+  governance:
+    needs: detect
+    uses: ./.github/workflows/_governance.yml
+    with:
+      spec: ${{ needs.detect.outputs.spec }}
+
+  build-test:
+    name: API — build, formato y pruebas
+    needs: detect
+    if: needs.detect.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - run: dotnet restore Knock.slnx --locked-mode
+      - run: dotnet tool restore
+      - name: Build Release (warnings como errores, analizadores, NuGetAudit)
+        run: dotnet build Knock.slnx -c Release --no-restore -warnaserror
+      - name: Formato y estilo
+        run: dotnet format Knock.slnx --verify-no-changes --no-restore
+      - name: Unitarias y arquitectura
+        run: dotnet test tests/UnitTest -c Release --no-build --collect:"XPlat Code Coverage" --results-directory reports/unit --logger trx
+      - name: Integración (PostgreSQL + PostGIS, Redis y Azurite con Testcontainers)
+        run: dotnet test tests/IntegrationTest -c Release --no-build --collect:"XPlat Code Coverage" --results-directory reports/integration --logger trx
+      - name: Seguridad negativa
+        run: dotnet test tests/SecurityTest -c Release --no-build --collect:"XPlat Code Coverage" --results-directory reports/security --logger trx
+      - name: Base de datos (migraciones, semillas, restricciones, PostGIS)
+        run: dotnet test tests/DatabaseTest -c Release --no-build --logger trx --results-directory reports/database
+      - name: Contrato (captura del wire)
+        run: dotnet test tests/ContractTest -c Release --no-build --logger trx --results-directory reports/contract
+      - name: Cobertura combinada
+        run: dotnet tool run reportgenerator -reports:"reports/**/coverage.cobertura.xml" -targetdir:reports/coverage -reporttypes:"Cobertura;MarkdownSummaryGithub;Html"
+      - name: Umbral de cobertura (líneas y ramas)
+        run: python3 scripts/check_coverage.py --cobertura reports/coverage/Cobertura.xml --min "$MIN_LINES" --min-branch "$MIN_BRANCHES"
+      - name: Resumen en el PR
+        if: always()
+        run: cat reports/coverage/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+      - name: Contrato OpenAPI regenerado y sin cambios pendientes
+        run: |
+          python3 scripts/export_openapi.py --no-build
+          git diff --exit-code -- docs/openapi.v1.json || { echo "::error::docs/openapi.v1.json cambió: regénéralo y súbelo con el código."; exit 1; }
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        if: always()
+        with:
+          name: api-reports
+          path: reports/
+          if-no-files-found: ignore
+
+  mutation-pr:
+    name: Mutación incremental (Stryker, informativa)
+    needs: [detect, build-test]
+    if: needs.detect.outputs.api == 'true' && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - run: dotnet tool restore
+      - name: Stryker sobre lo cambiado respecto a la rama destino
+        run: dotnet tool run dotnet-stryker -- --config-file stryker-config.json --since:"origin/${{ github.base_ref }}" --break-at 0
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        if: always()
+        with:
+          name: mutation-pr
+          path: StrykerOutput/
+          if-no-files-found: ignore
+
+  sast:
+    name: SAST (Semgrep con reglas de Knock)
+    needs: detect
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet semgrep
+      - name: Semgrep (bloquea hallazgos ERROR)
+        run: semgrep scan --config .semgrep/semgrep.yaml --config p/csharp --config p/secrets --config p/owasp-top-ten --config p/dockerfile --error --severity ERROR --sarif --output semgrep.sarif
+      - uses: github/codeql-action/upload-sarif@24c54180a607b1449ed407dd24f251e4e9147c8d # v4
+        if: always() && hashFiles('semgrep.sarif') != '' && (github.event.repository.private == false || vars.GHAS_ENABLED == 'true')
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
+
+  sca:
+    name: SCA (dependencias vulnerables, obsoletas y licencias)
+    needs: detect
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Revisión de dependencias del PR (vulnerabilidades y licencias)
+        if: github.event_name == 'pull_request' && (github.event.repository.private == false || vars.GHAS_ENABLED == 'true')
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5
+        with:
+          fail-on-severity: high
+          deny-licenses: AGPL-3.0, GPL-3.0, GPL-2.0, SSPL-1.0
+      - name: OSV-Scanner (NuGet y GitHub Actions)
+        run: docker run --rm -v "$PWD":/src ghcr.io/google/osv-scanner:latest scan source -r /src
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        if: needs.detect.outputs.api == 'true'
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: NuGet vulnerables (incluye transitivas) y obsoletos
+        if: needs.detect.outputs.api == 'true'
+        run: |
+          dotnet restore Knock.slnx
+          dotnet list Knock.slnx package --vulnerable --include-transitive | tee vuln.txt
+          dotnet list Knock.slnx package --deprecated | tee deprecated.txt
+          if grep -qE "(High|Critical)" vuln.txt; then echo "::error::Dependencias con vulnerabilidades altas o críticas"; exit 1; fi
+
+  secrets:
+    name: Secretos (Gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  openapi-diff:
+    name: Cambios incompatibles en el contrato (oasdiff)
+    needs: detect
+    if: github.event_name == 'pull_request' && needs.detect.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Contrato base vs PR
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git show "$BASE_SHA:docs/openapi.v1.json" > base.json 2>/dev/null || { echo "Contrato nuevo: nada que comparar"; exit 0; }
+          [ -f docs/openapi.v1.json ] || exit 0
+          docker run --rm -v "$PWD":/w -w /w tufin/oasdiff breaking base.json docs/openapi.v1.json --fail-on ERR
+
+  sql-lint:
+    name: Scripts SQL (sqlfluff)
+    needs: detect
+    if: needs.detect.outputs.sql == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet sqlfluff && sqlfluff lint db --dialect postgres
+
+  iac:
+    name: IaC, Dockerfile y workflows (Checkov)
+    needs: detect
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet checkov
+      - name: Checkov (Bicep, Dockerfile, GitHub Actions)
+        run: checkov -d . --framework bicep dockerfile github_actions --quiet --compact --skip-path node_modules
+
+  container:
+    name: Contenedor (build, Trivy, Dockle)
+    needs: [detect, build-test]
+    if: needs.detect.outputs.docker == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          file: src/Knock.Api/Dockerfile
+          load: true
+          tags: knock-api:ci
+      - name: Trivy (críticas y altas con corrección bloquean)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: knock-api:ci
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+      - name: Dockle (buenas prácticas de imagen)
+        uses: goodwithtech/dockle-action@e30e6af832aad6ea7dca2a248d31a85eab6dbd68 # v0.4.15
+        with:
+          image: knock-api:ci
+          exit-code: "1"
+          exit-level: warn
+
+  dast:
+    name: Smoke + DAST (ZAP baseline)
+    needs: [detect, container]
+    if: needs.detect.outputs.docker == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Credenciales efímeras de la pila (no se imprimen)
+        run: |
+          DB=$(openssl rand -hex 24); JWT=$(openssl rand -hex 32)
+          echo "::add-mask::$DB"; echo "::add-mask::$JWT"
+          echo "CI_DB_PASSWORD=$DB" >> "$GITHUB_ENV"; echo "CI_JWT_KEY=$JWT" >> "$GITHUB_ENV"
+      - name: Levantar API + PostgreSQL + Redis + Azurite
+        run: |
+          docker compose -f deploy/docker-compose.ci.yml up -d --build
+          for i in $(seq 1 40); do curl -fs http://localhost:8080/health/ready && break; sleep 3; done
+      - name: Smoke (health, 401 sin token, headers de seguridad)
+        run: bash tests/smoke/smoke.sh http://localhost:8080
+      - name: ZAP baseline
+        uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
+        with:
+          target: http://localhost:8080
+          rules_file_name: security/zap-rules.tsv
+          allow_issue_writing: false
+          fail_action: true
+      - name: Apagar
+        if: always()
+        run: docker compose -f deploy/docker-compose.ci.yml down -v
+
+  gate:
+    name: gate
+    if: always()
+    needs: [detect, pr-meta, governance, build-test, sast, sca, secrets, openapi-diff, sql-lint, iac, container, dast]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verificaciones bloqueantes en verde (o saltadas por no aplicar)
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, sys
+          needs = json.loads(os.environ["NEEDS"])
+          for k, v in needs.items():
+              print(f"{k}: {v['result']}")
+          bad = {k: v["result"] for k, v in needs.items() if v["result"] not in ("success", "skipped")}
+          sys.exit(f"Fallaron: {bad}" if bad else 0)
+          EOF
