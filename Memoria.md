@@ -69,3 +69,13 @@
 - Decisión técnica para TT-BD-02: polígonos piloto aproximados, etiquetados como no oficiales y documentados con autor/fecha; fallback por centro hasta 2 km; geometría `geography(...,4326)` y GiST conforme a las convenciones geoespaciales del repo; no persistir/loggear coordenadas de usuarios.
 - Pendiente: verificar extracto SEPOMEX, CP de Tula, fecha/licencia y puntos de prueba. No se afirma haber encontrado ni verificado esos datos.
 - A evitar: inventar CP, geometrías, coordenadas de usuarios, comandos de migración o detalles de esquema; no aprobar ni firmar las specs desde un agente.
+
+
+## 2026-10-14 — KNOCK-26: CI de cada PR
+- Hecho: workflows `ci-pr`, `_governance` y `ai-review` con su configuración (`.gitleaks.toml`, `.semgrep/`, `.semgrepignore`), `pin_actions.py`, `check_coverage.py` y `docs/QA_DEVSECOPS.md`. `docker-compose.ci.yml` y `nginx.ci.conf` quedan fuera hasta que exista la API: solo los usa el job `dast`, que se salta sin Dockerfile.
+- Decisión: `ai-review` se omite (skipped) si falta el secreto `ANTHROPIC_API_KEY` o la variable `AI_REVIEW=true`; no falla ni afecta a `gate`. Dónde crearlos: CONTRIBUTING §8 (secreto y variable de repositorio, en cada repo). La cuenta está pendiente (unas 72 h).
+- Decisión: en repos privados sin GitHub Advanced Security, `dependency-review` y la subida de SARIF se omiten; la variable `GHAS_ENABLED=true` las activa. Los escáneres no se quitan.
+- Decisión: `codemap.py --check` ya no escribe (KNOCK-19), por eso el paso «Mapa de código actualizado» del CI deja de fallar siempre.
+- Riesgo: la protección de ramas con `gate` como check requerido no se puede aplicar en repos privados de una cuenta gratuita (GitHub pide Pro o repo público).
+- Riesgo (no verificado): OSV-Scanner puede devolver error en un repositorio sin archivos de dependencias; se confirma en la primera ejecución real.
+- A evitar: dar por válido un workflow sin correrlo en GitHub; `actionlint` y `jscpd` locales no sustituyen la primera ejecución.
