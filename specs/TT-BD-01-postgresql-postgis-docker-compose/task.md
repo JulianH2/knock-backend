@@ -2,7 +2,7 @@
 
 ## T1 — Compose y PostGIS local (independiente de TT-API-01)
 - **Verificar:** TC-TT-BD-01-01
-- **Pendiente:** Verificar la composición local con imagen PostGIS fija, variable de contraseña obligatoria, puerto ligado a loopback, healthcheck y volumen; documentar inicio, verificación de versión y reinicio seguro.
+- **Pendiente:** Crear `deploy/docker-compose.local.yml` con imagen PostGIS fija, variable de contraseña obligatoria, puerto ligado a loopback, healthcheck y volumen; documentar inicio, verificación de versión y reinicio seguro.
 
 ## T2 — EF Core y migración inicial (requiere TT-API-01 / KNOCK-20)
 - **Verificar:** TC-TT-BD-01-02

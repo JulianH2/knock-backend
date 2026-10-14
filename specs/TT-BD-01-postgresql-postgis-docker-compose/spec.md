@@ -21,7 +21,7 @@ Levantar PostgreSQL con PostGIS en Docker Compose para desarrollo local, conecta
 
 ## 3. Alcance / No-alcance
 - **In (este repositorio):**
-  - Usar `deploy/docker-compose.local.yml` para el PostgreSQL local con `postgis/postgis:16-3.4`, imagen con versión fija.
+  - Crear `deploy/docker-compose.local.yml` para el PostgreSQL local con `postgis/postgis:16-3.4`, imagen con versión fija.
   - Requerir credenciales mediante variables, con validación de valor ausente, por ejemplo `${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}`; no incluir contraseñas en archivos versionados.
   - Ligar el puerto publicado a `127.0.0.1`, definir `healthcheck` y volumen persistente, y documentar cómo reiniciar los servicios. `down`/`up` no debe borrar el volumen; no usar `down -v` para un reinicio que preserve datos.
   - Conectar el backend de TT-API-01 con EF Core/Npgsql/NetTopologySuite y habilitar la extensión con `HasPostgresExtension("postgis")`.
@@ -31,7 +31,7 @@ Levantar PostgreSQL con PostGIS en Docker Compose para desarrollo local, conecta
 - **Out:**
   - Implementar de nuevo `/health/ready` o duplicar los checks de Npgsql y la fixture Testcontainers ya incluidos en TT-API-01; esta tarea los reutiliza y los verifica con PostGIS.
   - Agregar paquetes `AspNetCore.HealthChecks.*`; TT-API-01 decidió no usarlos.
-  - Configurar Redis para esta tarea («para más adelante»); no obstante, el compose local existente podrá seguir incluyendo los servicios ya definidos fuera del alcance específico de KNOCK-22.
+  - Configurar Redis para esta tarea («para más adelante»); el archivo Compose local creado por KNOCK-22 no debe agregar Redis.
   - Provisionar, conectar o migrar bases de datos remotas o de producción.
 - **Dependencia:** TT-API-01 (KNOCK-20). El compose/PostGIS es independiente; EF Core, contextos y migración dependen de la API de TT-API-01.
 
