@@ -1,0 +1,21 @@
+# Revisores por área. GitHub los solicita en cada PR; solo bloquea el merge si se activa «Require review from Code Owners» (hoy no aplicable en repos privados gratuitos).
+*                                   @JulianH2 @GuillermoRH19
+/src/Knock.Api/Modules/Identity/    @GuillermoRH19 @JulianH2
+/src/Knock.Api/Modules/Requests/    @GuillermoRH19
+/src/Knock.Api/Modules/Messaging/   @GuillermoRH19
+/src/Knock.Api/Modules/Trust/       @GuillermoRH19 @JulianH2
+/src/Knock.Api/Modules/Catalog/     @AlexisBBY
+/src/Knock.Api/Modules/Reputation/  @AlexisBBY
+/db/                                @AlexisBBY
+/**/Migrations/                     @AlexisBBY @GuillermoRH19
+# Gobierno, seguridad y CI: solo el Tech Lead
+/.github/                           @JulianH2
+/scripts/                           @JulianH2
+/.agents/                           @JulianH2
+/.specify/                          @JulianH2
+/.semgrep/                          @JulianH2
+/security/                          @JulianH2
+/deploy/                            @JulianH2
+/stryker-config.json                @JulianH2
+/Directory.Build.props              @JulianH2
+/AGENTS.md                          @JulianH2
