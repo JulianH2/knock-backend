@@ -14,4 +14,17 @@
 #    creada: 2026-10-20
 #    vence: 2026-12-04
 #    plan: reemplazar por Bogus en TT-QA-02
-excepciones: []
+excepciones:
+  - id: EXC-001
+    herramienta: semgrep
+    regla: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args
+    alcance: scripts/hooks/knock_guard.py
+    justificacion: >-
+      Falso positivo. La llamada usa una lista de argumentos (sin shell, no hay interpolación de comandos) y los
+      nombres que recibe `--similar` salen de expresiones regulares de identificadores (`[A-Za-z]\w+`) que no
+      pueden empezar con «-»; además se limitan a 8. Evidencia: revisión de scripts/hooks/knock_guard.py (función
+      check_new_file) en el PR de KNOCK-26 y primera ejecución de Semgrep en el CI de ese PR.
+    responsable: José Julián Hernández Hernández
+    creada: 2026-10-14
+    vence: 2027-01-12
+    plan: validar los nombres con `re.fullmatch` antes de llamar o importar `codemap` en lugar de lanzar un subproceso, y retirar la excepción antes de vencer.
