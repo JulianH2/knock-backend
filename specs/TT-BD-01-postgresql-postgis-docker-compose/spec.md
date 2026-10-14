@@ -3,7 +3,7 @@
 > **Jira:** KNOCK-22 · **Área:** Base de datos · **Responsable:** Ángel Alexis Blas Castillo · **Sprint:** S0 · **Puntos:** Por confirmar
 > **Repositorio:** knock-backend · **Ficha:** TT-BD-01_PostgresqlPostgisDockerCompose_Knock.docx
 > **Skills:** Por confirmar
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Levantar PostgreSQL con la extensión PostGIS en Docker Compose para desarrollo local, conectar la API con EF Core usando Npgsql y NetTopologySuite, y crear la migración inicial. La base local debe poder migrarse con un solo comando. La cadena de conexión debe permanecer fuera del repositorio, mediante user-secrets o variables de entorno.
@@ -66,6 +66,6 @@ No se especifican entidades, esquemas ni cambios de modelo en los hechos disponi
 - No se declara una meta de mutación hasta confirmar si esta tarea incorpora lógica de producto.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-10-13
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
