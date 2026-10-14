@@ -4,7 +4,7 @@
 > **Repositorio:** knock-backend · **Ficha:** TT-API-01 · **Rama:** `chore/KNOCK-20-aspnet-core-project` → PR a `sprint-00`
 > **Depende de:** TT-REPO-01, TT-STD-01
 > **Skills:** foundation-backend, vertical-slice-api, testing-strategy-backend, security-core, story-workflow
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Dejar la base del backend con los módulos ya separados para que cada historia se agregue en su módulo sin reorganizar nada. Terminada cuando la API compila, responde `/health` y tiene pruebas base.
@@ -110,6 +110,6 @@ La decisión «JWT con clave efímera» se traslada a TT-API-02, donde está la 
 - **Ruta del Dockerfile y del documento OpenAPI (`/openapi/v1.json`):** se confirman al implementar.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: José Julián Hernández Hernández fecha:
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-10-14
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
