@@ -12,7 +12,7 @@
 - Inversión de ejes: la interfaz `(lat, lng)` se mapea a X=`lng`, Y=`lat` y se validan rangos (TC-TT-BD-02-08).
 - Reaplicar seeds no debe duplicar registros (TC-TT-BD-02-09).
 - Dependencia de TT-BD-01 (KNOCK-22) para PostgreSQL/PostGIS local y de pruebas.
-- Verificar datos SEPOMEX y CP de Tula antes de fijar los datos de fixture; no utilizar el CP de ejemplo `42000` de Pachuca.
+- Verificar datos SEPOMEX y CP de Tula antes de fijar los datos de fixture; no utilizar el CP de ejemplo `42000`.
 
 ## 3. Pruebas por caso
 | Caso | Prueba planeada | Suite |
@@ -24,7 +24,7 @@
 | TC-TT-BD-02-05 | Consultar CP SEPOMEX devuelve solo las colonias asociadas. | `DatabaseTest/CatalogNeighborhoodQueriesTests.PostalCodeReturnsOnlyMatchingNeighborhoods_TC_TT_BD_02_05` |
 | TC-TT-BD-02-06 | Consulta no persiste ni registra coordenadas exactas. | `IntegrationTest/CatalogLocationPrivacyTests.NeighborhoodLookupDoesNotPersistOrLogCoordinates_TC_TT_BD_02_06` |
 | TC-TT-BD-02-07 | Borde compartido se resuelve con cobertura y desempate estable. | `DatabaseTest/CatalogNeighborhoodQueriesTests.SharedBoundaryUsesCoversAndStableTieBreak_TC_TT_BD_02_07` |
-| TC-TT-BD-02-08 | `(lat, lng)` produce X=`lng`, Y=`lat`; rangos inválidos se rechazan. | `UnitTest/CatalogCoordinatesTests.LatitudeLongitudeMapsToLongitudeLatitudeAndRejectsOutOfRange_TC_TT_BD_02_08` |
+| TC-TT-BD-02-08 | PostGIS devuelve `ST_X=lng`, `ST_Y=lat` y la colonia fixture esperada; rangos inválidos se rechazan. | `DatabaseTest/CatalogCoordinatesTests.PostgisMapsLatitudeLongitudeToXLongitudeYLatitudeAndRejectsOutOfRange_TC_TT_BD_02_08` |
 | TC-TT-BD-02-09 | Reaplicar seed no duplica filas. | `DatabaseTest/CatalogTradeSeedTests.ReapplyingSeedDoesNotDuplicateCatalogRows_TC_TT_BD_02_09` |
 
 ## 4. Secuencia
@@ -32,7 +32,7 @@
 2. Preparar los nombres y CP de SEPOMEX; dibujar aproximaciones de 8–12 polígonos piloto y asignar centros a las otras colonias. Documentar autor y fecha; no tratarlos como oficiales.
 3. Definir y migrar el esquema Catalog con `geography(...,4326)` y GiST; sembrar oficios y datos geográficos de forma idempotente.
 4. Exponer las consultas a través de la interfaz del módulo Catalog; construir puntos con X=`lng`, Y=`lat` y no persistir ni loggear la coordenada entrante.
-5. Verificar todos los TC con Testcontainers/PostGIS, incluyendo cobertura por polígono, un punto fuera de Tula y sin fallback, respaldo de centro, CP, borde, privacidad, ejes, modalidad y reejecución de seed.
+5. Verificar todos los TC con Testcontainers/PostGIS, incluyendo cobertura por polígono, un punto fuera de Tula y sin fallback, respaldo de centro, CP, borde, privacidad, `ST_X`/`ST_Y` para el orden lon/lat, modalidad y reejecución de seed.
 
 ## 5. Verificación (comandos exactos)
 ```bash
