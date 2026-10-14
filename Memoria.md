@@ -79,3 +79,5 @@
 - Riesgo: la protección de ramas con `gate` como check requerido no se puede aplicar en repos privados de una cuenta gratuita (GitHub pide Pro o repo público).
 - Riesgo (no verificado): OSV-Scanner puede devolver error en un repositorio sin archivos de dependencias; se confirma en la primera ejecución real.
 - A evitar: dar por válido un workflow sin correrlo en GitHub; `actionlint` y `jscpd` locales no sustituyen la primera ejecución.
+- Primera ejecución real del CI (PR de KNOCK-26): fallaron 3 jobs. Gitleaks por falta de permiso `pull-requests: read` (403 al listar los commits del PR); governance porque `actionlint` con `shellcheck` en el runner marcó SC2129 y SC2034 en `ci-pr.yml`; Semgrep con 4 hallazgos bloqueantes cuyo detalle no salía en el log (solo iba al SARIF). Arreglado: permisos del job `secrets`, redirecciones agrupadas, variable de bucle `_`, y Semgrep ahora escribe el SARIF con `--sarif-output` y deja el texto en el log.
+- A evitar: `actionlint` local sin `shellcheck` no reproduce lo del CI; instala `shellcheck` (por ejemplo `pip install shellcheck-py`) antes de dar un workflow por válido.
