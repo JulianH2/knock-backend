@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: "/"
+    target-branch: develop
+    schedule: {interval: weekly, day: monday, time: "08:00", timezone: America/Mexico_City}
+    open-pull-requests-limit: 8
+    labels: [dependencias]
+    commit-message: {prefix: "build(deps)"}
+    groups:
+      aspnetcore: {patterns: ["Microsoft.AspNetCore*", "Microsoft.Extensions*"], update-types: [minor, patch]}
+      efcore: {patterns: ["Microsoft.EntityFrameworkCore*", "Npgsql*"], update-types: [minor, patch]}
+      pruebas: {patterns: ["xunit*", "AwesomeAssertions", "Moq", "Testcontainers*", "NetArchTest*", "coverlet*"]}
+  - package-ecosystem: github-actions
+    directory: "/"
+    target-branch: develop
+    schedule: {interval: weekly, day: monday, time: "08:00", timezone: America/Mexico_City}
+    labels: [dependencias, ci]
+    commit-message: {prefix: "build(deps)"}
+    groups:
+      actions: {patterns: ["*"]}
+  - package-ecosystem: docker
+    directory: "/src/Knock.Api"
+    target-branch: develop
+    schedule: {interval: weekly, day: monday, time: "08:00", timezone: America/Mexico_City}
+    labels: [dependencias]
+    commit-message: {prefix: "build(deps)"}
