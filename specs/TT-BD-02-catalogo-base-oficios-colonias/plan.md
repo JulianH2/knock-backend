@@ -1,33 +1,42 @@
-# plan.md — TT-BD-02 — Catálogo base de oficios y colonias
+# plan.md — TT-BD-02 — Catálogo base de oficios y colonias de Tula
 
 ## 1. Mapeo de archivos
-- **Reutilizar:** No se prevén cambios de código en esta spec; los detalles de implementación siguen abiertos.
-- **Crear:** Pendiente de determinar según la fuente SEPOMEX disponible y el esquema que se acuerde.
-- **Modificar:** Pendiente de confirmar.
-- **No tocar:** No inventar polígonos ni presentarlos como oficiales sin fuente disponible y verificada. No ampliar el catálogo a otros municipios u oficios.
+- **Reutilizar:** La interfaz pública del módulo Catalog y la infraestructura de integración/Testcontainers existentes o provistos por TT-BD-01; no crear endpoint HTTP para estas consultas.
+- **Crear:** Seeds idempotentes en `db/seeds/`; archivo `db/seeds/colonias_tula.geojson` para polígonos aproximados con autor/fecha; importación y README de fuente SEPOMEX en `db/sepomex/`; modelo/migración `catalog.oficios` y `catalog.colonias` al implementar.
+- **Modificar:** Interfaz del módulo Catalog y su implementación para consulta por punto y por código postal; pruebas `DatabaseTest` y de privacidad/validación que correspondan.
+- **No tocar:** Datos de coordenadas de usuarios ni declarar oficiales las aproximaciones. La actualización de la ciudad piloto general en `DECISION_TECNICA.md` y la ficha del backlog va en PR separado.
 
 ## 2. Riesgos y efectos secundarios
-- Datos geográficos no disponibles o no verificables pueden dar resultados de colonia incorrectos. Si no se dispone de polígonos adecuados, detener la carga y reportar el bloqueo.
-- Una consulta con coordenadas mal interpretadas puede clasificar incorrectamente un punto; los casos de dentro y fuera requieren puntos acordados sin inventarlos.
-- El seed podría omitir oficios requeridos o no persistirlos como datos; comprobar los tres valores posteriores al seed.
-- Dependencia de TT-BD-01 (KNOCK-22).
+- Confusión entre geometría aproximada y límite oficial: documentar condición aproximada, autor y fecha (TC-TT-BD-02-01, 02 y 07).
+- Fuga de coordenadas exactas: no persistir ni registrar el punto de consulta (TC-TT-BD-02-06).
+- Inversión de ejes: la interfaz `(lat, lng)` se mapea a X=`lng`, Y=`lat` y se validan rangos (TC-TT-BD-02-08).
+- Reaplicar seeds no debe duplicar registros (TC-TT-BD-02-09).
+- Dependencia de TT-BD-01 (KNOCK-22) para PostgreSQL/PostGIS local y de pruebas.
+- Verificar datos SEPOMEX y CP de Tula antes de fijar los datos de fixture; no utilizar el CP de ejemplo `42000` de Pachuca.
 
 ## 3. Pruebas por caso
-| Caso | Prueba | Suite |
+| Caso | Prueba planeada | Suite |
 |---|---|---|
-| TC-TT-BD-02-01 | Consultar con PostGIS un punto acordado dentro de Tula y verificar la colonia devuelta. Punto, polígono y método por confirmar. | Base de datos/integración; suite pendiente de identificar. |
-| TC-TT-BD-02-02 | Consultar con PostGIS un punto acordado fuera de Tula y verificar que no se devuelve colonia de Tula. Punto y método por confirmar. | Base de datos/integración; suite pendiente de identificar. |
-| TC-TT-BD-02-03 | Ejecutar el seed y comprobar que Plomería, Electricidad y Mecánica están persistidos como datos, no como enum. | Base de datos/seed; suite pendiente de identificar. |
+| TC-TT-BD-02-01 | Punto contenido en polígono devuelve esa colonia. | `DatabaseTest/CatalogNeighborhoodQueriesTests.PointInsidePolygonReturnsContainingNeighborhood_TC_TT_BD_02_01` |
+| TC-TT-BD-02-02 | Sin contención, centro más cercano dentro de 2 km gana. | `DatabaseTest/CatalogNeighborhoodQueriesTests.PointWithoutContainingPolygonReturnsNearestCenterWithinTwoKilometers_TC_TT_BD_02_02` |
+| TC-TT-BD-02-03 | Sin contención ni centro a 2 km, resultado fuera de cobertura. | `DatabaseTest/CatalogNeighborhoodQueriesTests.PointOutsidePolygonAndTwoKilometerFallbackReturnsOutOfCoverage_TC_TT_BD_02_03` |
+| TC-TT-BD-02-04 | Consultar CP SEPOMEX devuelve solo las colonias asociadas. | `DatabaseTest/CatalogNeighborhoodQueriesTests.PostalCodeReturnsOnlyMatchingNeighborhoods_TC_TT_BD_02_04` |
+| TC-TT-BD-02-05 | Seed contiene tres oficios activos con su modalidad. | `DatabaseTest/CatalogTradeSeedTests.SeedContainsRequiredActiveTradesAndModalities_TC_TT_BD_02_05` |
+| TC-TT-BD-02-06 | Consulta no persiste ni registra coordenadas exactas. | `IntegrationTest/CatalogLocationPrivacyTests.NeighborhoodLookupDoesNotPersistOrLogCoordinates_TC_TT_BD_02_06` |
+| TC-TT-BD-02-07 | Borde compartido se resuelve con cobertura y desempate estable. | `DatabaseTest/CatalogNeighborhoodQueriesTests.SharedBoundaryUsesCoversAndStableTieBreak_TC_TT_BD_02_07` |
+| TC-TT-BD-02-08 | `(lat, lng)` produce X=`lng`, Y=`lat`; rangos inválidos se rechazan. | `UnitTest/CatalogCoordinatesTests.LatitudeLongitudeMapsToLongitudeLatitudeAndRejectsOutOfRange_TC_TT_BD_02_08` |
+| TC-TT-BD-02-09 | Reaplicar seed no duplica filas. | `DatabaseTest/CatalogTradeSeedTests.ReapplyingSeedDoesNotDuplicateCatalogRows_TC_TT_BD_02_09` |
 
 ## 4. Secuencia
-1. Confirmar disponibilidad, procedencia y condiciones de uso de los polígonos SEPOMEX pertinentes para Tula; si no hay datos adecuados, detener y reportar.
-2. Acordar puntos de prueba confiables para los casos dentro y fuera, además del comportamiento de la consulta que sigue abierto en §8.
-3. Precisar esquema, importación y estrategia de seed/migración tras la aprobación humana de la spec.
-4. Implementar el seed de los tres oficios y la consulta con PostGIS dentro del alcance aprobado.
-5. Verificar TC-TT-BD-02-01, TC-TT-BD-02-02 y TC-TT-BD-02-03 con PostGIS real y registrar los resultados.
+1. Confirmar extracto SEPOMEX, su licencia/fecha y el CP de Tula que se usará en pruebas; documentar la fuente en `db/sepomex/`.
+2. Preparar los nombres y CP de SEPOMEX; dibujar aproximaciones de 8–12 polígonos piloto y asignar centros a las otras colonias. Documentar autor y fecha; no tratarlos como oficiales.
+3. Definir y migrar el esquema Catalog con `geography(...,4326)` y GiST; sembrar oficios y datos geográficos de forma idempotente.
+4. Exponer las consultas a través de la interfaz del módulo Catalog; construir puntos con X=`lng`, Y=`lat` y no persistir ni loggear la coordenada entrante.
+5. Verificar todos los TC con Testcontainers/PostGIS, incluyendo cobertura por polígono, respaldo de centro, CP, borde, privacidad, ejes, modalidad y reejecución de seed.
 
 ## 5. Verificación (comandos exactos)
 ```bash
-python scripts/sdd_lint.py
+python scripts/sdd_lint.py --trace TT-BD-02
+dotnet test tests/DatabaseTest -c Release
 ```
-Los comandos de seed y de pruebas de base de datos dependen de la suite y el procedimiento que se acuerden; no se inventan en este borrador.
+La invocación de pruebas de privacidad/integración se ajustará a la suite final al implementarse. No se ejecutan ni se afirman pruebas de producto en este borrador.
