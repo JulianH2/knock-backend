@@ -2,7 +2,7 @@
 
 ## T1 — Compose y PostGIS local (independiente de TT-API-01)
 - **Verificar:** TC-TT-BD-01-01
-- **Pendiente:** Crear `deploy/docker-compose.local.yml` con imagen PostGIS fija, variable de contraseña obligatoria, puerto ligado a loopback, healthcheck y volumen; documentar inicio, verificación de versión y reinicio seguro.
+- **Estado:** Hecho. `deploy/docker-compose.local.yml` usa `postgis/postgis:16-3.4`, exige `POSTGRES_PASSWORD`, publica solo en loopback y define healthcheck y volumen persistente. Arranque y `SELECT postgis_version()` verificados localmente; instrucciones de reinicio documentadas en `README.md`.
 
 ## T2 — EF Core y migración inicial (requiere TT-API-01 / KNOCK-20)
 - **Verificar:** TC-TT-BD-01-02
@@ -14,4 +14,4 @@
 
 ## T4 — Secretos y destino local
 - **Verificar:** TC-TT-BD-01-05
-- **Pendiente:** Revisar `.env` ignorado, `.env.example` sin secretos, `appsettings*.json` sin contraseñas; ejecutar Gitleaks y verificar que la configuración/migración local rechaza hosts no locales.
+- **Estado:** Parcial. `.env` está ignorado y `.env.example` contiene solo nombres y una contraseña vacía; quedan pendientes Gitleaks, la revisión de `appsettings*.json` y el rechazo de hosts remotos en la configuración de migración de TT-API-01.
