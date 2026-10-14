@@ -1,8 +1,8 @@
 # plan.md — TT-BD-01 — PostgreSQL/PostGIS local con Docker Compose y EF Core
 
 ## 1. Mapeo de archivos
-- **Reutilizar:** `deploy/docker-compose.local.yml` y el health/readiness y fixture `tests/TestSupport` provistos por TT-API-01; no duplicar `/health/ready` ni los checks de Npgsql.
-- **Crear:** configuración local PostgreSQL/PostGIS, migración inicial para extensión y esquemas, y protección de la configuración local para que no acepte hosts remotos.
+- **Reutilizar:** el health/readiness y fixture `tests/TestSupport` provistos por TT-API-01; no duplicar `/health/ready` ni los checks de Npgsql.
+- **Crear:** `deploy/docker-compose.local.yml` con PostgreSQL/PostGIS, migración inicial para extensión y esquemas, y protección de la configuración local para que no acepte hosts remotos.
 - **Modificar:** contextos EF Core de los módulos de TT-API-01 para PostGIS, esquema predeterminado y nombres `snake_case`, solo en el alcance aprobado.
 - **No tocar:** contraseñas/cadenas reales versionadas, bases remotas/producción, paquetes `AspNetCore.HealthChecks.*` ni Redis para este issue.
 
@@ -23,8 +23,8 @@
 | TC-TT-BD-01-05 | Gitleaks/config review y rechazo de host remoto en perfil local. | Seguridad negativa y prueba de validación del host. |
 
 ## 4. Secuencia
-1. **Entregable A, independiente de TT-API-01:** revisar Compose local; asegurar imagen fija, contraseña requerida por variable, puerto loopback, `healthcheck` y volumen persistente; documentar inicio y reinicio seguro; verificar `postgis_version()`.
-2. Mantener fuera de esta tarea la configuración de Redis («para más adelante») y no borrar los servicios ya definidos en la composición local que pertenezcan a otras tareas.
+1. **Entregable A, independiente de TT-API-01:** crear `deploy/docker-compose.local.yml` con imagen fija, contraseña requerida por variable, puerto loopback, `healthcheck` y volumen persistente; documentar inicio y reinicio seguro; verificar `postgis_version()`.
+2. Mantener fuera de esta tarea la configuración de Redis («para más adelante»); no agregar Redis al archivo Compose creado en este entregable.
 3. **Entregable B, dependiente de TT-API-01:** conectar Npgsql/NetTopologySuite en los contextos existentes, establecer `HasDefaultSchema(...)`, PostGIS y `snake_case` tras evaluar paquete, y crear migración inicial de extensión y esquemas.
 4. Reutilizar `/health/ready` y la fixture de Testcontainers que TT-API-01 ya incluye; comprobar readiness y ejecución con `postgis/postgis`.
 5. Verificar `.env`/`.env.example`, Gitleaks y guardia de host local; registrar resultados por cada TC.
