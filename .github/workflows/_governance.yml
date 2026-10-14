@@ -32,7 +32,9 @@ jobs:
         run: python scripts/sdd_lint.py
       - name: Trazabilidad caso ↔ prueba de la spec del issue
         if: inputs.spec != ''
-        run: python scripts/sdd_lint.py --trace "${{ inputs.spec }}"
+        env:
+          SPEC: ${{ inputs.spec }}
+        run: python scripts/sdd_lint.py --trace "$SPEC"
       - name: Registro de excepciones (vigencia y supresiones sin EXC-NNN)
         run: python scripts/ci/check_exceptions.py
       - name: Acciones de GitHub fijadas a SHA

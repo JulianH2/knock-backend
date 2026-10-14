@@ -10,14 +10,20 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
-import xml.etree.ElementTree as ET
 from pathlib import Path
 
 
 def cobertura(path: Path) -> tuple[float, float | None]:
-    root = ET.parse(path).getroot()
-    return float(root.get("line-rate", 0)) * 100, float(root.get("branch-rate", 0)) * 100
+    """Lee `line-rate` y `branch-rate` del elemento raíz <coverage>, sin analizar el XML completo
+    (así no se procesan entidades ni DTD externos; no hace falta defusedxml)."""
+    head = path.read_text(encoding="utf-8")[:8192]
+    tag = re.search(r"<coverage\b[^>]*>", head)
+    if not tag:
+        sys.exit(f"ERROR: {path} no parece un informe Cobertura (no se encontró <coverage ...>)")
+    attrs = dict(re.findall(r'([\w-]+)="([^"]*)"', tag.group(0)))
+    return float(attrs.get("line-rate", 0)) * 100, float(attrs.get("branch-rate", 0)) * 100
 
 
 def lcov(path: Path, excludes: list[str]) -> tuple[float, float | None]:
