@@ -85,6 +85,6 @@
 
 ## 2026-10-14 — KNOCK-28: proyecto de Firebase y autenticación por teléfono
 - Hecho (lo configuró una persona; evidencia en `docs/evidencia/KNOCK-28-firebase.md`): proyecto `knock` (ID `knock-0`) en plan Spark, Analytics desactivado, proveedor Teléfono habilitado con 4 números de prueba ficticios, FCM V1 habilitada y acceso del equipo configurado.
-- Pendiente: registrar las apps Android e iOS con el identificador decidido `app.knock.mobile` (paquete y bundle); probar el inicio de sesión de punta a punta con un número de prueba (app o spike TT-API-02); confirmar cuota y costo de SMS reales.
+- Pendiente: probar el inicio de sesión de punta a punta con un número de prueba (app o spike TT-API-02); confirmar cuota y costo de SMS reales.
 - Decisión: los números de prueba existen solo en este proyecto de desarrollo; para producción se crea otro proyecto sin ellos. Los códigos de prueba no van al repositorio ni a tickets.
 - A evitar: descargar llaves de cuenta de servicio o subir `google-services.json`, `GoogleService-Info.plist` o `firebase_options.dart` sin decidirlo (este último puede disparar gitleaks); usar teléfonos reales como números de prueba.
