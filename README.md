@@ -20,10 +20,13 @@ La app móvil y el panel interno están en **knock-frontend**.
 ```bash
 python scripts/install_githooks.py
 python scripts/sync_agents.py
-cp deploy/.env.example deploy/.env   # y define las contraseñas locales
+cp .env.example .env                 # define POSTGRES_PASSWORD localmente
 docker compose -f deploy/docker-compose.local.yml up -d
 ```
 El proyecto .NET se crea en **TT-API-01** y la base en **TT-BD-01** (ver `specs/`).
+
+Para verificar PostGIS: `docker compose -f deploy/docker-compose.local.yml exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT postgis_version();"'`.
+Para reiniciar PostgreSQL sin borrar los datos: `docker compose -f deploy/docker-compose.local.yml restart postgres`. No uses `down -v` para un reinicio que deba conservar el volumen.
 
 ## Estructura
 `src/` API · `tests/` pruebas · `db/` scripts de base de datos · `deploy/` compose y Bicep · `specs/` · `docs/` · `security/` · `scripts/`
