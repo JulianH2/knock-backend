@@ -64,8 +64,8 @@
 - A evitar: subir IDs de suscripción, tenant o correos a los repositorios; van en variables de GitHub o en un `.env` local ignorado por git.
 
 ## 2026-10-13 — Borradores TT-BD-01 (KNOCK-22) y TT-BD-02 (KNOCK-23)
-- Estado: preparadas ambas specs con `plan.md`, `task.md` y `checklists/gates.md`, en Borrador y para revisión en PRs separados hacia `sprint-00`.
-- Decisión del equipo (2026-10-13): Tula de Allende reemplaza Pachuca solo para el catálogo de KNOCK-23; la actualización de la decisión general del producto y de la ficha queda en un PR separado.
+- Estado: specs TT-BD-01 y TT-BD-02 aprobadas por persona; aclaraciones posteriores de sus PRs documentadas sin modificar las aprobaciones ni firmas.
+- Decisión del equipo (2026-10-13): Tula de Allende aplica al catálogo de KNOCK-23; la actualización de la decisión general del producto y de la ficha queda en un PR separado.
 - Decisión técnica para TT-BD-02: polígonos piloto aproximados, etiquetados como no oficiales y documentados con autor/fecha; fallback por centro hasta 2 km; geometría `geography(...,4326)` y GiST conforme a las convenciones geoespaciales del repo; no persistir/loggear coordenadas de usuarios.
 - Pendiente: verificar extracto SEPOMEX, CP de Tula, fecha/licencia y puntos de prueba. No se afirma haber encontrado ni verificado esos datos.
 - A evitar: inventar CP, geometrías, coordenadas de usuarios, comandos de migración o detalles de esquema; no aprobar ni firmar las specs desde un agente.

@@ -18,10 +18,10 @@
 | Caso | Prueba planeada | Suite |
 |---|---|---|
 | TC-TT-BD-02-01 | Punto contenido en polígono devuelve esa colonia. | `DatabaseTest/CatalogNeighborhoodQueriesTests.PointInsidePolygonReturnsContainingNeighborhood_TC_TT_BD_02_01` |
-| TC-TT-BD-02-02 | Sin contención, centro más cercano dentro de 2 km gana. | `DatabaseTest/CatalogNeighborhoodQueriesTests.PointWithoutContainingPolygonReturnsNearestCenterWithinTwoKilometers_TC_TT_BD_02_02` |
-| TC-TT-BD-02-03 | Sin contención ni centro a 2 km, resultado fuera de cobertura. | `DatabaseTest/CatalogNeighborhoodQueriesTests.PointOutsidePolygonAndTwoKilometerFallbackReturnsOutOfCoverage_TC_TT_BD_02_03` |
-| TC-TT-BD-02-04 | Consultar CP SEPOMEX devuelve solo las colonias asociadas. | `DatabaseTest/CatalogNeighborhoodQueriesTests.PostalCodeReturnsOnlyMatchingNeighborhoods_TC_TT_BD_02_04` |
-| TC-TT-BD-02-05 | Seed contiene tres oficios activos con su modalidad. | `DatabaseTest/CatalogTradeSeedTests.SeedContainsRequiredActiveTradesAndModalities_TC_TT_BD_02_05` |
+| TC-TT-BD-02-02 | Un punto sintético de otra ciudad fuera de Tula y sin centro a 2 km devuelve fuera de cobertura. | `DatabaseTest/CatalogNeighborhoodQueriesTests.PointOutsideTulaCoverageReturnsOutOfCoverage_TC_TT_BD_02_02` |
+| TC-TT-BD-02-03 | Seed contiene los tres oficios activos con sus modalidades. | `DatabaseTest/CatalogTradeSeedTests.SeedContainsRequiredActiveTradesAndModalities_TC_TT_BD_02_03` |
+| TC-TT-BD-02-04 | Sin contención, centro más cercano dentro de 2 km gana. | `DatabaseTest/CatalogNeighborhoodQueriesTests.PointWithoutContainingPolygonReturnsNearestCenterWithinTwoKilometers_TC_TT_BD_02_04` |
+| TC-TT-BD-02-05 | Consultar CP SEPOMEX devuelve solo las colonias asociadas. | `DatabaseTest/CatalogNeighborhoodQueriesTests.PostalCodeReturnsOnlyMatchingNeighborhoods_TC_TT_BD_02_05` |
 | TC-TT-BD-02-06 | Consulta no persiste ni registra coordenadas exactas. | `IntegrationTest/CatalogLocationPrivacyTests.NeighborhoodLookupDoesNotPersistOrLogCoordinates_TC_TT_BD_02_06` |
 | TC-TT-BD-02-07 | Borde compartido se resuelve con cobertura y desempate estable. | `DatabaseTest/CatalogNeighborhoodQueriesTests.SharedBoundaryUsesCoversAndStableTieBreak_TC_TT_BD_02_07` |
 | TC-TT-BD-02-08 | `(lat, lng)` produce X=`lng`, Y=`lat`; rangos inválidos se rechazan. | `UnitTest/CatalogCoordinatesTests.LatitudeLongitudeMapsToLongitudeLatitudeAndRejectsOutOfRange_TC_TT_BD_02_08` |
@@ -32,7 +32,7 @@
 2. Preparar los nombres y CP de SEPOMEX; dibujar aproximaciones de 8–12 polígonos piloto y asignar centros a las otras colonias. Documentar autor y fecha; no tratarlos como oficiales.
 3. Definir y migrar el esquema Catalog con `geography(...,4326)` y GiST; sembrar oficios y datos geográficos de forma idempotente.
 4. Exponer las consultas a través de la interfaz del módulo Catalog; construir puntos con X=`lng`, Y=`lat` y no persistir ni loggear la coordenada entrante.
-5. Verificar todos los TC con Testcontainers/PostGIS, incluyendo cobertura por polígono, respaldo de centro, CP, borde, privacidad, ejes, modalidad y reejecución de seed.
+5. Verificar todos los TC con Testcontainers/PostGIS, incluyendo cobertura por polígono, un punto fuera de Tula y sin fallback, respaldo de centro, CP, borde, privacidad, ejes, modalidad y reejecución de seed.
 
 ## 5. Verificación (comandos exactos)
 ```bash
