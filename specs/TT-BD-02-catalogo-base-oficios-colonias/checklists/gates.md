@@ -2,10 +2,11 @@
 
 > Estado: borrador de preparación. Casillas sin marcar; no representa aprobación, implementación ni ejecución de pruebas.
 
-- [ ] Completar dudas de la spec y obtener aprobación humana; conservar el estado Borrador hasta entonces.
-- [ ] Confirmar datos SEPOMEX/polígonos adecuados y su procedencia antes de cargarlos; no inventar geometrías.
-- [ ] Acordar puntos de prueba confiables para TC-TT-BD-02-01 y TC-TT-BD-02-02.
-- [ ] Confirmar esquema y estrategia de seed; verificar los tres oficios como datos para TC-TT-BD-02-03.
-- [ ] Aclarar contrato de consulta, suite, fixtures y límites de la operación geoespacial.
-- [ ] Ejecutar `python scripts/sdd_lint.py` y registrar la salida real.
-- [ ] Confirmar los gates de `AGENTS.md §5` que apliquen una vez acordados alcance y pruebas; registrar resultados reales.
+- [ ] Mantener la spec en Borrador hasta aprobación humana.
+- [ ] Verificar y documentar fuente, fecha/licencia y CP SEPOMEX de Tula; no usar `42000`.
+- [ ] Documentar como aproximados los 8–12 polígonos piloto, autor y fecha; incluir centros para el resto.
+- [ ] Implementar esquema `catalog` con `geography(...,4326)` e índices GiST, oficios y seeds idempotentes.
+- [ ] Implementar consulta por punto, respaldo de 2 km, fuera de cobertura, consulta por CP, privacidad, orientación de ejes y desempate en borde.
+- [ ] Añadir y ejecutar una prueba con PostGIS/Testcontainers por cada TC-TT-BD-02-01 a TC-TT-BD-02-09.
+- [ ] Ejecutar `python scripts/sdd_lint.py --trace TT-BD-02` y registrar los resultados reales.
+- [ ] Ejecutar los gates aplicables de `AGENTS.md §5` y registrar cada resultado.
