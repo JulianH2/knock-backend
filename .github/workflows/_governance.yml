@@ -1,0 +1,57 @@
+name: _governance
+
+# Verificaciones de gobierno SDD reutilizables (las llaman ci-pr.yml y nightly.yml).
+# Son baratas y no ejecutan código del proyecto: solo scripts de scripts/ con Python estándar.
+
+on:
+  workflow_call:
+    inputs:
+      spec:
+        description: "ID de la spec del issue (HU-NNN, TT-ÁREA-NN, BUG-NNN) para la trazabilidad"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  governance:
+    name: Gobierno SDD y arquitectura
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - name: Adaptadores de agentes sincronizados con su fuente
+        run: python scripts/sync_agents.py --check
+      - name: Specs válidas (secciones, casos TC, estados, clave de Jira)
+        run: python scripts/sdd_lint.py
+      - name: Trazabilidad caso ↔ prueba de la spec del issue
+        if: inputs.spec != ''
+        run: python scripts/sdd_lint.py --trace "${{ inputs.spec }}"
+      - name: Registro de excepciones (vigencia y supresiones sin EXC-NNN)
+        run: python scripts/ci/check_exceptions.py
+      - name: Acciones de GitHub fijadas a SHA
+        run: python scripts/ci/pin_actions.py --check
+      - name: Arquitectura y código duplicado (mapa de código)
+        run: python scripts/codemap.py --check
+      - name: Mapa de código actualizado en el commit
+        run: git diff --quiet -- docs/architecture/CODEMAP.md || { echo "::error::docs/architecture/CODEMAP.md no está al día. Corre python scripts/codemap.py y súbelo."; exit 1; }
+      - name: Duplicación textual (jscpd)
+        run: npx --yes jscpd@4 --config .jscpd.json .
+      - name: Lint de workflows (actionlint)
+        run: |
+          pip install --quiet actionlint-py
+          actionlint -color
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        if: always()
+        with:
+          name: arquitectura
+          path: |
+            docs/architecture/
+            reports/jscpd/
+          if-no-files-found: ignore

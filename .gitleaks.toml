@@ -1,0 +1,24 @@
+# Gitleaks: reglas por defecto + reglas de Knock. Sin listas blancas globales: un falso positivo se
+# registra en security/exceptions.yaml y se marca en la línea con «gitleaks:allow EXC-NNN».
+title = "knock"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "knock-connection-string"
+description = "Cadena de conexión de PostgreSQL con contraseña"
+regex = '''(?i)(Host|Server)=[^;]+;.*Password=[^$;'"\s][^;'"\s]{5,}'''
+tags = ["postgres", "knock"]
+
+[[rules]]
+id = "knock-firebase-service-account"
+description = "Cuenta de servicio de Firebase/Google"
+regex = '''"private_key":\s*"-----BEGIN PRIVATE KEY-----'''
+tags = ["firebase", "knock"]
+
+[[rules]]
+id = "knock-azure-storage-key"
+description = "Llave de Azure Storage"
+regex = '''(?i)AccountKey=[A-Za-z0-9+/=]{40,}'''
+tags = ["azure", "knock"]

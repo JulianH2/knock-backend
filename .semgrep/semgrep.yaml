@@ -1,0 +1,105 @@
+# Reglas de Semgrep propias de knock-backend (se suman a p/csharp, p/secrets, p/owasp-top-ten y p/dockerfile).
+# Cada regla protege una decisión de la constitución. Severidad ERROR bloquea el merge.
+rules:
+  - id: knock-sql-interpolado
+    languages: [csharp]
+    severity: ERROR
+    message: SQL interpolado en FromSqlRaw/ExecuteSqlRaw (inyección SQL). Usa FromSqlInterpolated/ExecuteSqlInterpolated o parámetros.
+    pattern-either:
+      - pattern: $DB.FromSqlRaw($"...", ...)
+      - pattern: $DB.ExecuteSqlRaw($"...", ...)
+      - pattern: $DB.ExecuteSqlRawAsync($"...", ...)
+      - pattern: $DB.FromSqlRaw("..." + $X, ...)
+      - pattern: $DB.ExecuteSqlRaw("..." + $X, ...)
+
+  - id: knock-controller-sin-try-catch
+    languages: [csharp]
+    severity: ERROR
+    message: Los controllers no capturan excepciones; el middleware las convierte en ProblemDetails.
+    paths:
+      include: ["**/Controllers/**"]
+    pattern: |
+      try { ... } catch { ... }
+
+  - id: knock-controller-sin-dbcontext
+    languages: [csharp]
+    severity: ERROR
+    message: Los controllers no usan DbContext; delega en el servicio del módulo.
+    paths:
+      include: ["**/Controllers/**"]
+    pattern-regex: \b\w*DbContext\b
+
+  # Fronteras entre módulos: las verifican NetArchTest (tests/UnitTest/Architecture) y scripts/codemap.py --check.
+
+  - id: knock-jwt-validacion-debil
+    languages: [csharp]
+    severity: ERROR
+    message: Validación de JWT debilitada. ClockSkew debe ser cero y se validan emisor, audiencia, vida y firma.
+    pattern-either:
+      - pattern: "ValidateLifetime = false"
+      - pattern: "ValidateIssuerSigningKey = false"
+      - pattern: "ValidateIssuer = false"
+      - pattern: "ValidateAudience = false"
+      - pattern: "RequireSignedTokens = false"
+
+  - id: knock-certificado-sin-validar
+    languages: [csharp]
+    severity: ERROR
+    message: No se desactiva la validación de certificados TLS.
+    pattern-either:
+      - pattern: "ServerCertificateCustomValidationCallback = (...) => true"
+      - pattern: HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+
+  - id: knock-random-inseguro
+    languages: [csharp]
+    severity: ERROR
+    message: Para códigos de visita, tokens o llaves usa RandomNumberGenerator, no System.Random.
+    pattern-either:
+      - pattern: new Random(...)
+      - pattern: Random.Shared.$M(...)
+
+  - id: knock-log-datos-sensibles
+    languages: [csharp]
+    severity: ERROR
+    message: No registres teléfonos, tokens, CURP, direcciones ni contraseñas en los logs.
+    patterns:
+      - pattern-either:
+          - pattern: $LOG.LogInformation(..., $X, ...)
+          - pattern: $LOG.LogWarning(..., $X, ...)
+          - pattern: $LOG.LogError(..., $X, ...)
+          - pattern: $LOG.LogDebug(..., $X, ...)
+      - metavariable-regex:
+          metavariable: $X
+          regex: (?i).*(phone|celular|token|curp|password|address|direccion|secret).*
+
+  - id: knock-cors-abierto
+    languages: [csharp]
+    severity: ERROR
+    message: CORS abierto. Solo el origen configurado del panel.
+    pattern-either:
+      - pattern: $P.AllowAnyOrigin()
+      - pattern: $P.SetIsOriginAllowed(_ => true)
+
+  - id: knock-deserializacion-insegura
+    languages: [csharp]
+    severity: ERROR
+    message: Deserialización insegura (TypeNameHandling distinto de None o BinaryFormatter).
+    pattern-either:
+      - pattern: "TypeNameHandling = TypeNameHandling.$T"
+      - pattern: new BinaryFormatter()
+
+  - id: knock-console-writeline
+    languages: [csharp]
+    severity: WARNING
+    message: Usa ILogger (Serilog) en lugar de Console.WriteLine.
+    paths:
+      include: ["src/**"]
+    pattern: Console.WriteLine(...)
+
+  - id: knock-task-delay-como-plazo
+    languages: [csharp]
+    severity: ERROR
+    message: Los plazos de negocio (15 min, 48 h, 7 días) son mensajes programados del bus, no Task.Delay.
+    paths:
+      include: ["src/**/Modules/**"]
+    pattern: await Task.Delay(TimeSpan.$F(...), ...)

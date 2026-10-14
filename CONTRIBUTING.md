@@ -54,3 +54,15 @@ Justifica necesidad, licencia (permitidas: MIT, Apache-2.0, BSD, ISC, MPL-2.0…
 
 ## 7. Seguridad
 Vulnerabilidades: [`SECURITY.md`](SECURITY.md). Nunca subas secretos, datos reales ni documentos de identidad (ni de prueba reales).
+
+## 8. Revisión con IA en el CI (opcional)
+El workflow `ai-review.yml` revisa cada PR con los agentes `security-reviewer` y `traceability-clerk`. **No sustituye a la revisión humana y no es parte del check requerido `gate`.** Mientras falte cualquiera de las dos piezas de abajo, el job `review` se **omite solo** (aparece como *skipped*, sin poner el PR en rojo).
+
+Para activarlo cuando exista la cuenta, en **cada repositorio** (knock-backend y knock-frontend), en GitHub → Settings → Secrets and variables → Actions:
+1. **Secreto** (pestaña *Secrets* → New repository secret): nombre `ANTHROPIC_API_KEY`, con la clave de API generada en la consola de Anthropic. Fija un límite de gasto en la cuenta.
+2. **Variable** (pestaña *Variables* → New repository variable): nombre `AI_REVIEW`, valor `true`.
+
+La clave nunca va en el código, un issue, un PR ni un chat. Los PR de forks no reciben secretos, por lo que la revisión se omite en ellos.
+
+Si el repositorio es privado y no tiene GitHub Advanced Security, la revisión de dependencias y la subida de SARIF se omiten; para activarlas, crea la variable `GHAS_ENABLED=true`.
+

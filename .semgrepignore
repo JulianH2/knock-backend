@@ -1,0 +1,12 @@
+# Semgrep: reemplaza los ignorados por defecto (que excluyen las pruebas). Las pruebas también se analizan.
+node_modules/
+bin/
+obj/
+.dart_tool/
+build/
+dist/
+.angular/
+coverage/
+reports/
+app/packages/knock_api/
+panel/src/app/api/
