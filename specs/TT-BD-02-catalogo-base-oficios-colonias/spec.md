@@ -6,7 +6,7 @@
 > **Estado:** Aprobada
 
 ## 1. Objetivo
-Sembrar los oficios Plomería, Electricidad y Mecánica como datos de catálogo, no como enum; cargar los códigos postales y nombres de colonia de Tula de Allende, Hidalgo, desde SEPOMEX; y consultar la colonia de un punto con PostGIS. El equipo decidió el 2026-10-13 que Tula de Allende es la ciudad piloto de este catálogo; la ficha y documentación general que todavía mencionan Pachuca se actualizarán en un PR separado.
+Sembrar los oficios Plomería, Electricidad y Mecánica como datos de catálogo, no como enum; cargar los códigos postales y nombres de colonia de Tula de Allende, Hidalgo, desde SEPOMEX; y consultar la colonia de un punto con PostGIS. El equipo decidió el 2026-10-13 que Tula de Allende es la ciudad piloto de este catálogo; la actualización de la ficha y documentación general corresponde a un PR separado.
 
 ## 2. Historia y casos de prueba
 **TT-BD-02** — Tarea técnica. Las pruebas de base de datos usarán PostgreSQL/PostGIS real con Testcontainers y datos de prueba versionados, sin coordenadas de usuarios.
@@ -17,10 +17,10 @@ Sembrar los oficios Plomería, Electricidad y Mecánica como datos de catálogo,
 | TC-TT-BD-02-02 | Dado un punto sintético de otra ciudad, fuera de Tula y sin centro de colonia a 2 km o menos, cuando se consulta, entonces devuelve «fuera de cobertura». | `DatabaseTest/CatalogNeighborhoodQueriesTests.PointOutsideTulaCoverageReturnsOutOfCoverage_TC_TT_BD_02_02`; usar un punto sintético fuera del área de Tula y comprobar también que no aplica el fallback. |
 | TC-TT-BD-02-03 | Dado el seed de oficios ejecutado, cuando se consulta el catálogo, entonces existen Plomería y Electricidad con modalidad domicilio, Mecánica con modalidad taller, y los tres están activos. | `DatabaseTest/CatalogTradeSeedTests.SeedContainsRequiredActiveTradesAndModalities_TC_TT_BD_02_03`; inspeccionar `clave`, `nombre`, `modalidad` y `activo` persistidos. |
 | TC-TT-BD-02-04 | Dado un punto que no está dentro de ningún polígono, pero tiene un centro de colonia a no más de 2 km, cuando se consulta, entonces devuelve la colonia cuyo centro es el más cercano. | `DatabaseTest/CatalogNeighborhoodQueriesTests.PointWithoutContainingPolygonReturnsNearestCenterWithinTwoKilometers_TC_TT_BD_02_04`; comprobar `ST_DWithin` y orden por distancia con PostGIS. |
-| TC-TT-BD-02-05 | Dado un código postal de Tula existente en el catálogo SEPOMEX cargado, cuando se consultan colonias por código postal, entonces devuelve las colonias asociadas a ese CP y ninguna de otro CP. | `DatabaseTest/CatalogNeighborhoodQueriesTests.PostalCodeReturnsOnlyMatchingNeighborhoods_TC_TT_BD_02_05`; CP y resultado tomados del extracto SEPOMEX versionado. CP concreto por verificar antes de importar; no usar el ejemplo `42000`. |
+| TC-TT-BD-02-05 | Dado un código postal de Tula existente en el catálogo SEPOMEX cargado, cuando se consultan colonias por código postal, entonces devuelve las colonias asociadas a ese CP y ninguna de otro CP. | `DatabaseTest/CatalogNeighborhoodQueriesTests.PostalCodeReturnsOnlyMatchingNeighborhoods_TC_TT_BD_02_05`; CP y resultado tomados del extracto SEPOMEX versionado. CP concreto por verificar antes de importar; no usar el CP de ejemplo `42000`. |
 | TC-TT-BD-02-06 | Dada una consulta con coordenadas, cuando el módulo Catalog resuelve la colonia, entonces devuelve el resultado y descarta las coordenadas sin persistirlas ni registrarlas en logs. | `IntegrationTest/CatalogLocationPrivacyTests.NeighborhoodLookupDoesNotPersistOrLogCoordinates_TC_TT_BD_02_06`; consultar almacenamiento y logs de prueba, comprobando que solo se conserva el resultado de colonia. |
 | TC-TT-BD-02-07 | Dado un punto exactamente en el borde compartido de polígonos, cuando no hay coincidencia estricta por `ST_Contains` y se consulta con `ST_Covers`, entonces el borde se considera cubierto y se elige siempre la colonia con menor nombre normalizado (desempate por `id`) antes del fallback por centro. | `DatabaseTest/CatalogNeighborhoodQueriesTests.SharedBoundaryUsesCoversAndStableTieBreak_TC_TT_BD_02_07`; fixture PostGIS con borde compartido. |
-| TC-TT-BD-02-08 | Dadas latitud y longitud, cuando se transforma la entrada a punto espacial, entonces X es longitud e Y es latitud; coordenadas fuera de rango se rechazan antes de consultar PostGIS. | `UnitTest/CatalogCoordinatesTests.LatitudeLongitudeMapsToLongitudeLatitudeAndRejectsOutOfRange_TC_TT_BD_02_08`; verificar el punto NetTopologySuite y los límites geográficos. |
+| TC-TT-BD-02-08 | Dadas latitud y longitud sintéticas distintas, cuando Catalog construye el punto y consulta PostGIS, entonces `ST_X` devuelve la longitud, `ST_Y` devuelve la latitud y la consulta identifica la colonia fixture esperada; coordenadas fuera de rango se rechazan antes de consultar PostGIS. | `DatabaseTest/CatalogCoordinatesTests.PostgisMapsLatitudeLongitudeToXLongitudeYLatitudeAndRejectsOutOfRange_TC_TT_BD_02_08`; con Testcontainers, comprobar `ST_X`/`ST_Y` y el resultado geográfico para detectar ejes invertidos. |
 | TC-TT-BD-02-09 | Dado el seed de catálogo ejecutado dos veces, cuando se consultan los oficios y las colonias de referencia, entonces no hay duplicados. | `DatabaseTest/CatalogTradeSeedTests.ReapplyingSeedDoesNotDuplicateCatalogRows_TC_TT_BD_02_09`; aplicar el seed dos veces y comparar claves únicas y conteos. |
 
 ## 3. Alcance / No-alcance
@@ -65,7 +65,7 @@ No se agrega endpoint ni evento. La interfaz pública del módulo Catalog ofrece
 |---|---|---|
 | Base de datos / integración geoespacial | Sí | PostgreSQL/PostGIS real con Testcontainers en `tests/DatabaseTest`; verificar contención, respaldo de centro a 2 km, fuera de cobertura, consulta por CP y comportamiento de borde (TC-TT-BD-02-01 a TC-TT-BD-02-04 y TC-TT-BD-02-07). |
 | Semillas / idempotencia | Sí | Aplicar seeds de catálogo dos veces y validar oficios, modalidad, activo y ausencia de duplicados (TC-TT-BD-02-03 y TC-TT-BD-02-09). |
-| Privacidad / coordenadas | Sí | Verificar con prueba de integración que el punto no se persiste ni se registra, y con prueba unitaria el orden y rango de coordenadas (TC-TT-BD-02-06 y TC-TT-BD-02-08). |
+| Privacidad / coordenadas | Sí | Verificar con prueba de integración que el punto no se persiste ni se registra, y con prueba PostGIS el orden X=longitud/Y=latitud y el rango de coordenadas (TC-TT-BD-02-06 y TC-TT-BD-02-08). |
 | Contrato HTTP / eventos | No | No se agrega endpoint ni evento. |
 | Mutación | Según la meta vigente del módulo Catalog | No se establece una meta específica nueva para esta tarea. |
 | Rendimiento, UI y accesibilidad | No | No forman parte del alcance de esta tarea de datos y consultas. |
@@ -73,7 +73,7 @@ No se agrega endpoint ni evento. La interfaz pública del módulo Catalog ofrece
 **Gates:** aplicar `AGENTS.md §5` a la implementación; no se afirma aquí que se hayan ejecutado pruebas de producto.
 
 **Límites y dudas abiertas:**
-- Confirmar contra el catálogo SEPOMEX la versión/fecha/licencia del extracto, qué CP de Tula usar en el caso de prueba y la cobertura de los nombres/CP de sus colonias. No usar `42000`, que corresponde al ejemplo de Pachuca.
+- Confirmar contra el catálogo SEPOMEX la versión/fecha/licencia del extracto, qué CP de Tula usar en el caso de prueba y la cobertura de los nombres/CP de sus colonias. No usar el CP de ejemplo `42000`.
 - Definir y registrar quién dibuja y la fecha de los polígonos aproximados de las 8–12 colonias piloto; las demás tendrán punto central.
 - Confirmar coordenadas sintéticas de los fixtures PostGIS y cuáles colonias se usarán; no usar ubicaciones de usuarios.
 - La decisión del equipo de usar Tula de Allende (2026-10-13) aplica a este catálogo. La actualización de `DECISION_TECNICA.md` §2 y de la ficha del backlog corresponde a un PR separado del equipo.
