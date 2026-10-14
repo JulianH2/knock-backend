@@ -50,10 +50,12 @@ jobs:
           HEAD_REF: ${{ github.head_ref }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
-          echo "api=$([ -f Knock.slnx ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-          echo "docker=$([ -f src/Knock.Api/Dockerfile ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-          echo "sql=$(ls db/**/*.sql db/*.sql >/dev/null 2>&1 && echo true || echo false)" >> "$GITHUB_OUTPUT"
-          echo "iac=$([ -d deploy/bicep ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          {
+            echo "api=$([ -f Knock.slnx ] && echo true || echo false)"
+            echo "docker=$([ -f src/Knock.Api/Dockerfile ] && echo true || echo false)"
+            echo "sql=$(ls db/**/*.sql db/*.sql >/dev/null 2>&1 && echo true || echo false)"
+            echo "iac=$([ -d deploy/bicep ] && echo true || echo false)"
+          } >> "$GITHUB_OUTPUT"
           KEY=$(echo "$HEAD_REF" | grep -oE 'KNOCK-[0-9]+' || true)
           SPEC=""
           if [ -n "$KEY" ]; then
@@ -187,7 +189,7 @@ jobs:
           python-version: "3.12"
       - run: pip install --quiet semgrep
       - name: Semgrep (bloquea hallazgos ERROR)
-        run: semgrep scan --config .semgrep/semgrep.yaml --config p/csharp --config p/secrets --config p/owasp-top-ten --config p/dockerfile --error --severity ERROR --sarif --output semgrep.sarif
+        run: semgrep scan --config .semgrep/semgrep.yaml --config p/csharp --config p/secrets --config p/owasp-top-ten --config p/dockerfile --error --severity ERROR --sarif-output=semgrep.sarif
       - uses: github/codeql-action/upload-sarif@24c54180a607b1449ed407dd24f251e4e9147c8d # v4
         if: always() && hashFiles('semgrep.sarif') != '' && (github.event.repository.private == false || vars.GHAS_ENABLED == 'true')
         with:
@@ -227,6 +229,9 @@ jobs:
     name: Secretos (Gitleaks)
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -337,7 +342,7 @@ jobs:
       - name: Levantar API + PostgreSQL + Redis + Azurite
         run: |
           docker compose -f deploy/docker-compose.ci.yml up -d --build
-          for i in $(seq 1 40); do curl -fs http://localhost:8080/health/ready && break; sleep 3; done
+          for _ in $(seq 1 40); do curl -fs http://localhost:8080/health/ready && break; sleep 3; done
       - name: Smoke (health, 401 sin token, headers de seguridad)
         run: bash tests/smoke/smoke.sh http://localhost:8080
       - name: ZAP baseline
