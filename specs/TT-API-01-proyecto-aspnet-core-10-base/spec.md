@@ -97,17 +97,17 @@ No aplican en esta tarea (sin datos ni sesión): autorización por recurso, rate
 5. La comprobación de Blob en `/health/ready` pasa a TT-API-05; aquí no se incluye.
 6. `check_endpoints.py` queda fuera de esta tarea.
 7. Docker lo inicia la persona.
-8. JWT con clave efímera.
 
-**Límites y dudas abiertas (no resueltas por el redactor):**
-- **Estructura vs. ficha:** la ficha dice `api/Knock.sln` y `tests/Knock.Api.Tests`; esta spec sigue la estructura vigente del repo (`Knock.slnx`, `src/Knock.Api` con `Modules/`, `tests/UnitTest`, `IntegrationTest`, `SecurityTest`). Confirmar.
-- **Proyecto por módulo vs. carpeta:** la ficha pide «un proyecto/estructura por módulo» y un `SharedKernel`; la skill foundation-backend y la constitución usan carpetas en `src/Knock.Api/Modules/` y `Common/`. Esta spec asume carpetas. Confirmar.
-- **Contenido de `/health/ready` hoy:** sin Blob (decisión 5) y sin base de datos (TT-BD-01), el caso 02 asume que no hay comprobaciones aún. Confirmar si debe incluir otra (p. ej. Redis).
-- **Decisión 8 (JWT con clave efímera):** la autenticación es TT-API-02 y está fuera de alcance; la decisión no tiene caso aquí. Confirmar dónde se aplica.
-- **Endpoint de prueba (casos 04 a 06 y 10):** requiere un controller solo del host de pruebas; confirmar que el equipo acepta ese patrón.
-- **Sin `try/catch` en controllers:** la ficha lo pide; NetArchTest no lo detecta bien. Se cubre con revisión y Semgrep, sin caso propio. Confirmar.
-- **Dependabot:** añadir AwesomeAssertions a `.github/dependabot.yml` (archivo protegido; lo hace una persona).
-- **Ruta del Dockerfile** y del documento OpenAPI (`/openapi/v1.json`): por confirmar al implementar.
+La decisión «JWT con clave efímera» se traslada a TT-API-02, donde está la autenticación; no forma parte de esta spec.
+
+**Límites y dudas (resueltas por el revisor en la revisión del PR):**
+- **Estructura vs. ficha — Resuelto:** se acepta la de la spec (`Knock.slnx`, `src/Knock.Api`, `tests/UnitTest`, `IntegrationTest`, `SecurityTest`), no la de la ficha (`api/Knock.sln`, `tests/Knock.Api.Tests`).
+- **Proyecto por módulo vs. carpeta — Resuelto:** carpetas en `src/Knock.Api/Modules/` y `Common/`, no un proyecto por módulo ni `SharedKernel`.
+- **Contenido de `/health/ready` hoy — Resuelto:** sin comprobaciones por ahora (Blob pasa a TT-API-05 y la base de datos a TT-BD-01). No se agrega Redis.
+- **Endpoint de prueba (casos 04 a 06 y 10) — Resuelto:** se acepta el controller que existe solo en el host de pruebas.
+- **Sin `try/catch` en controllers — Resuelto:** se acepta sin caso propio; se cubre con Semgrep y con la revisión.
+- **Dependabot (AwesomeAssertions) — Fuera de esta spec:** el revisor lo hace en un PR aparte (`.github/dependabot.yml` es archivo protegido); no bloquea esta spec.
+- **Ruta del Dockerfile y del documento OpenAPI (`/openapi/v1.json`):** se confirman al implementar.
 
 ## Aprobación
 - [ ] Revisor 1 — nombre: José Julián Hernández Hernández fecha:
