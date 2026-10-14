@@ -70,7 +70,6 @@
 - Pendiente: verificar extracto SEPOMEX, CP de Tula, fecha/licencia y puntos de prueba. No se afirma haber encontrado ni verificado esos datos.
 - A evitar: inventar CP, geometrías, coordenadas de usuarios, comandos de migración o detalles de esquema; no aprobar ni firmar las specs desde un agente.
 
-
 ## 2026-10-14 — KNOCK-26: CI de cada PR
 - Hecho: workflows `ci-pr`, `_governance` y `ai-review` con su configuración (`.gitleaks.toml`, `.semgrep/`, `.semgrepignore`), `pin_actions.py`, `check_coverage.py` y `docs/QA_DEVSECOPS.md`. `docker-compose.ci.yml` y `nginx.ci.conf` quedan fuera hasta que exista la API: solo los usa el job `dast`, que se salta sin Dockerfile.
 - Decisión: `ai-review` se omite (skipped) si falta el secreto `ANTHROPIC_API_KEY` o la variable `AI_REVIEW=true`; no falla ni afecta a `gate`. Dónde crearlos: CONTRIBUTING §8 (secreto y variable de repositorio, en cada repo). La cuenta está pendiente (unas 72 h).
@@ -88,3 +87,10 @@
 - Pendiente: probar el inicio de sesión de punta a punta con un número de prueba (app o spike TT-API-02); confirmar cuota y costo de SMS reales.
 - Decisión: los números de prueba existen solo en este proyecto de desarrollo; para producción se crea otro proyecto sin ellos. Los códigos de prueba no van al repositorio ni a tickets.
 - A evitar: descargar llaves de cuenta de servicio o subir `google-services.json`, `GoogleService-Info.plist` o `firebase_options.dart` sin decidirlo (este último puede disparar gitleaks); usar teléfonos reales como números de prueba.
+
+## 2026-10-14 — KNOCK-22: Compose local PostgreSQL/PostGIS
+- Estado: entregable A completado en `feature/KNOCK-22-postgis-compose`; `src/Knock.Api` todavía no existe en `sprint-00`, por lo que EF Core, migración inicial, guardia de host remoto, readiness y Testcontainers quedan pendientes de TT-API-01 (KNOCK-20).
+- Hecho: se creó `deploy/docker-compose.local.yml` con `postgis/postgis:16-3.4`, contraseña requerida por variable, puerto ligado a `127.0.0.1`, healthcheck y volumen nombrado; `.env.example` usa una contraseña vacía y `.env` ya está ignorado por Git. README documenta arranque, consulta de versión y reinicio que conserva los datos.
+- Verificación: Docker Compose inició el servicio `postgres` saludable; `SELECT postgis_version()` devolvió `3.4 USE_GEOS=1 USE_PROJ=1 USE_STATS=1`. La comprobación usó un valor sintético temporal proporcionado solo al proceso; no se guardó en archivos.
+- Decisión: dejar Redis fuera y no crear una configuración/Compose para TT-API-01; el alcance independiente del issue es solo PostgreSQL/PostGIS.
+- A evitar: no usar el `.env.example` como archivo de entorno sin copiarlo a `.env` y completar la contraseña; Compose usa la variable obligatoria y falla si está ausente o vacía.
