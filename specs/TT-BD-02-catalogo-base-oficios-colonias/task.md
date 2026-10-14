@@ -1,13 +1,13 @@
 # TT-BD-02 — tareas
 
-## T1 — Seed de los oficios
-- **Verificar:** TC-TT-BD-02-03
-- **Pendiente:** Precisar el esquema y el procedimiento de seed; los oficios requeridos son Plomería, Electricidad y Mecánica y deben almacenarse como datos, no como enum.
+## T1 — Esquema y seed de oficios
+- **Verificar:** TC-TT-BD-02-05 · TC-TT-BD-02-09
+- **Pendiente:** Implementar `catalog.oficios` como datos y seed idempotente con los valores activos y modalidades especificados.
 
-## T2 — Catálogo geográfico de Tula
-- **Verificar:** TC-TT-BD-02-01 · TC-TT-BD-02-02
-- **Pendiente:** Confirmar la disponibilidad y procedencia de polígonos SEPOMEX y acordar puntos de prueba. Si no hay datos adecuados, reportar el bloqueo; no crear polígonos ficticios.
+## T2 — Catálogo geográfico y fuente
+- **Verificar:** TC-TT-BD-02-01 · TC-TT-BD-02-02 · TC-TT-BD-02-03 · TC-TT-BD-02-04 · TC-TT-BD-02-07
+- **Pendiente:** Verificar fuente/CP SEPOMEX; versionar sus nombres y CP bajo `db/sepomex/`; dibujar 8–12 polígonos aproximados con autor/fecha en `db/seeds/colonias_tula.geojson` y guardar centros para el resto.
 
-## T3 — Consulta PostGIS de punto
-- **Verificar:** TC-TT-BD-02-01 · TC-TT-BD-02-02
-- **Pendiente:** Precisar esquema, comportamiento en límites y ausencia de coincidencia, y si la consulta requiere un contrato API.
+## T3 — Consultas de colonia
+- **Verificar:** TC-TT-BD-02-01 · TC-TT-BD-02-02 · TC-TT-BD-02-03 · TC-TT-BD-02-04 · TC-TT-BD-02-06 · TC-TT-BD-02-07 · TC-TT-BD-02-08
+- **Pendiente:** Exponer consulta por punto y por CP en la interfaz pública del módulo Catalog, con `geography` + GiST, orden X=`lng`/Y=`lat`, desempate de borde definido y sin persistencia/log de coordenadas.
