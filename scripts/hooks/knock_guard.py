@@ -216,6 +216,7 @@ def check_new_file(rel: str, content: str) -> str | None:
     codemap = ROOT / "docs" / "architecture" / "codemap.json"
     if not names or not codemap.exists():
         return None
+    # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args -- EXC-001
     result = subprocess.run([sys.executable, str(ROOT / "scripts" / "codemap.py"), "--root", str(ROOT), "--similar", *names[:8]],
                             capture_output=True, text=True, timeout=60)
     hits = [h for h in result.stdout.splitlines() if "≈" in h]
