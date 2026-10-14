@@ -55,3 +55,10 @@
 - Decisión: `codemap.py --check` ya no escribe; compara el mapa de `docs/architecture/` con el código sin contar fecha ni ruta y falla si está desactualizado, hay violaciones o clones nuevos. Sin `--check`, solo reescribe lo que cambió (LF). Porqué: el paso «Mapa de código actualizado» del CI fallaba siempre porque `--check` reescribía la fecha y la ruta local. El hook `pre-commit` ahora regenera y luego valida.
 - A evitar: aprobar o firmar specs desde un agente; la aprobación (Estado, revisor y fecha) la escribe una persona.
 - Pendiente: la condición de repos privados (dependency-review y SARIF) va en KNOCK-26.
+
+## 2026-10-13 — KNOCK-27: grupo de recursos y presupuesto de Azure
+- Hecho (lo ejecutó una persona; evidencia en `docs/evidencia/KNOCK-27-azure.md`): grupo `rg-knock-dev` en `northcentralus` y presupuesto `budget-knock-dev` de 10 USD al mes con alertas al 50, 80 y 100 % de lo gastado y al 100 % de lo previsto. Pendiente: roles mínimos (caso 3) y comprobar que llega el correo.
+- Decisión: región `northcentralus`. Porqué: la suscripción Azure for Students solo permite `chilecentral`, `norwayeast`, `westus`, `francecentral` y `northcentralus` (ni `eastus2` ni `mexicocentral`); `northcentralus` ofrece Container Apps, PostgreSQL Flexible y Redis. Los datos quedan fuera de México: reflejarlo en el aviso de privacidad y consultarlo con el abogado.
+- Decisión: PostgreSQL de desarrollo con `Burstable B1ms`; los tamaños General Purpose cuestan mucho más que el presupuesto. Se confirma al crear el servidor en KNOCK-34.
+- A evitar: en PowerShell, `az ... --query "length(@)"` rompe el wrapper `az.cmd`; cuenta los resultados con `ConvertFrom-Json`. Si `$sub` está vacío, el `scope` sale como `/subscriptions//resourceGroups/...` y Azure responde «InvalidSubscriptionId».
+- A evitar: subir IDs de suscripción, tenant o correos a los repositorios; van en variables de GitHub o en un `.env` local ignorado por git.
