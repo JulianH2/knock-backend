@@ -9,7 +9,7 @@
 |---|---|---|
 | TC-TT-FB-01-01 Un número de prueba recibe código sin SMS real | **Parcial.** El número de prueba está configurado; falta probar el inicio de sesión de punta a punta (app o spike TT-API-02). | Sección 2 |
 | TC-TT-FB-01-02 FCM habilitado y credenciales fuera del repositorio | Hecho: la API de FCM (V1) está habilitada y no se descargó ninguna llave de cuenta de servicio. | Sección 3 |
-| TC-TT-FB-01-03 Apps Android e iOS registradas, sin versionar sus archivos | **Pendiente.** Falta decidir el identificador y registrar las apps. Los archivos de configuración ya están en `.gitignore`. | Sección 4 |
+| TC-TT-FB-01-03 Apps Android e iOS registradas, sin versionar sus archivos | **Pendiente.** Identificador decidido (`app.knock.mobile`); falta registrar las apps en la consola. Los archivos de configuración ya están en `.gitignore`. | Sección 4 |
 | TC-TT-FB-01-04 Costo y límites de SMS confirmados | **Parcial.** El plan es Spark sin costo; con números de prueba no se envían SMS. La cuota de SMS reales no se verificó. | Sección 5 |
 
 ## 1. Proyecto
@@ -28,7 +28,7 @@
 - No se descargó ninguna llave de cuenta de servicio. Cuando el backend envíe notificaciones, esa credencial irá en Key Vault (KNOCK-36) y nunca en el repositorio.
 
 ## 4. Apps Android e iOS (TC-03)
-- Pendiente: elegir el identificador (propuesta, no decidida: `app.knock.mobile` para paquete y bundle) y registrar ambas apps.
+- Identificador **decidido por el Tech Lead**: `app.knock.mobile` para el paquete Android y el bundle de iOS. Pendiente: registrar ambas apps en la consola (aún no se ha hecho).
 - `google-services.json` y `GoogleService-Info.plist` se guardan fuera del repositorio; `.gitignore` ya los ignora.
 - Más adelante, `flutterfire configure --project=knock-0` se ejecuta dentro del proyecto Flutter (`app/`, TT-MOB-01) y reutiliza las apps registradas. El archivo `firebase_options.dart` que genera contiene identificadores del proyecto que no son secretos, pero un escáner como gitleaks puede marcarlos: se decidirá entonces si se versiona.
 - Las huellas SHA-1 y SHA-256 de Android hacen falta para el inicio por teléfono en una app real; se añaden cuando exista la app.
@@ -44,6 +44,6 @@
 - Riesgo: el inicio por teléfono de Android puede requerir Play Integrity y las huellas SHA, que dependen de la app.
 
 ## 7. Pendiente
-- Decidir el identificador y registrar las apps Android e iOS (TC-03).
+- Registrar las apps Android e iOS con `app.knock.mobile` (TC-03).
 - Probar el inicio de sesión de punta a punta con un número de prueba (TC-01).
 - Confirmar la cuota y el costo de SMS reales (TC-04).
