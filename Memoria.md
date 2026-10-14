@@ -62,3 +62,9 @@
 - Decisión: PostgreSQL de desarrollo con `Burstable B1ms`; los tamaños General Purpose cuestan mucho más que el presupuesto. Se confirma al crear el servidor en KNOCK-34.
 - A evitar: en PowerShell, `az ... --query "length(@)"` rompe el wrapper `az.cmd`; cuenta los resultados con `ConvertFrom-Json`. Si `$sub` está vacío, el `scope` sale como `/subscriptions//resourceGroups/...` y Azure responde «InvalidSubscriptionId».
 - A evitar: subir IDs de suscripción, tenant o correos a los repositorios; van en variables de GitHub o en un `.env` local ignorado por git.
+
+## 2026-10-13 — Borradores TT-BD-01 (KNOCK-22) y TT-BD-02 (KNOCK-23)
+- Estado: preparadas ambas specs con `plan.md`, `task.md` y `checklists/gates.md`, en Borrador y para revisión en PRs separados hacia `sprint-00`. El PR de KNOCK-22 es #5.
+- Decisión confirmada por el usuario: Tula de Allende reemplaza Pachuca solo para el catálogo de KNOCK-23; no se modificaron documentos de referencia ni el alcance de la ciudad piloto general.
+- Pendiente: determinar puntos, Skills y detalles técnicos abiertos en las specs; confirmar disponibilidad, procedencia/licencia y cobertura de polígonos SEPOMEX para Tula, sin inventar geometrías.
+- A evitar: inventar puntos, geometrías, comandos de migración o detalles de esquema; no aprobar ni firmar las specs desde un agente.
