@@ -10,4 +10,4 @@
 
 ## T3 — Consultas de colonia
 - **Verificar:** TC-TT-BD-02-01 · TC-TT-BD-02-02 · TC-TT-BD-02-04 · TC-TT-BD-02-05 · TC-TT-BD-02-06 · TC-TT-BD-02-07 · TC-TT-BD-02-08
-- **Pendiente:** Exponer consulta por punto y por CP en la interfaz pública del módulo Catalog, con `geography` + GiST, orden X=`lng`/Y=`lat`, desempate de borde definido y sin persistencia/log de coordenadas.
+- **Pendiente:** Exponer consulta por punto y por CP en la interfaz pública del módulo Catalog, con `geography` + GiST, orden X=`lng`/Y=`lat` comprobado con `ST_X`/`ST_Y` en PostGIS (TC-TT-BD-02-08), desempate de borde definido y sin persistencia/log de coordenadas.
