@@ -2,9 +2,12 @@
 
 > Estado: borrador de preparación. Casillas sin marcar; no representa aprobación, implementación ni ejecución de pruebas.
 
-- [ ] Completar dudas de la spec y obtener aprobación humana; conservar el estado Borrador hasta entonces.
-- [ ] Precisar el comando único y la comprobación de TC-TT-BD-01-01.
-- [ ] Precisar y verificar que la cadena de conexión queda fuera del repositorio (TC-TT-BD-01-02).
-- [ ] Aclarar la dependencia de TT-API-01 (KNOCK-20) antes de fijar el alcance de migración.
-- [ ] Ejecutar `python scripts/sdd_lint.py` y registrar la salida real.
-- [ ] Confirmar los gates de `AGENTS.md §5` que apliquen después de acordar el alcance; registrar resultados reales.
+- [ ] Mantener la spec en Borrador hasta aprobación humana.
+- [ ] Completar entregable A independiente: Compose/PostGIS, imagen fijada, secreto requerido, loopback, healthcheck, volumen, verificación de PostGIS y reinicio que preserve datos.
+- [ ] Completar entregable B después de TT-API-01: provider/contextos, convención de esquema/nombres y migración inicial de extensión y esquemas.
+- [ ] Reutilizar readiness y Testcontainers de TT-API-01; no duplicar ni añadir `AspNetCore.HealthChecks.*`.
+- [ ] Evaluar licencia, mantenimiento y vulnerabilidades de `EFCore.NamingConventions` antes de incorporarlo.
+- [ ] Verificar las pruebas TC-TT-BD-01-01 a TC-TT-BD-01-04 con PostGIS local/Testcontainers.
+- [ ] Verificar TC-TT-BD-01-05: Gitleaks, archivos de configuración y rechazo de host remoto en configuración local.
+- [ ] Ejecutar `python scripts/sdd_lint.py --trace TT-BD-01` y registrar el resultado real.
+- [ ] Ejecutar gates aplicables de `AGENTS.md §5` y registrar cada resultado.
