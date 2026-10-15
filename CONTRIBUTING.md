@@ -2,6 +2,8 @@
 
 Aplica a personas y a agentes de IA. Reglas completas: [`.specify/memory/constitution.md`](.specify/memory/constitution.md) y [`AGENTS.md`](AGENTS.md).
 
+**¿Empiezas una tarea o historia?** Sigue la guía [`docs/FLUJO_EQUIPO.md`](docs/FLUJO_EQUIPO.md): los 6 pasos y las plantillas para tu agente. Las fichas de cada tarea están en [`docs/backlog/`](docs/backlog/INDEX.md).
+
 ## 1. Antes de empezar (una vez)
 ```bash
 python scripts/install_githooks.py     # pre-commit, commit-msg y pre-push
