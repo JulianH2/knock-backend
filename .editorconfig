@@ -37,6 +37,20 @@ dotnet_diagnostic.S1135.severity = error       # TODO sin resolver
 dotnet_diagnostic.S3776.severity = error       # complejidad cognitiva
 dotnet_diagnostic.S138.severity = warning      # métodos demasiado largos
 
+[src/**/Modules/**.cs]
+# CA1515: Knock.Api es un ejecutable, pero cada módulo debe exponer públicas su clase AddXxxModule y su interfaz
+# I<Modulo>Api (TC-TT-API-01-09, decisión del revisor de KNOCK-20). El resto de tipos del módulo sigue internal.
+dotnet_diagnostic.CA1515.severity = none
+
+[tests/IntegrationTest/Support/TestController.cs]
+# CA1515: el controller de prueba debe ser público para que MVC lo descubra (solo existe en el host de pruebas).
+dotnet_diagnostic.CA1515.severity = none
+
+[tests/UnitTest/Architecture/Fixtures/**.cs]
+# Los fixtures de arquitectura solo se analizan por reflexión (NetArchTest); nunca se instancian ni se ejecutan.
+dotnet_diagnostic.CA1812.severity = none
+dotnet_diagnostic.CA1822.severity = none
+
 [tests/**.cs]
 dotnet_diagnostic.CA1707.severity = none       # guiones bajos en nombres de prueba (…_TC_HU_024_03)
 dotnet_diagnostic.CA1062.severity = none
