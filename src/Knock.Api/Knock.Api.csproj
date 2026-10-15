@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>Knock.Api</RootNamespace>
+    <AssemblyName>Knock.Api</AssemblyName>
+    <UserSecretsId>7c1d3b0e-5a52-4f0e-9a43-2f6d1d0c8e11</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Mvc" Version="10.2.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.13" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.18.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Knock.IntegrationTest" />
+    <InternalsVisibleTo Include="Knock.SecurityTest" />
+  </ItemGroup>
+</Project>
