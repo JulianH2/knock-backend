@@ -90,12 +90,18 @@ def lint_constitution() -> list[str]:
     return []
 
 
+def marked(spec_text: str, case: str, tag: str) -> bool:
+    """El caso tiene el marcador «(tag)» en su fila de la tabla de §2."""
+    return bool(re.search(rf"\|\s*{re.escape(case)}\s*\|[^\n]*\({re.escape(tag)}\)", spec_text))
+
+
 def trace(spec_id: str) -> int:
     folder = next((d for d in spec_dirs() if d.name.startswith(spec_id)), None)
     if not folder:
         print(f"ERROR: no existe specs/{spec_id}*")
         return 1
-    cases = cases_of((folder / "spec.md").read_text(encoding="utf-8"))
+    spec_text = (folder / "spec.md").read_text(encoding="utf-8")
+    cases = cases_of(spec_text)
     files = {f for g in TEST_GLOBS for f in ROOT.glob(g) if f.is_file() and "node_modules" not in f.parts}
     if not files:
         print(f"AVISO: aún no hay pruebas; {len(cases)} casos de {folder.name} sin verificar")
@@ -105,12 +111,13 @@ def trace(spec_id: str) -> int:
     print("| Caso | Prueba |\n|---|---|")
     for case in cases:
         found = case.replace("-", "_") in corpus
-        print(f"| {case} | {'OK' if found else 'FALTA'} |")
-        if not found:
+        by_command = not found and marked(spec_text, case, "comando")
+        print(f"| {case} | {'OK' if found else 'COMANDO (evidencia en el PR)' if by_command else 'FALTA'} |")
+        if not found and not by_command:
             missing.append(case)
     if missing:
-        print(f"\nDRIFT: {len(missing)} caso(s) sin prueba. Si un caso no aplica a este repositorio, márcalo «(otro repo)» en la columna Verificación.")
-        other = [c for c in missing if re.search(rf"\|\s*{re.escape(c)}\s*\|[^\n]*\(otro repo\)", (folder / 'spec.md').read_text(encoding='utf-8'))]
+        print(f"\nDRIFT: {len(missing)} caso(s) sin prueba. Si un caso no aplica a este repositorio, márcalo «(otro repo)»; si se verifica solo con un comando (build, formato, auditoría), márcalo «(comando)» y pega su salida en el PR; ambos en la columna Verificación.")
+        other = [c for c in missing if marked(spec_text, c, "otro repo")]
         return 0 if len(other) == len(missing) else 1
     print("\nOK — todos los casos tienen prueba")
     return 0
