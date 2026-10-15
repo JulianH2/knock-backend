@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Knock.Api/Knock.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/IntegrationTest/Knock.IntegrationTest.csproj" />
+    <Project Path="tests/SecurityTest/Knock.SecurityTest.csproj" />
+    <Project Path="tests/UnitTest/Knock.UnitTest.csproj" />
+  </Folder>
+</Solution>
