@@ -1,1 +1,18 @@
 graph LR
+  Assistant["Assistant"]
+  Catalog["Catalog"]
+  Identity["Identity"]
+  Knock_Api["Knock.Api"]
+  Messaging["Messaging"]
+  Notifications["Notifications"]
+  Reputation["Reputation"]
+  Requests["Requests"]
+  Trust["Trust"]
+  Knock_Api -->|1| Assistant
+  Knock_Api -->|1| Catalog
+  Knock_Api -->|1| Identity
+  Knock_Api -->|1| Messaging
+  Knock_Api -->|1| Notifications
+  Knock_Api -->|1| Reputation
+  Knock_Api -->|1| Requests
+  Knock_Api -->|1| Trust
