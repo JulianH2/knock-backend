@@ -14,7 +14,7 @@
 
 | Caso | Criterio (Dado / Cuando / Entonces) | Verificación |
 |---|---|---|
-| TC-<ID>-01 | Dado …, cuando … → … | <Suite>/<Clase>.<Metodo>_TC_<ID>_01 · o «(otro repo)» |
+| TC-<ID>-01 | Dado …, cuando … → … | <Suite>/<Clase>.<Metodo>_TC_<ID>_01 · o «(otro repo)» · o «(comando)» |
 
 ## 3. Alcance / No-alcance
 - **In (este repositorio):**

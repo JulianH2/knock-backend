@@ -12,7 +12,7 @@ description: Refina el borrador de spec de una historia (HU-NNN), tarea técnica
 
 ## Qué refinar
 1. **Jira:** escribe la clave real `KNOCK-<N>` en el encabezado (la rama es `<tipo>/KNOCK-<N>-<english-description>`).
-2. **§2 Verificación:** para cada `TC-<ID>-KK`, la prueba concreta (`Suite/Clase.Metodo_TC_<ID>_KK` en C#, `'TC-<ID>-KK …'` en Dart/TS) o «(otro repo)» si se verifica en el otro repositorio.
+2. **§2 Verificación:** para cada `TC-<ID>-KK`, la prueba concreta (`Suite/Clase.Metodo_TC_<ID>_KK` en C#, `'TC-<ID>-KK …'` en Dart/TS) o «(otro repo)» si se verifica en el otro repositorio, o «(comando)» si solo se verifica con un comando (build, formato, auditoría de dependencias); en ese caso la salida del comando va en el PR.
 3. **§3 Alcance** de este repositorio y Out explícito.
 4. **§4 Contrato:** endpoints y eventos (backend los define; frontend indica la versión del contrato que consume).
 5. **§6 Amenazas** proporcionales al riesgo, cada una con control y caso.
