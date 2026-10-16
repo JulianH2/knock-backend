@@ -341,7 +341,7 @@ jobs:
           exit-level: warn
           # EXC-003 (security/exceptions.yaml): falsos positivos de CIS-DI-0010 en variables de la imagen base.
           # Solo estas claves; cualquier otra variable o archivo sospechoso sigue fallando.
-          accept-key: DOTNET_VERSION,ASPNET_VERSION,ASPNETCORE_URLS,ASPNETCORE_ENVIRONMENT,ASPNETCORE_HTTP_PORTS,APP_UID,org.opencontainers.image.version,--gid,--uid
+          accept-key: DOTNET_VERSION,ASPNET_VERSION,ASPNETCORE_URLS,ASPNETCORE_ENVIRONMENT,ASPNETCORE_HTTP_PORTS,DOTNET_RUNNING_IN_CONTAINER,DOTNET_EnableDiagnostics,APP_UID,org.opencontainers.image.version,--gid,--uid
 
   dast:
     name: Smoke + DAST (ZAP baseline)
