@@ -1,0 +1,417 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "nombre": "Centro",
+        "cp": "42800",
+        "municipio": "Tula de Allende",
+        "precision": "aproximado_no_oficial",
+        "autor": "Ángel Alexis Blas Castillo",
+        "fecha_elaboracion": "2026-10-15",
+        "piloto": true,
+        "tipo_asentamiento": "Colonia",
+        "estado": "Hidalgo",
+        "aproximado": true
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                -99.34579,
+                20.058682
+              ],
+              [
+                -99.352743,
+                20.053747
+              ],
+              [
+                -99.348494,
+                20.045257
+              ],
+              [
+                -99.340074,
+                20.0462
+              ],
+              [
+                -99.33567,
+                20.053965
+              ],
+              [
+                -99.34579,
+                20.058682
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "nombre": "El Cielito",
+        "cp": "42803",
+        "municipio": "Tula de Allende",
+        "precision": "aproximado_no_oficial",
+        "autor": "Ángel Alexis Blas Castillo",
+        "fecha_elaboracion": "2026-10-15",
+        "piloto": true,
+        "tipo_asentamiento": "Colonia",
+        "estado": "Hidalgo",
+        "aproximado": true
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                -99.328667,
+                20.057918
+              ],
+              [
+                -99.335268,
+                20.053768
+              ],
+              [
+                -99.33439,
+                20.044531
+              ],
+              [
+                -99.325078,
+                20.04506
+              ],
+              [
+                -99.320324,
+                20.04987
+              ],
+              [
+                -99.320851,
+                20.055414
+              ],
+              [
+                -99.328667,
+                20.057918
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "nombre": "El Llano 1a Sección",
+        "cp": "42803",
+        "municipio": "Tula de Allende",
+        "precision": "aproximado_no_oficial",
+        "autor": "Ángel Alexis Blas Castillo",
+        "fecha_elaboracion": "2026-10-15",
+        "piloto": true,
+        "tipo_asentamiento": "Colonia",
+        "estado": "Hidalgo",
+        "aproximado": true
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                -99.319462,
+                20.072238
+              ],
+              [
+                -99.32534,
+                20.068773
+              ],
+              [
+                -99.325882,
+                20.060784
+              ],
+              [
+                -99.318724,
+                20.057794
+              ],
+              [
+                -99.312215,
+                20.063281
+              ],
+              [
+                -99.315269,
+                20.070214
+              ],
+              [
+                -99.315269,
+                20.070214
+              ],
+              [
+                -99.319462,
+                20.072238
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "nombre": "El Llano 2a Sección",
+        "cp": "42803",
+        "municipio": "Tula de Allende",
+        "precision": "aproximado_no_oficial",
+        "autor": "Ángel Alexis Blas Castillo",
+        "fecha_elaboracion": "2026-10-15",
+        "piloto": true,
+        "tipo_asentamiento": "Colonia",
+        "estado": "Hidalgo",
+        "aproximado": true
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                -99.301955,
+                20.055821
+              ],
+              [
+                -99.306411,
+                20.051335
+              ],
+              [
+                -99.307649,
+                20.045206
+              ],
+              [
+                -99.300861,
+                20.040686
+              ],
+              [
+                -99.291431,
+                20.04895
+              ],
+              [
+                -99.293414,
+                20.056328
+              ],
+              [
+                -99.301955,
+                20.055821
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "nombre": "San Lorenzo",
+        "cp": "42803",
+        "municipio": "Tula de Allende",
+        "precision": "aproximado_no_oficial",
+        "autor": "Ángel Alexis Blas Castillo",
+        "fecha_elaboracion": "2026-10-15",
+        "piloto": true,
+        "tipo_asentamiento": "Colonia",
+        "estado": "Hidalgo",
+        "aproximado": true
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                -99.337329,
+                20.052984
+              ],
+              [
+                -99.33953,
+                20.049094
+              ],
+              [
+                -99.335937,
+                20.044465
+              ],
+              [
+                -99.330962,
+                20.048904
+              ],
+              [
+                -99.33238,
+                20.052948
+              ],
+              [
+                -99.337329,
+                20.052984
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "nombre": "Tultengo",
+        "cp": "42803",
+        "municipio": "Tula de Allende",
+        "precision": "aproximado_no_oficial",
+        "autor": "Ángel Alexis Blas Castillo",
+        "fecha_elaboracion": "2026-10-15",
+        "piloto": true,
+        "tipo_asentamiento": "Colonia",
+        "estado": "Hidalgo",
+        "aproximado": true
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                -99.323469,
+                20.071044
+              ],
+              [
+                -99.327577,
+                20.063509
+              ],
+              [
+                -99.322428,
+                20.062463
+              ],
+              [
+                -99.318592,
+                20.065123
+              ],
+              [
+                -99.323469,
+                20.071044
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "nombre": "Iturbe",
+        "cp": "42803",
+        "municipio": "Tula de Allende",
+        "precision": "aproximado_no_oficial",
+        "autor": "Ángel Alexis Blas Castillo",
+        "fecha_elaboracion": "2026-10-15",
+        "piloto": true,
+        "tipo_asentamiento": "Colonia",
+        "estado": "Hidalgo",
+        "aproximado": true
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                -99.321593,
+                20.082579
+              ],
+              [
+                -99.324964,
+                20.076887
+              ],
+              [
+                -99.323712,
+                20.071942
+              ],
+              [
+                -99.31634,
+                20.074856
+              ],
+              [
+                -99.31792,
+                20.08051
+              ],
+              [
+                -99.317997,
+                20.080621
+              ],
+              [
+                -99.317997,
+                20.080621
+              ],
+              [
+                -99.321593,
+                20.082579
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "nombre": "La Huerta",
+        "cp": "42803",
+        "municipio": "Tula de Allende",
+        "precision": "aproximado_no_oficial",
+        "autor": "Ángel Alexis Blas Castillo",
+        "fecha_elaboracion": "2026-10-15",
+        "piloto": true,
+        "tipo_asentamiento": "Colonia",
+        "estado": "Hidalgo",
+        "aproximado": true
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                -99.219497,
+                20.490984
+              ],
+              [
+                -99.222461,
+                20.488434
+              ],
+              [
+                -99.221193,
+                20.486261
+              ],
+              [
+                -99.218744,
+                20.485225
+              ],
+              [
+                -99.216308,
+                20.487391
+              ],
+              [
+                -99.216411,
+                20.490482
+              ],
+              [
+                -99.216411,
+                20.490482
+              ],
+              [
+                -99.219497,
+                20.490984
+              ]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
