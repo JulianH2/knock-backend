@@ -28,7 +28,7 @@ Dejar la base del backend con los módulos ya separados para que cada historia s
 | TC-TT-API-01-12 | Dado un entorno distinto de Development, cuando se pide el documento OpenAPI o `/scalar`, entonces responde 404. | `SecurityTest/OpenApi/ScalarExposureTests.NonDevelopment_OpenApiAndScalar_Return404_TC_TT_API_01_12` |
 | TC-TT-API-01-13 | Dada la API en ejecución, cuando atiende una petición, entonces Serilog escribe a consola una línea JSON válida. | `IntegrationTest/Logging/ConsoleJsonLoggingTests.Request_WritesJsonLineToConsole_TC_TT_API_01_13` |
 | TC-TT-API-01-14 | Dados los `appsettings*.json` del proyecto, entonces no contienen secretos, cadenas de conexión con credenciales ni claves (los secretos van a user-secrets). | `SecurityTest/Secrets/AppSettingsSecretsTests.AppSettings_ContainNoSecrets_TC_TT_API_01_14` |
-| TC-TT-API-01-15 | Dado el `Dockerfile`, cuando se construye, entonces es multi-etapa (compilación y ejecución separadas) y el contenedor arranca y responde `/health`. | `docker build` y `docker run` + `curl /health` (manual: la persona inicia Docker); evidencia en el PR |
+| TC-TT-API-01-15 | Dado el `Dockerfile`, cuando se construye, entonces es multi-etapa (compilación y ejecución separadas) y el contenedor arranca y responde `/health`. | `docker build` y `docker run` + `curl /health` (comando) (manual: la persona inicia Docker); evidencia en el PR |
 | TC-TT-API-01-16 | Dada la solución `Knock.slnx`, cuando se compila en Release y se verifica el formato, entonces hay 0 errores y 0 warnings y `dotnet format` no produce cambios (cierra TC-TT-STD-01-04 en backend). | `dotnet build Knock.slnx -c Release --no-restore` y `dotnet format Knock.slnx --verify-no-changes` (comando); salida en el PR |
 
 ## 3. Alcance / No-alcance
