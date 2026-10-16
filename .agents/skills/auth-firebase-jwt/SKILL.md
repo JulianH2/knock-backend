@@ -7,7 +7,7 @@ description: Inicio de sesión de Knock con Firebase Phone Auth en la app y JWT 
 
 ## Flujo
 1. App: `FirebaseAuth.verifyPhoneNumber` → código SMS → `signInWithCredential` → `getIdToken()`.
-2. App → `POST /api/v1/auth/session { firebaseIdToken }`.
+2. App → `POST /api/v1/auth/firebase { firebaseIdToken }` (la ruta de la ficha, HU-001 y TT-PRU-04; decisión del revisor en KNOCK-21).
 3. Backend: `FirebaseAuth.DefaultInstance.VerifyIdTokenAsync` (Firebase Admin SDK) → toma `phone_number` y `uid` **del token**.
 4. Crea o recupera el usuario y emite JWT propio + refresh token.
 
