@@ -13,86 +13,92 @@ Comprobar al inicio la parte más riesgosa del acceso: que el servidor confíe e
 **Terminada cuando** (ficha): hay una prueba de integración que canjea un token de prueba de Firebase por la sesión propia y llama a `/me` con ella.
 
 **Se entrega:**
-- `POST /api/v1/auth/firebase`: valida el ID token de Firebase, lee el teléfono, crea el usuario si no existe y responde `{ accessToken, refreshToken, esNuevo }`.
-- JWT propio (HS256, 15 min) con `sub` = id interno; `GET /api/v1/me` protegido con `[Authorize]`.
-- Pruebas de integración y de seguridad negativa de los casos de §2.
-- Nota con qué funcionó, qué falta para HU-001 y riesgos (la pide la ficha; ruta en la duda 10).
+- `POST /api/v1/auth/firebase`: valida el ID token de Firebase y responde `{ accessToken, refreshToken }`.
+- JWT propio (HS256, 15 min) con `sub` determinista derivado del `uid` de Firebase; `GET /api/v1/me` protegido con `[Authorize]` que responde `{ id }`.
+- Pruebas de integración y de seguridad negativa contra el emulador oficial de Firebase Auth, y el canje real contra el proyecto `knock-0` como evidencia manual (caso 15).
+- Nota del spike en `docs/evidencia/KNOCK-21-spike-firebase.md` con qué funcionó, qué falta para HU-001 y riesgos.
 
-**Queda fuera:** ver §3 Out (rotación y revocación del refresh, logout, límites, pipeline de seguridad, pantallas).
+**Queda fuera:** ver §3 Out. Diferencias con la ficha, por decisión del revisor: no hay persistencia de usuarios ni `esNuevo` (pasan a HU-001) y la respuesta es `{ accessToken, refreshToken }`; la ficha es un documento generado y no se edita.
 
 ## 2. Historia y casos de prueba
-**TT-API-02** — Tarea técnica (no es historia de usuario). Los casos 01 a 13 se verifican con pruebas de código; el 14 con evidencia manual de una persona; el 15 y el 16 por revisión y comandos. Nombre de pruebas: `Metodo_Escenario_Resultado_TC_TT_API_02_KK`. Los casos 01, 02, 03 y 05 a 08 cubren V1, V2 y V3 de la ficha; el resto sale de los pasos 2, 3 y 6 de la ficha y de `security-core`.
+**TT-API-02** — Tarea técnica (no es historia de usuario). Los casos 01 a 14 se verifican con pruebas de código; el 15, el 16 y el 17 con comandos (evidencia en el PR). Nombre de pruebas: `Metodo_Escenario_Resultado_TC_TT_API_02_KK`. Los casos 01, 02, 03, 05, 06 y 08 cubren V1, V2 y V3 de la ficha; el resto sale de los pasos de la ficha, de las decisiones del revisor y de `security-core`.
 
 | Caso | Criterio (Dado / Cuando / Entonces) | Verificación |
 |---|---|---|
-| TC-TT-API-02-01 | Dado un ID token válido de un número de prueba de Firebase (V1), cuando se hace `POST /api/v1/auth/firebase`, entonces responde 200 con `accessToken`, `refreshToken` (no vacío, distinto del access token) y `esNuevo` (`true` la primera vez). | `IntegrationTest/Identity/FirebaseSessionTests.ExchangeValidIdToken_Returns200WithSession_TC_TT_API_02_01` (origen del token: duda 1) |
-| TC-TT-API-02-02 | Dado un ID token de Firebase alterado (firma modificada), cuando se canjea, entonces responde 401 `application/problem+json` sin emitir tokens (V2). | `SecurityTest/Identity/FirebaseTokenRejectionTests.TamperedIdToken_Returns401_TC_TT_API_02_02` |
+| TC-TT-API-02-01 | Dado un ID token válido de un usuario de prueba creado en el emulador de Firebase Auth (V1), cuando se hace `POST /api/v1/auth/firebase` con `{ firebaseIdToken }`, entonces responde 200 con `accessToken` y `refreshToken` (no vacíos y distintos entre sí). | `IntegrationTest/Identity/FirebaseSessionTests.ExchangeValidIdToken_Returns200WithSession_TC_TT_API_02_01` |
+| TC-TT-API-02-02 | Dado un ID token de Firebase alterado o malformado, cuando se canjea, entonces responde 401 `application/problem+json` sin emitir tokens (V2). | `SecurityTest/Identity/FirebaseTokenRejectionTests.TamperedIdToken_Returns401_TC_TT_API_02_02` (alcance con el emulador: duda 1) |
 | TC-TT-API-02-03 | Dado un ID token de Firebase vencido, cuando se canjea, entonces responde 401 `application/problem+json` sin emitir tokens (V2). | `SecurityTest/Identity/FirebaseTokenRejectionTests.ExpiredIdToken_Returns401_TC_TT_API_02_03` |
-| TC-TT-API-02-04 | Dado un ID token que Firebase valida pero no trae `phone_number` (o es de otro proyecto o audiencia), cuando se canjea, entonces se rechaza con ProblemDetails y no se crea usuario (código HTTP: duda 4). | `SecurityTest/Identity/FirebaseTokenRejectionTests.IdTokenWithoutPhoneOrWrongProject_IsRejected_TC_TT_API_02_04` |
+| TC-TT-API-02-04 | Dado un ID token que Firebase valida pero no trae `phone_number`, o que es de otro proyecto, cuando se canjea, entonces responde 401 con el mismo mensaje y cuerpo que un token inválido (no revela el motivo). | `SecurityTest/Identity/FirebaseTokenRejectionTests.IdTokenWithoutPhoneOrWrongProject_Returns401SameAsInvalid_TC_TT_API_02_04` |
 | TC-TT-API-02-05 | Dado `GET /api/v1/me` sin encabezado `Authorization`, cuando se llama, entonces responde 401 (V3). | `IntegrationTest/Identity/MeEndpointTests.Me_WithoutToken_Returns401_TC_TT_API_02_05` |
-| TC-TT-API-02-06 | Dado el `accessToken` obtenido en el canje, cuando se llama a `GET /api/v1/me` con él, entonces responde 200 con el id interno del usuario y si es nuevo (V3; forma exacta: duda 6). | `IntegrationTest/Identity/MeEndpointTests.Me_WithIssuedToken_Returns200_TC_TT_API_02_06` |
-| TC-TT-API-02-07 | Dado el JWT emitido, cuando se decodifica, entonces usa HS256, vence a los 15 min, su `sub` es el id interno (no el `uid` de Firebase) y no contiene el teléfono. | `UnitTest/Identity/SessionTokenIssuerTests.IssuedJwt_HasHs256_15MinutesAndInternalSub_TC_TT_API_02_07` |
-| TC-TT-API-02-08 | Dado un JWT propio alterado, vencido (con `ClockSkew` cero, un segundo después del vencimiento), con algoritmo `none` o firmado con otra clave, cuando se llama a `/me`, entonces responde 401 (V2). | `SecurityTest/Identity/SessionJwtValidationTests.InvalidJwt_Returns401_TC_TT_API_02_08` |
-| TC-TT-API-02-09 | Dado el mismo número de prueba canjeado dos veces, cuando se repite el canje, entonces el `sub` es el mismo y `esNuevo` es `false` la segunda vez (alta idempotente; depende de la duda 2). | `IntegrationTest/Identity/FirebaseSessionTests.SameNumberTwice_ReturnsSameUserAndNotNew_TC_TT_API_02_09` |
-| TC-TT-API-02-10 | Dado un cuerpo vacío, sin `firebaseIdToken` o con un valor vacío o demasiado largo, cuando se canjea, entonces responde 400 `application/problem+json` y no llama a Firebase (límite: duda 5). | `SecurityTest/Identity/FirebaseRequestValidationTests.InvalidBody_Returns400_TC_TT_API_02_10` |
-| TC-TT-API-02-11 | Dados `appsettings*.json` y el repositorio, entonces no contienen la clave del JWT ni la cuenta de servicio de Firebase; y dada una clave de menos de 32 bytes, entonces la API no la acepta (clave efímera solo donde decida la duda 3). | `SecurityTest/Secrets/JwtKeyConfigurationTests.KeyNotInRepoAndMinLength_TC_TT_API_02_11` (complementa `AppSettingsSecretsTests`) |
-| TC-TT-API-02-12 | Dado un canje correcto y uno rechazado, cuando se revisan los logs y el cuerpo de la respuesta, entonces no aparecen el ID token, el teléfono, el access token ni el refresh token. | `SecurityTest/Identity/SensitiveDataLeakTests.ExchangeAndRejection_DoNotLeakSensitiveData_TC_TT_API_02_12` |
-| TC-TT-API-02-13 | Dado un entorno distinto de Development, cuando se arranca la API con la variable del emulador de Firebase Auth, entonces no se aceptan tokens del emulador (sin firma). Solo aplica si se elige el emulador (duda 1). | `SecurityTest/Identity/FirebaseEmulatorGuardTests.NonDevelopment_EmulatorTokensRejected_TC_TT_API_02_13` |
-| TC-TT-API-02-14 | Dado el proyecto de Firebase `knock-0` y un número de prueba de TT-FB-01 (sin SMS real), cuando una persona obtiene su ID token con la REST API de Identity Toolkit y lo canjea contra la API local, entonces recibe sesión y `/me` responde 200 (cierra el caso 01 de TT-FB-01). | Evidencia manual en el PR (sin códigos, llaves ni tokens); la ejecuta una persona |
-| TC-TT-API-02-15 | Dada la tarea terminada, entonces existe la nota del spike con qué funcionó, qué falta para HU-001 y riesgos, sin secretos. | Revisión del PR (duda 10) |
-| TC-TT-API-02-16 | Dada la solución `Knock.slnx`, cuando se compila en Release y se verifica el formato, entonces hay 0 errores y 0 warnings y `dotnet format` no produce cambios. | `dotnet build Knock.slnx -c Release --no-restore` y `dotnet format Knock.slnx --verify-no-changes`; salida en el PR (duda 11) |
+| TC-TT-API-02-06 | Dado el `accessToken` del canje, cuando se llama a `GET /api/v1/me` con él, entonces responde 200 con `{ id }` igual al `sub`, y el controller de Identity que lo atiende es `internal` y se descubre de verdad (la ruta responde 200 con el `ControllerFeatureProvider` de `Hosting/`, y la prueba afirma por reflexión que el tipo no es público) (V3). | `IntegrationTest/Identity/MeEndpointTests.Me_WithIssuedToken_Returns200AndInternalControllerIsDiscovered_TC_TT_API_02_06` |
+| TC-TT-API-02-07 | Dado el JWT emitido, cuando se decodifica, entonces usa HS256, vence a los 15 min, trae `sub` (el GUID derivado, no el `uid` de Firebase), `jti`, `iss` y `aud` (de configuración), y no contiene teléfono ni `role`. | `UnitTest/Identity/SessionTokenIssuerTests.IssuedJwt_HasHs256_15Min_AndExpectedClaims_TC_TT_API_02_07` |
+| TC-TT-API-02-08 | Dado un JWT propio alterado, vencido (con `ClockSkew` cero, un segundo después del vencimiento), con `iss` o `aud` incorrectos, con algoritmo `none` o firmado con otra clave, cuando se llama a `/me`, entonces responde 401 (V2). | `SecurityTest/Identity/SessionJwtValidationTests.InvalidJwt_Returns401_TC_TT_API_02_08` |
+| TC-TT-API-02-09 | Dado el mismo usuario de prueba (mismo `uid`) canjeado dos veces, cuando se repite el canje, entonces el `sub` es el mismo en los dos JWT (sin persistencia). | `IntegrationTest/Identity/FirebaseSessionTests.SameUidTwice_ReturnsSameSub_TC_TT_API_02_09` |
+| TC-TT-API-02-10 | Dado un `uid` conocido y el namespace fijo, cuando se deriva el `sub` (GUID v5, RFC 9562 §5.5; .NET no trae v5 incorporado), entonces coincide con un valor esperado calculado con una implementación independiente (por ejemplo `uuid.uuid5` de Python), y dos `uid` distintos dan GUID distintos. | `UnitTest/Identity/UserIdDerivationTests.KnownVector_MatchesGuidV5_TC_TT_API_02_10` (valor del namespace: duda 2) |
+| TC-TT-API-02-11 | Dado un cuerpo vacío, sin `firebaseIdToken`, con valor vacío o de más de 4096 caracteres, o un cuerpo mayor al límite de tamaño del endpoint, cuando se canjea, entonces responde 400 (cuerpo inválido) o 413 (cuerpo demasiado grande) con `application/problem+json` y no llama a Firebase. | `SecurityTest/Identity/FirebaseRequestValidationTests.InvalidOrOversizedBody_IsRejected_TC_TT_API_02_11` (límite en bytes: duda 3) |
+| TC-TT-API-02-12 | Dados `appsettings*.json` y el repositorio, entonces no contienen la clave del JWT ni la cuenta de servicio de Firebase; en Development y pruebas se usa la clave de user-secrets si existe y si no una aleatoria generada al arrancar; fuera de Development la API no arranca sin clave configurada de al menos 32 bytes (ni con una más corta). | `SecurityTest/Secrets/JwtKeyConfigurationTests.KeyNotInRepo_EphemeralOnlyInDevelopment_MinLengthOutside_TC_TT_API_02_12` (complementa `AppSettingsSecretsTests`) |
+| TC-TT-API-02-13 | Dado un canje correcto y uno rechazado, cuando se revisan los logs y el cuerpo de la respuesta, entonces no aparecen el ID token, el teléfono, el access token ni el refresh token. | `SecurityTest/Identity/SensitiveDataLeakTests.ExchangeAndRejection_DoNotLeakSensitiveData_TC_TT_API_02_13` |
+| TC-TT-API-02-14 | Dado un entorno distinto de Development y la variable del emulador de Firebase Auth presente, cuando se arranca la API, entonces no se aceptan tokens del emulador (sin firma). | `SecurityTest/Identity/FirebaseEmulatorGuardTests.NonDevelopment_EmulatorTokensRejected_TC_TT_API_02_14` |
+| TC-TT-API-02-15 | Dado el proyecto de Firebase `knock-0` y un número de prueba de TT-FB-01 (sin SMS real), cuando una persona obtiene su ID token con la REST API de Identity Toolkit y lo canjea contra la API local, entonces recibe sesión y `/me` responde 200 (cierra el caso 01 de TT-FB-01). | Comandos `curl` contra Identity Toolkit y la API local (comando); la persona los ejecuta y la evidencia va en el PR, sin códigos, llaves ni tokens |
+| TC-TT-API-02-16 | Dada la tarea terminada, entonces existe `docs/evidencia/KNOCK-21-spike-firebase.md` con qué funcionó, qué falta para HU-001 y riesgos; dice que el refresh token todavía no funciona y deja la condición de no desplegar sin rate limit; y no contiene secretos. | Comandos de existencia y de contenido del archivo y `gitleaks` (comando); salida en el PR |
+| TC-TT-API-02-17 | Dada la solución `Knock.slnx`, cuando se compila en Release y se verifica el formato, entonces hay 0 errores y 0 warnings y `dotnet format` no produce cambios. | `dotnet build Knock.slnx -c Release --no-restore` y `dotnet format Knock.slnx --verify-no-changes` (comando); salida en el PR |
 
 ## 3. Alcance / No-alcance
 - **In (este repositorio):**
-  - Módulo `Identity` (`src/Knock.Api/Modules/Identity/`): validación del ID token con el Firebase Admin SDK (`VerifyIdTokenAsync`), alta del usuario si no existe, emisión del JWT (HS256, 15 min, `sub` = id interno) y del refresh token, `POST /api/v1/auth/firebase` y `GET /api/v1/me`.
-  - Autenticación JWT Bearer en `Hosting/` (`ClockSkew` cero, algoritmos fijados a HS256) y `UseAuthentication`/`UseAuthorization` en el pipeline.
-  - Configuración por user-secrets o variables de entorno: clave del JWT y ruta de la cuenta de servicio de Firebase; nada en el repositorio.
-  - Pruebas de los casos 01 a 13 en `tests/UnitTest`, `tests/IntegrationTest` y `tests/SecurityTest`.
-  - Nota del spike con lo aprendido (ficha, paso 6).
-  - Paquetes que pide la ficha: `FirebaseAdmin` y `Microsoft.AspNetCore.Authentication.JwtBearer`. **No se agregan hasta evaluarlos** (necesidad, licencia, mantenimiento, vulnerabilidades) y registrarlos en `Memoria.md`; versiones al implementar.
+  - Módulo `Identity` (`src/Knock.Api/Modules/Identity/`): validación del ID token con el Firebase Admin SDK (`VerifyIdTokenAsync`), derivación del `sub` (GUID v5 con namespace fijo sobre el `uid`), emisión del JWT y del refresh token (valor aleatorio de 256 bits), `POST /api/v1/auth/firebase` y `GET /api/v1/me`. Controllers `internal`.
+  - En `Hosting/`: autenticación JwtBearer (`ClockSkew` cero, HS256, `iss` y `aud` validados desde configuración), `UseAuthentication`/`UseAuthorization` y un `ControllerFeatureProvider` que también descubre los controllers `internal` del ensamblado. No se modifica `ModuleSurfaceTests` (TC-TT-API-01-09).
+  - Límite de tamaño del cuerpo en el endpoint de canje y `firebaseIdToken` de 4096 caracteres como máximo.
+  - Configuración por user-secrets o variables de entorno: clave del JWT, issuer, audience y cuenta de servicio de Firebase (solo para el caso 15); nada en el repositorio.
+  - Emulador oficial de Firebase Auth con `npx firebase-tools` y un proyecto `demo-` (sin credenciales ni Docker) para las pruebas de integración y de seguridad; la herramienta se fija por versión.
+  - Pruebas de los casos 01 a 14; nota del spike (caso 16).
+  - Paquetes: `FirebaseAdmin` y `Microsoft.AspNetCore.Authentication.JwtBearer`, y la herramienta `firebase-tools`. **No se agregan hasta evaluarlos** (necesidad, licencia, mantenimiento, vulnerabilidades) y registrarlos en `Memoria.md`.
 - **Out:**
-  - Rotación, revocación y reuso del refresh token, `blacklist:{jti}` en Redis, cierre de sesión y límites de peticiones (HU-001 y HU-003, Sprint 1). Aquí el refresh token solo se entrega; no hay endpoint que lo canjee.
-  - Pipeline de seguridad de la constitución §4 (SecurityHeaders, ForwardedHeaders, HSTS, HttpsRedirection, CORS, RateLimiter): otra tarea con su spec, propuesta junto con esta.
-  - Consentimiento del aviso de privacidad y términos, nombre, zona y foto (HU-001, HU-002, HU-009); cambio de número (HU-008); `role` y permisos del panel.
+  - Persistencia de usuarios, `esNuevo`, «perfil incompleto» y tratamiento del teléfono (no se guarda; en HU-001, cifrado de campo más HMAC para búsqueda).
+  - Rotación, revocación y reuso del refresh token, `blacklist:{jti}` en Redis, cierre de sesión y límites de peticiones (HU-001 y HU-003, Sprint 1). El refresh token solo se entrega; no se guarda su hash ni se puede canjear.
+  - Contrato vivo (`docs/openapi.v1.json`, `docs/endpoints.md`, `scripts/export_openapi.py`, `tests/ContractTest`) y su publicación a knock-frontend: pospuesto a HU-001.
+  - Pipeline de seguridad de la constitución §4 (SecurityHeaders, ForwardedHeaders, HSTS, HttpsRedirection, CORS, RateLimiter): otra tarea con su spec.
+  - `role` y permisos; consentimiento, nombre, zona y foto; cambio de número.
   - Pantallas y cliente de la app (TT-PRU-04 y TT-MOB-*).
-  - Proyecto de Firebase, números de prueba y llaves (TT-FB-01, KNOCK-28: los configuró una persona).
-  - Redis, MassTransit, outbox y cualquier otro endpoint de negocio o evento.
-  - Operar Firebase, Azure o Docker: lo hace una persona.
+  - Proyecto de Firebase, números de prueba y llaves (TT-FB-01, KNOCK-28).
+  - Redis, MassTransit, outbox, base de datos y cualquier otro endpoint o evento.
+  - Operar Firebase, Azure o Docker, y editar los workflows de CI (`.github/` es protegido): lo hace una persona.
 
 ## 4. Contratos API y eventos
 | Método y ruta | Auth | Petición | Respuesta | Notas |
 |---|---|---|---|---|
-| `POST /api/v1/auth/firebase` | pública | `{ firebaseIdToken }` (nombre del campo: duda 1) | 200 `{ accessToken, refreshToken, esNuevo }` · 400 · 401 | `application/problem+json` en errores; mensaje uniforme que no distingue el motivo del rechazo de Firebase. |
-| `GET /api/v1/me` | JWT propio (`[Authorize]`) | — | 200 `{ id, esNuevo }` · 401 | Forma exacta y significado de `esNuevo` en `/me`: duda 6. |
+| `POST /api/v1/auth/firebase` | pública | `{ firebaseIdToken }` (máx. 4096 caracteres) | 200 `{ accessToken, refreshToken }` · 400 · 401 · 413 | `application/problem+json` en errores; el 401 es el mismo para token inválido, vencido, sin teléfono o de otro proyecto. |
+| `GET /api/v1/me` | JWT propio (`[Authorize]`) | — | 200 `{ id }` · 401 | `id` es el `sub` del JWT. |
 
-- **JWT propio:** HS256, 15 min, `ClockSkew` cero, `ValidAlgorithms = [HS256]`, claims `sub` (id interno) y `jti`; clave de al menos 32 bytes desde user-secrets o variable de entorno. Issuer, audience y `role`: duda 7.
-- **Refresh token:** valor aleatorio de 256 bits (según `auth-firebase-jwt`); en este spike solo se devuelve, sin canje (duda 8).
-- **Ruta:** la ficha, HU-001 y TT-PRU-04 usan `/auth/firebase`; la skill `auth-firebase-jwt` dice `/auth/session` (duda 1).
-- **Contrato vivo:** esta tarea agrega los primeros endpoints de negocio; habría que regenerar `docs/openapi.v1.json` y actualizar `docs/endpoints.md` (hoy no existen). Ver duda 9.
+- **JWT propio:** HS256, 15 min, `ClockSkew` cero, `ValidAlgorithms = [HS256]`, claims `sub` y `jti`; `iss` y `aud` validados con valores de configuración (por ejemplo `knock-api` y `knock-app`); sin `role`. Clave de al menos 32 bytes: user-secrets o variable de entorno; en Development y pruebas, si falta, una aleatoria al arrancar; fuera de Development la API no arranca sin ella.
+- **`sub`:** GUID v5 del `uid` de Firebase con un namespace fijo (determinista; mismo `uid`, mismo `sub`).
+- **Refresh token:** valor aleatorio de 256 bits; sin hash guardado ni canje (todavía no funciona).
+- **Contrato vivo:** no se publica en esta tarea (pospuesto a HU-001); el contrato de este spike vive en esta spec.
 - **Eventos:** ninguno.
 
 ## 5. Modelo de datos
-Depende de la duda 2: la API aún no tiene `DbContext` (TT-BD-01 solo dejó el Compose de PostgreSQL/PostGIS; EF Core, migraciones y `DbContext` quedaron fuera de TT-API-01). Datos mínimos del usuario del spike: id interno (GUID), `uid` de Firebase y teléfono (dato personal; tratamiento si se persiste: duda 13). Sin tablas nuevas mientras la duda 2 no se resuelva.
+— Sin persistencia: no hay tablas, `DbContext` ni migración. El teléfono no se guarda ni se registra; el `sub` se calcula a partir del `uid`.
 
 ## 6. Seguridad, privacidad y amenazas
 STRIDE breve. Esta tarea toca autenticación, tokens y sesión (`security-core`, checks 2, 3, 6, 7, 11, 13 y 15).
 
 | Amenaza | Control | Caso que lo prueba |
 |---|---|---|
-| Suplantación: ID token falsificado o alterado para entrar como otro teléfono | Validación con el Admin SDK (`VerifyIdTokenAsync`: firma, proyecto, vencimiento); teléfono y `uid` se toman solo del token, nunca del cuerpo | TC-TT-API-02-02, TC-TT-API-02-04 |
-| Suplantación: reutilizar un token vencido | Firebase rechaza el vencido; JWT propio con `ClockSkew` cero | TC-TT-API-02-03, TC-TT-API-02-08 |
-| Suplantación: tokens del emulador (sin firma) aceptados en un entorno real | El emulador solo en Development y pruebas (control propuesto; duda 1) | TC-TT-API-02-13 |
-| Alteración: JWT propio manipulado, `alg: none` o firmado con otra clave | `ValidAlgorithms = [HS256]`, validación de firma, vida y `ClockSkew` cero | TC-TT-API-02-08 |
-| Alteración: el cliente elige su id o su teléfono en el cuerpo | El cuerpo solo trae el ID token; `sub` es el id interno generado por el servidor | TC-TT-API-02-07, TC-TT-API-02-09 |
-| Repudio: sin rastro del acceso | Registro con TraceId y sin datos personales (la auditoría completa de sesiones es de HU-001) | TC-TT-API-02-12 (sin PII en el registro); auditoría de eventos sensibles: Out |
-| Fuga: ID token, teléfono, JWT o refresh token en logs o errores | Serilog y ProblemDetails sin esos valores; mensaje uniforme que no revela el motivo del rechazo | TC-TT-API-02-12 |
-| Fuga: la clave del JWT o la cuenta de servicio de Firebase en el repositorio, en logs o en prompts de IA | user-secrets o variables; gitleaks en CI; regla de proceso (nada de secretos a la IA, ficha §8) | TC-TT-API-02-11; `security-reviewer` |
-| Fuga: números reales o códigos de prueba en el repositorio o la spec | Solo números de prueba ficticios y sin SMS; los códigos se guardan fuera del repositorio (KNOCK-28) | TC-TT-API-02-14 (evidencia sin códigos); `security-reviewer` |
-| Denegación: endpoint público de canje sin límite de peticiones ni de tamaño del cuerpo | Validación de tamaño del campo (caso 10). **Rate limit: Out** (pipeline de seguridad y HU-001); riesgo aceptado solo mientras la API corra en local; no desplegarla antes (duda 5) | TC-TT-API-02-10 (solo tamaño) |
-| Elevación: acceso a `/me` sin sesión o con la sesión de otro | `[Authorize]`; el id sale del `sub` del JWT, no de un parámetro | TC-TT-API-02-05, TC-TT-API-02-06 |
-| Costo: SMS reales o números reales | Solo números de prueba de Firebase; ningún SMS real (ficha §8) | TC-TT-API-02-14 |
+| Suplantación: ID token falsificado o alterado | Validación con el Admin SDK (`VerifyIdTokenAsync`); `uid` y teléfono salen solo del token. La firma real solo se comprueba contra `knock-0` (el emulador no firma) | TC-TT-API-02-02, TC-TT-API-02-15 |
+| Suplantación: token vencido, sin teléfono o de otro proyecto | Rechazo con el mismo 401 que un token inválido (sin revelar el motivo); JWT propio con `ClockSkew` cero | TC-TT-API-02-03, TC-TT-API-02-04, TC-TT-API-02-08 |
+| Suplantación: tokens del emulador (sin firma) aceptados en un entorno real | El emulador solo en Development y pruebas; fuera, los tokens sin firma se rechazan | TC-TT-API-02-14 |
+| Alteración: JWT propio manipulado, `alg: none`, otra clave, `iss` o `aud` ajenos | `ValidAlgorithms = [HS256]`, firma, vida, `ClockSkew` cero, `iss` y `aud` validados | TC-TT-API-02-08 |
+| Alteración: el cliente elige su id o su teléfono | El cuerpo solo trae el ID token; `sub` se deriva del `uid` verificado | TC-TT-API-02-07, TC-TT-API-02-09, TC-TT-API-02-10 |
+| Fuga/predicción: `sub` determinista derivable del `uid` | El `uid` no es público y el `sub` por sí solo no autoriza nada (hace falta el JWT firmado); el namespace fijo no es un secreto | TC-TT-API-02-10 (derivación estable); riesgo bajo aceptado |
+| Repudio: sin rastro del acceso | Registro con TraceId y sin datos personales; la auditoría de sesiones es de HU-001 | TC-TT-API-02-13 |
+| Fuga: ID token, teléfono, JWT o refresh token en logs o errores | Serilog y ProblemDetails sin esos valores; 401 uniforme | TC-TT-API-02-13, TC-TT-API-02-04 |
+| Fuga: clave del JWT o cuenta de servicio en el repositorio, logs o prompts de IA | user-secrets o variables; gitleaks en CI; la clave aleatoria solo en Development y pruebas; regla de proceso (ficha §8) | TC-TT-API-02-12; `security-reviewer` |
+| Fuga: números reales o códigos de prueba en el repositorio o la spec | Solo números de prueba ficticios; los códigos fuera del repositorio (KNOCK-28) | TC-TT-API-02-15 (evidencia sin códigos); `security-reviewer` |
+| Denegación: endpoint público de canje con cuerpo enorme o ráfagas | `firebaseIdToken` ≤ 4096 caracteres y límite de tamaño del cuerpo. **Sin rate limit** (pipeline de seguridad y HU-001): se acepta solo mientras la API corra en local; la nota del spike lo deja como condición para no desplegar | TC-TT-API-02-11 (tamaño); condición en TC-TT-API-02-16 |
+| Elevación: acceso a `/me` sin sesión o con la de otro | `[Authorize]`; el id sale del `sub` del JWT, no de un parámetro | TC-TT-API-02-05, TC-TT-API-02-06 |
+| Elevación/operación: refresh token emitido que parece usable | Es solo un valor aleatorio, sin hash guardado ni canje; la nota dice que todavía no funciona | TC-TT-API-02-16 |
+| Costo: SMS reales o números reales | Solo números de prueba de Firebase y el emulador; ningún SMS real (ficha §8) | TC-TT-API-02-15 |
 
-No aplican aquí: autorización por recurso más allá de `/me`, cifrado de campo (si no se persiste el teléfono), biométricos, archivos, IA y SSRF (el backend no descarga URLs del usuario).
+No aplican aquí: autorización por recurso más allá de `/me`, cifrado de campo (no se guarda el teléfono), biométricos, archivos, IA y SSRF (el backend no descarga URLs del usuario).
 
 ## 7. Pantallas
 —
@@ -102,40 +108,48 @@ No aplican aquí: autorización por recurso más allá de `/me`, cifrado de camp
 
 | Tipo | ¿Aplica? | Motivo / herramienta |
 |---|---|---|
-| Unitarias | Sí | Emisión del JWT (caso 07), `UnitTest/Identity/`. |
-| Arquitectura | Sí, existentes | Deben seguir en verde `ModuleBoundaryTests` y `ModuleSurfaceTests` de TT-API-01 (duda 12 sobre el controller público). |
-| Integración | Sí | `WebApplicationFactory` (casos 01, 05, 06, 09); el origen del ID token depende de la duda 1. Sin Testcontainers mientras no haya base de datos (duda 2). |
-| Seguridad negativa | Sí | Casos 02, 03, 04, 08, 10, 11, 12 y 13 en `tests/SecurityTest`. |
-| Contrato | Duda 9 | Hay endpoints nuevos pero aún no existen `docs/openapi.v1.json` ni `tests/ContractTest`. |
-| Base de datos | No (provisional) | Sin tablas hasta resolver la duda 2. |
-| Mutación | No en esta tarea | Meta del módulo Identity ≥ 80 % (nightly) cuando exista su lógica real en HU-001; el spike es de 2 puntos. |
-| Rendimiento, fuzzing, caos, E2E, UI | No | Spike sin límites ni UI; el fuzzing del contrato llega con HU-001. |
-| Smoke manual | Sí | Caso 14 contra el proyecto real de Firebase. |
+| Unitarias | Sí | Emisión del JWT y derivación del `sub` (casos 07 y 10), `UnitTest/Identity/`. |
+| Arquitectura | Sí, existentes | `ModuleBoundaryTests` y `ModuleSurfaceTests` de TT-API-01 siguen en verde sin cambios (los controllers son `internal`). |
+| Integración | Sí | `WebApplicationFactory` contra el emulador de Firebase Auth (casos 01, 05, 06, 09). Sin Testcontainers: no hay base de datos. |
+| Seguridad negativa | Sí | Casos 02, 03, 04, 08, 11, 12, 13 y 14 en `tests/SecurityTest`. |
+| Contrato | No | Pospuesto a HU-001 (`tests/ContractTest`, `docs/openapi.v1.json`). |
+| Base de datos | No | Sin persistencia. |
+| Mutación | No en esta tarea | Meta del módulo Identity ≥ 80 % (nightly) cuando exista su lógica real en HU-001. |
+| Rendimiento, fuzzing, caos, E2E, UI | No | Spike sin límites ni UI. |
+| Smoke manual | Sí | Caso 15 contra `knock-0`. |
 
 Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 
-**Gates:** `AGENTS.md §5`: `build -c Release` 0/0, `dotnet format` sin cambios, Unit, Integration y Security en verde, `sdd_lint.py --trace TT-API-02`, `codemap.py --check`, `check_exceptions.py`, `sync_agents.py --check`, Semgrep, `security-reviewer` LIBERA, `traceability-clerk` sin drift, `Memoria.md` al día. Evidencia en el PR: salida de `dotnet test` y la del caso 14.
+**Gates:** `AGENTS.md §5`: `build -c Release` 0/0, `dotnet format` sin cambios, Unit, Integration y Security en verde, `sdd_lint.py --trace TT-API-02`, `codemap.py --check`, `check_exceptions.py`, `sync_agents.py --check`, Semgrep, `security-reviewer` LIBERA, `traceability-clerk` sin drift, `Memoria.md` al día. Evidencia en el PR: salida de `dotnet test`, la del caso 15 y las de los casos 16 y 17.
 
-**Decisiones ya tomadas (de `Memoria.md` y del revisor):**
+**Decisiones previas (de `Memoria.md` y del revisor):**
 1. «JWT con clave efímera» se trasladó de TT-API-01 a esta tarea.
 2. El pipeline de seguridad de la constitución §4 no va aquí: es otra tarea con su spec.
 3. El proyecto de Firebase y los números de prueba (KNOCK-28) los configuró una persona; evidencia en `docs/evidencia/KNOCK-28-firebase.md`. Los códigos y llaves no van al repositorio ni a la spec.
 4. Docker y los servicios externos los opera una persona; los paquetes nuevos requieren evaluación y registro.
 
-**Límites y dudas abiertas (para el revisor; no resueltas, no inventadas):**
-1. **Cómo obtiene el ID token la prueba de integración, y ruta y campo de la petición.** La ficha (V1) pide un token real de un número de prueba, obtenido con la REST API de Identity Toolkit, lo que necesita red, la llave web del proyecto y el código del número, y por tanto no corre en el CI sin secretos. Opciones: (A) emulador oficial de Firebase Auth (`FIREBASE_AUTH_EMULATOR_HOST`, como dice la skill; AGENTS §2 lo menciona pero `deploy/docker-compose.local.yml` hoy solo tiene PostgreSQL, y Docker lo inicia una persona; agrega el caso 13); (B) prueba contra el proyecto real, opcional y omitida si faltan las variables, más el caso 14 como evidencia; (C) un validador falso detrás de una interfaz (no prueba a Firebase). Propuesta del redactor: A para el CI y el caso 14 como evidencia manual; decide el revisor. Aparte: la ruta `/auth/firebase` (ficha, HU-001, TT-PRU-04) difiere de `/auth/session` (skill); se propone la de la ficha. El nombre del campo (`firebaseIdToken` en la skill) tampoco lo define la ficha.
-2. **Dónde se guarda el usuario («crea el usuario si no existe», `esNuevo`).** No hay `DbContext`. Opciones: (a) almacén en memoria solo para el spike, descartable (contradice «no estado de negocio en memoria del proceso», `AGENTS.md §4`, y exige excepción del revisor; el caso 09 y `esNuevo` solo valen mientras viva el proceso); (b) tabla mínima con migración, que mete capa [BD] y EF Core/Npgsql (paquetes) en una tarea de 2 puntos; (c) sin persistencia: el id se deriva del `uid` de Firebase y `esNuevo` no se prueba. Hasta decidir, el caso 09 y §5 quedan provisionales.
-3. **«JWT con clave efímera».** La ficha pone la clave en user-secrets; la decisión trasladada habla de clave efímera. ¿Significa generar una clave aleatoria al arrancar solo en Development y en las pruebas (las sesiones mueren al reiniciar y no sirve con varias instancias), y que fuera de Development la API no arranque sin clave configurada? ¿O solo la efímera, sin user-secrets? Afecta al caso 11.
-4. **Código HTTP** cuando Firebase valida el token pero falta `phone_number` o es de otro proyecto (caso 04): ¿401, igual que token inválido, o 400/403? Se propone 401.
-5. **Límites del endpoint:** tamaño máximo del campo del ID token (caso 10) y si se acepta no tener rate limit hasta la tarea del pipeline de seguridad y HU-001, siempre que la API solo corra en local.
-6. **`GET /me`:** ¿`esNuevo` significa «el usuario se creó en este canje» (obligaría a llevarlo como claim del JWT) o «aún no completó su perfil»? La ficha dice solo «el id y si es nuevo». Y la forma del JSON (`id`, `esNuevo`).
-7. **Claims e identificadores del JWT:** valores de issuer y audience (la skill los pide; la ficha no los define) y si se incluye `role` (la skill lo lista; aún no hay roles). Se propone `sub` y `jti` solamente.
-8. **Refresh token del spike:** se entrega un valor aleatorio de 256 bits, sin persistirse ni canjearse (todo eso es Out). ¿Se acepta que sea solo el valor, sin guardar su SHA-256?
-9. **Contrato vivo:** `docs/endpoints.md` y `docs/openapi.v1.json` no existen en el repositorio y `scripts/export_openapi.py` no está en `scripts/`. ¿Se crean en esta tarea o con la primera HU? Si no, el contrato de §4 vive solo en esta spec y no hay `tests/ContractTest`. Además, esta tarea cambiaría el contrato: ¿se dispara `contract-publish.yml` hacia knock-frontend?
-10. **Ruta de la nota del spike:** la ficha dice `docs/specs/spike-firebase.md`, pero `docs/specs/` no existe (las specs viven en `specs/`) y `docs/` tiene `evidencia/`, `architecture/`, etc. ¿Se confirma esa ruta o se usa `docs/evidencia/KNOCK-21-spike-firebase.md`, como la nota de KNOCK-28? Los casos 14 (evidencia manual) y 15 (revisión del PR) no tienen prueba de código: confirmar cómo se marcan.
-11. **Caso 16 (build y formato):** se verifica por comando; el revisor decide si lleva la marca «(comando)» tras aprobar.
-12. **Controller público en el módulo Identity.** MVC solo descubre controllers públicos, pero la prueba aprobada `ModuleSurfaceTests` (TC-TT-API-01-09) exige exactamente dos tipos públicos por módulo (`AddXxxModule` y `IXxxApi`); TT-API-01 lo resolvió con un controller de prueba fuera de `src`. Opciones: (a) ajustar esa prueba para permitir controllers públicos (cambia una spec aprobada de otra tarea); (b) minimal API o `MapPost` internos registrados desde `AddIdentityModule` (se aparta de «controllers delgados», `AGENTS.md §6`); (c) controllers en `Hosting/` o `Common/`.
-13. **Tratamiento del teléfono si se persiste:** ¿en claro, cifrado de campo o solo HMAC? (`security-core` pide cifrar celular y dirección; CURP solo HMAC). Depende de la duda 2.
+**Dudas resueltas por el revisor (revisión del PR #26):**
+1. **Origen del token — Resuelto:** emulador oficial de Firebase Auth para integración y CI; el caso 15 queda como evidencia manual contra `knock-0`. Ruta `POST /api/v1/auth/firebase`, campo `firebaseIdToken`. El emulador corre con `npx firebase-tools` y un proyecto `demo-` (sin credenciales ni Docker); se agrega un paso al CI, la herramienta se fija por versión y se evalúa y registra en `Memoria.md`.
+2. **Sin persistencia — Resuelto:** el `sub` se deriva de forma determinista del `uid` (GUID v5, namespace fijo); `esNuevo` sale del spike y pasa a HU-001. El caso 09 es «mismo `sub` en los dos canjes».
+3. **Clave efímera — Resuelto:** en Development y pruebas, la clave de user-secrets si existe y si no una aleatoria al arrancar; fuera de Development la API no arranca sin una clave de al menos 32 bytes (caso 12).
+4. **Caso 04 — Resuelto:** 401 con el mismo mensaje que un token inválido.
+5. **Límites — Resuelto:** `firebaseIdToken` máx. 4096 caracteres y límite de tamaño del cuerpo; sin rate limit solo mientras la API corra en local, anotado en la nota del spike como condición para no desplegar.
+6. **`GET /me` — Resuelto:** responde `{ id }`; `esNuevo` no aplica sin persistencia y «perfil incompleto» es de HU-001.
+7. **Claims — Resuelto:** `sub` y `jti`, más `iss` y `aud` validados con valores de configuración (por ejemplo `knock-api` y `knock-app`); sin `role`.
+8. **Refresh token — Resuelto:** solo el valor aleatorio de 256 bits, sin guardar su hash ni canjearlo; la nota debe decir que todavía no funciona.
+9. **Contrato vivo — Resuelto:** pospuesto a HU-001; aquí no se publica el contrato a knock-frontend.
+10. **Nota del spike — Resuelto:** `docs/evidencia/KNOCK-21-spike-firebase.md`.
+11. **Casos de comando — Resuelto:** los casos 15, 16 y 17 llevan «(comando)» y su evidencia va en el PR.
+12. **Controller en Identity — Resuelto:** controllers `internal` en el módulo y un `ControllerFeatureProvider` en `Hosting/` que también descubre los controllers `internal` del ensamblado; no se toca `ModuleSurfaceTests`. El caso 06 comprueba que se descubre de verdad.
+13. **Teléfono — Resuelto:** no se guarda y no aplica en el spike; para HU-001, cifrado de campo más HMAC para búsqueda.
+
+**Contingencia y tope de tiempo (emulador):** si montar el emulador con `npx firebase-tools` se complica y pasa de medio día de trabajo, se cambia a un validador falso detrás de una interfaz (opción C), el caso 15 sigue como evidencia contra `knock-0`, y se avisa al revisor para ajustar los casos 01 a 04 y quitar el 14.
+
+**Límites y dudas abiertas (nuevas, para el revisor; no resueltas, no inventadas):**
+1. **Alcance de los casos 02 a 04 con el emulador.** El Admin SDK en modo emulador acepta tokens sin firma, así que «token alterado» solo puede probarse como token malformado o truncado; la firma real solo se comprueba en el caso 15. Tampoco está confirmado que el modo emulador valide vencimiento y proyecto igual que producción: se confirma al implementar y, si no, el caso afectado pasa al caso 15 o a la contingencia.
+2. **Valor del namespace fijo del GUID v5 (caso 10).** Pido que el revisor lo defina (o acepte uno generado una vez y documentado). El valor esperado del vector se calcula con una implementación independiente, no con el código bajo prueba.
+3. **Límite de tamaño del cuerpo en bytes (caso 11).** La decisión pide un límite pero no su valor; propongo uno acorde con 4096 caracteres más el JSON (por ejemplo 8 KiB), a confirmar.
+4. **Emulador en el CI y en local.** El paso del CI toca `.github/` (protegido): lo agrega una persona. Pendiente de definir: versión fijada de `firebase-tools`, requisitos del runner (Node y, si hicieran falta, otros), y si las pruebas deben fallar (propuesta) o saltarse cuando el emulador no esté disponible; se propone que fallen con un mensaje claro.
 
 ## Aprobación
 - [ ] Revisor 1 — nombre: ________ fecha: ________

@@ -151,7 +151,11 @@
 - Decisión: versión fija 15.34.0 (la 15.32.1 trae 7 vulnerabilidades altas en `npm audit`; la 15.34.0, 3). Riesgo residual aceptado: el emulador solo corre en el runner de CI, sin secretos ni acceso a datos reales; revisar al subir de versión.
 - A evitar: usar `firebase-tools@latest`, apuntar a un proyecto real de Firebase en el CI o guardar números y códigos de prueba reales.
 
-## 2026-10-16 — TT-API-02 (KNOCK-21): spec en Borrador
-- Hecho: `specs/TT-API-02-spike-token-firebase-sesion-jwt/` (spec, plan, task, gates) con 16 casos; fila en `specs/README.md`. Sin código. Pendiente de revisión y aprobación por una persona.
-- Dudas abiertas (spec §8): origen del ID token en las pruebas (emulador, proyecto real o falso), dónde se guarda el usuario sin `DbContext`, alcance de la «clave efímera», controller público frente a `ModuleSurfaceTests`, contrato vivo inexistente (`docs/endpoints.md`, `openapi.v1.json`, `export_openapi.py`), ruta de la nota del spike.
-- A evitar: el emulador de Firebase acepta tokens sin firma; solo en Development y pruebas. Paquetes `FirebaseAdmin` y `JwtBearer`: evaluar y registrar antes de agregarlos.
+## 2026-10-16 — TT-API-02 (KNOCK-21): spec en Borrador con decisiones del revisor (PR #26)
+- Estado: `specs/TT-API-02-spike-token-firebase-sesion-jwt/` con 17 casos; sigue en Borrador, sin aprobar. Sin código.
+- Decisión: emulador oficial de Firebase Auth (`npx firebase-tools`, proyecto `demo-`, sin credenciales ni Docker) para integración y CI; canje real contra `knock-0` como evidencia manual (caso 15). Porqué: el CI no puede tener los códigos de los números de prueba. Tope de tiempo: si pasa de medio día, validador falso tras una interfaz y se ajustan los casos 01 a 04 y se quita el 14.
+- Decisión: sin persistencia; `sub` = GUID v5 del `uid` de Firebase con namespace fijo; `esNuevo`, perfil y teléfono (cifrado de campo + HMAC) pasan a HU-001. Porqué: no hay `DbContext` y el spike es de 2 puntos.
+- Decisión: clave del JWT efímera solo en Development y pruebas; fuera, la API no arranca sin clave de 32 bytes o más. JWT con `sub`, `jti`, `iss`, `aud`, sin `role`. Refresh token solo como valor aleatorio, sin canje. 401 uniforme. `firebaseIdToken` hasta 4096 caracteres y límite de cuerpo; sin rate limit solo en local.
+- Decisión: controllers `internal` y un `ControllerFeatureProvider` en `Hosting/`; no se toca `ModuleSurfaceTests`. Contrato vivo pospuesto a HU-001. Nota del spike en `docs/evidencia/KNOCK-21-spike-firebase.md`.
+- Pendiente (evaluar y registrar antes de agregar): `FirebaseAdmin`, `Microsoft.AspNetCore.Authentication.JwtBearer` y `firebase-tools` (versión fijada). El paso del emulador en el CI (`.github/`) lo agrega una persona.
+- A evitar: el emulador acepta tokens sin firma (solo Development y pruebas); con él no se prueba la firma real.
