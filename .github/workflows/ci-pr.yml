@@ -137,8 +137,10 @@ jobs:
       - name: Contrato (captura del wire)
         if: hashFiles('tests/ContractTest/*.csproj') != ''
         run: dotnet test tests/ContractTest -c Release --no-build --logger trx --results-directory reports/contract
+      # Se excluye solo el código que genera el compilador (interceptores de OpenAPI y atributos): no es código de Knock
+      # y no se puede probar. Los umbrales de MIN_LINES y MIN_BRANCHES no cambian.
       - name: Cobertura combinada
-        run: dotnet tool run reportgenerator -reports:"reports/**/coverage.cobertura.xml" -targetdir:reports/coverage -reporttypes:"Cobertura;MarkdownSummaryGithub;Html"
+        run: dotnet tool run reportgenerator -reports:"reports/**/coverage.cobertura.xml" -targetdir:reports/coverage -reporttypes:"Cobertura;MarkdownSummaryGithub;Html" "-classfilters:-Microsoft.AspNetCore.OpenApi.Generated*;-System.Runtime.CompilerServices*"
       - name: Umbral de cobertura (líneas y ramas)
         run: python3 scripts/check_coverage.py --cobertura reports/coverage/Cobertura.xml --min "$MIN_LINES" --min-branch "$MIN_BRANCHES"
       - name: Resumen en el PR
