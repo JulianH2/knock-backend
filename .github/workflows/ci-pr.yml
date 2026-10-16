@@ -65,6 +65,13 @@ jobs:
           if [ -n "$KEY" ]; then
             SPEC=$(grep -lE "\b$KEY\b" specs/*/spec.md 2>/dev/null | head -1 | cut -d/ -f2 | grep -oE '^(HU-[0-9]{3}|TT-[A-Z]+-[0-9]{2}|BUG-[0-9]{3})' || true)
           fi
+          # La trazabilidad caso ↔ prueba solo tiene sentido si el PR toca código o pruebas; los PR de configuración,
+          # documentación o gobierno de una tarea con spec no deben fallar por «casos sin prueba».
+          CHANGED=$(git diff --name-only "$BASE_SHA" HEAD 2>/dev/null || true)
+          if [ -n "$SPEC" ] && [ -n "$BASE_SHA" ] && ! grep -qE '^(src|tests)/' <<<"$CHANGED"; then
+            echo "::notice::PR sin cambios de código ni pruebas: se omite la trazabilidad de $SPEC."
+            SPEC=""
+          fi
           echo "spec=$SPEC" >> "$GITHUB_OUTPUT"
 
   pr-meta:
