@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-15T22:28:32Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-10-16T14:53:48Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -8,9 +8,9 @@
 | Módulo | Capas | Archivos | Tipos | Métodos públicos |
 |---|---|---|---|---|
 | `Assistant` | -, services | 3 | 3 | 1 |
-| `Catalog` | -, services | 3 | 3 | 1 |
+| `Catalog` | -, data, services | 6 | 6 | 4 |
 | `Identity` | -, services | 3 | 3 | 1 |
-| `Knock.Api` | -, hosting | 8 | 7 | 10 |
+| `Knock.Api` | -, hosting | 8 | 8 | 11 |
 | `Messaging` | -, services | 3 | 3 | 1 |
 | `Notifications` | -, services | 3 | 3 | 1 |
 | `Reputation` | -, services | 3 | 3 | 1 |
@@ -36,8 +36,17 @@
 **-**
 
 - `src/Knock.Api/Modules/Catalog/CatalogModuleExtensions.cs` — class `CatalogModuleExtensions`
-  - `AddCatalogModule()`:8
+  - `AddCatalogModule()`:10
 - `src/Knock.Api/Modules/Catalog/ICatalogApi.cs` — interface `ICatalogApi`
+
+**data**
+
+- `src/Knock.Api/Modules/Catalog/Data/CatalogDbContext.cs` — class `CatalogDbContext`
+  - `OnModelCreating()`:7
+- `src/Knock.Api/Modules/Catalog/Data/CatalogDbContextFactory.cs` — class `CatalogDbContextFactory`
+  - `CreateDbContext()`:9
+- `src/Knock.Api/Modules/Catalog/Data/LocalMigrationConnectionGuard.cs` — class `LocalMigrationConnectionGuard`
+  - `EnsureLocalHost()`:7
 
 **services**
 
@@ -65,8 +74,8 @@
 
 - `src/Knock.Api/Hosting/ApiVersioningExtensions.cs` — class `ApiVersioningExtensions`
   - `AddKnockApiVersioning()`:7
-- `src/Knock.Api/Hosting/HealthExtensions.cs` — class `HealthExtensions`
-  - `AddKnockHealth()`:10, `MapKnockHealth()`:16
+- `src/Knock.Api/Hosting/HealthExtensions.cs` — class `HealthExtensions`, class `PostgresReadinessHealthCheck`
+  - `AddKnockHealth()`:12, `MapKnockHealth()`:19, `CheckHealthAsync()`:29
 - `src/Knock.Api/Hosting/KnockApplicationExtensions.cs` — class `KnockApplicationExtensions`
   - `AddKnockApi()`:7, `UseKnockApi()`:21
 - `src/Knock.Api/Hosting/LoggingExtensions.cs` — class `LoggingExtensions`
