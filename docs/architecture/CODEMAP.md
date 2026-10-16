@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-16T14:53:48Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-10-16T16:31:26Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -8,7 +8,7 @@
 | Módulo | Capas | Archivos | Tipos | Métodos públicos |
 |---|---|---|---|---|
 | `Assistant` | -, services | 3 | 3 | 1 |
-| `Catalog` | -, data, services | 6 | 6 | 4 |
+| `Catalog` | -, data, domain, services | 10 | 10 | 11 |
 | `Identity` | -, services | 3 | 3 | 1 |
 | `Knock.Api` | -, hosting | 8 | 8 | 11 |
 | `Messaging` | -, services | 3 | 3 | 1 |
@@ -36,21 +36,32 @@
 **-**
 
 - `src/Knock.Api/Modules/Catalog/CatalogModuleExtensions.cs` — class `CatalogModuleExtensions`
-  - `AddCatalogModule()`:10
+  - `AddCatalogModule()`:9
 - `src/Knock.Api/Modules/Catalog/ICatalogApi.cs` — interface `ICatalogApi`
 
 **data**
 
 - `src/Knock.Api/Modules/Catalog/Data/CatalogDbContext.cs` — class `CatalogDbContext`
-  - `OnModelCreating()`:7
+  - `Configure()`:19, `OnModelCreating()`:24
 - `src/Knock.Api/Modules/Catalog/Data/CatalogDbContextFactory.cs` — class `CatalogDbContextFactory`
   - `CreateDbContext()`:9
+- `src/Knock.Api/Modules/Catalog/Data/CatalogSeeder.cs` — class `CatalogSeeder`
+  - `CatalogSeeder()`:10, `SeedAsync()`:12
 - `src/Knock.Api/Modules/Catalog/Data/LocalMigrationConnectionGuard.cs` — class `LocalMigrationConnectionGuard`
   - `EnsureLocalHost()`:7
+
+**domain**
+
+- `src/Knock.Api/Modules/Catalog/Domain/CatalogCoordinates.cs` — class `CatalogCoordinates`
+  - `ToPoint()`:11
+- `src/Knock.Api/Modules/Catalog/Domain/Colonia.cs` — class `Colonia`
+  - `Create()`:26
+- `src/Knock.Api/Modules/Catalog/Domain/Oficio.cs` — class `Oficio`
 
 **services**
 
 - `src/Knock.Api/Modules/Catalog/Services/CatalogApi.cs` — class `CatalogApi`
+  - `FindNeighborhoodAtAsync()`:17, `FindNeighborhoodsByPostalCodeAsync()`:36
 
 ### Identity
 
