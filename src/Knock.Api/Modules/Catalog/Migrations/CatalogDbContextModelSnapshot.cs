@@ -14,7 +14,6 @@ namespace Knock.Api.Modules.Catalog.Migrations
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
-#pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("catalog")
                 .HasAnnotation("ProductVersion", "10.0.4")
@@ -22,7 +21,6 @@ namespace Knock.Api.Modules.Catalog.Migrations
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "postgis");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-#pragma warning restore 612, 618
         }
     }
 }
