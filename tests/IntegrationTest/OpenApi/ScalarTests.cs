@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using AwesomeAssertions;
+using Knock.Api.Hosting;
 using Knock.IntegrationTest.Support;
 using Xunit;
 
@@ -22,5 +23,13 @@ public class ScalarTests
         document.RootElement.TryGetProperty("openapi", out _).Should().BeTrue();
         scalar.StatusCode.Should().Be(HttpStatusCode.OK);
         scalar.Content.Headers.ContentType?.MediaType.Should().Be("text/html");
+    }
+
+    [Fact]
+    public static void MapKnockOpenApi_WithoutEnvironment_Throws_TC_TT_API_01_11()
+    {
+        var act = () => OpenApiExtensions.MapKnockOpenApi(null!, null!);
+
+        act.Should().Throw<ArgumentNullException>().WithParameterName("environment");
     }
 }
