@@ -2,7 +2,7 @@
 
 ## GeoJSON piloto de Tula
 
-`colonias_tula.geojson` no se incluye todavía. El responsable de las geometrías debe obtenerlas y documentarlas; no se deben inventar, dibujar ni derivar coordenadas en este cambio. Antes de integrar el archivo, ejecutar:
+`colonias_tula.geojson` contiene ocho geometrías piloto aproximadas, no oficiales. Cada feature documenta su autor y fecha de elaboración; las geometrías no se deben presentar como límites oficiales. Antes de integrar o modificar el archivo, ejecutar:
 
 ```bash
 python db/scripts/validate_colonias_tula.py
@@ -30,8 +30,9 @@ El validador usa solo la biblioteca estándar de Python y no modifica el archivo
 
 - GeoJSON usa posiciones `[longitud, latitud]` (X=longitud, Y=latitud) en WGS 84, orden EPSG:4326.
 - Cada posición debe incluir al menos dos números finitos; longitud debe estar en `[-180, 180]` y latitud en `[-90, 90]`.
-- Para el piloto de Tula, la longitud debe ser oeste (negativa) y la latitud norte (positiva); esto ayuda a detectar ejes invertidos sin fijar ni inventar coordenadas.
+- Para el piloto de Tula, la longitud debe estar entre `-99.40` y `-99.28`, y la latitud entre `20.00` y `20.12` (límites inclusivos). Estos límites acotados ayudan a detectar geometrías desplazadas; no demuestran que el polígono corresponda al límite oficial de la colonia.
+- Para el piloto de Tula, la longitud debe ser oeste (negativa) y la latitud norte (positiva); esto ayuda a detectar ejes invertidos.
 - Los anillos deben tener al menos cuatro posiciones y estar cerrados.
-- El validador puede verificar la forma, rangos y hemisferios, pero no puede probar la ubicación correcta de un polígono solo a partir de esos valores. El responsable debe revisar visualmente la geometría y confirmar que el orden declarado es realmente longitud/latitud.
+- El validador verifica forma, rangos, hemisferios y el área acotada del piloto, pero no puede probar la ubicación correcta ni la exactitud de un polígono solo a partir de esos valores. El responsable debe revisar visualmente la geometría y confirmar que el orden declarado es realmente longitud/latitud.
 
 No incluir coordenadas de usuarios ni afirmar que las geometrías aproximadas son oficiales.
