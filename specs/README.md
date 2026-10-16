@@ -7,6 +7,7 @@
 | Sprint | ID | Título | Módulo / área | Responsable | Pts | Prioridad | Carpeta |
 |---|---|---|---|---|---|---|---|
 | S0 | TT-API-01 | Proyecto ASP.NET Core 10 con controllers, módulos vacíos, ProblemDetails, versionado /api/v1, health y Scalar | API · Backend base | José | 3 | Técnica | [`TT-API-01-proyecto-aspnet-core-10-base`](TT-API-01-proyecto-aspnet-core-10-base/spec.md) |
+| S0 | TT-API-02 | Spike: validar el token de Firebase de un número de prueba y emitir la sesión propia (JWT) | API · Backend base | José | 2 | Técnica | [`TT-API-02-spike-token-firebase-sesion-jwt`](TT-API-02-spike-token-firebase-sesion-jwt/spec.md) |
 | S0 | TT-AZ-01 | Cuenta de Azure, grupo de recursos, presupuesto y alertas de costo | Azure | José | 1 | Técnica | [`TT-AZ-01-cuenta-de-azure-grupo-de-recursos-presup`](TT-AZ-01-cuenta-de-azure-grupo-de-recursos-presup/spec.md) |
 | S0 | TT-CI-01 | GitHub Actions en cada PR: job branch-name (nombre y combinación origen → destino), commits, formato, build y pruebas de la API y la app | Integración continua | José | 2 | Técnica | [`TT-CI-01-github-actions-en-cada-pr-job-branch-nam`](TT-CI-01-github-actions-en-cada-pr-job-branch-nam/spec.md) |
 | S0 | TT-FB-01 | Proyecto de Firebase: autenticación por teléfono con números de prueba, FCM y apps Android/iOS registradas | Firebase | José | 1 | Técnica | [`TT-FB-01-proyecto-de-firebase-autenticacion-por-t`](TT-FB-01-proyecto-de-firebase-autenticacion-por-t/spec.md) |

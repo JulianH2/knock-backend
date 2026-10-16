@@ -151,3 +151,7 @@
 - Decisión: versión fija 15.34.0 (la 15.32.1 trae 7 vulnerabilidades altas en `npm audit`; la 15.34.0, 3). Riesgo residual aceptado: el emulador solo corre en el runner de CI, sin secretos ni acceso a datos reales; revisar al subir de versión.
 - A evitar: usar `firebase-tools@latest`, apuntar a un proyecto real de Firebase en el CI o guardar números y códigos de prueba reales.
 
+## 2026-10-16 — TT-API-02 (KNOCK-21): spec en Borrador
+- Hecho: `specs/TT-API-02-spike-token-firebase-sesion-jwt/` (spec, plan, task, gates) con 16 casos; fila en `specs/README.md`. Sin código. Pendiente de revisión y aprobación por una persona.
+- Dudas abiertas (spec §8): origen del ID token en las pruebas (emulador, proyecto real o falso), dónde se guarda el usuario sin `DbContext`, alcance de la «clave efímera», controller público frente a `ModuleSurfaceTests`, contrato vivo inexistente (`docs/endpoints.md`, `openapi.v1.json`, `export_openapi.py`), ruta de la nota del spike.
+- A evitar: el emulador de Firebase acepta tokens sin firma; solo en Development y pruebas. Paquetes `FirebaseAdmin` y `JwtBearer`: evaluar y registrar antes de agregarlos.
