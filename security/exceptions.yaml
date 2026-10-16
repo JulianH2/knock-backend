@@ -47,8 +47,8 @@ excepciones:
     alcance: knock-api (imagen construida desde src/Knock.Api/Dockerfile); workflow ci-pr.yml, paso de Dockle (accept-key)
     justificacion: >-
       Falso positivo. Dockle marca como «credenciales» variables de la imagen base de Microsoft y del propio
-      Dockerfile (DOTNET_VERSION, ASPNET_VERSION, ASPNETCORE_URLS, APP_UID, la etiqueta org.opencontainers.image.version y los argumentos --gid y --uid del `groupadd` de la imagen base);
-      sus valores son versiones, un puerto y un identificador de usuario, no secretos. Solo se aceptan esas claves
+      Dockerfile (DOTNET_VERSION, ASPNET_VERSION, ASPNETCORE_URLS, ASPNETCORE_ENVIRONMENT, ASPNETCORE_HTTP_PORTS, APP_UID, la etiqueta org.opencontainers.image.version y los argumentos --gid y --uid del `groupadd` de la imagen base);
+      sus valores son versiones, puertos, el nombre del entorno y un identificador de usuario, no secretos. Solo se aceptan esas claves
       con nombre: la regla sigue activa para cualquier otra variable o archivo. Evidencia: salida de Dockle en el CI del PR #17.
     responsable: José Julián Hernández Hernández
     creada: 2026-10-15
