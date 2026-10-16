@@ -23,12 +23,7 @@ public class HealthEndpointTests
     public async Task Get_HealthReady_Returns200_TC_TT_API_01_02()
     {
         await using var postgis = await PostgisFixture.StartAsync();
-        using var factory = new KnockApiFactory(connectionString: postgis.ConnectionString);
-        using var client = factory.CreateClient();
-
-        using var response = await client.GetAsync(new Uri("/health/ready", UriKind.Relative));
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        await PostgisReadinessChecks.AssertReadyReturns200Async(postgis.ConnectionString);
     }
 
     [Fact]
