@@ -1,0 +1,2 @@
+# Hallazgos de Trivy aceptados. Cada CVE lleva el comentario «# EXC-NNN» con su excepción registrada
+# en security/exceptions.yaml (responsable y vencimiento de 90 días como máximo). Hoy no hay ninguno.
