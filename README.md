@@ -28,5 +28,10 @@ El proyecto .NET se crea en **TT-API-01** y la base en **TT-BD-01** (ver `specs/
 Para verificar PostGIS: `docker compose --env-file .env -f deploy/docker-compose.local.yml exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT postgis_version();"'`.
 Para reiniciar PostgreSQL sin borrar los datos: `docker compose --env-file .env -f deploy/docker-compose.local.yml restart postgres`. No uses `down -v` para un reinicio que deba conservar el volumen.
 
+La API recibe `ConnectionStrings:KnockDatabase` mediante .NET User Secrets o la variable `ConnectionStrings__KnockDatabase`. El comando EF local solo acepta `localhost` o `127.0.0.1`:
+```bash
+dotnet ef database update --project src/Knock.Api --context CatalogDbContext
+```
+
 ## Estructura
 `src/` API · `tests/` pruebas · `db/` scripts de base de datos · `deploy/` compose y Bicep · `specs/` · `docs/` · `security/` · `scripts/`
