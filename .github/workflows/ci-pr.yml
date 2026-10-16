@@ -339,6 +339,9 @@ jobs:
           image: knock-api:ci
           exit-code: "1"
           exit-level: warn
+          # EXC-003 (security/exceptions.yaml): falsos positivos de CIS-DI-0010 en variables de la imagen base.
+          # Solo estas claves; cualquier otra variable o archivo sospechoso sigue fallando.
+          accept-key: DOTNET_VERSION,ASPNET_VERSION,ASPNETCORE_URLS,APP_UID,org.opencontainers.image.version,--gid,--uid
 
   dast:
     name: Smoke + DAST (ZAP baseline)
