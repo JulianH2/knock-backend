@@ -12,6 +12,7 @@ COPY src/Knock.Api/ src/Knock.Api/
 RUN dotnet publish src/Knock.Api/Knock.Api.csproj -c Release --no-restore -o /app/publish /p:UseAppHost=false
 
 # ---- Ejecución ----
+# checkov:skip=CKV_DOCKER_2: EXC-002
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 ENV ASPNETCORE_URLS=http://+:8080 \
