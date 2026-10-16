@@ -14,6 +14,8 @@ from typing import Any
 
 
 DEFAULT_GEOJSON = Path(__file__).resolve().parents[1] / "seeds" / "colonias_tula.geojson"
+TULA_LONGITUDE_BOUNDS = (-99.40, -99.28)
+TULA_LATITUDE_BOUNDS = (20.00, 20.12)
 REQUIRED_PROPERTIES = (
     "nombre",
     "cp",
@@ -113,6 +115,16 @@ def _validate_position(position: Any, feature_number: int) -> None:
         raise GeoJsonValidationError(
             f"Feature {feature_number}: Tula coordinates must be west longitude (<0) "
             "and north latitude (>0), in [longitude, latitude] order"
+        )
+    if not TULA_LONGITUDE_BOUNDS[0] <= longitude <= TULA_LONGITUDE_BOUNDS[1]:
+        raise GeoJsonValidationError(
+            f"Feature {feature_number}: longitude {longitude} is outside the Tula pilot "
+            f"bounds {TULA_LONGITUDE_BOUNDS[0]}..{TULA_LONGITUDE_BOUNDS[1]}"
+        )
+    if not TULA_LATITUDE_BOUNDS[0] <= latitude <= TULA_LATITUDE_BOUNDS[1]:
+        raise GeoJsonValidationError(
+            f"Feature {feature_number}: latitude {latitude} is outside the Tula pilot "
+            f"bounds {TULA_LATITUDE_BOUNDS[0]}..{TULA_LATITUDE_BOUNDS[1]}"
         )
 
 
