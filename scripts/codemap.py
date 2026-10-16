@@ -251,7 +251,9 @@ def scan(root: Path) -> list[SourceFile]:
     files = []
     generated = generated_prefixes(root)
     parsers = {"csharp": parse_cs, "dart": parse_dart, "typescript": parse_ts}
-    for path in sorted(root.rglob("*")):
+    # Orden por ruta en texto (sensible a mayúsculas): sorted(Path) es distinto en Windows (sin distinguir) y Linux,
+    # y el mapa generado en una máquina no coincidiría con el que calcula el CI.
+    for path in sorted(root.rglob("*"), key=lambda q: q.relative_to(root).as_posix()):
         if path.suffix not in EXTENSIONS or not path.is_file():
             continue
         rel = path.relative_to(root).as_posix()
