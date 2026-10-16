@@ -7,6 +7,8 @@ name: ci-pr
 # en jobs que ejecutan código del PR, acciones fijadas a SHA (scripts/ci/pin_actions.py).
 # Repos privados sin GitHub Advanced Security: la revisión de dependencias y la subida de SARIF se saltan
 # (no se quitan los escáneres); con la variable de repositorio GHAS_ENABLED=true se activan.
+# Pasos que dependen de archivos que llegan con otras tareas (herramientas, DatabaseTest, ContractTest,
+# export_openapi.py, stryker-config.json, pila de CI del DAST) se omiten mientras no existan y corren solos al agregarlos.
 
 on:
   pull_request:
@@ -39,6 +41,7 @@ jobs:
       docker: ${{ steps.d.outputs.docker }}
       sql: ${{ steps.d.outputs.sql }}
       iac: ${{ steps.d.outputs.iac }}
+      dast: ${{ steps.d.outputs.dast }}
       spec: ${{ steps.d.outputs.spec }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -55,6 +58,7 @@ jobs:
             echo "docker=$([ -f src/Knock.Api/Dockerfile ] && echo true || echo false)"
             echo "sql=$(ls db/**/*.sql db/*.sql >/dev/null 2>&1 && echo true || echo false)"
             echo "iac=$([ -d deploy/bicep ] && echo true || echo false)"
+            echo "dast=$([ -f deploy/docker-compose.ci.yml ] && [ -f tests/smoke/smoke.sh ] && echo true || echo false)"
           } >> "$GITHUB_OUTPUT"
           KEY=$(echo "$HEAD_REF" | grep -oE 'KNOCK-[0-9]+' || true)
           SPEC=""
@@ -114,7 +118,9 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
       - run: dotnet restore Knock.slnx --locked-mode
-      - run: dotnet tool restore
+      - name: Restaurar herramientas de .NET
+        if: hashFiles('.config/dotnet-tools.json') != ''
+        run: dotnet tool restore
       - name: Build Release (warnings como errores, analizadores, NuGetAudit)
         run: dotnet build Knock.slnx -c Release --no-restore -warnaserror
       - name: Formato y estilo
@@ -126,8 +132,10 @@ jobs:
       - name: Seguridad negativa
         run: dotnet test tests/SecurityTest -c Release --no-build --collect:"XPlat Code Coverage" --results-directory reports/security --logger trx
       - name: Base de datos (migraciones, semillas, restricciones, PostGIS)
+        if: hashFiles('tests/DatabaseTest/*.csproj') != ''
         run: dotnet test tests/DatabaseTest -c Release --no-build --logger trx --results-directory reports/database
       - name: Contrato (captura del wire)
+        if: hashFiles('tests/ContractTest/*.csproj') != ''
         run: dotnet test tests/ContractTest -c Release --no-build --logger trx --results-directory reports/contract
       - name: Cobertura combinada
         run: dotnet tool run reportgenerator -reports:"reports/**/coverage.cobertura.xml" -targetdir:reports/coverage -reporttypes:"Cobertura;MarkdownSummaryGithub;Html"
@@ -137,6 +145,7 @@ jobs:
         if: always()
         run: cat reports/coverage/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
       - name: Contrato OpenAPI regenerado y sin cambios pendientes
+        if: hashFiles('scripts/export_openapi.py') != ''
         run: |
           python3 scripts/export_openapi.py --no-build
           git diff --exit-code -- docs/openapi.v1.json || { echo "::error::docs/openapi.v1.json cambió: regénéralo y súbelo con el código."; exit 1; }
@@ -162,8 +171,11 @@ jobs:
       - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-      - run: dotnet tool restore
+      - name: Restaurar herramientas de .NET
+        if: hashFiles('stryker-config.json') != ''
+        run: dotnet tool restore
       - name: Stryker sobre lo cambiado respecto a la rama destino
+        if: hashFiles('stryker-config.json') != ''
         env:
           BASE_REF: ${{ github.base_ref }}
         run: dotnet tool run dotnet-stryker -- --config-file stryker-config.json --since:"origin/$BASE_REF" --break-at 0
@@ -329,7 +341,7 @@ jobs:
   dast:
     name: Smoke + DAST (ZAP baseline)
     needs: [detect, container]
-    if: needs.detect.outputs.docker == 'true'
+    if: needs.detect.outputs.docker == 'true' && needs.detect.outputs.dast == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
