@@ -20,10 +20,8 @@ internal sealed class CatalogDbContextFactory : IDesignTimeDbContextFactory<Cata
         }
 
         LocalMigrationConnectionGuard.EnsureLocalHost(connectionString);
-        var options = new DbContextOptionsBuilder<CatalogDbContext>()
-            .UseNpgsql(connectionString, postgres => postgres.UseNetTopologySuite())
-            .UseSnakeCaseNamingConvention()
-            .Options;
-        return new CatalogDbContext(options);
+        var options = new DbContextOptionsBuilder<CatalogDbContext>();
+        CatalogDbContext.Configure(options, connectionString);
+        return new CatalogDbContext(options.Options);
     }
 }

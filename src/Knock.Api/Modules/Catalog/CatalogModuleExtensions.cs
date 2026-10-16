@@ -1,6 +1,5 @@
 using Knock.Api.Modules.Catalog.Data;
 using Knock.Api.Modules.Catalog.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace Knock.Api.Modules.Catalog;
 
@@ -10,7 +9,8 @@ public static class CatalogModuleExtensions
     public static IServiceCollection AddCatalogModule(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.AddSingleton<ICatalogApi, CatalogApi>();
+        services.AddScoped<ICatalogApi, CatalogApi>();
+        services.AddScoped<CatalogSeeder>();
         services.AddDbContext<CatalogDbContext>((provider, options) =>
         {
             var connectionString = provider.GetRequiredService<IConfiguration>()
@@ -20,9 +20,7 @@ public static class CatalogModuleExtensions
                 throw new InvalidOperationException("ConnectionStrings:KnockDatabase is not configured.");
             }
 
-            options
-                .UseNpgsql(connectionString, postgres => postgres.UseNetTopologySuite())
-                .UseSnakeCaseNamingConvention();
+            CatalogDbContext.Configure(options, connectionString);
         });
         return services;
     }
