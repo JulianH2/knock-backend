@@ -1,5 +1,6 @@
 using System.Net;
 using AwesomeAssertions;
+using Knock.IntegrationTest.Data;
 using Knock.IntegrationTest.Support;
 using Xunit;
 
@@ -21,7 +22,8 @@ public class HealthEndpointTests
     [Fact]
     public async Task Get_HealthReady_Returns200_TC_TT_API_01_02()
     {
-        using var factory = new KnockApiFactory();
+        await using var postgis = await PostgisFixture.StartAsync();
+        using var factory = new KnockApiFactory(connectionString: postgis.ConnectionString);
         using var client = factory.CreateClient();
 
         using var response = await client.GetAsync(new Uri("/health/ready", UriKind.Relative));
