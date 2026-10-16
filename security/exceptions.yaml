@@ -28,3 +28,29 @@ excepciones:
     creada: 2026-10-14
     vence: 2027-01-12
     plan: validar los nombres con `re.fullmatch` antes de llamar o importar `codemap` en lugar de lanzar un subproceso, y retirar la excepción antes de vencer.
+  - id: EXC-002
+    herramienta: checkov
+    regla: CKV_DOCKER_2
+    alcance: src/Knock.Api/Dockerfile
+    justificacion: >-
+      El Dockerfile no define HEALTHCHECK. La API se despliega en Azure Container Apps, que define sus sondas
+      (liveness y readiness sobre /health y /health/ready) fuera de la imagen, por lo que la instrucción no se usaría;
+      además la imagen base aspnet no incluye curl ni wget. Evidencia: TC-TT-API-01-15 (PR #17), donde /health y
+      /health/ready responden 200 en el contenedor, y el primer análisis de Checkov en el CI de ese PR.
+    responsable: José Julián Hernández Hernández
+    creada: 2026-10-15
+    vence: 2027-01-13
+    plan: definir las sondas en el Bicep de Container Apps (TT-AZ-02) y retirar la excepción; si se despliega sin sondas externas, agregar una herramienta de sondeo a la imagen.
+  - id: EXC-003
+    herramienta: dockle
+    regla: CIS-DI-0010
+    alcance: knock-api (imagen construida desde src/Knock.Api/Dockerfile); workflow ci-pr.yml, paso de Dockle (accept-key)
+    justificacion: >-
+      Falso positivo. Dockle marca como «credenciales» variables de la imagen base de Microsoft y del propio
+      Dockerfile (DOTNET_VERSION, ASPNET_VERSION, ASPNETCORE_URLS, APP_UID, la etiqueta org.opencontainers.image.version y los argumentos --gid y --uid del `groupadd` de la imagen base);
+      sus valores son versiones, un puerto y un identificador de usuario, no secretos. Solo se aceptan esas claves
+      con nombre: la regla sigue activa para cualquier otra variable o archivo. Evidencia: salida de Dockle en el CI del PR #17.
+    responsable: José Julián Hernández Hernández
+    creada: 2026-10-15
+    vence: 2027-01-13
+    plan: revisar con cada cambio de la imagen base y retirar las claves aceptadas que ya no aparezcan.
