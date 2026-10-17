@@ -113,7 +113,7 @@
 - Nota: `python scripts/codemap.py` (sin `--check`) regeneró `docs/architecture/*` con el código nuevo; esos cambios son del mapa generado.
 
 ## 2026-10-16 — TT-BD-01 (KNOCK-22), entregable B
-- Estado: implementado en `feature/KNOCK-22-efcore-initial-migration`; pendiente de gates finales antes del commit. EF Core/Npgsql/NetTopologySuite y snake_case configurados para `CatalogDbContext`; migración inicial habilita PostGIS y crea los ocho esquemas de módulos que existen en TT-API-01.
+- Estado: fusionado en `sprint-00` (PR #29) con todos los gates en verde. EF Core/Npgsql/NetTopologySuite y snake_case configurados para `CatalogDbContext`; migración inicial habilita PostGIS y crea los ocho esquemas de módulos que existen en TT-API-01.
 - Decisión: TT-API-01 no entregó contextos EF ni fixture de Testcontainers en `sprint-00`; se creó el contexto inicial de Catalog y una fixture reutilizable local a IntegrationTest contra `postgis/postgis:16-3.4`. Los demás módulos reciben esquema en la migración hasta que entreguen su contexto. Se reutilizan `HealthExtensions`, `/health/ready` y `KnockApiFactory`; no se añade paquete de health checks.
 - Seguridad: cadena de conexión por User Secrets o `ConnectionStrings__KnockDatabase`; la fábrica de migraciones EF rechaza hosts distintos de `localhost` y `127.0.0.1`. No guardar credenciales en archivos versionados ni leer el `.env` para informar salidas.
 - Dependencias añadidas: Npgsql EF Core + plugin NetTopologySuite, EFCore.NamingConventions, EF Design y Testcontainers.PostgreSql; sus licencias publicadas son permisivas; `dotnet list package --vulnerable --include-transitive` no reportó paquetes vulnerables. Testcontainers es necesario porque no existía fixture en TT-API-01.
