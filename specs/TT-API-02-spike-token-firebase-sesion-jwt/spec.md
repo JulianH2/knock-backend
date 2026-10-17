@@ -5,7 +5,7 @@
 > **Depende de:** TT-API-01, TT-FB-01
 > **Fuentes:** DECISIONES.md #2 y #21 · DECISION_TECNICA.md §8
 > **Skills:** auth-firebase-jwt, security-core, vertical-slice-api, testing-strategy-backend, story-workflow
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Comprobar al inicio la parte más riesgosa del acceso: que el servidor confíe en el código SMS validado por Firebase y entregue su propia sesión (JWT). Es un **spike**: lo que se entrega es un canje que funciona de punta a punta y lo aprendido, no la solución completa de HU-001.
@@ -158,6 +158,6 @@ Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 - Fuera de esas dos comprobaciones, no queda otra duda abierta.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-10-17
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
