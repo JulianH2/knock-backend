@@ -5,9 +5,9 @@
 - **Archivos de la tarea (por confirmar al implementar):**
   - `src/Knock.Api/Modules/Identity/Services/` (verificador del ID token con el Admin SDK, derivación del `sub` con GUID v5, emisor del JWT y del refresh token), todo `internal`.
   - Controllers `internal` de Identity (`POST /api/v1/auth/firebase`, `GET /api/v1/me`) con DTO y validador.
-  - `src/Knock.Api/Hosting/AuthenticationExtensions.cs` (JwtBearer, `ClockSkew` cero, HS256, `iss`/`aud`), `ControllerFeatureProvider` que descubre controllers `internal`, límite de tamaño del cuerpo, y `UseAuthentication`/`UseAuthorization` en `KnockApplicationExtensions`.
+  - `src/Knock.Api/Hosting/AuthenticationExtensions.cs` (JwtBearer, `ClockSkew` cero, HS256, `iss`/`aud`), `ControllerFeatureProvider` que descubre controllers `internal`, límite del cuerpo de 8 KiB, constante del namespace del GUID v5 (`bcfea58b-95dd-4c0e-80d1-baf839f2e36e`, inmutable), y `UseAuthentication`/`UseAuthorization` en `KnockApplicationExtensions`.
   - `src/Knock.Api/Knock.Api.csproj` y `packages.lock.json`: `FirebaseAdmin` y `Microsoft.AspNetCore.Authentication.JwtBearer`, **solo tras evaluarlos y registrarlos** en `Memoria.md`.
-  - Emulador de Firebase Auth: `npx firebase-tools` con proyecto `demo-` y versión fijada (herramienta por evaluar y registrar); soporte de pruebas en `tests/IntegrationTest/Support/`.
+  - Emulador de Firebase Auth: `npx firebase-tools` con proyecto `demo-` y `firebase-tools` 15.32.1 fijada (por evaluar y registrar; Java del emulador no verificado; el paso del CI lo agrega el revisor); las pruebas fallan con mensaje claro si el emulador no está disponible; soporte de pruebas en `tests/IntegrationTest/Support/`.
   - `tests/UnitTest/Identity/`, `tests/IntegrationTest/Identity/`, `tests/SecurityTest/Identity/` y `tests/SecurityTest/Secrets/JwtKeyConfigurationTests`.
   - `docs/evidencia/KNOCK-21-spike-firebase.md`.
 - **No tocar:** `.github/` (el paso del CI para el emulador lo agrega una persona), `scripts/`, `.agents/`, configuración de analizadores, constitución, `ModuleSurfaceTests` y `ModuleBoundaryTests`, `docs/openapi.v1.json` a mano; pipeline de seguridad §4 (otra tarea); módulos distintos de Identity.
