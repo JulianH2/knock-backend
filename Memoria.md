@@ -145,3 +145,9 @@
 - Decisión: la **revisión de pares es obligatoria**. Cada PR recibe antes al menos un comentario de revisión de otra persona (tabla «Quién revisa a quién» en `docs/FLUJO_EQUIPO.md`); la aprobación final y el merge siguen siendo del Tech Lead.
 - Porqué: que no revise solo una persona, y que el Tech Lead reciba el PR con una primera lectura hecha.
 - A evitar: fusionar un PR sin ningún comentario de revisión de pares; que el autor revise su propio PR.
+
+## 2026-10-19 — TT-CI-03 (KNOCK-139): emulador de Firebase Auth en el CI
+- Hecho: el job `build-test` de `ci-pr.yml` levanta el emulador de Auth (`npx firebase-tools@15.34.0 emulators:start --only auth --project demo-knock`, host 127.0.0.1, puerto 9099, UI desactivada) antes de las pruebas de integración y exporta `FIREBASE_AUTH_EMULATOR_HOST`. Sin Java, sin credenciales y con el proyecto ficticio `demo-knock`. Si no responde en 90 s, el paso falla y muestra el log.
+- Decisión: versión fija 15.34.0 (la 15.32.1 trae 7 vulnerabilidades altas en `npm audit`; la 15.34.0, 3). Riesgo residual aceptado: el emulador solo corre en el runner de CI, sin secretos ni acceso a datos reales; revisar al subir de versión.
+- A evitar: usar `firebase-tools@latest`, apuntar a un proyecto real de Firebase en el CI o guardar números y códigos de prueba reales.
+
