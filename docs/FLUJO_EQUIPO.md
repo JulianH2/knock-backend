@@ -17,7 +17,7 @@ Guía corta para empezar. Detalle del método: [`docs/SDD_GUIA.md`](SDD_GUIA.md)
 | 3 | Autor | Commit de la spec y **PR en *draft*** hacia `sprint-XX` (título `KNOCK-N · <ID> <título>`, plantilla completa) | PR en draft |
 | 4 | **Revisor (Tech Lead)** | Lee la spec en el PR y comenta. Cuando está bien, **edita a mano las líneas de aprobación** (Estado: Aprobada, casillas marcadas, nombre y fecha) y sube ese commit a la misma rama | Spec Aprobada |
 | 5 | Autor + agente | En la **misma rama** implementa con el agente constructor, con pruebas y evidencia real. Sin spec aprobada el guardián bloquea el commit de código | Código y pruebas |
-| 6 | Autor | Con el CI en verde y la evidencia, marca el PR como *ready*. 1 revisión de otra persona + Code Owners + check `gate`. Se fusiona con «Rebase and merge»; después la spec pasa a Firmada | Merge |
+| 6 | Autor | Con el CI en verde y la evidencia, marca el PR como *ready*. Otra persona puede revisarlo y comentar (recomendado), pero **la aprobación final y el merge los hace el Tech Lead** con «Rebase and merge»; nadie más fusiona. Se exige el check `gate` y, en zonas sensibles, el Code Owner. Después la spec pasa a Firmada | Merge |
 
 Reglas que no cambian:
 - **El agente nunca aprueba ni firma una spec**, y el autor tampoco aprueba la suya: lo hace el revisor.
