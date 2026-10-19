@@ -58,3 +58,9 @@
 - El primer CI real destapó varios falsos positivos (Gitleaks, Semgrep, Dockle, Checkov) y un error del propio script del mapa de código; todos se resolvieron sin bajar umbrales y con excepciones registradas y con vencimiento.
 - Un conflicto casi seguro en `Memoria.md` cada vez que dos PR se abren en paralelo: conviene fusionar en orden y rebasar con frecuencia.
 - La guía `docs/FLUJO_EQUIPO.md` y las fichas en `docs/backlog/` salieron esta semana para que cada persona sepa por dónde empezar en el Sprint 1.
+
+## Decisión de roles (retrospectiva)
+
+- Los roles **se mantienen**: José Julián (SM, PO y Tech Lead; aprueba y fusiona), Guillermo (backend), Erick (app Flutter) y Alexis (base de datos y ML, y panel Angular).
+- Se agrega la **revisión de pares obligatoria**: cada PR recibe antes al menos un comentario de revisión de otra persona; la aprobación final y el merge son del Tech Lead. Quién revisa a quién está en `docs/FLUJO_EQUIPO.md`.
+- La demo integrada (KNOCK-32) no se hizo el 16 de octubre; se reprograma en dos pasos: entrar con número de prueba el 23 de octubre y ver la colonia el 30.

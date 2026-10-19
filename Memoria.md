@@ -139,3 +139,9 @@
 - Decisión: se creó `tests/DatabaseTest` (la spec lo exige). Enlaza `PostgisFixture` y `CatalogTestDatabase` de IntegrationTest. Cada prueba levanta su contenedor porque un fixture de colección de xUnit tiene que ser público y CA1515 lo impide.
 - Pendiente: Mastrantos, Bugambilias, Del Llano y Tierra Blanca (CSV SEPOMEX) no tienen polígono ni punto central en el GeoJSON, y `centro` es obligatorio; no se sembraron y no se inventaron coordenadas. Falta un responsable que dibuje sus puntos centrales.
 - A evitar: el `#pragma warning disable 612, 618` que genera EF en Designer y snapshot (lo rechaza `check_exceptions.py`; se quita a mano como en KNOCK-22); migraciones `public` (rompen TC-TT-API-01-09); constantes privadas sin `_` (IDE1006).
+
+## 2026-10-19 — KNOCK-33: decisión de roles y revisión de pares
+- Decisión (retrospectiva de la semana de prueba): los roles **se mantienen**. José Julián: SM, PO y Tech Lead (aprueba y fusiona); Guillermo: backend; Erick: app Flutter; Alexis: base de datos y ML, y el panel Angular.
+- Decisión: la **revisión de pares es obligatoria**. Cada PR recibe antes al menos un comentario de revisión de otra persona (tabla «Quién revisa a quién» en `docs/FLUJO_EQUIPO.md`); la aprobación final y el merge siguen siendo del Tech Lead.
+- Porqué: que no revise solo una persona, y que el Tech Lead reciba el PR con una primera lectura hecha.
+- A evitar: fusionar un PR sin ningún comentario de revisión de pares; que el autor revise su propio PR.
