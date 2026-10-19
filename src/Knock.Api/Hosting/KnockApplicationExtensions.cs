@@ -8,10 +8,12 @@ internal static class KnockApplicationExtensions
     {
         builder.Services
             .AddKnockLogging(builder.Configuration)
-            .AddControllers();
+            .AddControllers()
+            .AddInternalControllers();
         builder.Services
             .AddKnockProblemDetails()
             .AddKnockApiVersioning()
+            .AddKnockAuthentication()
             .AddKnockOpenApi()
             .AddKnockHealth()
             .AddKnockModules();
@@ -22,6 +24,9 @@ internal static class KnockApplicationExtensions
     {
         app.UseExceptionHandler();
         app.UseSerilogRequestLogging();
+        app.UseMiddleware<RequestBodyLimitMiddleware>();
+        app.UseAuthentication();
+        app.UseAuthorization();
         app.MapKnockHealth();
         app.MapKnockOpenApi(app.Environment);
         app.MapControllers();

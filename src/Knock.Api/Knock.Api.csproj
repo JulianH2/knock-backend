@@ -7,6 +7,8 @@
   <ItemGroup>
     <PackageReference Include="Asp.Versioning.Mvc" Version="10.2.1" />
     <PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
+    <PackageReference Include="FirebaseAdmin" Version="3.7.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.13" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -18,6 +20,7 @@
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Knock.UnitTest" />
     <InternalsVisibleTo Include="Knock.IntegrationTest" />
     <InternalsVisibleTo Include="Knock.SecurityTest" />
     <InternalsVisibleTo Include="Knock.DatabaseTest" />
