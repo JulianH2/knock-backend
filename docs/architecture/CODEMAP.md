@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-16T16:31:26Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-10-17T19:39:48Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -9,8 +9,8 @@
 |---|---|---|---|---|
 | `Assistant` | -, services | 3 | 3 | 1 |
 | `Catalog` | -, data, domain, services | 10 | 10 | 11 |
-| `Identity` | -, services | 3 | 3 | 1 |
-| `Knock.Api` | -, hosting | 8 | 8 | 11 |
+| `Identity` | -, controllers, dtos, services | 11 | 15 | 10 |
+| `Knock.Api` | -, common, hosting | 12 | 15 | 20 |
 | `Messaging` | -, services | 3 | 3 | 1 |
 | `Notifications` | -, services | 3 | 3 | 1 |
 | `Reputation` | -, services | 3 | 3 | 1 |
@@ -69,11 +69,31 @@
 
 - `src/Knock.Api/Modules/Identity/IIdentityApi.cs` — interface `IIdentityApi`
 - `src/Knock.Api/Modules/Identity/IdentityModuleExtensions.cs` — class `IdentityModuleExtensions`
-  - `AddIdentityModule()`:8
+  - `AddIdentityModule()`:9
+
+**controllers**
+
+- `src/Knock.Api/Modules/Identity/Controllers/V1/AuthController.cs` — class `AuthController`
+  - `ExchangeFirebaseToken()`:24
+- `src/Knock.Api/Modules/Identity/Controllers/V1/MeController.cs` — class `MeController`
+  - `Get()`:18
+
+**dtos**
+
+- `src/Knock.Api/Modules/Identity/Dtos/SessionDtos.cs` — record `FirebaseExchangeRequest`, record `SessionResponse`, record `MeResponse`
 
 **services**
 
+- `src/Knock.Api/Modules/Identity/Services/FirebaseIdTokenVerifier.cs` — class `FirebaseIdTokenVerifier`
+  - `VerifyAsync()`:16, `Dispose()`:36
+- `src/Knock.Api/Modules/Identity/Services/FirebaseSessionService.cs` — class `FirebaseSessionService`
+  - `FirebaseSessionService()`:4, `ExchangeAsync()`:10
+- `src/Knock.Api/Modules/Identity/Services/IFirebaseIdTokenVerifier.cs` — record `FirebaseIdentity`, interface `IFirebaseIdTokenVerifier`
 - `src/Knock.Api/Modules/Identity/Services/IdentityApi.cs` — class `IdentityApi`
+- `src/Knock.Api/Modules/Identity/Services/SessionTokenIssuer.cs` — record `IssuedSession`, class `SessionTokenIssuer`
+  - `SessionTokenIssuer()`:12, `Issue()`:18
+- `src/Knock.Api/Modules/Identity/Services/UserIdDerivation.cs` — class `UserIdDerivation`
+  - `Derive()`:16
 
 ### Knock.Api
 
@@ -81,14 +101,22 @@
 
 - `src/Knock.Api/Program.cs` — —
 
+**common**
+
+- `src/Knock.Api/Common/Security/JwtSettings.cs` — record `JwtSettings`
+- `src/Knock.Api/Common/Security/JwtSettingsFactory.cs` — class `JwtSettingsFactory`
+  - `Create()`:14
+
 **hosting**
 
 - `src/Knock.Api/Hosting/ApiVersioningExtensions.cs` — class `ApiVersioningExtensions`
   - `AddKnockApiVersioning()`:7
+- `src/Knock.Api/Hosting/AuthenticationExtensions.cs` — class `AuthenticationExtensions`, class `InternalControllerFeatureProvider`, class `AuthenticationStartupCheck`
+  - `AddKnockAuthentication()`:14, `AddInternalControllers()`:55, `IsController()`:73, `StartAsync()`:90, `StopAsync()`:108
 - `src/Knock.Api/Hosting/HealthExtensions.cs` — class `HealthExtensions`, class `PostgresReadinessHealthCheck`
   - `AddKnockHealth()`:12, `MapKnockHealth()`:19, `CheckHealthAsync()`:29
 - `src/Knock.Api/Hosting/KnockApplicationExtensions.cs` — class `KnockApplicationExtensions`
-  - `AddKnockApi()`:7, `UseKnockApi()`:21
+  - `AddKnockApi()`:7, `UseKnockApi()`:23
 - `src/Knock.Api/Hosting/LoggingExtensions.cs` — class `LoggingExtensions`
   - `AddKnockLogging()`:9
 - `src/Knock.Api/Hosting/ModulesExtensions.cs` — class `ModulesExtensions`
@@ -97,6 +125,8 @@
   - `AddKnockOpenApi()`:7, `MapKnockOpenApi()`:14
 - `src/Knock.Api/Hosting/ProblemDetailsExtensions.cs` — class `ProblemDetailsExtensions`
   - `AddKnockProblemDetails()`:8
+- `src/Knock.Api/Hosting/RequestBodyLimitMiddleware.cs` — class `ProblemResponses`, class `RequestBodyLimitMiddleware`
+  - `WriteAsync()`:9, `RequestBodyLimitMiddleware()`:30, `InvokeAsync()`:32
 
 ### Messaging
 
