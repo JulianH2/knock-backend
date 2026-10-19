@@ -1,4 +1,5 @@
 using Knock.Api.Modules.Identity.Services;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Knock.Api.Modules.Identity;
 
@@ -8,7 +9,11 @@ public static class IdentityModuleExtensions
     public static IServiceCollection AddIdentityModule(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<IIdentityApi, IdentityApi>();
+        services.AddSingleton<SessionTokenIssuer>();
+        services.AddSingleton<IFirebaseIdTokenVerifier, FirebaseIdTokenVerifier>();
+        services.AddSingleton<FirebaseSessionService>();
         return services;
     }
 }
