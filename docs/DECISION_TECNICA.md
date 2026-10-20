@@ -4,6 +4,7 @@
 > **Reemplaza** las decisiones #18 (plataforma), #19 (panel) y #20 (chat) de `DECISIONES.md`. La #4 (verificación) queda como la cerró el equipo en la propuesta v2.0: fotos cifradas con llave propia y borradas al decidir o a los 7 días.
 > **Repositorios:** `knock-backend` (API + scripts de base de datos + infraestructura) y `knock-frontend` (app Flutter + panel Angular). Este documento es idéntico en ambos.
 > **Rector de implementación:** `.specify/memory/constitution.md`. Este documento explica el **porqué**; la constitución fija el **qué no se negocia**.
+> **Actualización 2026-10-20:** la arquitectura (sección 2), la base de datos (sección 5), la infraestructura como código y la nube (sección 10) y los roles se reemplazan por los ADR de [`docs/decisiones/`](decisiones/README.md): microservicios, MongoDB en Azure DocumentDB, Terraform, Firebase con el backend en Azure, roles y costos. **Donde haya contradicción, manda el ADR.** El resto de este documento sigue vigente.
 
 ---
 

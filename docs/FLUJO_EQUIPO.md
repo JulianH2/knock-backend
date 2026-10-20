@@ -85,9 +85,12 @@ Todo PR necesita al menos un comentario de revisión de otra persona **antes** d
 
 | PR de… | Revisor de pares |
 |---|---|
-| Guillermo (API, backend) | Alexis |
-| Alexis (base de datos, panel Angular) | Guillermo (backend y base de datos) · Erick (panel) |
-| Erick (app Flutter y su endpoint de oficios) | Guillermo (app) · Alexis (endpoint) |
-| José Julián (gobierno, CI, Azure, Firebase) | quien tenga más contexto del cambio |
+| Guillermo (servicios de Identidad y de Mensajería) | Alexis · Erick |
+| Alexis (servicios de Mercado y de Asistente, base de datos) | Guillermo · Erick |
+| Erick (app Flutter) | José Julián o quien tenga más contexto; un backend si toca el contrato de la API |
+| José Julián (gobierno, CI, Azure, Terraform, Firebase) | quien tenga más contexto del cambio |
 
-La tabla rota cuando el equipo lo decida (retrospectiva); si el revisor asignado no puede, el autor pide a otra persona y lo anota en el PR.
+La tabla rota cuando el equipo lo decida (retrospectiva); si el revisor asignado no puede, el autor pide a otra persona y lo anota en el PR. Detalle y motivos en [ADR-005](decisiones/ADR-005-roles-carga-y-revision.md).
+
+### Tareas libres (asignación por carga)
+El panel de administración y la landing no tienen dueño fijo: llevan la etiqueta `resp-libre` en Jira. Se reparten en la planeación del sprint mirando la carga de cada persona; quien toma una tarea se la asigna **antes de empezar**, con un máximo de 2 tareas en curso por persona. A mitad del sprint, lo que siga libre lo asigna el líder. Las tareas con fecha dura que bloquean otras (por ejemplo, la landing y la URL de privacidad de Google Play) llevan dueño y fecha desde la planeación.
