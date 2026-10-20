@@ -1,6 +1,6 @@
 # ADR-005 — Roles, asignación por carga y revisión de pares
 
-> **Estado:** decidida por el Tech Lead el 2026-10-20; pendiente de revisión en el PR que la incorpora.
+> **Estado:** decidida por el Tech Lead el 2026-10-20.
 > **Reemplaza:** la decisión de roles de `Memoria.md` («2026-10-19 — KNOCK-33») y la tabla «Quién revisa a quién» de `docs/FLUJO_EQUIPO.md`.
 > **Tarea:** TT-GES-06.
 
@@ -10,7 +10,7 @@ La arquitectura pasó a microservicios (ADR-001) y la base a MongoDB (ADR-002). 
 ## Decisión
 | Persona | Rol |
 |---|---|
-| José Julián | Líder del proyecto (Scrum Master, Product Owner y Tech Lead). Infraestructura, CI/CD, documentación y seguridad. **Apoya a todos**, toma tareas libres según su carga y es quien hace la **revisión final, aprueba y fusiona**. |
+| José Julián | Líder del proyecto (Scrum Master, Product Owner y Tech Lead). Infraestructura, CI/CD, documentación y seguridad. **Apoya a todos**, toma tareas libres según su carga y es quien hace la **revisión final, aprueba y fusiona**. Dueño del **Gateway** junto con Guillermo (ADR-001). |
 | Guillermo | Backend: servicios de **Identidad y confianza** y de **Mensajería y notificaciones**. |
 | Alexis | Backend: servicios de **Mercado** y de **Asistente (IA y ML)**, y la base de datos. |
 | Erick | **Frontend:** app Flutter. Es además revisor de pares de los PR de backend. |
@@ -31,10 +31,12 @@ Todo PR necesita al menos un comentario de revisión de otra persona **antes** d
 |---|---|
 | Guillermo (Identidad, Mensajería) | Alexis · Erick |
 | Alexis (Mercado, Asistente, base de datos) | Guillermo · Erick |
-| Erick (app Flutter) | José Julián o quien tenga más contexto; un backend si toca el contrato de la API |
+| Erick (app Flutter) | Guillermo o Alexis (un backend); José Julián queda para la revisión final, no como revisor de pares |
+| Quien tome una tarea libre (panel, landing) | La persona con más contexto que no sea el autor |
+| Gateway | Guillermo (dueño) · revisa Alexis |
 | José Julián (gobierno, CI, Azure, Terraform, Firebase) | quien tenga más contexto |
 
 ## Consecuencias
-- Se actualizan `docs/FLUJO_EQUIPO.md`, `.github/CODEOWNERS` (por servicio) y las etiquetas `resp-*` en Jira.
+- Se actualizan `docs/FLUJO_EQUIPO.md`, `.github/CODEOWNERS` por servicio (PR backend #45 y frontend #25) y las etiquetas `resp-*` en Jira (las etiquetas viejas `resp-angel` se corrigen a Alexis cuando se actualicen).
 - Las historias del panel interno quedan como `resp-libre`, con la prioridad más baja frente a lo que evalúa el docente (nube, base de datos, backend, móvil y landing).
 - Aprobar y fusionar sigue siendo del Tech Lead; los agentes no aprueban ni firman specs.

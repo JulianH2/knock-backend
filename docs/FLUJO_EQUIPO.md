@@ -87,7 +87,8 @@ Todo PR necesita al menos un comentario de revisión de otra persona **antes** d
 |---|---|
 | Guillermo (servicios de Identidad y de Mensajería) | Alexis · Erick |
 | Alexis (servicios de Mercado y de Asistente, base de datos) | Guillermo · Erick |
-| Erick (app Flutter) | José Julián o quien tenga más contexto; un backend si toca el contrato de la API |
+| Erick (app Flutter) | Guillermo o Alexis (un backend); José Julián queda para la revisión final |
+| Quien tome una tarea libre (panel, landing) | La persona con más contexto que no sea el autor |
 | José Julián (gobierno, CI, Azure, Terraform, Firebase) | quien tenga más contexto del cambio |
 
 La tabla rota cuando el equipo lo decida (retrospectiva); si el revisor asignado no puede, el autor pide a otra persona y lo anota en el PR. Detalle y motivos en [ADR-005](decisiones/ADR-005-roles-carga-y-revision.md).
