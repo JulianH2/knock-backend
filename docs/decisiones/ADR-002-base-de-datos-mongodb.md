@@ -1,8 +1,8 @@
 # ADR-002 — Base de datos: MongoDB en Azure DocumentDB
 
-> **Estado:** decidida por el Tech Lead el 2026-10-20; pendiente de revisión en el PR que la incorpora. **La confirmación técnica depende del spike TT-BD-05.**
+> **Estado:** decidida por el Tech Lead el 2026-10-20. **La confirmación técnica depende del spike TT-BD-05.**
 > **Reemplaza:** la sección 5 («Datos: PostgreSQL + PostGIS») y la fila «Base de datos» de la sección 1 de `docs/DECISION_TECNICA.md`.
-> **Tarea:** TT-GES-06 · Impacto de implementación: TT-BD-05, TT-BD-06, TT-BD-07, TT-BD-08.
+> **Tarea:** TT-GES-06 · Impacto de implementación: TT-BD-05, TT-BD-06†, TT-BD-07†, TT-BD-08†.
 
 ## Contexto
 Los lineamientos del curso (punto 14) piden bases de datos **NoSQL**; el número de bases depende del proyecto. Knock usaba PostgreSQL 16 con PostGIS y EF Core. El equipo decide pasar a NoSQL y, como ahora hay un servicio por dominio, **una base lógica por servicio**.
@@ -19,17 +19,17 @@ Los lineamientos del curso (punto 14) piden bases de datos **NoSQL**; el número
 ## Opciones evaluadas
 | Opción | Gratuito | Veredicto |
 |---|---|---|
-| **Azure DocumentDB (MongoDB)** | Clúster dedicado de 32 GB sin vencimiento; sin alta disponibilidad ni respaldos automáticos; disponible solo en algunas regiones; posible pausa por inactividad **(confirmar)** | ✅ Elegida |
-| MongoDB Atlas M0 | Según la documentación oficial, 100 conexiones, 100 operaciones por segundo y 1 GB por semana de entrada y de salida; un clúster gratis por proyecto | Plan B. Con varios servicios abriendo conexiones se queda corta |
+| **Azure DocumentDB (MongoDB)** | Clúster dedicado de 32 GB sin vencimiento; **un clúster gratuito por suscripción**; **sin alta disponibilidad ni respaldo y restauración**; **se pausa tras 60 días de inactividad**; entre nuestras 5 regiones permitidas solo en **West US, France Central y Norway East** ([Microsoft](https://learn.microsoft.com/en-us/azure/documentdb/free-tier), actualizada 2026-06) | ✅ Elegida |
+| MongoDB Atlas M0 (Free) | 0.5 GB de almacenamiento, 500 conexiones, 100 operaciones por segundo, 10 GB de entrada y 10 GB de salida por semana; un clúster gratuito por proyecto; copias diarias ([MongoDB](https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/)) | Plan B viable, con límites estrechos: 0.5 GB y 100 operaciones por segundo (la transferencia se frena al excederlos) |
 | Cosmos DB for NoSQL | 1000 RU/s y 25 GB por cuenta | Transacciones solo dentro de una partición; menos natural para nuestras máquinas de estado |
 | Firestore | 1 GiB, 50 000 lecturas y 20 000 escrituras al día; se corta al pasarse | Sin polígonos ni texto nativos; el tope diario de lecturas no alcanza para un mapa; está fuera de Azure |
 | MongoDB en un contenedor propio | Solo el costo de cómputo | Obliga a operar réplicas y respaldos nosotros mismos |
 
 ## Reglas
 1. **Cada servicio es dueño de su base lógica**; ningún otro servicio la consulta (ADR-001).
-2. Las colecciones, llaves e índices se definen en la spec de cada historia y se versionan como **scripts de índices y semillas** (TT-BD-09), que también son parte de la entrega.
+2. Las colecciones, llaves e índices se definen en la spec de cada historia y se versionan como **scripts de índices y semillas** (TT-BD-09†), que también son parte de la entrega.
 3. **Sin respaldo automático:** se programa `mongodump` a un almacenamiento de Azure y se prueba la restauración (TT-BD-04).
-4. **Redis** es un complemento opcional (caché, bloqueo de tokens, respaldo de SignalR), no una base principal.
+4. **Redis** es un complemento opcional (caché y respaldo de SignalR), no una base principal. **La lista de revocación de tokens** (cierre de sesión, lineamiento 10) vive en una colección de MongoDB del servicio de Identidad con **índice TTL** sobre la expiración del token; solo pasa a Redis si ADR-006 lo aprueba.
 5. Los secretos de conexión viven en Key Vault (TT-SEC-01); nunca en el repositorio, que es público.
 
 ## Qué se retira
@@ -46,4 +46,4 @@ EF Core, Npgsql, NetTopologySuite, las migraciones SQL, el esquema por módulo, 
 Si falla alguno que no tenga solución razonable, se pasa al plan B y se registra el cambio aquí.
 
 ## Consecuencias
-Se reemplazan TT-BD-01 y TT-BD-02 (ya terminadas con PostgreSQL) por TT-BD-06; se adaptan TT-API-01, TT-API-07, TT-BD-03, TT-BD-04, TT-QA-01 y el CI. Las historias de zona, mapa, búsqueda, solicitudes y panel cambian sus criterios (ver el plan de adaptación).
+Se reemplazan TT-BD-01 y TT-BD-02 (ya terminadas con PostgreSQL) por TT-BD-06†; se adaptan TT-API-01, TT-API-07, TT-BD-03, TT-BD-04, TT-QA-01 y el CI. († tarea planificada que se crea en Jira; ver el plan en [`docs/PLAN_ADAPTACION.md`](../PLAN_ADAPTACION.md).) Las historias de zona, mapa, búsqueda, solicitudes y panel cambian sus criterios (ver el plan de adaptación).

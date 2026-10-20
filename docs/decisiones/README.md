@@ -2,6 +2,8 @@
 
 Cada decisión de arquitectura y de proceso que cambia lo escrito en `docs/DECISION_TECNICA.md` tiene su propio archivo. `DECISION_TECNICA.md` conserva el razonamiento original; **cuando un ADR dice «Reemplaza», manda el ADR.**
 
+> **Regla transitoria.** La constitución (`.specify/memory/constitution.md`) dice «ante conflicto, manda esta constitución» y todavía describe el monolito, PostgreSQL y Bicep. Hasta que se publique la constitución con los cambios de las decisiones (PR aparte, en los dos repos, con aprobación del equipo y versión nueva), **los ADR prevalecen solo en lo que reemplazan**, y esta regla queda aprobada cuando el equipo apruebe este PR. Pendiente: ese PR de la constitución (KNOCK-144).
+
 | ADR | Tema | Fecha | Estado |
 |---|---|---|---|
 | [001](ADR-001-microservicios.md) | Arquitectura: microservicios con una puerta de entrada | 2026-10-20 | Decidida |
@@ -11,4 +13,4 @@ Cada decisión de arquitectura y de proceso que cambia lo escrito en `docs/DECIS
 | [005](ADR-005-roles-carga-y-revision.md) | Roles, asignación por carga y revisión de pares | 2026-10-20 | Decidida |
 | [006](ADR-006-costos-y-ventana-de-evaluacion.md) | Costos en Azure y ventana de evaluación | 2026-10-20 | Decidida |
 
-Otros documentos relacionados: [`../VERSIONAMIENTO.md`](../VERSIONAMIENTO.md) · [`../CUMPLIMIENTO_LINEAMIENTOS.md`](../CUMPLIMIENTO_LINEAMIENTOS.md).
+Otros documentos relacionados: [`../PLAN_ADAPTACION.md`](../PLAN_ADAPTACION.md) · [`../VERSIONAMIENTO.md`](../VERSIONAMIENTO.md) · [`../CUMPLIMIENTO_LINEAMIENTOS.md`](../CUMPLIMIENTO_LINEAMIENTOS.md).
