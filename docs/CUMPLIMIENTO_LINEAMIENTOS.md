@@ -23,7 +23,7 @@
 | 15b | Endpoints eficientes | TT-API-08, TT-API-09 | Caché, paginación, compresión, índices | ⬜ |
 | 15c | Imágenes en el CDN de la nube | TT-API-10 | CDN delante del almacenamiento | ⬜ |
 | 15d | Observabilidad (eventos y errores) | TT-OBS-01 | Application Insights con trazas distribuidas | ⬜ |
-| 15e | JWT para autenticación | TT-API-02 | Servicio de Identidad emite y valida JWT | 🔶 (PR #26) |
+| 15e | JWT para autenticación | TT-API-02 | Servicio de Identidad emite y valida JWT | ✅ (PR #26 fusionado el 2026-10-20) |
 | 15f | Rendimiento: serializadores, caché, límite de tasa, middleware, paginación, índices, compresión | TT-API-03, 06, 08, 09 | Cada técnica con su prueba | 🔶 |
 | 15g | Crear y eliminar infraestructura y despliegue como paso | TT-AZ-02, TT-AZ-03, TT-CD-01 | `terraform apply` y `destroy` en el pipeline | ⬜ |
 | 16a | Despliegue desde GitHub a Google Play | TT-CD-01, TT-TIE-05 | Workflow de publicación | ⬜ |
