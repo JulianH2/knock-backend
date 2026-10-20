@@ -2,6 +2,7 @@
 
 ## Issue y spec
 - Jira: KNOCK-
+- Servicio afectado: <Identidad y confianza · Mensajería y notificaciones · Mercado · Asistente · Gateway · App · Panel · Landing · Transversal>
 - Spec: `specs/<ID>-…/spec.md` (estado: Aprobada)
 
 ## Criterios
