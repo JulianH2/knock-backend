@@ -151,3 +151,11 @@
 - Decisión: versión fija 15.34.0 (la 15.32.1 trae 7 vulnerabilidades altas en `npm audit`; la 15.34.0, 3). Riesgo residual aceptado: el emulador solo corre en el runner de CI, sin secretos ni acceso a datos reales; revisar al subir de versión.
 - A evitar: usar `firebase-tools@latest`, apuntar a un proyecto real de Firebase en el CI o guardar números y códigos de prueba reales.
 
+## 2026-10-20 — TT-GES-06: adaptación a los lineamientos del curso
+- Decisión: la arquitectura pasa a **microservicios** (Identidad y confianza, Mensajería y notificaciones, Mercado, Asistente) con un gateway; la base a **MongoDB en Azure DocumentDB** (plan B: Atlas), una base lógica por servicio; la IaC a **Terraform**; se mantiene Firebase (Auth y FCM) con el backend en Azure y el plan Blaze con controles de gasto. Detalle en `docs/decisiones/ADR-001` a `ADR-006`.
+- Decisión: roles nuevos. Erick frontend y revisor de los PR de backend; Guillermo y Alexis backend (Alexis también base de datos y ML); José Julián líder, apoyo a todos y revisor final. El panel y la landing se asignan por carga (`resp-libre`). Reemplaza la decisión del 2026-10-19 (KNOCK-33).
+- Hecho: `docs/VERSIONAMIENTO.md` (matriz de versiones) y `docs/CUMPLIMIENTO_LINEAMIENTOS.md` (matriz de los 19 lineamientos).
+- Porqué: el docente espera microservicios y bases NoSQL, y pide caché, CDN, moderación, landing y publicación en Google Play antes del 2 de diciembre.
+- Pendiente: el spike TT-BD-05 confirma DocumentDB (disponibilidad, polígonos, transacciones, texto y conexiones); hasta entonces nada se migra. Los archivos protegidos (`AGENTS.md`, `constitution.md`) que mencionan el monolito, PostgreSQL y EF Core los actualiza el Tech Lead.
+- A evitar: empezar a separar servicios antes de fusionar los PR abiertos de Sprint 1 y del spike; dejar sin dueño las tareas con fecha dura; escribir en el repositorio (público) claves, cadenas de conexión o códigos de prueba.
+
