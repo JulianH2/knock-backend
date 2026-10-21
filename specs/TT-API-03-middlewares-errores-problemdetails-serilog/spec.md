@@ -5,7 +5,7 @@
 > **Depende de:** TT-API-01. **No depende** del spike de MongoDB (TT-BD-05, ADR-002): esta tarea no tiene persistencia ni toca la base de datos.
 > **Fuentes:** DECISION_TECNICA.md §4 · constitución §4 (pipeline) · ADR-001 (reglas 3 y 5)
 > **Skills:** foundation-backend, security-core, api-contract-openapi, testing-strategy-backend, story-workflow
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Que todos los endpoints respondan los errores con el mismo formato, que cada petición se pueda rastrear de punta a punta con un `X-Correlation-Id` y que la API tenga una primera defensa contra el abuso (límite de peticiones por IP y validación de entrada con respuesta uniforme).
@@ -180,6 +180,6 @@ Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
   - Qué redes o proxies son de confianza para `ForwardedHeaders` en Container Apps (los valores reales) no se conoce todavía; se pone la configuración sin valores de producción y una persona los define al desplegar (no se infieren aquí).
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-10-21
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
