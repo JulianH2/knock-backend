@@ -50,7 +50,7 @@ Tener Firebase listo para que el inicio de sesión con celular y las notificacio
 1. Crear el proyecto "knock" en la consola de Firebase.
 1. Activar Authentication → Sign-in method → Teléfono.
 1. Agregar 4 números de prueba con su código fijo (uno por integrante) en "Números de teléfono para pruebas"; registrarlos en docs/infra.md.
-1. Registrar la app Android con el paquete mx.knock.app y las huellas SHA-1 y SHA-256 de depuración de cada integrante; registrar la app iOS con el bundle mx.knock.app.
+1. Registrar la app Android con el paquete app.knock.mobile y las huellas SHA-1 y SHA-256 de depuración de cada integrante; registrar la app iOS con el bundle app.knock.mobile.
 1. Descargar google-services.json y GoogleService-Info.plist y repartirlos por un canal privado (no al repositorio).
 1. Generar una cuenta de servicio para el backend (TT-API-02) y entregarla a Guillermo por un canal privado.
 1. Revisar en la documentación de Firebase los límites y el costo por SMS real (pendiente #1 de DECISIONES) y anotarlo.
