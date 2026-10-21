@@ -18,7 +18,7 @@
 
 ## T5 — Rate limiting y ForwardedHeaders
 - **Estado:** pendiente (solo por IP; `/health` exento)
-- **Verificar:** TC-TT-API-03-03 · TC-TT-API-03-04 · TC-TT-API-03-06 · TC-TT-API-03-07 (TC-TT-API-03-05 diferido al gateway)
+- **Verificar:** TC-TT-API-03-03 · TC-TT-API-03-04 · TC-TT-API-03-05 · TC-TT-API-03-06 · TC-TT-API-03-07
 
 ## T6 — Gates de compilación y formato
 - **Estado:** pendiente
