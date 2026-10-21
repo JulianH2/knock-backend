@@ -184,4 +184,3 @@
 - Decisión: la constitución pasa de la 2.0.2 a la **2.1.0** para alinearla con los ADR-001 a ADR-006: microservicios con gateway, MongoDB en Azure DocumentDB, Terraform, Redis opcional y versiones por componente (`docs/VERSIONAMIENTO.md`). El manual `AGENTS.md` del backend cambia las líneas escritas a mano (migraciones, PostGIS, Bicep, estructura de `src/`).
 - Pendiente (se hace con TT-BD-06 y TT-ARQ-01, porque necesitan el resultado del spike TT-BD-05): reescribir las skills `postgis-geo`, `database-scripts`, `events-outbox`, `foundation-backend`, `vertical-slice-api` y `testing-strategy-backend`, los agentes `db-builder` y `api-builder`, y revisar las rutas protegidas y reglas de Semgrep sobre EF Core. Hasta entonces, la regla transitoria de `docs/decisiones/README.md` indica que los ADR prevalecen en lo que reemplazan.
 - A evitar: dejar que un agente escriba código con la arquitectura vieja porque una skill todavía la describe; ante la duda, mandan los ADR.
-
