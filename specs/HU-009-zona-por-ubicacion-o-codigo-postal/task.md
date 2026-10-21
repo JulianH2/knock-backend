@@ -2,18 +2,21 @@
 
 > No en este sprint: se implementa después de TT-BD-06 (ver `plan.md` §0).
 
-## T1 — Contrato y validaciones (firme)
+## T1 — Contrato y validaciones
 - **Verificar:** TC-HU-009-03 · TC-HU-009-04
-- **Pendiente:** OpenAPI de `/zonas/*` y `/me/zona`; validadores de `lat`/`lng` y CP; prueba de contrato.
+- **Pendiente:** OpenAPI de `GET /zonas/cp/{cp}` y `POST /zonas/lista-espera`; validador de CP; prueba de contrato. La colonia por punto es `GET /colonias/en-punto` de TT-API-07 (no se define aquí).
 
-## T2 — Consultas de zona
-- **Verificar:** TC-HU-009-01 · TC-HU-009-03 · TC-HU-009-04
-- **Pendiente:** Endpoints `GET /zonas/colonia` y `GET /zonas/cp/{cp}` con unitarias; redacción de coordenadas en logs con prueba `ConsoleCapture`. Consulta por punto e índice: pendiente de TT-BD-05.
+## T2 — Colonias por CP
+- **Verificar:** TC-HU-009-03 · TC-HU-009-04
+- **Pendiente:** `GET /zonas/cp/{cp}` con unitarias (en cobertura y fuera con ciudad piloto) y CP inválido → `400`.
 
-## T3 — Lista de espera y zona del perfil
-- **Verificar:** TC-HU-009-05 · TC-HU-009-06 · TC-HU-009-07
-- **Pendiente:** `POST /zonas/lista-espera` y `PUT /me/zona` (colonia elegida o Centro por defecto) con unitarias; colección de lista de espera: pendiente de TT-BD-05; contrato Identidad ↔ Mercado: pregunta abierta (b).
+## T3 — Lista de espera
+- **Verificar:** TC-HU-009-05
+- **Pendiente:** `POST /zonas/lista-espera` idempotente por usuario y CP con unitarias; colección `lista_espera` con índice único `(usuarioId, cp)` como script versionado.
 
-## T4 — Integración y rendimiento (pendiente de TT-BD-05)
-- **Verificar:** TC-HU-009-01 · TC-HU-009-03 · TC-HU-009-04 · TC-HU-009-05 · TC-HU-009-07
-- **Pendiente:** Pruebas contra el catálogo real y colonia por punto < 100 ms.
+## T4 — Integración
+- **Verificar:** TC-HU-009-03 · TC-HU-009-04 · TC-HU-009-05
+- **Pendiente:** Pruebas con Testcontainers `documentdb-local` contra el catálogo de TT-BD-06; `maxPoolSize` fijo en la conexión.
+
+## Fuera de esta historia (dependencia)
+- `PUT /me/zona` en Identidad (CA6 «Ahora no» → Centro, CA7 perfil solo con `coloniaId` + `cp`), con validación síncrona por `ICatalogApi` / `Knock.Contracts`: espera a HU-001/HU-002.
