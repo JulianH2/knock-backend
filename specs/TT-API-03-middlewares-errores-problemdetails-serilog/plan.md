@@ -19,7 +19,7 @@
 
 ## 2. Riesgos y efectos secundarios
 - **Orden del pipeline:** un cambio de orden afecta todas las respuestas (correlación primero, manejador de excepciones antes del limitador, limitador antes de autenticar). Se prueba por comportamiento (caso 16).
-- **Solo por IP:** personas detrás de la misma IP (NAT) comparten el límite; el límite por usuario se difiere al gateway (caso 05 diferido).
+- **Solo por IP:** personas detrás de la misma IP (NAT) comparten el límite; el límite por usuario lo hará el gateway (TT-ARQ-02, KNOCK-154); el caso 05 lo documenta.
 - **Rate limiting por proceso:** con 2 réplicas el límite efectivo se duplica; sin Redis (ADR-006). Aceptado (decisión 8), documentado en `docs/rate-limit-matrix.md`.
 - **IP real detrás de proxy:** `ForwardedHeaders` mal configurado deja evadir el límite (caso 06) o limita por la IP del proxy (todos los usuarios comparten partición).
 - **Pruebas existentes:** el límite nuevo no debe dar 429 a las suites de TT-API-01/02 (ventana corta por configuración de pruebas). `/auth/firebase` se mantiene en 400: TC-TT-API-02-11 no cambia.
@@ -35,7 +35,7 @@
 | TC-TT-API-03-02 | `SecurityTest/Validation/ValidationErrorLeakTests` | seguridad negativa |
 | TC-TT-API-03-03 | `IntegrationTest/RateLimiting/AuthRateLimitTests` | integración |
 | TC-TT-API-03-04 | `IntegrationTest/RateLimiting/GlobalRateLimitTests` | integración |
-| TC-TT-API-03-05 | DIFERIDO al gateway (sin prueba en esta tarea) | — |
+| TC-TT-API-03-05 | `IntegrationTest/RateLimitTests` | integración |
 | TC-TT-API-03-06 | `SecurityTest/RateLimiting/ForwardedHeadersEvasionTests` | seguridad negativa |
 | TC-TT-API-03-07 | `SecurityTest/RateLimiting/RateLimitResponseLeakTests` | seguridad negativa |
 | TC-TT-API-03-08 | `IntegrationTest/Correlation/CorrelationIdTests` | integración |
