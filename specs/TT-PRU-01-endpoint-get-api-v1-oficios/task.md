@@ -10,8 +10,7 @@
 - **Agente:** api-builder
 
 ## T2 — Controller y descubrimiento [Back]
-- **Crear:** `Modules/Catalog/Controllers/V1/OficiosController.cs` (`internal sealed`, `[ApiVersion("1.0")]`, `[Route("api/v{version:apiVersion}/oficios")]`, `[AllowAnonymous]`, `[ProducesResponseType]`, sin `try/catch` ni `DbContext`); `Hosting/ModuleControllerFeatureProvider.cs`.
-- **Modificar:** `Hosting/KnockApplicationExtensions.cs` (`ConfigureApplicationPartManager`).
+- **Crear:** `Modules/Catalog/Controllers/V1/OficiosController.cs` (`internal sealed`, `[ApiVersion("1.0")]`, `[Route("api/v{version:apiVersion}/oficios")]`, `[AllowAnonymous]`, `[ProducesResponseType]`, sin `try/catch` ni `DbContext`). El proveedor de controllers `internal` ya existe (`AddInternalControllers()`, TT-API-02): no se crea otro.
 - **Verificar:** TC-TT-PRU-01-01 · TC-TT-PRU-01-05 · TC-TT-PRU-01-06 · regresión TC-TT-API-01-07, TC-TT-API-01-09, TC-TT-API-01-10
 - **No hacer:** hacer público el controller o el DTO; tocar `ModuleSurfaceTests`; `#pragma`/`NoWarn` para avisos de analizadores (si aparece CA1812, consultarlo con el revisor).
 - **Agente:** api-builder
