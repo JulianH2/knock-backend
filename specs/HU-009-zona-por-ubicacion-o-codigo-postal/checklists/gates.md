@@ -2,10 +2,12 @@
 
 > Estado: borrador. Casillas sin marcar; no representa aprobación, implementación ni ejecución de pruebas.
 
-- [ ] Resolver las preguntas abiertas (a)–(d) de spec §8 y obtener aprobación humana.
-- [ ] Esperar TT-BD-05 y TT-BD-06 antes de implementar (no en este sprint).
-- [ ] Añadir y ejecutar una prueba por cada TC-HU-009 de este repositorio (TC-HU-009-02 se verifica en knock-frontend).
-- [ ] Verificar con `ConsoleCapture` que las coordenadas no aparecen en logs; y, tras TT-BD-05, en ninguna colección.
-- [ ] Tras TT-BD-05: verificar que la consulta por punto usa el índice fijado por el spike y tarda < 100 ms.
+- [ ] Obtener aprobación humana de la spec (preguntas (a)–(d) de §8 resueltas por el Tech Lead).
+- [ ] Confirmar que se fusionó #48 (evidencia del spike TT-BD-05) antes de implementar.
+- [ ] Esperar TT-BD-06 antes de implementar (no en este sprint).
+- [ ] Confirmar que este cambio no define una ruta de colonia por punto (es `/colonias/en-punto` de TT-API-07) ni `PUT /me/zona` (Identidad).
+- [ ] Añadir y ejecutar una prueba por cada TC-HU-009 de este repositorio (TC-HU-009-01 y 02 se verifican en knock-frontend).
+- [ ] Integración con Testcontainers `documentdb-local`: índice único de `lista_espera` y ningún documento con coordenadas.
+- [ ] Verificar `maxPoolSize` fijo en la conexión del servicio.
 - [ ] Actualizar `docs/endpoints.md`, `docs/rate-limit-matrix.md` y `docs/openapi.v1.json`.
 - [ ] Ejecutar `python scripts/sdd_lint.py --trace HU-009` y los gates de `AGENTS.md §5`; registrar resultados reales.
