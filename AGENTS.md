@@ -2,7 +2,7 @@
 
 > Manual operativo para **cualquier agente de IA** (Claude Code, Codex, Copilot, Cursor, Gemini CLI, opencode…) y para las personas del equipo.
 > Rector: `.specify/memory/constitution.md` (espejo `./constitution.md`). Porqué: `docs/DECISION_TECNICA.md`. Este archivo dice **cómo**.
-> Este repositorio contiene la **API** (ASP.NET Core, monolito modular) y los **scripts de base de datos**. La app móvil y el panel viven en `knock-frontend`.
+> Este repositorio contiene la **API** (ASP.NET Core, microservicios con gateway), los **scripts de base de datos** (MongoDB) y la **infraestructura** (Terraform). La app móvil y el panel viven en `knock-frontend`.
 
 ## 0. Antes de tocar nada
 1. Lee `Memoria.md` y la spec del issue: `specs/<ID>-*/spec.md` (índice en `specs/README.md`).
@@ -12,12 +12,12 @@
 
 ## 1. Forma de trabajo
 - 1 issue de Jira = 1 rama = 1 PR hacia la rama `sprint-XX` actual. Ramas, commits y PR según `CONTRIBUTING.md`: commits en inglés (`type(scope): description (KNOCK-N)`, p. ej. `feat(requests): upload up to 5 photos with the request (KNOCK-45)`), ramas `<tipo>/KNOCK-N-english-kebab-description`.
-- Orden: contrato (spec §4 + OpenAPI) → migración → dominio/servicio + unitarias → controller + integración, seguridad negativa y contrato → eventos → `scripts/export_openapi.py` → gates → `Memoria.md` → informe.
+- Orden: contrato (spec §4 + OpenAPI) → índices y colecciones → dominio/servicio + unitarias → controller + integración, seguridad negativa y contrato → eventos → `scripts/export_openapi.py` → gates → `Memoria.md` → informe.
 - Si cambias el contrato, dilo en el PR: `contract-publish.yml` abrirá el PR correspondiente en knock-frontend.
 
 ## 2. Comandos
 ```bash
-# Infraestructura local (PostGIS, Redis, Azurite, emulador de Firebase Auth)
+# Infraestructura local (MongoDB, Redis, Azurite, emulador de Firebase Auth)
 docker compose -f deploy/docker-compose.local.yml up -d
 # API
 dotnet restore Knock.slnx && dotnet tool restore
@@ -46,9 +46,9 @@ semgrep scan --config .semgrep/semgrep.yaml --error
 
 ## 4. Límites — no hacer
 - **Nunca** agregues atribución a IA en commits o PR: ni trailers `Co-Authored-By` de agentes (Claude, Copilot, Codex, Gemini, Cursor, opencode o `noreply@anthropic.com`), ni líneas «Generated with…». El uso de IA se declara solo en la sección «Uso de IA» de la plantilla del PR. Un `Co-Authored-By` de una persona del equipo (trabajo en parejas) sí se permite. El hook `commit-msg` y el CI rechazan lo primero.
-- No leer ni escribir tablas, Domain o Services de otro módulo (usa `I<Modulo>Api` o eventos).
+- No leer ni escribir colecciones, Domain o Services de otro servicio o módulo (usa el contrato del servicio, `I<Modulo>Api` o eventos).
 - No `try/catch` ni `DbContext` en controllers. No SQL interpolado. No estado de negocio en memoria del proceso.
-- No editar migraciones fusionadas, fixtures de contrato a mano ni `docs/openapi.v1.json` a mano.
+- No editar scripts de índices o semillas ya fusionados, fixtures de contrato a mano ni `docs/openapi.v1.json` a mano.
 - No desactivar pruebas, reglas o escáneres; no bajar umbrales; no suprimir sin `EXC-NNN`.
 - No agregar paquetes sin evaluación; no tocar archivos protegidos (`.github/`, `scripts/`, configuración de analizadores, constitución).
 - No operar Azure, producción ni bases reales; no usar datos reales (solo ficticios e INE de muestra).
@@ -73,7 +73,7 @@ semgrep scan --config .semgrep/semgrep.yaml --error
 Matriz en la skill `security-core` (OWASP Top 10 + API Top 10). Toda entrada se valida en el backend. Biométricos según la constitución §6. Excepciones solo por `security/exceptions.yaml`.
 
 ## 8. Pruebas
-Skill `testing-strategy-backend`. Testcontainers con `postgis/postgis`; nunca EF InMemory; `TimeProvider` falso; builders; nombres con el caso TC.
+Skill `testing-strategy-backend`. Testcontainers con MongoDB; nunca bases en memoria; `TimeProvider` falso; builders; nombres con el caso TC.
 
 ## 9. Sub-agentes
 Fuente en `.agents/agents/` (`scripts/sync_agents.py` los traduce para cada herramienta).
@@ -90,10 +90,10 @@ Fuente en `.agents/agents/` (`scripts/sync_agents.py` los traduce para cada herr
 ## 10. Estructura
 | Ruta | Contenido |
 |---|---|
-| `src/Knock.Api/` | API (módulos, Hosting, Middleware, Common) |
+| `src/` | Servicios (`Knock.Gateway`, `Knock.Identity.Api`, `Knock.Messaging.Api`, `Knock.Market.Api`, `Knock.Assistant.Api`) y `Knock.Contracts`; hoy `Knock.Api` mientras se crea TT-ARQ-01 |
 | `tests/` | UnitTest (+Architecture), IntegrationTest, SecurityTest, DatabaseTest, ContractTest, perf (k6), fuzz (RESTler), chaos, smoke |
 | `db/` | semillas, catálogo SEPOMEX, scripts, respaldos |
-| `deploy/` | docker-compose local/CI, Bicep |
+| `deploy/` | docker-compose local/CI, Terraform |
 | `specs/` | specs por issue · `docs/` decisión técnica, contratos vivos, arquitectura, QA · `security/` excepciones |
 | `scripts/` | gates, mapa de código, guardián de agentes, CI |
 

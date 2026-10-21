@@ -179,3 +179,9 @@
 - Porqué: el docente espera microservicios y bases NoSQL, y pide caché, CDN, moderación, landing y publicación en Google Play antes del 2 de diciembre.
 - Pendiente: el spike TT-BD-05 confirma DocumentDB (disponibilidad, polígonos, transacciones, texto y conexiones); hasta entonces nada se migra. Los archivos protegidos (`AGENTS.md`, `constitution.md`) que mencionan el monolito, PostgreSQL y EF Core los actualiza el Tech Lead.
 - A evitar: empezar a separar servicios antes de fusionar los PR abiertos de Sprint 1 y del spike; dejar sin dueño las tareas con fecha dura; escribir en el repositorio (público) claves, cadenas de conexión o códigos de prueba.
+
+## 2026-10-20 — TT-GES-06 (KNOCK-144): constitución 2.1.0
+- Decisión: la constitución pasa de la 2.0.2 a la **2.1.0** para alinearla con los ADR-001 a ADR-006: microservicios con gateway, MongoDB en Azure DocumentDB, Terraform, Redis opcional y versiones por componente (`docs/VERSIONAMIENTO.md`). El manual `AGENTS.md` del backend cambia las líneas escritas a mano (migraciones, PostGIS, Bicep, estructura de `src/`).
+- Pendiente (se hace con TT-BD-06 y TT-ARQ-01, porque necesitan el resultado del spike TT-BD-05): reescribir las skills `postgis-geo`, `database-scripts`, `events-outbox`, `foundation-backend`, `vertical-slice-api` y `testing-strategy-backend`, los agentes `db-builder` y `api-builder`, y revisar las rutas protegidas y reglas de Semgrep sobre EF Core. Hasta entonces, la regla transitoria de `docs/decisiones/README.md` indica que los ADR prevalecen en lo que reemplazan.
+- A evitar: dejar que un agente escriba código con la arquitectura vieja porque una skill todavía la describe; ante la duda, mandan los ADR.
+
