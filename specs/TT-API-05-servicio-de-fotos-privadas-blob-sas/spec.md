@@ -10,10 +10,10 @@
 ## 1. Objetivo
 Dar a Knock **un solo servicio** para subir y ver fotos privadas, que reutilizarán el perfil (HU-002), las solicitudes y los trabajos. Los archivos viven en contenedores privados de Blob Storage y solo se accede a ellos con enlaces SAS de corta vida (`DECISIONES.md #23`, `docs/DECISION_TECNICA.md` «Archivos privados»). En desarrollo y pruebas se usa Azurite.
 
-**Primera entrega (antes de TT-BD-06):** solo lo que no depende de la base de datos: SAS de 5 min, validación por contenido real (no por extensión) y quitar EXIF. El registro de cada archivo (propietario, estado) queda detrás de una interfaz interna cuya implementación con MongoDB llega con TT-BD-06, después de que el spike TT-BD-05 (KNOCK-147) decida la base (ADR-002).
+**Primera entrega (antes de TT-BD-06):** solo lo que no depende de la base de datos: SAS de 5 min, validación por contenido real (no por extensión) y quitar EXIF. El registro de cada archivo (propietario, estado) queda detrás de una interfaz interna cuya implementación llega con TT-BD-06. El spike TT-BD-05 (KNOCK-147) recomienda **Azure DocumentDB** (API compatible con MongoDB, ADR-002).
 
 ## 2. Historia y casos de prueba
-**TT-API-05** — Tarea técnica. Las pruebas usan Azurite real (Testcontainers) e imágenes sintéticas generadas en la prueba; nunca fotos de personas reales. Las partes que necesitan MongoDB (propietario y estado del archivo) están **pendientes de TT-BD-06**.
+**TT-API-05** — Tarea técnica. Las pruebas usan Azurite real (Testcontainers) e imágenes sintéticas generadas en la prueba; nunca fotos de personas reales. La autenticación usa la sesión JWT real de TT-API-02 (KNOCK-21). Las partes que necesitan la base de documentos (propietario y estado del archivo) están **pendientes de TT-BD-06**.
 
 | Caso | Criterio (Dado / Cuando / Entonces) | Verificación |
 |---|---|---|
@@ -25,19 +25,20 @@ Dar a Knock **un solo servicio** para subir y ver fotos privadas, que reutilizar
 - **In (este repositorio):**
   - `POST /api/v1/archivos/subidas`: recibe el uso previsto (tipo de recurso), el tipo de contenido y el tamaño declarado; rechaza con `422` tamaños > 8 MB y tipos distintos de JPG/PNG; devuelve un SAS **de escritura** sobre un blob nuevo de un contenedor privado de cuarentena, válido 5 min.
   - `POST /api/v1/archivos/{id}/confirmar`: descarga el blob, verifica **por contenido real** (firma/magic bytes y decodificación completa, no por extensión ni `Content-Type`) que es JPG o PNG y que mide ≤ 8 MB; aplica la orientación, **quita EXIF** y demás metadatos; genera una versión reducida; guarda ambas en el contenedor privado definitivo; borra el original de cuarentena. Si falla, `422` y borra el blob.
-  - Lectura: SAS **de lectura** de 5 min solo para quien tiene permiso sobre el recurso (ver §4 y §8, pregunta b).
-  - Registro del archivo detrás de una interfaz interna (`IArchivosStore` o similar); su implementación con MongoDB está **pendiente de TT-BD-06**.
-  - Azurite en `docker-compose` para desarrollo y pruebas, y fixture de Testcontainers para IntegrationTest.
+  - Lectura: SAS **de lectura** de 5 min solo para quien tiene permiso sobre el recurso (ver §4 y §5).
+  - Registro del archivo detrás de una interfaz interna (`IArchivosStore` o similar); su implementación sobre Azure DocumentDB (API de MongoDB) está **pendiente de TT-BD-06**.
+  - Azurite solo con Testcontainers en las pruebas (servicios reales en integración). **No** se toca `deploy/docker-compose.local.yml`: se rehace en TT-ARQ-01.
+  - Blob real: solo Azurite hasta TT-AZ-02 (KNOCK-34); la configuración queda lista para identidad administrada.
   - Contenedores privados (acceso anónimo deshabilitado); nunca URLs públicas ni SAS de cuenta o de contenedor.
   - Comprobación `ready` de Blob en `/health/ready` (pendiente desde TT-API-01).
 - **Out:**
   - Fotos de verificación (INE y selfie) de HU-021: tienen su propio cifrado, retención y auditoría (constitución §6).
   - Crear la cuenta de Storage real en Azure (TT-AZ-02, KNOCK-34).
   - **CDN (lineamiento 15c):** no aplica a estas fotos. Son privadas y se sirven con SAS de 5 min, que no deben cachearse en un CDN. Queda para TT-API-10, y solo para versiones públicas.
-  - Moderación de imágenes (lineamiento 16b, TT-IA-02): fuera de esta entrega; ver §8, pregunta f.
+  - Moderación de imágenes (lineamiento 16b): fuera de esta tarea. Se deja documentado el punto de enganche en `POST /archivos/{id}/confirmar` (después de validar el contenido y antes de mover a `archivos`); TT-IA-02 decide proveedor, costo y la respuesta de la API ante un rechazo.
   - Antivirus y borrado programado de subidas sin confirmar (se anota como límite).
   - Las pantallas de cada HU que usa el servicio.
-- **Dependencias:** TT-API-01 (KNOCK-20) para el proyecto base; TT-API-02 para la autenticación JWT; TT-BD-05 (KNOCK-147) y TT-BD-06 para MongoDB; HU-001 para el usuario real.
+- **Dependencias:** TT-API-01 (KNOCK-20) para el proyecto base; TT-API-02 (KNOCK-21, PR #26, fusionado en `sprint-01`) para la sesión JWT: emisor y validación reales; TT-BD-05 (KNOCK-147) y TT-BD-06 para la base de documentos; HU-001 para el usuario real.
 
 ## 4. Contratos API y eventos
 Diseño propuesto; se fija en OpenAPI al implementar. `[ApiVersion("1.0")]`, autenticados, errores con `ProblemDetails`, límite de peticiones en `docs/rate-limit-matrix.md`.
@@ -51,16 +52,17 @@ Diseño propuesto; se fija en OpenAPI al implementar. `[ApiVersion("1.0")]`, aut
 - **Códigos de tamaño, sin mezclarlos:**
   - `413 Payload Too Large`: el **cuerpo HTTP** de la petición a la API (el JSON) supera el límite del endpoint; lo responde `RequestBodyLimitMiddleware` (`src/Knock.Api/Hosting/`) antes de llegar al controller. La foto nunca pasa por la API (va directo a Blob con el SAS).
   - `422 Unprocessable Entity`: el **archivo** no es válido: tamaño declarado o real > 8 MB, o tipo declarado o real distinto de JPG/PNG.
-- **Contrato para otros servicios:** Identidad y confianza (foto de perfil, HU-002) y los módulos del propio Mercado usan el servicio **solo por su contrato** (`IMediaApi` dentro de Mercado; tipos en `Knock.Contracts` y REST a través del gateway entre servicios, ADR-001). Ninguno lee la colección de archivos. El contrato permite confirmar que un `archivoId` está `listo` y es de un usuario, y emitir un SAS de lectura **después** de que el dueño del recurso autorizó a quien lo pide.
+- **Contrato para otros servicios:** Identidad y confianza (foto de perfil, HU-002) y los módulos del propio Mercado usan el servicio **solo por su contrato**: `IMediaApi` mientras la API sea un solo proyecto; cuando se separen los servicios, el contrato pasa a `Knock.Contracts` (TT-ARQ-03, ADR-001). Ninguno lee la colección de archivos. El contrato permite confirmar que un `archivoId` está `listo` y es de un usuario, y emitir un SAS de lectura **después** de que el dueño del recurso autorizó a quien lo pide.
 - **Eventos:** ninguno en esta tarea.
 - Actualizar `docs/endpoints.md`, `docs/rate-limit-matrix.md` y regenerar `docs/openapi.v1.json` con `scripts/export_openapi.py`.
 
 ## 5. Modelo de datos
 - **Decisión (Tech Lead, revisión de esta spec):** el módulo de archivos (`Media`) vive en el **servicio de Mercado** (`Knock.Market.Api`, base lógica `market`, ADR-001), junto a Catalog, Requests y Reputation. Expone solo `AddMediaModule` e `IMediaApi`; el resto es `internal`. Requiere agregarlo a `tests/UnitTest/Architecture/ModuleCatalog.cs`.
-- **Colección MongoDB `archivos`** en la base `market` (ADR-002): `{ _id, propietarioId, uso, estado, contentType, tamanoBytes, blobOriginal, blobReducido, ancho, alto, creadoEn, confirmadoEn }`; `estado ∈ {pendiente, listo, rechazado}`. Índices y forma definitiva **pendientes de TT-BD-06**; hasta entonces el acceso va por una interfaz interna del módulo y no se crea esquema.
+- **Base:** el spike TT-BD-05 (KNOCK-147) recomienda **Azure DocumentDB** (API compatible con MongoDB, ADR-002).
+- **Colección `archivos`** en la base `market`: `{ _id, propietarioId, uso, estado, contentType, tamanoBytes, blobOriginal, blobReducido, ancho, alto, creadoEn, confirmadoEn }`; `estado ∈ {pendiente, listo, rechazado}`. Índices: uno por `propietario_id` y uno por `estado`. Pool de conexiones con `maxPoolSize` fijo. La implementación es de **TT-BD-06**; hasta entonces el acceso va por una interfaz interna del módulo y no se crea esquema.
 - Nombres de blob generados por el servidor (UUID v7), nunca con el nombre que envía el cliente.
 - Contenedores: `cuarentena` (subidas sin confirmar) y `archivos` (definitivo), ambos privados.
-- **Dueño del recurso antes de HU-001:** `propietarioId` es el `sub` del JWT de la petición; no hay referencia a una colección de usuarios (no existe). El permiso de lectura es: (1) el propietario, o (2) otro módulo o servicio que llamó al contrato tras validar su propia regla (p. ej. Requests autoriza al técnico invitado a ver las fotos de una solicitud). Media no conoce las reglas de otros módulos.
+- **Dueño del recurso:** `propietarioId` es el `sub` del JWT de la petición, emitido y validado por la sesión real de TT-API-02 (KNOCK-21); no hay referencia a una colección de usuarios hasta HU-001. El permiso de lectura es: (1) el propietario, o (2) otro módulo o servicio que llamó al contrato tras validar su propia regla (p. ej. Requests autoriza al técnico invitado a ver las fotos de una solicitud). Media no conoce las reglas de otros módulos.
 - **Librería de imágenes (comparación):**
 
 | | SixLabors.ImageSharp | SkiaSharp |
@@ -70,7 +72,7 @@ Diseño propuesto; se fija en OpenAPI al implementar. `[ApiVersion("1.0")]`, aut
 | Dependencias | 100 % administrado, sin binarios nativos | Binarios nativos de Skia: en Linux/contenedor requiere `SkiaSharp.NativeAssets.Linux.NoDependencies` |
 | EXIF y orientación | API directa para quitar perfiles y `AutoOrient` | Recodificar desde el bitmap descarta metadatos; la orientación se aplica a mano con `SKCodec.EncodedOrigin` |
 
-  **Recomendación:** **SkiaSharp (MIT)**, porque su licencia no tiene condiciones de ingresos y no deja dudas en la cadena de suministro; el costo es el paquete nativo de Linux en el Dockerfile y unas líneas para la orientación. Si el equipo prefiere ImageSharp, registrar en el PR que el proyecto cumple las condiciones de Apache 2.0 de la Split License. En ambos casos el paquete pasa por la evaluación de dependencias antes de agregarse.
+  **Decisión (Tech Lead):** **SkiaSharp (MIT)**, porque su licencia no tiene condiciones de ingresos y no deja dudas en la cadena de suministro; el costo es el paquete nativo de Linux en el Dockerfile y unas líneas para la orientación. Queda sujeta a la evaluación del paquete al implementar (licencia, mantenimiento y vulnerabilidades conocidas), con el resultado registrado en `Memoria.md`.
 
 ## 6. Seguridad, privacidad y amenazas
 | Amenaza | Control | Caso que lo prueba |
@@ -93,9 +95,9 @@ Diseño propuesto; se fija en OpenAPI al implementar. `[ApiVersion("1.0")]`, aut
 | Tipo | ¿Aplica? | Motivo / herramienta |
 |---|---|---|
 | Integración con Azurite | Sí | Testcontainers con Azurite: TC-TT-API-05-01 a 03 (SAS, validación por contenido, EXIF). |
-| Integración con MongoDB | **Pendiente de TT-BD-06** | Testcontainers de MongoDB para el registro del archivo (propietario, estado, `404` a ajenos, `409` ya confirmado). Hasta entonces, la interfaz interna se prueba con un doble en unitarias. |
+| Integración con la base de documentos | **Pendiente de TT-BD-06** | Testcontainers (imagen compatible con la API de MongoDB) para el registro del archivo (propietario, estado, `404` a ajenos, `409` ya confirmado). Hasta entonces, la interfaz interna se prueba con un doble en unitarias. |
 | Unitarias | Sí | Detección de tipo por magic bytes, límites de tamaño/dimensiones, cálculo de vencimiento con `TimeProvider` falso, regla de permiso de lectura. |
-| Seguridad negativa | Sí (parcial) | Sin JWT → `401`; cuerpo JSON excesivo → `413`; SAS de lectura no permite escribir y viceversa; URLs con SAS ausentes en logs. Confirmar o leer archivo ajeno → `404` **pendiente de TT-BD-06**. `tests/SecurityTest`. |
+| Seguridad negativa | Sí (parcial) | Con el emisor y la validación JWT reales de TT-API-02: sin JWT → `401`; cuerpo JSON excesivo → `413`; SAS de lectura no permite escribir y viceversa; URLs con SAS ausentes en logs. Confirmar o leer archivo ajeno → `404` **pendiente de TT-BD-06**. `tests/SecurityTest`. |
 | Contrato | Sí | `/api/v1/archivos/*` contra `docs/openapi.v1.json`. `tests/ContractTest`. |
 | Arquitectura | Sí | El módulo solo expone `AddMediaModule` e `IMediaApi` (`ModuleSurfaceTests` y `ModuleBoundaryTests`). |
 | Eventos, rendimiento, UI | No | Sin eventos; carga y UI fuera de esta tarea. |
@@ -107,16 +109,18 @@ Diseño propuesto; se fija en OpenAPI al implementar. `[ApiVersion("1.0")]`, aut
 
 **Decisiones (revisión del Tech Lead):**
 - El módulo de archivos vive en el servicio de **Mercado**; Identidad y confianza lo consume solo por su contrato, sin leer la colección.
-- La persistencia es una colección de MongoDB; hasta TT-BD-06 queda detrás de una interfaz interna y la primera entrega cubre solo SAS, validación por contenido y EXIF.
+- La persistencia es la colección `archivos` en Azure DocumentDB (recomendación del spike TT-BD-05), con índices por `propietario_id` y por `estado` y `maxPoolSize` fijo; hasta TT-BD-06 queda detrás de una interfaz interna y la primera entrega cubre solo SAS, validación por contenido y EXIF.
 - CDN no aplica a estas fotos privadas (TT-API-10, solo versiones públicas).
 
-**Preguntas abiertas:**
-- **(a) Librería.** ¿SkiaSharp (MIT, recomendada) o ImageSharp (Split License)? Requiere evaluación de paquete antes de agregarlo.
-- **(b) Sesión JWT.** No hay autenticación JWT en el código de esta rama (Memoria: pasó a TT-API-02) ni usuario de HU-001. ¿Se espera a TT-API-02 o las pruebas usan un esquema de autenticación de prueba con `sub` sintético mientras tanto?
-- **(c) Azurite.** ¿Se agrega al `deploy/docker-compose.local.yml` existente (hoy solo tiene `postgres`) o a un compose de pruebas aparte? En CI las pruebas usan Testcontainers de todos modos.
-- **(d) Blob real.** TT-AZ-02 (KNOCK-34) aún no crea la cuenta de Storage; esta tarea solo se verifica con Azurite y deja la configuración lista para identidad administrada.
-- **(e) Llamada desde Identidad y confianza.** ¿El contrato entre servicios es REST interno detrás del gateway o se adelanta a TT-ARQ-03? Mientras siga el monolito, es `IMediaApi`.
-- **(f) Moderación de imágenes (lineamiento 16b, TT-IA-02).** ¿Se modera antes de guardar? El punto de enganche natural es `POST /archivos/{id}/confirmar`, después de validar el contenido y antes de mover a `archivos`; falta decidir proveedor, costo y qué responde la API si se rechaza.
+**Preguntas resueltas (Tech Lead):**
+- **(a) Librería — Resuelto.** SkiaSharp (MIT), sujeta a evaluación (licencia, mantenimiento, vulnerabilidades) al implementar y registro en `Memoria.md`.
+- **(b) Sesión JWT — Resuelto.** Ya existe (TT-API-02, KNOCK-21, PR #26, fusionado en `sprint-01`). Se usan el emisor y la validación reales en código y pruebas.
+- **(c) Azurite — Resuelto.** En pruebas con Testcontainers (servicios reales en integración). No se toca `deploy/docker-compose.local.yml`; se rehace en TT-ARQ-01.
+- **(d) Blob real — Resuelto.** Solo Azurite hasta TT-AZ-02 (KNOCK-34).
+- **(e) Contrato — Resuelto.** `IMediaApi` mientras sea un solo proyecto; al separar servicios, en `Knock.Contracts` (TT-ARQ-03).
+- **(f) Moderación — Resuelto.** Fuera de esta tarea. Se documenta el punto de enganche en `POST /archivos/{id}/confirmar` (tras validar el contenido y antes de mover a `archivos`); TT-IA-02 decide la respuesta ante un rechazo.
+
+**Preguntas abiertas:** ninguna.
 
 ## Aprobación
 - [ ] Revisor 1 — nombre: fecha:
