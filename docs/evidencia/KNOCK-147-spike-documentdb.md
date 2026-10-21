@@ -4,16 +4,17 @@
 > Es un spike: entrega mediciones y una recomendación, no código de producto. Solo datos ficticios (seed versionado, puntos y centros sintéticos, documentos inventados).
 > No se registran cadenas de conexión, usuarios, contraseñas ni nombres de host del clúster.
 
-## Recomendación
-**Seguir con Azure DocumentDB en su nivel gratuito (ADR-002); no activar el plan B (Atlas).** P2, P4 y P7 pasan en Azure; P1 queda por confirmar con la captura del portal. Si esa captura no muestra región West US, nivel Free y servidor 8.0, la recomendación se revisa.
+## Recomendación (FINAL)
+**Quedarse con Azure DocumentDB en su nivel gratuito (ADR-002). Sin plan B: no se activa MongoDB Atlas.** P1, P2, P4 y P7 pasan en Azure; P1 quedó confirmado con la evidencia del líder del 2026-10-21 (región `westus`, nivel Free, servidor 8.0, 32 GB, gasto 0.0 USD).
 
 Condiciones para adoptarla:
-- Búsqueda de oficios con el **campo normalizado sin acentos** calculado en la app (P5 falla con `$text` y con colación en Azure).
+- **P5 se resuelve con un campo normalizado** (sin acentos, en mayúsculas) **que calcula la app**, más **búsqueda por prefijo** anclado sobre un índice normal (P5 falla con `$text` y con colación en Azure; la alternativa pasa en los tres destinos).
 - **`maxPoolSize` fijo por servicio** (P7: el límite de conexiones del nivel gratuito no es público ni lo expone `serverStatus`).
+- **documentdb-local solo para desarrollo** (y Testcontainers): rechaza desde 24 clientes, así que no sirve para medir conexiones ni carga (P7).
 - **Pausa tras 60 días sin conexiones y sin respaldo automático:** hace falta un `mongodump` programado con restauración serial (P8 pasa contra Azure así).
 
 ## Condiciones (leer primero)
-- **Pendiente:** solo P1 (captura del portal por el líder: región, nivel Free, versión 8.0). El resto está medido en los tres destinos.
+- **Pendiente:** nada. P1 pasa con la evidencia del líder (2026-10-21); el resto está medido en los tres destinos.
 - **Destinos:** `mongo:8.0.34` como réplica de un nodo (referencia del plan B, Atlas); `ghcr.io/microsoft/documentdb/documentdb-local@sha256:0fcf6345…` (build de 2025-06-17; las versiones nuevas se publican en `ghcr.io/documentdb/documentdb/documentdb-local`); Azure DocumentDB `knock-docdb`, West US, nivel gratuito (`KNOCK_SPIKE_MONGO`).
 - **Fase 1** (2026-10-21) corrió el arnés contra Azure: **44/46** pruebas en verde; las 2 que fallan son P5 en Azure y en documentdb-local. Las mediciones de tiempo de Azure de esa corrida (p. ej. el borrado TTL) no se registraron.
 - **Fase 2** agregó P3, P7, P8, P9, la alternativa de P5 y el chequeo único de conexión a Azure. Local: 57 pruebas, 42 pasan, 1 falla (P5 en documentdb-local) y 14 de Azure se omiten sin `KNOCK_SPIKE_MONGO`. Azure: P3 y P7 medidos desde Tula, Hgo., red doméstica.
@@ -35,7 +36,7 @@ SPIKE_BACKUP_URI=<URI> tests/Spike.DocumentDb/scripts/backup-restore.sh         
 
 | P | Caso | mongo:8.0 (local) | documentdb-local | Azure DocumentDB | Resultado |
 |---|---|---|---|---|---|
-| P1 | TC-TT-BD-05-01 | — | — | pendiente: captura del portal (líder) | pendiente |
+| P1 | TC-TT-BD-05-01 | — | — | pasa (`westus`, Free, 8.0, 32 GB, gasto 0.0 USD) | **pasa** |
 | P2 | TC-TT-BD-05-02 | pasa | pasa | pasa (fase 1) | **pasa** |
 | P3 | TC-TT-BD-05-03 | pasa (referencia) | pasa (referencia) | pasa (consulta p95 0.6 ms) | **pasa** |
 | P4 | TC-TT-BD-05-04 | pasa | pasa | pasa (fase 1) | **pasa** |
@@ -47,7 +48,20 @@ SPIKE_BACKUP_URI=<URI> tests/Spike.DocumentDb/scripts/backup-restore.sh         
 | P9 | TC-TT-BD-05-09 | tabla | tabla | tabla | **registrada** |
 
 ### P1 — Clúster `knock-docdb` (comando)
-- **Pendiente:** el líder entrega una captura del portal con la región (West US), el nivel Free y la versión del servidor (8.0); de preferencia también el costo en 0 en Cost Management. Sin cadena de conexión ni claves en la captura. Límites que se anotan: sin alta disponibilidad, sin respaldo automático, pausa tras 60 días sin conexiones.
+- **Pasa.** Evidencia del líder del 2026-10-21 con `az cosmosdb mongocluster show` (configuración del clúster) y `az consumption budget show` (gasto). No se creó ni se borró ningún clúster.
+
+| Dato | Esperado | Observado |
+|---|---|---|
+| Región | West US | `westus` |
+| Nivel | gratuito | Free |
+| Versión del servidor | 8.0 | 8.0 |
+| Almacenamiento | 32 GB | 32 GB |
+| Alta disponibilidad | sin HA | sin HA |
+| Estado de aprovisionamiento | — | Succeeded |
+| Gasto | 0 | 0.0 de un presupuesto de 10 USD |
+
+- Límites anotados del nivel gratuito: sin alta disponibilidad (confirmado arriba), sin respaldo automático y pausa tras 60 días sin conexiones.
+- La evidencia no incluye cadena de conexión, claves, IPs, ids de suscripción ni nombres de usuario.
 
 ### P2 — Punto en polígono, respaldo `$near` y fuera de cobertura
 - **Pasa en los tres destinos** (Azure en la fase 1). Los 8 puntos interiores devuelven su colonia; el vértice de El Cielito devuelve El Cielito; fuera de Tula (Pachuca) `$geoIntersects` y `$near` vuelven vacíos; el respaldo `$near` (≤ 2000 m) ordena por distancia: Mastrantos 76 m, San Lorenzo 1360 m, Centro 1514 m, Bugambilias 1620 m, El Cielito 1956 m (iguales en mongo y documentdb-local).
@@ -128,7 +142,7 @@ SPIKE_BACKUP_URI=<URI> tests/Spike.DocumentDb/scripts/backup-restore.sh         
 ## Regla de decisión (spec §8)
 - Si **P1, P2, P4 o P7** fallan sin solución razonable → **plan B (MongoDB Atlas)** y se actualiza ADR-002.
 - Si fallan **P3, P5, P6 o P8** → se documenta el contorno (región o servicios más cerca del clúster, colación o campo normalizado, Redis según ADR-006, `mongodump` programado) antes de descartar. Un p95 que falla solo por la red no descarta DocumentDB.
-- **Aplicación:** P2, P4 y P7 pasan en Azure; P1 está pendiente de la captura. P3 y P6 pasan. P5 falla y tiene contorno (campo normalizado, verde en los tres destinos). P8 pasa en Azure con restauración serial (en paralelo falla con `WriteConflict`). Ninguna condición activa el plan B → **seguir con Azure DocumentDB**, sujeto a P1.
+- **Aplicación:** P1, P2, P4 y P7 pasan en Azure. P3 y P6 pasan. P5 falla y tiene contorno (campo normalizado, verde en los tres destinos). P8 pasa en Azure con restauración serial (en paralelo falla con `WriteConflict`). Ninguna condición activa el plan B → **quedarse con Azure DocumentDB** (recomendación final).
 
 ## Riesgos
 - **Búsqueda de texto con acentos:** P5 falla en Azure. El campo normalizado debe calcularse en cada escritura (y con una migración para los existentes); un servicio que lo olvide deja oficios sin encontrar. Solo cubre prefijos, y «ñ» = «n».
@@ -139,5 +153,5 @@ SPIKE_BACKUP_URI=<URI> tests/Spike.DocumentDb/scripts/backup-restore.sh         
 - **Traslapes del seed:** un punto puede devolver dos colonias hasta que TT-BD-06 decida.
 
 ## Pendiente de una persona
-- P1: captura del portal por el líder (región, nivel Free, versión 8.0), sin cadena ni claves.
+- P1: resuelto con la evidencia del líder del 2026-10-21.
 - Pedir que se quite la regla de firewall de la IP al terminar (el clúster se conserva).
