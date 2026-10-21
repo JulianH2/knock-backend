@@ -4,7 +4,7 @@
 > **Repositorio:** knock-backend · **Rama:** `chore/KNOCK-147-documentdb-spike` → PR a `sprint-01`
 > **Fuentes:** `docs/decisiones/ADR-002-base-de-datos-mongodb.md` («El spike debe probar») · `docs/decisiones/ADR-006-costos-y-ventana-de-evaluacion.md` (región y suscripción) · `docs/PLAN_ADAPTACION.md` (TT-BD-05)
 > **Skills:** story-workflow, database-scripts, security-core, testing-strategy-backend
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Decidir **con evidencia** si Knock sigue con **Azure DocumentDB en su nivel gratuito** (ADR-002) o pasa a **MongoDB Atlas** (plan B). Es un **spike**: se entregan mediciones y una recomendación, no código de producto.
@@ -88,6 +88,6 @@ Colecciones **solo del spike**, en una base `knock_spike` que se borra al termin
 - **(d) Centros de las 4 colonias sin polígono — Resuelto.** Fixtures sintéticos solo para el spike, marcados como tales; no se agregan coordenadas «reales» al repositorio.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: fecha:
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-10-20
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
