@@ -5,7 +5,7 @@
 > **Repositorio:** knock-backend
 > **Fuentes:** DECISIONES.md #23 · DECISION_TECNICA.md «Archivos privados» · ADR-001 · ADR-002 · ADR-005
 > **Skills:** story-workflow, spec-first-writing, vertical-slice-api, security-core, api-contract-openapi, testing-strategy-backend, foundation-backend
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Dar a Knock **un solo servicio** para subir y ver fotos privadas, que reutilizarán el perfil (HU-002), las solicitudes y los trabajos. Los archivos viven en contenedores privados de Blob Storage y solo se accede a ellos con enlaces SAS de corta vida (`DECISIONES.md #23`, `docs/DECISION_TECNICA.md` «Archivos privados»). En desarrollo y pruebas se usa Azurite.
@@ -123,6 +123,6 @@ Diseño propuesto; se fija en OpenAPI al implementar. `[ApiVersion("1.0")]`, aut
 **Preguntas abiertas:** ninguna.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: fecha:
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-10-21
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
