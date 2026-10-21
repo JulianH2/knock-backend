@@ -8,6 +8,7 @@
 ## T2 — Clúster en Azure
 - **Estado:** pendiente (persona con acceso)
 - **Verificar:** TC-TT-BD-05-01 · TC-TT-BD-05-03 · TC-TT-BD-05-07
+- **P1 (TC-TT-BD-05-01): PASA.** Evidencia del líder del 2026-10-21 (`az cosmosdb mongocluster show` y `az consumption budget show`): región `westus`, nivel Free, servidor 8.0, 32 GB, sin HA, estado Succeeded, gasto 0.0 de un presupuesto de 10 USD. Detalle en `docs/evidencia/KNOCK-147-spike-documentdb.md`.
 - **Pendiente:** Verificar `knock-docdb` (West US, nivel gratuito, 32 GB, servidor 8.0); pedir la regla de firewall para la IP; correr el arnés; medir latencia (red y consulta por separado) y el límite de conexiones (sin cifra oficial; comparar con Atlas M0, 500).
 
 ## T3 — Respaldo y paridad
