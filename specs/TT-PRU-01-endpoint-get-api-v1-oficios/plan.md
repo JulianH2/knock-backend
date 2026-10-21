@@ -14,7 +14,7 @@
   - (A) `src/Knock.Api/Modules/Catalog/Controllers/V1/OficiosController.cs` — `internal sealed`, `[ApiController]`, `[ApiVersion("1.0")]`, `[Route("api/v{version:apiVersion}/oficios")]`, `[AllowAnonymous]`, `[ProducesResponseType<IReadOnlyList<OficioResponse>>(200)]`.
   - `src/Knock.Api/Modules/Catalog/Dtos/OficioResponse.cs` — `internal sealed record OficioResponse(string Clave, string Nombre, string Modalidad)`.
   - `src/Knock.Api/Modules/Catalog/Services/OficioQueries.cs` (nombre tentativo) — `internal sealed`, `ListActiveAsync(CancellationToken)` con `AsNoTracking`, `Where(Activo)`, orden de D4, `Select` al DTO.
-  - (A) `src/Knock.Api/Hosting/ModuleControllerFeatureProvider.cs` (nombre tentativo) — acepta controllers `internal` de `Knock.Api.Modules.*`.
+  - (A) Nada en `Hosting/`: se reutiliza `InternalControllerFeatureProvider` (`AddInternalControllers()`, TT-API-02), que ya descubre controllers `internal`.
   - `tests/IntegrationTest/Catalog/OficiosEndpointTests.cs` — casos 01–05.
   - `tests/IntegrationTest/OpenApi/OficiosOpenApiTests.cs` — caso 06.
   - `docs/endpoints.md` — si el revisor confirma D6.
