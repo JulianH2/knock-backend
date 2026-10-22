@@ -5,7 +5,7 @@
 > **Tarea:** TT-GES-06, TT-AZ-04.
 
 ## Contexto
-Los lineamientos piden desplegar «configurado con costo cero» y **al menos 2 instancias** del backend. Con cuatro servicios y un gateway, dos réplicas fijas de cada uno son diez réplicas. Container Apps incluye por suscripción, cada mes, 180 000 vCPU-segundos, 360 000 GiB-segundos y 2 millones de solicitudes gratis ([Microsoft](https://learn.microsoft.com/en-us/azure/container-apps/billing)); con réplicas siempre encendidas se superan. La suscripción es **Azure for Students** (crédito de 100 USD, sin tarjeta).
+Los lineamientos piden desplegar «configurado con costo cero» y **al menos 2 instancias** del backend. Con tres servicios y un gateway, dos réplicas fijas de cada uno son ocho réplicas (más Redis; antes de pasar el Asistente a módulo de Mercado eran diez). Container Apps incluye por suscripción, cada mes, 180 000 vCPU-segundos, 360 000 GiB-segundos y 2 millones de solicitudes gratis ([Microsoft](https://learn.microsoft.com/en-us/azure/container-apps/billing)); con réplicas siempre encendidas se superan. La suscripción es **Azure for Students** (crédito de 100 USD, sin tarjeta).
 
 ## Decisión
 1. **Escalar a cero** (o a una réplica) fuera de la ventana de evaluación. **«Costo cero» del lineamiento y «gasto del crédito de estudiante» no son lo mismo:** lo que sobrepase la capa gratuita se descuenta del crédito, y las alertas de presupuesto **solo avisan, no frenan**.
@@ -18,7 +18,7 @@ Los lineamientos piden desplegar «configurado con costo cero» y **al menos 2 i
 ## Verificar en TT-AZ-04
 - Que la suscripción de estudiante permita las regiones y servicios necesarios.
 - Costo real de una réplica inactiva (tarifa de inactividad) y de DocumentDB gratuito.
-- Estimación para diez réplicas en la ventana de evaluación frente al presupuesto de 10 USD y al crédito disponible (hay otros proyectos que descuentan del mismo crédito), **con tarifas citadas**. Si no cabe: 2 réplicas solo en los servicios críticos, o subir el presupuesto y automatizar la reducción a cero al llegar a un umbral.
+- Estimación para ocho réplicas en la ventana de evaluación frente al presupuesto de 10 USD y al crédito disponible (hay otros proyectos que descuentan del mismo crédito), **con tarifas citadas**. Si no cabe: 2 réplicas solo en los servicios críticos, o subir el presupuesto y automatizar la reducción a cero al llegar a un umbral.
 - La estimación está **pendiente** (TT-AZ-04); hasta tenerla, la fila 15a de la matriz de cumplimiento no se marca como cumplible.
 
 ## Hallazgos de la revisión de la suscripción (2026-10-20, solo lectura con `az`)
