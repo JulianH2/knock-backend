@@ -8,7 +8,7 @@
 ## 1. Mapeo de archivos
 - **Servicio:** Mercado (`Knock.Market.Api`, ADR-001), módulo Catalog.
 - **Reutilizar:** la consulta de colonias por CP que entregue TT-BD-06; `GET /colonias/en-punto` de TT-API-07 (KNOCK-141), que la app consume para la ubicación.
-- **Crear:** controller de zonas (`GET /zonas/cp/{cp}`, `POST /zonas/lista-espera`), DTOs y validadores internos, servicio de zona por CP y de lista de espera; colección `lista_espera` con índice único `(usuarioId, cp)` como script versionado; fixture de Testcontainers con `documentdb-local`.
+- **Crear:** controller de zonas (`GET /zonas/cp/{cp}`, `POST /zonas/lista-espera`), DTOs y validadores internos, servicio de zona (propuesta de colonia con el resultado de `/colonias/en-punto` y listado por CP) y de lista de espera; colección `lista_espera` con índice único `(usuarioId, cp)` como script versionado; fixture de Testcontainers con `documentdb-local`.
 - **No tocar:** `/colonias/en-punto` (TT-API-07); `PUT /me/zona` y la base de Identidad (HU-001/HU-002); HU-010 y HU-049.
 - **Configuración:** `maxPoolSize` fijo en la conexión del servicio.
 - **Antecedente:** el plan anterior reutilizaba `ICatalogApi.FindNeighborhoodAtAsync` con PostGIS/EF Core (TT-BD-02); ADR-002 lo retira.
@@ -22,7 +22,7 @@
 ## 3. Pruebas por caso
 | Caso | Prueba planeada | Suite |
 |---|---|---|
-| TC-HU-009-01 | Flujo con ubicación; backend en TT-API-07. | knock-frontend (y pruebas de TT-API-07) |
+| TC-HU-009-01 | El servicio de zona propone la colonia con el resultado de `/colonias/en-punto` (la consulta la prueba TT-API-07). | `UnitTest/Catalog/ZoneSuggestionTests..._TC_HU_009_01` |
 | TC-HU-009-02 | Fallback a CP en la app. | knock-frontend |
 | TC-HU-009-03 | CP piloto lista sus colonias. | `UnitTest/Catalog/ZoneServiceTests..._TC_HU_009_03` · `ContractTest/Catalog/ZoneContractTests..._TC_HU_009_03` · `IntegrationTest/Catalog/ZoneByPostalCodeTests..._TC_HU_009_03` |
 | TC-HU-009-04 | CP fuera de cobertura; CP inválido → `400`. | `UnitTest/Catalog/ZoneServiceTests..._TC_HU_009_04` · `SecurityTest/Catalog/ZoneInputValidationTests..._TC_HU_009_04` · integración |
