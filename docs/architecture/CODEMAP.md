@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-17T19:39:48Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-10-22T05:27:53Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -10,7 +10,7 @@
 | `Assistant` | -, services | 3 | 3 | 1 |
 | `Catalog` | -, data, domain, services | 10 | 10 | 11 |
 | `Identity` | -, controllers, dtos, services | 11 | 15 | 10 |
-| `Knock.Api` | -, common, hosting | 12 | 15 | 20 |
+| `Knock.Api` | -, common, hosting | 18 | 28 | 35 |
 | `Messaging` | -, services | 3 | 3 | 1 |
 | `Notifications` | -, services | 3 | 3 | 1 |
 | `Reputation` | -, services | 3 | 3 | 1 |
@@ -103,6 +103,8 @@
 
 **common**
 
+- `src/Knock.Api/Common/Errors/DomainException.cs` — enum `DomainErrorKind`, class `DomainException`, class `DomainErrors`
+  - `ToStatusCode()`:46
 - `src/Knock.Api/Common/Security/JwtSettings.cs` — record `JwtSettings`
 - `src/Knock.Api/Common/Security/JwtSettingsFactory.cs` — class `JwtSettingsFactory`
   - `Create()`:14
@@ -113,20 +115,30 @@
   - `AddKnockApiVersioning()`:7
 - `src/Knock.Api/Hosting/AuthenticationExtensions.cs` — class `AuthenticationExtensions`, class `InternalControllerFeatureProvider`, class `AuthenticationStartupCheck`
   - `AddKnockAuthentication()`:14, `AddInternalControllers()`:55, `IsController()`:73, `StartAsync()`:90, `StopAsync()`:108
+- `src/Knock.Api/Hosting/CorrelationIdMiddleware.cs` — class `CorrelationId`, class `CorrelationIdMiddleware`
+  - `IsValid()`:13, `Create()`:32, `Current()`:35, `CorrelationIdMiddleware()`:46, `InvokeAsync()`:48
+- `src/Knock.Api/Hosting/DomainExceptionHandler.cs` — class `DomainExceptionHandler`
+  - `TryHandleAsync()`:14
+- `src/Knock.Api/Hosting/ForwardedHeadersExtensions.cs` — class `ForwardedHeadersExtensions`
+  - `AddKnockForwardedHeaders()`:15
 - `src/Knock.Api/Hosting/HealthExtensions.cs` — class `HealthExtensions`, class `PostgresReadinessHealthCheck`
   - `AddKnockHealth()`:12, `MapKnockHealth()`:19, `CheckHealthAsync()`:29
 - `src/Knock.Api/Hosting/KnockApplicationExtensions.cs` — class `KnockApplicationExtensions`
-  - `AddKnockApi()`:7, `UseKnockApi()`:23
-- `src/Knock.Api/Hosting/LoggingExtensions.cs` — class `LoggingExtensions`
-  - `AddKnockLogging()`:9
+  - `AddKnockApi()`:7, `UseKnockApi()`:26
+- `src/Knock.Api/Hosting/LoggingExtensions.cs` — class `LoggingExtensions`, class `ScopeRequestPathEnricher`
+  - `AddKnockLogging()`:15, `ConfigureRequestLogging()`:29, `Enrich()`:96
 - `src/Knock.Api/Hosting/ModulesExtensions.cs` — class `ModulesExtensions`
   - `AddKnockModules()`:14
 - `src/Knock.Api/Hosting/OpenApiExtensions.cs` — class `OpenApiExtensions`
   - `AddKnockOpenApi()`:7, `MapKnockOpenApi()`:14
 - `src/Knock.Api/Hosting/ProblemDetailsExtensions.cs` — class `ProblemDetailsExtensions`
   - `AddKnockProblemDetails()`:8
+- `src/Knock.Api/Hosting/RateLimitingExtensions.cs` — class `RateLimitPolicySettings`, class `RateLimitSettings`, class `RateLimitingExtensions`
+  - `AddKnockRateLimiting()`:40, `ClientKey()`:99
 - `src/Knock.Api/Hosting/RequestBodyLimitMiddleware.cs` — class `ProblemResponses`, class `RequestBodyLimitMiddleware`
   - `WriteAsync()`:9, `RequestBodyLimitMiddleware()`:30, `InvokeAsync()`:32
+- `src/Knock.Api/Hosting/ValidationExtensions.cs` — class `ValidationExtensions`, class `ValidationFilter`
+  - `AddKnockValidation()`:11, `OnActionExecutionAsync()`:27, `ToCamelCasePath()`:63
 
 ### Messaging
 
