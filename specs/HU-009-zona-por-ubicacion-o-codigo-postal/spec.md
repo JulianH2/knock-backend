@@ -19,13 +19,13 @@ El paso se pide después del nombre (`docs/referencia/FUNCIONES_Y_FLUJOS.md §3.
 
 | Caso | Criterio (Dado / Cuando / Entonces) | Verificación |
 |---|---|---|
-| TC-HU-009-01 | **CA1.** Dado que la persona concede el permiso de ubicación y su punto está en la ciudad piloto, cuando la app consulta la zona, entonces se propone la colonia de ese punto y la persona puede confirmarla o cambiarla. | (otro repo) Flujo de pantalla en knock-frontend. El backend es `GET /api/v1/colonias/en-punto` de **TT-API-07 (KNOCK-141)**: su consulta, la redacción de coordenadas en logs y sus pruebas son de esa tarea; HU-009 no define una ruta propia. |
+| TC-HU-009-01 | **CA1.** Dado que la persona concede el permiso de ubicación y su punto está en la ciudad piloto, cuando la app consulta la zona, entonces se propone la colonia de ese punto y la persona puede confirmarla o cambiarla. | `UnitTest/Catalog/ZoneSuggestionTests.ProposesNeighborhoodFromPointLookupResult_TC_HU_009_01`: el servicio de zona propone la colonia con el resultado de `GET /api/v1/colonias/en-punto` (doble de ese resultado; sin coordenadas en la propuesta). La consulta en sí, la redacción de coordenadas en logs y sus pruebas son de **TT-API-07 (KNOCK-141)**; HU-009 no define una ruta propia. La pantalla vive en knock-frontend. |
 | TC-HU-009-02 | **CA2.** Dado que la persona niega el permiso de ubicación o la ubicación falla, cuando continúa, entonces la app le pide su código postal. | (otro repo) Lógica de pantalla en knock-frontend. El soporte backend es `GET /api/v1/zonas/cp/{cp}`, verificado en TC-HU-009-03. |
 | TC-HU-009-03 | **CA3.** Dado un CP de la ciudad piloto presente en el catálogo, cuando la persona lo escribe, entonces se listan sus colonias para elegir una. | `UnitTest/Catalog/ZoneServiceTests.PilotPostalCodeListsItsNeighborhoods_TC_HU_009_03` (doble con colonias de `db/sepomex/tula_colonias.csv`; solo colonias de ese CP), `ContractTest/Catalog/ZoneContractTests.ZoneResponsesMatchOpenApi_TC_HU_009_03` e `IntegrationTest/Catalog/ZoneByPostalCodeTests.PilotPostalCodeListsItsNeighborhoods_TC_HU_009_03` (Testcontainers `documentdb-local`). |
 | TC-HU-009-04 | **CA4.** Dado un CP fuera de cobertura, cuando se consulta, entonces la respuesta indica «fuera de cobertura» con el nombre de la ciudad piloto para que la app muestre «Por ahora solo atendemos [ciudad piloto]» y el botón «Avísame cuando lleguen». (La ubicación fuera de cobertura la responde `GET /colonias/en-punto`, TT-API-07.) | `UnitTest/Catalog/ZoneServiceTests.OutOfCoveragePostalCodeReturnsPilotCity_TC_HU_009_04` (CP válido sin colonias en cobertura), `SecurityTest/Catalog/ZoneInputValidationTests.InvalidPostalCodeReturns400_TC_HU_009_04` e integración con `documentdb-local`. |
 | TC-HU-009-05 | **CA5.** Dada una consulta fuera de cobertura, cuando la persona confirma la lista de espera, entonces se guarda un registro con su CP (y municipio si se conoce) y la respuesta permite a la app agradecerle. | `UnitTest/Catalog/WaitlistServiceTests.JoiningWaitlistIsIdempotentPerUserAndPostalCode_TC_HU_009_05` (`201` la primera vez, `200` al repetir; el usuario sale del JWT; sin coordenadas) e `IntegrationTest/Catalog/WaitlistTests.JoiningWaitlistIsIdempotentPerUserAndPostalCode_TC_HU_009_05` (colección `lista_espera` con índice único, Testcontainers `documentdb-local`). |
 
-**Criterios diferidos (dependencia, fuera de esta historia):** CA6 («Ahora no» asigna la colonia por defecto **Centro**, que se puede cambiar después) y CA7 (en el perfil solo quedan colonia y CP, nunca coordenadas) se verifican con `PUT /api/v1/me/zona` de Identidad, que espera al usuario de HU-001/HU-002 (ver §3 y §4).
+**Criterios diferidos (dependencia, fuera de esta historia):** CA6 («Ahora no» asigna la colonia por defecto **Centro**, que se puede cambiar después) y CA7 (en el perfil solo quedan colonia y CP, nunca coordenadas) se agregan como casos 06 y 07 cuando exista PUT /me/zona (HU-001/HU-002). Ver §3 y §4.
 
 ## 3. Alcance / No-alcance
 - **In (este repositorio, capa [Back], servicio Mercado):**
@@ -35,7 +35,7 @@ El paso se pide después del nombre (`docs/referencia/FUNCIONES_Y_FLUJOS.md §3.
 - **In (knock-frontend, solo referencia):** pantalla «¿Dónde buscas expertos?», permiso de ubicación, fallback a CP, selección y confirmación de colonia, aviso de cobertura y agradecimiento. Se especifica e implementa en knock-frontend.
 - **Out:**
   - Colonia por punto (`/colonias/en-punto`): es de TT-API-07.
-  - Zona del perfil (`PUT /me/zona`, CA6 y CA7): la expone Identidad cuando exista el usuario de HU-001/HU-002 (dependencia).
+  - Zona del perfil (`PUT /me/zona`), que expone Identidad. CA6 y CA7: se agregan como casos 06 y 07 cuando exista PUT /me/zona (HU-001/HU-002).
   - Dirección exacta del servicio (HU-010).
   - Cambiar la zona después del registro (HU-049).
   - Geocodificación externa (Google, Mapbox, HERE, Nominatim).
@@ -85,7 +85,7 @@ Pantalla «¿Dónde buscas expertos?» del registro (después del nombre): «Usa
 
 | Tipo | ¿Aplica? | Motivo / herramienta |
 |---|---|---|
-| Unitarias | Sí | Regla de cobertura por CP (colonias en cobertura → `enCobertura: true`; sin colonias → fuera con ciudad piloto), validador de CP, idempotencia de la lista de espera. Doble del catálogo. `tests/UnitTest`. |
+| Unitarias | Sí | Propuesta de colonia con el resultado de `/colonias/en-punto` (TC-HU-009-01, doble de ese resultado); regla de cobertura por CP (colonias en cobertura → `enCobertura: true`; sin colonias → fuera con ciudad piloto), validador de CP, idempotencia de la lista de espera. Doble del catálogo. `tests/UnitTest`. |
 | Seguridad negativa | Sí | CP no numérico, de 4 o 6 dígitos → `400`; sin JWT → `401`; usuario del JWT, no del cuerpo. `tests/SecurityTest`. |
 | Contrato | Sí | Respuestas de `/api/v1/zonas/*` contra `docs/openapi.v1.json`. `tests/ContractTest`. |
 | Integración | Sí | Testcontainers con `documentdb-local` (reproduce a Azure en el spike): TC-HU-009-03 a 05, incluido el índice único de `lista_espera` y que ningún documento guarda coordenadas. No tomar el local como límite de conexiones (spike P7). |
