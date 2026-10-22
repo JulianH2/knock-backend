@@ -8,14 +8,15 @@
 Los lineamientos del curso (punto 15) dan libertad entre API o microservicios, y el docente espera microservicios. El equipo decide **microservicios**, cada uno con su propia base de datos. El código ya está dividido en módulos con fronteras estrictas (`Identity`, `Trust`, `Messaging`, `Notifications`, `Catalog`, `Requests`, `Reputation`, `Assistant`), que se hablan por interfaces C#; la decisión anterior ya los dejó «listos para separarse».
 
 ## Decisión
-Cuatro servicios y una puerta de entrada, desplegados por separado desde el repositorio `knock-backend`:
+> **Actualización 2026-10-22:** el Asistente deja de ser un servicio y pasa a ser un módulo de Mercado. Son **tres servicios y una puerta de entrada**. Porqué: el Asistente casi no tiene datos propios y trabaja sobre las solicitudes y cotizaciones de Mercado; un servicio menos son 2 réplicas y un pipeline menos, y los documentos son lo más caro de cambiar más adelante. El módulo conserva sus fronteras y se puede separar después.
+
+Tres servicios y una puerta de entrada, desplegados por separado desde el repositorio `knock-backend`:
 
 | Servicio | Módulos que agrupa | Base lógica propia | Responsable técnico |
 |---|---|---|---|
 | **Identidad y confianza** (`Knock.Identity.Api`) | Identity, Trust | `identity` | Guillermo |
 | **Mensajería y notificaciones** (`Knock.Messaging.Api`) | Messaging, Notifications | `messaging` | Guillermo |
-| **Mercado** (`Knock.Market.Api`) | Catalog, Requests, Reputation | `market` | Alexis |
-| **Asistente** (`Knock.Assistant.Api`) | Assistant (IA generativa y ML) | `assistant` | Alexis, con apoyo de José Julián en IA |
+| **Mercado** (`Knock.Market.Api`) | Catalog, Requests, Reputation, Assistant (IA generativa y ML) | `market` | Alexis, con apoyo de José Julián en IA |
 | **Gateway** (`Knock.Gateway`, YARP) | — | ninguna | José Julián y Guillermo |
 
 ## Reglas
@@ -32,11 +33,12 @@ Cuatro servicios y una puerta de entrada, desplegados por separado desde el repo
 |---|---|
 | Monolito modular (decisión anterior) | Cumple el lineamiento de forma técnica, pero el docente espera microservicios |
 | Ocho servicios (uno por módulo) | Multiplica contenedores, costo, pipelines y esfuerzo de coordinación para un equipo de cuatro personas y cinco semanas |
-| Tres servicios (juntando Mensajería con Asistente) | Es la salida de emergencia si el tiempo se acaba; los módulos permiten separarlos después |
+| Cuatro servicios (Asistente aparte) | Era la decisión original; costaba un contenedor y un pipeline más sin beneficio, porque el Asistente depende de los datos de Mercado |
+| Dos servicios (juntando Mensajería con Mercado) | Es la salida de emergencia si el tiempo se acaba; los módulos permiten separarlos después |
 
 ## Consecuencias
 - Cambia la estructura del repositorio, el CI, los Dockerfiles, la infraestructura y el despliegue (ver [`docs/PLAN_ADAPTACION.md`](../PLAN_ADAPTACION.md)).
-- **Costo:** cinco contenedores con 2 réplicas son diez réplicas; ver ADR-006.
+- **Costo:** cuatro contenedores de aplicación (tres servicios y el gateway) con 2 réplicas son ocho réplicas, más Redis; ver ADR-006.
 - **Orden de trabajo:** no se separa nada hasta que (a) el spike de la base de datos responda (ADR-002) y (b) se fusionen los PR abiertos de Sprint 1 (#26, #31, #40, frontend #16).
 - Se actualizan, por separado y a cargo del Tech Lead, los archivos protegidos (`AGENTS.md`, `constitution.md`) que mencionan el monolito.
 
