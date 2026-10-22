@@ -46,6 +46,11 @@ dotnet_diagnostic.CA1515.severity = none
 # CA1515: el controller de prueba debe ser público para que MVC lo descubra (solo existe en el host de pruebas).
 dotnet_diagnostic.CA1515.severity = none
 
+[src/Knock.Api/Common/Errors/DomainException.cs]
+# CA1515: DomainException debe ser pública porque S3871 exige que los tipos de excepción lo sean,
+# y Knock.Api es un ejecutable. Exención permanente, solo para este archivo.
+dotnet_diagnostic.CA1515.severity = none
+
 [tests/UnitTest/Architecture/Fixtures/**.cs]
 # Los fixtures de arquitectura solo se analizan por reflexión (NetArchTest); nunca se instancian ni se ejecutan.
 dotnet_diagnostic.CA1812.severity = none
