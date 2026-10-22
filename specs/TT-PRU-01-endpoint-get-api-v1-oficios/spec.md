@@ -6,7 +6,7 @@
 > **Depende de:** TT-API-01 (KNOCK-20), TT-BD-02 (KNOCK-23) — ambas ya fusionadas (en `sprint-01`)
 > **Fuentes:** DECISIONES.md #1 (oficios como datos) · DECISION_TECNICA.md (REST + OpenAPI `/api/v1`, módulo Catalog) · specs TT-API-01 y TT-BD-02
 > **Skills:** story-workflow, vertical-slice-api, api-contract-openapi, testing-strategy-backend, security-core, reuse-before-create
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Ejercicio fuera de rol (Erick es de móvil): hacer un endpoint pequeño del backend de punta a punta. `GET /api/v1/oficios` devuelve los oficios **activos** del catálogo (`catalog.oficios`, sembrado por TT-BD-02) como `[{ clave, nombre, modalidad }]` ordenados por nombre, con una prueba de integración con `WebApplicationFactory` + Testcontainers (PostGIS real). Es el **primer endpoint de negocio** del backend: fija el molde de controller dentro de un módulo (ver §8, decisión D1) y es el primer cambio del contrato OpenAPI.
@@ -125,6 +125,6 @@ Checks de `security-core` que no aplican: 1 (autorización por recurso: no hay r
 - **Nota de la ficha:** la ficha dice rama `feature/KNOCK-29-endpoint-oficios`; la rama real es `feature/KNOCK-29-trades-endpoint` (descripción en inglés, CONTRIBUTING.md). La ficha también pide anotar en el PR cuánto tardó, qué fue difícil y el uso de IA.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-10-22
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
