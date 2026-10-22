@@ -8,10 +8,13 @@ internal static class KnockApplicationExtensions
     {
         builder.Services
             .AddKnockLogging(builder.Configuration)
-            .AddControllers()
+            .AddControllers(options => options.Filters.Add<ValidationFilter>())
             .AddInternalControllers();
         builder.Services
             .AddKnockProblemDetails()
+            .AddKnockValidation()
+            .AddKnockForwardedHeaders()
+            .AddKnockRateLimiting()
             .AddKnockApiVersioning()
             .AddKnockAuthentication()
             .AddKnockOpenApi()
@@ -22,8 +25,11 @@ internal static class KnockApplicationExtensions
 
     public static WebApplication UseKnockApi(this WebApplication app)
     {
+        app.UseForwardedHeaders();
+        app.UseMiddleware<CorrelationIdMiddleware>();
         app.UseExceptionHandler();
-        app.UseSerilogRequestLogging();
+        app.UseSerilogRequestLogging(LoggingExtensions.ConfigureRequestLogging);
+        app.UseRateLimiter();
         app.UseMiddleware<RequestBodyLimitMiddleware>();
         app.UseAuthentication();
         app.UseAuthorization();
