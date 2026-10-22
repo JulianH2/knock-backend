@@ -27,6 +27,18 @@ public class HealthEndpointTests
     }
 
     [Fact]
+    public async Task Get_HealthReady_BlobNotConfigured_Returns503_TC_TT_API_01_03()
+    {
+        await using var postgis = await PostgisFixture.StartAsync();
+        using var factory = new KnockApiFactory(connectionString: postgis.ConnectionString);
+        using var client = factory.CreateClient();
+
+        using var ready = await client.GetAsync(new Uri("/health/ready", UriKind.Relative));
+
+        ready.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable, "con PostgreSQL disponible, solo Blob (sin configurar) impide readiness");
+    }
+
+    [Fact]
     public async Task Get_HealthReady_FailingCheck_Returns503_TC_TT_API_01_03()
     {
         using var factory = new KnockApiFactory(failingReadinessCheck: true);

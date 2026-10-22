@@ -10,7 +10,7 @@ internal static class ModuleCatalog
 
     public static readonly IReadOnlyList<string> Names =
     [
-        "Identity", "Catalog", "Requests", "Messaging", "Reputation", "Trust", "Notifications", "Assistant",
+        "Identity", "Catalog", "Requests", "Messaging", "Reputation", "Trust", "Notifications", "Assistant", "Media",
     ];
 
     public static Assembly ApiAssembly => typeof(IdentityModuleExtensions).Assembly;
