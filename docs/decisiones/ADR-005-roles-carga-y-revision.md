@@ -5,14 +5,14 @@
 > **Tarea:** TT-GES-06.
 
 ## Contexto
-La arquitectura pasó a microservicios (ADR-001) y la base a MongoDB (ADR-002). Con cuatro servicios hace falta repartir el backend entre dos personas, y el trabajo de frontend (app, panel y landing) entre menos manos.
+La arquitectura pasó a microservicios (ADR-001) y la base a MongoDB (ADR-002). Con tres servicios y un gateway hace falta repartir el backend entre dos personas, y el trabajo de frontend (app, panel y landing) entre menos manos.
 
 ## Decisión
 | Persona | Rol |
 |---|---|
 | José Julián | Líder del proyecto (Scrum Master, Product Owner y Tech Lead). Infraestructura, CI/CD, documentación y seguridad. **Apoya a todos**, toma tareas libres según su carga y es quien hace la **revisión final, aprueba y fusiona**. Dueño del **Gateway** junto con Guillermo (ADR-001). |
 | Guillermo | Backend: servicios de **Identidad y confianza** y de **Mensajería y notificaciones**. |
-| Alexis | Backend: servicios de **Mercado** y de **Asistente (IA y ML)**, y la base de datos. |
+| Alexis | Backend: servicio de **Mercado** (con el módulo **Asistente**: IA y ML), y la base de datos. |
 | Erick | **Frontend:** app Flutter. Es además revisor de pares de los PR de backend. |
 
 El panel de administración y la landing **no tienen dueño fijo** (ver «Tareas libres»).
