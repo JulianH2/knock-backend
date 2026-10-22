@@ -82,13 +82,16 @@ internal static class RateLimitingExtensions
     private static bool IsHealthPath(PathString path) =>
         path.Equals(_healthPath, StringComparison.OrdinalIgnoreCase) || path.Equals(_readyPath, StringComparison.OrdinalIgnoreCase);
 
-    /// <summary><c>/api/v{version}/auth</c> y lo que cuelga de ahí.</summary>
+    /// <summary>
+    /// <c>/api/v{version}/auth</c> y lo que cuelga de ahí. Toda la comparación ignora mayúsculas porque el router de ASP.NET Core
+    /// no las distingue: <c>/api/V1/AUTH/firebase</c> llega al mismo endpoint y debe contar para el límite estricto.
+    /// </summary>
     private static bool IsAuthPath(PathString path)
     {
         var segments = path.Value?.Split('/', StringSplitOptions.RemoveEmptyEntries) ?? [];
         return segments.Length >= 3
             && segments[0].Equals("api", StringComparison.OrdinalIgnoreCase)
-            && segments[1].StartsWith('v')
+            && (segments[1][0] is 'v' or 'V')
             && segments[2].Equals("auth", StringComparison.OrdinalIgnoreCase);
     }
 
