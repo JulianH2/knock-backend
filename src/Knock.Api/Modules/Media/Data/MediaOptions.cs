@@ -20,4 +20,10 @@ internal sealed class MediaOptions
 
     /// <summary>Lado mayor de la versión reducida, en píxeles.</summary>
     public int ReducedMaxSide { get; set; } = 1024;
+
+    /// <summary>
+    /// Fotos que se decodifican a la vez en la réplica (<see cref="Services.ImageProcessor"/>); las demás esperan turno.
+    /// Acota el pico de memoria (cálculo en <see cref="Domain.MediaRules.MaxPixels"/>).
+    /// </summary>
+    public int MaxConcurrentProcessing { get; set; } = 2;
 }
