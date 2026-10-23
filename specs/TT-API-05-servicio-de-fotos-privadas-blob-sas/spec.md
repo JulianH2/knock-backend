@@ -61,6 +61,7 @@ Diseño propuesto; se fija en OpenAPI al implementar. `[ApiVersion("1.0")]`, aut
 - **Base:** el spike TT-BD-05 (KNOCK-147) recomienda **Azure DocumentDB** (API compatible con MongoDB, ADR-002).
 - **Colección `archivos`** en la base `market`: `{ _id, propietarioId, uso, estado, contentType, tamanoBytes, blobOriginal, blobReducido, ancho, alto, creadoEn, confirmadoEn }`; `estado ∈ {pendiente, listo, rechazado}`. Índices: uno por `propietario_id` y uno por `estado`. Pool de conexiones con `maxPoolSize` fijo. La implementación es de **TT-BD-06**; hasta entonces el acceso va por una interfaz interna del módulo y no se crea esquema.
 - Nombres de blob generados por el servidor (UUID v7), nunca con el nombre que envía el cliente.
+- **Registro temporal (revisión de pares, PR #42):** hasta TT-BD-06, el registro de cada archivo vive en el contenedor `registros-temporales` de Blob (un JSON por archivo, ETag como versión; `BlobMediaFileStore`). Es **temporal y privado**: contenedor sin acceso anónimo, sin SAS emitidos sobre él y solo lo usa el módulo `Media`. En TT-BD-06 se **reemplaza** por la colección `archivos` de la base `market` con los índices documentados en `IMediaFileStore` (`{ propietario_id: 1 }` y `{ estado: 1 }`), y el contenedor y su implementación se borran.
 - Contenedores: `cuarentena` (subidas sin confirmar) y `archivos` (definitivo), ambos privados.
 - **Dueño del recurso:** `propietarioId` es el `sub` del JWT de la petición, emitido y validado por la sesión real de TT-API-02 (KNOCK-21); no hay referencia a una colección de usuarios hasta HU-001. El permiso de lectura es: (1) el propietario, o (2) otro módulo o servicio que llamó al contrato tras validar su propia regla (p. ej. Requests autoriza al técnico invitado a ver las fotos de una solicitud). Media no conoce las reglas de otros módulos.
 - **Librería de imágenes (comparación):**
@@ -111,6 +112,13 @@ Diseño propuesto; se fija en OpenAPI al implementar. `[ApiVersion("1.0")]`, aut
 - El módulo de archivos vive en el servicio de **Mercado**; Identidad y confianza lo consume solo por su contrato, sin leer la colección.
 - La persistencia es la colección `archivos` en Azure DocumentDB (recomendación del spike TT-BD-05), con índices por `propietario_id` y por `estado` y `maxPoolSize` fijo; hasta TT-BD-06 queda detrás de una interfaz interna y la primera entrega cubre solo SAS, validación por contenido y EXIF.
 - CDN no aplica a estas fotos privadas (TT-API-10, solo versiones públicas).
+
+**Decisiones (revisión de pares, PR #42, 2026-10-23):**
+- Confirmar descarga el blob de cuarentena con `If-Match` (el ETag leído al consultar el tamaño) y un rango de como mucho `8 MB + 1` bytes; si el blob cambió, desapareció o trae más bytes de los consultados, `422` con un `detail` propio y se borra. Caso TC-TT-API-05-03.
+- La decodificación se limita a `Media:MaxConcurrentProcessing` fotos a la vez por réplica (2 por defecto) y `MaxPixels` baja de 40 a **24 MP**; el cálculo del pico de memoria está en `MediaRules.MaxPixels`. Caso TC-TT-API-05-03.
+- Las respuestas que devuelven un SAS (`subidas` y `lectura`) llevan `Cache-Control: no-store`. Caso TC-TT-API-05-01.
+- El rechazo por dimensiones usa un `detail` distinto al de «JPG o PNG de 8 MB o menos».
+- Los errores de forma de la entrada (`uso`, `contentType`, `tamanoBytes` y `version` de la lectura) responden `422` con `errors` por campo (FluentValidation y el filtro de TT-API-03), como los demás endpoints nuevos. El `400` queda solo para el cuerpo ilegible (comportamiento del framework, igual que en TT-API-03).
 
 **Preguntas resueltas (Tech Lead):**
 - **(a) Librería — Resuelto.** SkiaSharp (MIT), sujeta a evaluación (licencia, mantenimiento, vulnerabilidades) al implementar y registro en `Memoria.md`.

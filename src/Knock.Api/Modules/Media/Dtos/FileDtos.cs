@@ -1,16 +1,22 @@
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Knock.Api.Modules.Media.Dtos;
 
-/// <summary>Petición de subida: uso previsto, tipo y tamaño declarados. Tipo o tamaño no permitidos → 422.</summary>
+/// <summary>
+/// Petición de subida: uso previsto, tipo y tamaño declarados. La forma la valida <c>CreateUploadRequestValidator</c>
+/// (422 con campos); tipo o tamaño no permitidos los rechaza el servicio (422).
+/// </summary>
 internal sealed record CreateUploadRequest(
-    [property: JsonPropertyName("uso")]
-    [Required(AllowEmptyStrings = false), RegularExpression("^(perfil|solicitud|trabajo)$")] string Usage,
-    [property: JsonPropertyName("contentType")]
-    [Required(AllowEmptyStrings = false), StringLength(100)] string ContentType,
-    [property: JsonPropertyName("tamanoBytes")]
-    [Range(1, long.MaxValue)] long SizeBytes);
+    [property: JsonPropertyName("uso")] string? Usage,
+    [property: JsonPropertyName("contentType")] string? ContentType,
+    [property: JsonPropertyName("tamanoBytes")] long? SizeBytes);
+
+/// <summary>Query de la lectura: <c>version</c> es <c>original</c> (por defecto) o <c>reducida</c>.</summary>
+internal sealed record ReadLinkQuery(string? Version)
+{
+    public const string Original = "original";
+    public const string Reduced = "reducida";
+}
 
 internal sealed record UploadCreatedResponse(
     [property: JsonPropertyName("id")] Guid Id,

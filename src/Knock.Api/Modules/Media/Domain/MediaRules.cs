@@ -6,8 +6,18 @@ internal static class MediaRules
     /// <summary>Tamaño máximo de la foto, declarado y real: 8 MB.</summary>
     public const long MaxFileBytes = 8L * 1024 * 1024;
 
-    /// <summary>Límite de píxeles antes de decodificar (evita «bombas de descompresión»).</summary>
-    public const long MaxPixels = 40_000_000;
+    /// <summary>
+    /// Límite de píxeles antes de decodificar (evita «bombas de descompresión»): 24 MP cubre las fotos de celular
+    /// (12 MP por defecto; las de 48–50 MP suelen pasar de 8 MB y ya se rechazan por tamaño).
+    /// <para>
+    /// Pico de memoria por foto, con P píxeles a 4 bytes (RGBA): contenido descargado (≤ 8 MB) + mapa decodificado
+    /// (4P) + copia con la orientación aplicada (4P, solo si la foto no viene derecha; la decodificada se libera
+    /// antes de recodificar) ≈ 8 MB + 8P = 8 + 192 = ~200 MB con P = 24 M. Con
+    /// <see cref="Data.MediaOptions.MaxConcurrentProcessing"/> = 2, ~400 MB por réplica, que cabe en una réplica de
+    /// 1 GiB junto al resto de la API. Con 40 M eran ~330 MB por foto y ~660 MB con dos a la vez.
+    /// </para>
+    /// </summary>
+    public const long MaxPixels = 24_000_000;
 
     /// <summary>Lado máximo, en píxeles, antes de decodificar.</summary>
     public const int MaxSidePixels = 12_000;

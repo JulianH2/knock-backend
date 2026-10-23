@@ -63,6 +63,29 @@ public class PrivateFilesSecurityTests
     }
 
     [Fact]
+    public async Task ResponsesWithSasLinks_AreNotStored_TC_TT_API_05_01()
+    {
+        await using var azurite = await AzuriteFixture.StartAsync();
+        using var factory = MediaHttp.CreateFactory(azurite);
+        using var client = factory.CreateClient();
+        var token = MediaHttp.IssueAccessToken(factory);
+        var photo = TestImages.JpegWithExifAndGps(64, 32);
+
+        using var upload = await MediaHttp.CreateUploadAsync(client, token, MediaHttp.JpegUpload(photo.Length));
+        upload.StatusCode.Should().Be(HttpStatusCode.Created);
+        var (id, uploadUrl) = await MediaHttp.StartUploadAsync(client, token, photo.Length);
+        (await MediaHttp.PutBlobAsync(uploadUrl, photo).StatusAsync()).Should().Be(HttpStatusCode.Created);
+        (await MediaHttp.ConfirmAsync(client, token, id).StatusAsync()).Should().Be(HttpStatusCode.OK);
+        using var read = await MediaHttp.ReadAsync(client, token, id, "original");
+        read.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        foreach (var response in new[] { upload, read })
+        {
+            response.Headers.CacheControl?.NoStore.Should().BeTrue("una respuesta con SAS no se guarda en cachés ni proxies");
+        }
+    }
+
+    [Fact]
     public async Task OtherUser_CannotConfirmOrReadAFile_Returns404_TC_TT_API_05_01()
     {
         await using var azurite = await AzuriteFixture.StartAsync();

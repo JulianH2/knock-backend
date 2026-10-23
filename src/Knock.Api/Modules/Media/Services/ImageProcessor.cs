@@ -11,36 +11,65 @@ internal sealed record ProcessedImage(ImageFormat Format, byte[] Original, byte[
 /// <summary>
 /// Valida por contenido real y limpia la foto con SkiaSharp: firma JPG/PNG, dimensiones acotadas antes de decodificar,
 /// decodificación completa, orientación EXIF aplicada a los píxeles y recodificación (que descarta EXIF, GPS, XMP e IPTC).
+/// Solo <see cref="MediaOptions.MaxConcurrentProcessing"/> fotos se procesan a la vez por réplica; el pico de memoria
+/// de cada una está calculado en <see cref="MediaRules.MaxPixels"/>.
 /// </summary>
-internal sealed class ImageProcessor(IOptions<MediaOptions> options)
+internal sealed class ImageProcessor(IOptions<MediaOptions> options) : IDisposable
 {
     private const int _jpegQuality = 85;
 
-    /// <summary>Devuelve <see langword="null"/> si el contenido no es una imagen JPG/PNG válida dentro de los límites.</summary>
-    public ProcessedImage? Process(ReadOnlySpan<byte> content)
+    private readonly SemaphoreSlim _slots = new(options.Value.MaxConcurrentProcessing, options.Value.MaxConcurrentProcessing);
+
+    /// <summary>Procesa cuando hay turno; responde 422 (con un motivo distinto por dimensiones) si no es una imagen JPG/PNG válida dentro de los límites.</summary>
+    public Task<MediaOutcome<ProcessedImage>> ProcessAsync(ArraySegment<byte> content, CancellationToken cancellationToken) =>
+        RunLimitedAsync(() => Process(content), cancellationToken);
+
+    /// <summary>Ejecuta <paramref name="work"/> sin pasar de los turnos configurados; los demás esperan sin bloquear hilos.</summary>
+    internal async Task<T> RunLimitedAsync<T>(Func<T> work, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(work);
+        await _slots.WaitAsync(cancellationToken);
+        try
+        {
+            return work();
+        }
+        finally
+        {
+            _slots.Release();
+        }
+    }
+
+    public void Dispose() => _slots.Dispose();
+
+    private MediaOutcome<ProcessedImage> Process(ArraySegment<byte> content)
     {
         var format = MediaRules.DetectFormat(content);
         if (format is null)
         {
-            return null;
+            return MediaOutcome<ProcessedImage>.Unprocessable(MediaRejection.InvalidFile);
         }
 
-        using var stream = new MemoryStream(content.ToArray(), writable: false);
+        using var stream = new MemoryStream(content.Array!, content.Offset, content.Count, writable: false);
         using var codec = SKCodec.Create(stream, out var result);
-        if (result != SKCodecResult.Success || ToFormat(codec.EncodedFormat) != format || !MediaRules.AreAllowedDimensions(codec.Info.Width, codec.Info.Height))
+        if (result != SKCodecResult.Success || ToFormat(codec.EncodedFormat) != format)
         {
-            return null;
+            return MediaOutcome<ProcessedImage>.Unprocessable(MediaRejection.InvalidFile);
         }
 
-        using var decoded = DecodeFully(codec);
-        if (decoded is null)
+        if (!MediaRules.AreAllowedDimensions(codec.Info.Width, codec.Info.Height))
         {
-            return null;
+            return MediaOutcome<ProcessedImage>.Unprocessable(MediaRejection.DimensionsTooLarge);
         }
 
-        using var oriented = ApplyOrigin(decoded, codec.EncodedOrigin);
+        using var oriented = DecodeUpright(codec);
+        if (oriented is null)
+        {
+            return MediaOutcome<ProcessedImage>.Unprocessable(MediaRejection.InvalidFile);
+        }
+
         using var reduced = Reduce(oriented, options.Value.ReducedMaxSide);
-        return new ProcessedImage(format.Value, Encode(oriented, format.Value), Encode(reduced, format.Value), oriented.Width, oriented.Height);
+        return MediaOutcome<ProcessedImage>.Ok(new ProcessedImage(
+            format.Value, Encode(oriented, format.Value), Encode(reduced, format.Value), oriented.Width, oriented.Height));
     }
 
     private static ImageFormat? ToFormat(SKEncodedImageFormat format) => format switch
@@ -63,6 +92,21 @@ internal sealed class ImageProcessor(IOptions<MediaOptions> options)
 
         bitmap.Dispose();
         return null;
+    }
+
+    /// <summary>Decodifica y aplica la orientación; la copia decodificada se libera en cuanto existe la girada (máx. dos mapas a la vez).</summary>
+    private static SKBitmap? DecodeUpright(SKCodec codec)
+    {
+        var decoded = DecodeFully(codec);
+        if (decoded is null || codec.EncodedOrigin == SKEncodedOrigin.TopLeft)
+        {
+            return decoded;
+        }
+
+        using (decoded)
+        {
+            return ApplyOrigin(decoded, codec.EncodedOrigin);
+        }
     }
 
     /// <summary>Copia los píxeles con la orientación EXIF aplicada, para que la imagen recodificada se vea igual sin EXIF.</summary>
@@ -100,12 +144,12 @@ internal sealed class ImageProcessor(IOptions<MediaOptions> options)
             ?? throw new InvalidOperationException("SkiaSharp could not resize the image.");
     }
 
+    /// <summary>Codifica directo desde los píxeles del mapa (sin <c>SKImage.FromBitmap</c>, que copia un mapa mutable).</summary>
     private static byte[] Encode(SKBitmap bitmap, ImageFormat format)
     {
-        using var image = SKImage.FromBitmap(bitmap);
         using var encoded = format == ImageFormat.Png
-            ? image.Encode(SKEncodedImageFormat.Png, 100)
-            : image.Encode(SKEncodedImageFormat.Jpeg, _jpegQuality);
-        return encoded.ToArray();
+            ? bitmap.Encode(SKEncodedImageFormat.Png, 100)
+            : bitmap.Encode(SKEncodedImageFormat.Jpeg, _jpegQuality);
+        return encoded?.ToArray() ?? throw new InvalidOperationException("SkiaSharp could not encode the image.");
     }
 }

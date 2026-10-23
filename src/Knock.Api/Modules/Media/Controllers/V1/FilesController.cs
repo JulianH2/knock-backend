@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using Asp.Versioning;
 using Knock.Api.Modules.Media.Dtos;
 using Knock.Api.Modules.Media.Services;
@@ -18,6 +17,7 @@ internal sealed class FilesController(MediaService media) : ControllerBase
 
     [HttpPost("subidas")]
     [RequestSizeLimit(MaxBodyBytes)]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     [ProducesResponseType<UploadCreatedResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
@@ -30,7 +30,8 @@ internal sealed class FilesController(MediaService media) : ControllerBase
             return Unauthorized();
         }
 
-        var outcome = await media.CreateUploadAsync(ownerId, request.Usage, request.ContentType, request.SizeBytes, cancellationToken);
+        var outcome = await media.CreateUploadAsync(
+            ownerId, request.Usage ?? string.Empty, request.ContentType ?? string.Empty, request.SizeBytes.GetValueOrDefault(), cancellationToken);
         return ToResult(outcome, ticket => StatusCode(
             StatusCodes.Status201Created, new UploadCreatedResponse(ticket.Id, ticket.Link.Url, ticket.Link.ExpiresAt)));
     }
@@ -55,21 +56,20 @@ internal sealed class FilesController(MediaService media) : ControllerBase
     }
 
     [HttpGet("{id:guid}/lectura")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     [ProducesResponseType<ReadLinkResponse>(StatusCodes.Status200OK)]
-    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Read(
-        Guid id,
-        [FromQuery(Name = "version"), RegularExpression("^(original|reducida)$")] string version = "original",
-        CancellationToken cancellationToken = default)
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> Read(Guid id, [FromQuery] ReadLinkQuery query, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(query);
         if (OwnerId is not { } ownerId)
         {
             return Unauthorized();
         }
 
-        var outcome = await media.CreateOwnerReadLinkAsync(ownerId, id, version == "reducida", cancellationToken);
+        var outcome = await media.CreateOwnerReadLinkAsync(ownerId, id, query.Version == ReadLinkQuery.Reduced, cancellationToken);
         return ToResult(outcome, link => Ok(new ReadLinkResponse(link.Url, link.ExpiresAt)));
     }
 

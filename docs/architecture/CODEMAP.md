@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-23T16:49:39Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-10-23T17:08:37Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -11,7 +11,7 @@
 | `Catalog` | -, data, domain, services | 10 | 10 | 11 |
 | `Identity` | -, controllers, dtos, services | 11 | 15 | 10 |
 | `Knock.Api` | -, common, hosting | 18 | 28 | 35 |
-| `Media` | -, controllers, data, domain, dtos, services | 16 | 30 | 45 |
+| `Media` | -, controllers, data, domain, dtos, services, validators | 18 | 35 | 48 |
 | `Messaging` | -, services | 3 | 3 | 1 |
 | `Notifications` | -, services | 3 | 3 | 1 |
 | `Reputation` | -, services | 3 | 3 | 1 |
@@ -152,7 +152,7 @@
 **controllers**
 
 - `src/Knock.Api/Modules/Media/Controllers/V1/FilesController.cs` — class `FilesController`
-  - `CreateUpload()`:26, `Confirm()`:46
+  - `CreateUpload()`:26, `Confirm()`:47, `Read()`:64
 
 **data**
 
@@ -166,11 +166,12 @@
 - `src/Knock.Api/Modules/Media/Domain/MediaFile.cs` — enum `MediaUsage`, enum `MediaFileState`, enum `ImageFormat`, record `MediaFile`
   - `MediaFile()`:30, `IsReadyFor()`:52, `CreatePending()`:54, `MarkReady()`:58, `MarkRejected()`:74
 - `src/Knock.Api/Modules/Media/Domain/MediaRules.cs` — class `MediaRules`
-  - `IsAllowedContentType()`:21, `IsAllowedSize()`:24, `AreAllowedDimensions()`:26, `DetectFormat()`:30, `ParseUsage()`:40, `ToContractValue()`:48, `ToContractValue()`:55
+  - `IsAllowedContentType()`:31, `IsAllowedSize()`:34, `AreAllowedDimensions()`:36, `DetectFormat()`:40, `ParseUsage()`:50, `ToContractValue()`:58, `ToContractValue()`:65
 
 **dtos**
 
-- `src/Knock.Api/Modules/Media/Dtos/FileDtos.cs` — record `CreateUploadRequest`, record `UploadCreatedResponse`, record `ConfirmedFileResponse`, record `ReadLinkResponse`
+- `src/Knock.Api/Modules/Media/Dtos/FileDtos.cs` — record `CreateUploadRequest`, record `ReadLinkQuery`, record `UploadCreatedResponse`, record `ConfirmedFileResponse`, record `ReadLinkResponse`
+  - `ReadLinkQuery()`:15
 
 **services**
 
@@ -179,15 +180,20 @@
 - `src/Knock.Api/Modules/Media/Services/IModerationHook.cs` — interface `IModerationHook`, class `NoModerationHook`
   - `ReviewAsync()`:18
 - `src/Knock.Api/Modules/Media/Services/ImageProcessor.cs` — record `ProcessedImage`, class `ImageProcessor`
-  - `ImageProcessor()`:15, `Process()`:20
+  - `ProcessAsync()`:24, `RunLimitedAsync()`:28, `Dispose()`:42
 - `src/Knock.Api/Modules/Media/Services/MediaApi.cs` — class `MediaApi`
   - `IsReadyAndOwnedByAsync()`:7, `CreateReadLinkAsync()`:10
-- `src/Knock.Api/Modules/Media/Services/MediaBlobStorage.cs` — record `SasLink`, class `MediaBlobStorage`
-  - `MediaBlobStorage()`:18, `EnsureContainersAsync()`:25, `CreateUploadLink()`:37, `CreateReadLink()`:40, `GetQuarantineSizeAsync()`:44, `DownloadQuarantineAsync()`:57, `DeleteQuarantineAsync()`:63, `UploadFileAsync()`:66
-- `src/Knock.Api/Modules/Media/Services/MediaOutcome.cs` — enum `MediaOutcomeStatus`, record `MediaOutcome`
-  - `MediaOutcome()`:18, `Ok()`:20, `NotFound()`:22, `Conflict()`:24, `Unprocessable()`:26
+- `src/Knock.Api/Modules/Media/Services/MediaBlobStorage.cs` — record `SasLink`, record `UploadedBlob`, class `MediaBlobStorage`
+  - `MediaBlobStorage()`:21, `EnsureContainersAsync()`:28, `CreateUploadLink()`:40, `CreateReadLink()`:43, `GetUploadedBlobAsync()`:47, `DownloadQuarantineAsync()`:65, `DeleteQuarantineAsync()`:86, `UploadFileAsync()`:89
+- `src/Knock.Api/Modules/Media/Services/MediaOutcome.cs` — enum `MediaOutcomeStatus`, record `MediaOutcome`, class `MediaRejection`
+  - `MediaOutcome()`:21, `Ok()`:23, `NotFound()`:25, `Conflict()`:27, `Unprocessable()`:29
 - `src/Knock.Api/Modules/Media/Services/MediaService.cs` — record `UploadTicket`, record `ConfirmedFile`, class `MediaService`
-  - `MediaService()`:15, `CreateUploadAsync()`:24, `ConfirmAsync()`:39, `CreateOwnerReadLinkAsync()`:70, `CreateAuthorizedReadLinkAsync()`:79, `IsReadyAndOwnedByAsync()`:85
+  - `MediaService()`:15, `CreateUploadAsync()`:22, `ConfirmAsync()`:37, `CreateOwnerReadLinkAsync()`:68, `CreateAuthorizedReadLinkAsync()`:77, `IsReadyAndOwnedByAsync()`:83
+
+**validators**
+
+- `src/Knock.Api/Modules/Media/Validators/CreateUploadRequestValidator.cs` — class `CreateUploadRequestValidator`
+- `src/Knock.Api/Modules/Media/Validators/ReadLinkQueryValidator.cs` — class `ReadLinkQueryValidator`
 
 ### Messaging
 

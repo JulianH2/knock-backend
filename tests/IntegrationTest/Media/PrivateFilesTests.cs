@@ -1,6 +1,8 @@
 using System.Net;
 using System.Text.Json;
 using AwesomeAssertions;
+using Knock.Api.Modules.Media.Domain;
+using Knock.Api.Modules.Media.Services;
 using Knock.IntegrationTest.Support;
 using SkiaSharp;
 using Xunit;
@@ -74,6 +76,7 @@ public class PrivateFilesTests
     [InlineData("tamano-declarado-9mb")]
     [InlineData("tamano-real-9mb")]
     [InlineData("pdf-renombrado-jpg")]
+    [InlineData("dimensiones-excedidas")]
     public async Task OversizedOrNonImageFileIsRejectedWith422_TC_TT_API_05_03(string scenario)
     {
         await using var azurite = await AzuriteFixture.StartAsync();
@@ -86,13 +89,71 @@ public class PrivateFilesTests
         {
             "tamano-declarado-9mb" => await MediaHttp.CreateUploadAsync(client, token, MediaHttp.JpegUpload(nineMegabytes)),
             "tamano-real-9mb" => await UploadAndConfirmAsync(client, token, TestImages.JpegSignaturePadding(nineMegabytes)),
+            "dimensiones-excedidas" => await UploadAndConfirmAsync(client, token, TestImages.Png(MediaRules.MaxSidePixels + 1, 1)),
             _ => await UploadAndConfirmAsync(client, token, TestImages.PdfNamedAsJpg()),
         };
 
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         response.Content.Headers.ContentType?.MediaType.Should().Be("application/problem+json");
+        (await ReadDetailAsync(response)).Should().Be(
+            scenario == "dimensiones-excedidas" ? MediaRejection.DimensionsTooLarge : MediaRejection.InvalidFile,
+            "el rechazo por dimensiones tiene su propio motivo");
         (await azurite.ListBlobNamesAsync(MediaHttp.FilesContainer)).Should().BeEmpty("nada llega al contenedor final");
         (await azurite.ListBlobNamesAsync(MediaHttp.QuarantineContainer)).Should().BeEmpty("el blob rechazado se borra");
+    }
+
+    [Theory]
+    [InlineData("otra-foto")]
+    [InlineData("mas-grande-9mb")]
+    public async Task BlobReplacedBetweenCheckAndDownloadIsRejectedWith422_TC_TT_API_05_03(string replacement)
+    {
+        await using var azurite = await AzuriteFixture.StartAsync();
+        var policy = new ReplaceUploadedBlobPolicy(
+            azurite.ConnectionString,
+            replacement == "otra-foto" ? TestImages.JpegWithExifAndGps(64, 32) : TestImages.JpegSignaturePadding(9 * 1024 * 1024));
+        using var factory = MediaHttp.CreateFactory(azurite, blobPolicy: policy);
+        using var client = factory.CreateClient();
+        var token = MediaHttp.IssueAccessToken(factory);
+        var photo = TestImages.JpegWithExifAndGps(_photoWidth, _photoHeight);
+        var (id, uploadUrl) = await MediaHttp.StartUploadAsync(client, token, photo.Length);
+        (await MediaHttp.PutBlobAsync(uploadUrl, photo).StatusAsync()).Should().Be(HttpStatusCode.Created);
+
+        using var confirm = await MediaHttp.ConfirmAsync(client, token, id);
+
+        policy.Replaced.Should().BeTrue("precondición: el blob se reemplazó entre la consulta y la descarga");
+        confirm.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        confirm.Content.Headers.ContentType?.MediaType.Should().Be("application/problem+json");
+        (await ReadDetailAsync(confirm)).Should().Be(MediaRejection.ChangedDuringConfirmation);
+        policy.DownloadIfMatch.Should().NotBeNullOrEmpty().And.Be(policy.CheckedETag, "la descarga exige la versión consultada");
+        policy.DownloadRange.Should().Be($"bytes=0-{MediaRules.MaxFileBytes}", "nunca se piden más de 8 MB + 1 byte");
+        (await azurite.ListBlobNamesAsync(MediaHttp.FilesContainer)).Should().BeEmpty("nada llega al contenedor final");
+        (await azurite.ListBlobNamesAsync(MediaHttp.QuarantineContainer)).Should().BeEmpty("el blob rechazado se borra");
+    }
+
+    [Theory]
+    [InlineData("""{}""", "uso")]
+    [InlineData("""{"contentType":"image/jpeg","tamanoBytes":1024}""", "uso")]
+    [InlineData("""{"uso":"otro","contentType":"image/jpeg","tamanoBytes":1024}""", "uso")]
+    [InlineData("""{"uso":"perfil","tamanoBytes":1024}""", "contentType")]
+    [InlineData("""{"uso":"perfil","contentType":"image/jpeg","tamanoBytes":0}""", "tamanoBytes")]
+    [InlineData("""{"uso":"perfil","contentType":"image/jpeg"}""", "tamanoBytes")]
+    [InlineData("?version=miniatura", "version")]
+    public async Task InvalidRequestShapeIsRejectedWith422AndFields_TC_TT_API_05_03(string input, string field)
+    {
+        // Sin Azurite: la validación responde antes de tocar Blob (si no, la petición fallaría con 500).
+        using var factory = new KnockApiFactory(
+            settings: new Dictionary<string, string?> { ["ConnectionStrings:KnockBlob"] = "UseDevelopmentStorage=true" });
+        using var client = factory.CreateClient();
+        var token = MediaHttp.IssueAccessToken(factory);
+
+        using var response = input.StartsWith('?')
+            ? await MediaHttp.ReadAsync(client, token, Guid.CreateVersion7(), input["?version=".Length..])
+            : await MediaHttp.CreateUploadAsync(client, token, JsonDocument.Parse(input).RootElement);
+
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        response.Content.Headers.ContentType?.MediaType.Should().Be("application/problem+json");
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        body.RootElement.GetProperty("errors").TryGetProperty(field, out _).Should().BeTrue($"el campo «{field}» se nombra como en el contrato");
     }
 
     /// <summary>Precondición: la foto de prueba sí trae EXIF con GPS y orientación (si no, la prueba sería vacía).</summary>
@@ -124,6 +185,12 @@ public class PrivateFilesTests
         top.Blue.Should().BeLessThan(60);
         bottom.Blue.Should().BeGreaterThan(200);
         bottom.Red.Should().BeLessThan(60);
+    }
+
+    private static async Task<string?> ReadDetailAsync(HttpResponseMessage response)
+    {
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        return body.RootElement.TryGetProperty("detail", out var detail) ? detail.GetString() : null;
     }
 
     private static async Task<byte[]> DownloadAsync(HttpClient client, string token, Guid id, string version)

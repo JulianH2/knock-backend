@@ -19,15 +19,13 @@ internal sealed class MediaService(
     IModerationHook moderation,
     TimeProvider timeProvider)
 {
-    private const string _invalidFileDetail = "The file must be a JPG or PNG image of 8 MB or less.";
-
     public async Task<MediaOutcome<UploadTicket>> CreateUploadAsync(
         string ownerId, string usage, string contentType, long sizeBytes, CancellationToken cancellationToken)
     {
         var parsedUsage = MediaRules.ParseUsage(usage);
         if (parsedUsage is null || !MediaRules.IsAllowedContentType(contentType) || !MediaRules.IsAllowedSize(sizeBytes))
         {
-            return MediaOutcome<UploadTicket>.Unprocessable(_invalidFileDetail);
+            return MediaOutcome<UploadTicket>.Unprocessable(MediaRejection.InvalidFile);
         }
 
         await storage.EnsureContainersAsync(cancellationToken);
@@ -50,20 +48,20 @@ internal sealed class MediaService(
         }
 
         await storage.EnsureContainersAsync(cancellationToken);
-        var size = await storage.GetQuarantineSizeAsync(stored.File.QuarantineBlob, cancellationToken);
-        if (size is null)
+        var uploaded = await storage.GetUploadedBlobAsync(stored.File.QuarantineBlob, cancellationToken);
+        if (uploaded is null)
         {
-            return MediaOutcome<ConfirmedFile>.Unprocessable("No file was uploaded with the upload link.");
+            return MediaOutcome<ConfirmedFile>.Unprocessable(MediaRejection.NotUploaded);
         }
 
-        var image = await ReadImageAsync(stored.File, size.Value, cancellationToken);
-        if (image is null)
+        var image = await ReadImageAsync(stored.File, uploaded, cancellationToken);
+        if (image.Status != MediaOutcomeStatus.Success)
         {
-            return await RejectAsync(stored, cancellationToken);
+            return await RejectAsync(stored, image.Detail ?? MediaRejection.InvalidFile, cancellationToken);
         }
 
-        await moderation.ReviewAsync(stored.File, image, cancellationToken);
-        return await AcceptAsync(stored, image, cancellationToken);
+        await moderation.ReviewAsync(stored.File, image.Value!, cancellationToken);
+        return await AcceptAsync(stored, image.Value!, cancellationToken);
     }
 
     /// <summary>SAS de lectura solo para el dueño y solo de archivos listos; si no, 404 sin distinguir el motivo.</summary>
@@ -92,24 +90,33 @@ internal sealed class MediaService(
         storage.CreateReadLink((reduced ? file.ReducedBlob : file.OriginalBlob)
             ?? throw new InvalidOperationException("A ready media file has no blob names."));
 
-    /// <summary>El tamaño real se revisa antes de descargar; los bytes del cliente nunca se guardan tal cual.</summary>
-    private async Task<ProcessedImage?> ReadImageAsync(MediaFile file, long sizeBytes, CancellationToken cancellationToken)
+    /// <summary>
+    /// El tamaño real se revisa antes de descargar, y la descarga solo trae la versión consultada (ETag) y como mucho
+    /// 8 MB + 1 byte: un blob reemplazado o agrandado entre la consulta y la descarga se rechaza. Los bytes del cliente
+    /// nunca se guardan tal cual.
+    /// </summary>
+    private async Task<MediaOutcome<ProcessedImage>> ReadImageAsync(MediaFile file, UploadedBlob uploaded, CancellationToken cancellationToken)
     {
-        if (sizeBytes > MediaRules.MaxFileBytes)
+        if (!MediaRules.IsAllowedSize(uploaded.SizeBytes))
         {
-            return null;
+            return MediaOutcome<ProcessedImage>.Unprocessable(MediaRejection.InvalidFile);
         }
 
-        var content = await storage.DownloadQuarantineAsync(file.QuarantineBlob, cancellationToken);
-        return processor.Process(content.ToMemory().Span);
+        var content = await storage.DownloadQuarantineAsync(file.QuarantineBlob, uploaded, cancellationToken);
+        if (content is not { } bytes || bytes.Count != uploaded.SizeBytes)
+        {
+            return MediaOutcome<ProcessedImage>.Unprocessable(MediaRejection.ChangedDuringConfirmation);
+        }
+
+        return await processor.ProcessAsync(bytes, cancellationToken);
     }
 
-    private async Task<MediaOutcome<ConfirmedFile>> RejectAsync(StoredMediaFile stored, CancellationToken cancellationToken)
+    private async Task<MediaOutcome<ConfirmedFile>> RejectAsync(StoredMediaFile stored, string detail, CancellationToken cancellationToken)
     {
         await storage.DeleteQuarantineAsync(stored.File.QuarantineBlob, cancellationToken);
         var rejected = stored.File.MarkRejected(timeProvider.GetUtcNow());
         return await store.TryReplaceAsync(rejected, stored.Version, cancellationToken)
-            ? MediaOutcome<ConfirmedFile>.Unprocessable(_invalidFileDetail)
+            ? MediaOutcome<ConfirmedFile>.Unprocessable(detail)
             : MediaOutcome<ConfirmedFile>.Conflict("The file was confirmed by another request.");
     }
 

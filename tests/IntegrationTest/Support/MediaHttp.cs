@@ -2,6 +2,9 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Azure.Core;
+using Azure.Core.Pipeline;
+using Azure.Storage.Blobs;
 using Knock.Api.Modules.Identity.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,14 +18,24 @@ internal static class MediaHttp
 
     private static readonly HttpClient _blob = new() { Timeout = TimeSpan.FromSeconds(30) };
 
-    /// <summary>Host de pruebas conectado a Azurite y, si se pasa, con un reloj falso para los vencimientos.</summary>
-    public static KnockApiFactory CreateFactory(AzuriteFixture azurite, TimeProvider? clock = null) => new(
+    /// <summary>
+    /// Host de pruebas conectado a Azurite; si se pasan, con un reloj falso para los vencimientos y con una política
+    /// extra en el pipeline del cliente de Blob de la API (para observar o provocar carreras).
+    /// </summary>
+    public static KnockApiFactory CreateFactory(AzuriteFixture azurite, TimeProvider? clock = null, HttpPipelinePolicy? blobPolicy = null) => new(
         settings: new Dictionary<string, string?> { ["ConnectionStrings:KnockBlob"] = azurite.ConnectionString },
         configureServices: services =>
         {
             if (clock is not null)
             {
                 services.AddSingleton(clock);
+            }
+
+            if (blobPolicy is not null)
+            {
+                var options = new BlobClientOptions();
+                options.AddPolicy(blobPolicy, HttpPipelinePosition.PerCall);
+                services.AddSingleton(new BlobServiceClient(azurite.ConnectionString, options));
             }
         });
 

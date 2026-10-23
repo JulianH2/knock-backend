@@ -13,7 +13,10 @@ public static class MediaModuleExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         services.TryAddSingleton(TimeProvider.System);
-        services.AddOptions<MediaOptions>().BindConfiguration(MediaOptions.SectionName);
+        services.AddOptions<MediaOptions>()
+            .BindConfiguration(MediaOptions.SectionName)
+            .Validate(media => media.MaxConcurrentProcessing >= 1, "Media:MaxConcurrentProcessing must be 1 or more.")
+            .ValidateOnStart();
         services.AddSingleton(provider =>
         {
             var connectionString = provider.GetRequiredService<IConfiguration>().GetConnectionString(MediaOptions.ConnectionStringName);

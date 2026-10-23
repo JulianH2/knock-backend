@@ -53,7 +53,10 @@ public class MediaRulesTests
 
     [Theory]
     [InlineData(4000, 3000, true)]
-    [InlineData(12_000, 3000, true)]
+    [InlineData(12_000, 2000, true)]
+    [InlineData(6000, 4000, true)]
+    [InlineData(6000, 4001, false)]
+    [InlineData(12_000, 3000, false)]
     [InlineData(12_001, 10, false)]
     [InlineData(10, 12_001, false)]
     [InlineData(8000, 6000, false)]

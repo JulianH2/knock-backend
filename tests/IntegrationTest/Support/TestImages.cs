@@ -32,6 +32,15 @@ internal static class TestImages
         return InsertApp1(jpeg.ToArray(), [.. _exifHeader, .. BuildTiff()]);
     }
 
+    /// <summary>PNG gris de <paramref name="width"/> × <paramref name="height"/> (sin metadatos).</summary>
+    public static byte[] Png(int width, int height)
+    {
+        using var bitmap = new SKBitmap(width, height);
+        bitmap.Erase(SKColors.Gray);
+        using var png = bitmap.Encode(SKEncodedImageFormat.Png, 100);
+        return png.ToArray();
+    }
+
     public static byte[] PdfNamedAsJpg() => Encoding.ASCII.GetBytes("%PDF-1.7\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n");
 
     /// <summary>Bytes que empiezan con la firma JPG y miden <paramref name="sizeBytes"/> (no es una imagen válida).</summary>

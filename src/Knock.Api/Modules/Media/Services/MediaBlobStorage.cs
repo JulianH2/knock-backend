@@ -11,6 +11,9 @@ namespace Knock.Api.Modules.Media.Services;
 /// <summary>Enlace SAS emitido: URL de un solo blob y su vencimiento. La URL nunca se registra en logs.</summary>
 internal sealed record SasLink(Uri Url, DateTimeOffset ExpiresAt);
 
+/// <summary>Tamaño real y versión (ETag) del blob que el cliente subió a cuarentena, leídos antes de descargarlo.</summary>
+internal sealed record UploadedBlob(long SizeBytes, ETag ETag);
+
 /// <summary>
 /// Acceso a los contenedores privados de fotos. Solo emite SAS de servicio sobre un blob (nunca de cuenta ni de
 /// contenedor), con permisos mínimos y vencimiento de 5 min calculado con <see cref="TimeProvider"/>.
@@ -40,13 +43,13 @@ internal sealed class MediaBlobStorage(BlobServiceClient blobs, IOptions<MediaOp
     public SasLink CreateReadLink(string fileBlob) =>
         CreateLink(_files.GetBlobClient(fileBlob), BlobSasPermissions.Read);
 
-    /// <summary>Tamaño real del blob subido a cuarentena, o <see langword="null"/> si el cliente no subió nada.</summary>
-    public async Task<long?> GetQuarantineSizeAsync(string quarantineBlob, CancellationToken cancellationToken)
+    /// <summary>Tamaño real y ETag del blob subido a cuarentena, o <see langword="null"/> si el cliente no subió nada.</summary>
+    public async Task<UploadedBlob?> GetUploadedBlobAsync(string quarantineBlob, CancellationToken cancellationToken)
     {
         try
         {
             var properties = await _quarantine.GetBlobClient(quarantineBlob).GetPropertiesAsync(cancellationToken: cancellationToken);
-            return properties.Value.ContentLength;
+            return new UploadedBlob(properties.Value.ContentLength, properties.Value.ETag);
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {
@@ -54,10 +57,30 @@ internal sealed class MediaBlobStorage(BlobServiceClient blobs, IOptions<MediaOp
         }
     }
 
-    public async Task<BinaryData> DownloadQuarantineAsync(string quarantineBlob, CancellationToken cancellationToken)
+    /// <summary>
+    /// Descarga el blob solo si sigue siendo la versión consultada (<c>If-Match</c> con su ETag) y nunca trae más de
+    /// <see cref="MediaRules.MaxFileBytes"/> + 1 bytes (rango pedido al servicio y lectura acotada aquí). Devuelve
+    /// <see langword="null"/> si el blob cambió o desapareció después de consultarlo.
+    /// </summary>
+    public async Task<ArraySegment<byte>?> DownloadQuarantineAsync(string quarantineBlob, UploadedBlob expected, CancellationToken cancellationToken)
     {
-        var result = await _quarantine.GetBlobClient(quarantineBlob).DownloadContentAsync(cancellationToken);
-        return result.Value.Content;
+        ArgumentNullException.ThrowIfNull(expected);
+        const long limit = MediaRules.MaxFileBytes + 1;
+        var download = new BlobDownloadOptions
+        {
+            Range = new HttpRange(0, limit),
+            Conditions = new BlobRequestConditions { IfMatch = expected.ETag },
+        };
+        try
+        {
+            var result = await _quarantine.GetBlobClient(quarantineBlob).DownloadStreamingAsync(download, cancellationToken);
+            using var streaming = result.Value;
+            return await ReadAtMostAsync(streaming.Content, (int)Math.Min(expected.SizeBytes + 1, limit), cancellationToken);
+        }
+        catch (RequestFailedException ex) when (ex.Status is 404 or 412 or 416)
+        {
+            return null;
+        }
     }
 
     public Task DeleteQuarantineAsync(string quarantineBlob, CancellationToken cancellationToken) =>
@@ -68,6 +91,20 @@ internal sealed class MediaBlobStorage(BlobServiceClient blobs, IOptions<MediaOp
             BinaryData.FromBytes(content),
             new BlobUploadOptions { HttpHeaders = new BlobHttpHeaders { ContentType = format == ImageFormat.Png ? "image/png" : "image/jpeg" } },
             cancellationToken);
+
+    /// <summary>Lee hasta <paramref name="capacity"/> bytes; si el blob trae más, el llamador lo ve porque llena el búfer.</summary>
+    private static async Task<ArraySegment<byte>> ReadAtMostAsync(Stream content, int capacity, CancellationToken cancellationToken)
+    {
+        var buffer = new byte[capacity];
+        var total = 0;
+        int read;
+        while (total < capacity && (read = await content.ReadAsync(buffer.AsMemory(total), cancellationToken)) > 0)
+        {
+            total += read;
+        }
+
+        return new ArraySegment<byte>(buffer, 0, total);
+    }
 
     private SasLink CreateLink(BlobClient blob, BlobSasPermissions permissions)
     {
