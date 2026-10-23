@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Cryptography;
 using DotNet.Testcontainers.Builders;
@@ -76,10 +77,10 @@ internal static class AzureConnection
         {
             settings = MongoClientSettings.FromConnectionString(Environment.GetEnvironmentVariable(SpikeTargets.AzureVariable));
         }
-        catch (Exception ex) when (ex is MongoConfigurationException or ArgumentException)
+        catch (Exception ex) when (ex is MongoException or ArgumentException or FormatException or SocketException or TimeoutException)
         {
-            // No se propaga el mensaje original: podría contener partes de la cadena de conexión.
-            return (null, $"{SpikeTargets.AzureVariable} no es una cadena de conexión válida.");
+            // Solo el tipo: el mensaje original podría contener partes de la cadena de conexión.
+            return (null, $"{SpikeTargets.AzureVariable} no es una cadena de conexión válida ({ex.GetType().Name}).");
         }
 
         settings.ServerSelectionTimeout = ServerSelectionTimeout;

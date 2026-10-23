@@ -7,6 +7,8 @@
 ## Recomendación (FINAL)
 **Quedarse con Azure DocumentDB en su nivel gratuito (ADR-002). Sin plan B: no se activa MongoDB Atlas.** P1, P2, P4 y P7 pasan en Azure; P1 quedó confirmado con la evidencia del líder del 2026-10-21 (región `westus`, nivel Free, servidor 8.0, 32 GB, gasto 0.0 USD).
 
+**P3** pasa por la definición de la spec (consulta, `explain` p95 0.6 ms con 8 polígonos); de extremo a extremo desde Tula el p95 es 160.6 ms y no se midió desde West US; se vuelve a medir desde la misma región en TT-AZ-02 antes de cerrar el < 100 ms de HU-009.
+
 Condiciones para adoptarla:
 - **P5 se resuelve con un campo normalizado** (sin acentos, en mayúsculas) **que calcula la app**, más **búsqueda por prefijo** anclado sobre un índice normal (P5 falla con `$text` y con colación en Azure; la alternativa pasa en los tres destinos).
 - **`maxPoolSize` fijo por servicio** (P7: el límite de conexiones del nivel gratuito no es público ni lo expone `serverStatus`).
@@ -151,6 +153,11 @@ SPIKE_BACKUP_URI=<URI> tests/Spike.DocumentDb/scripts/backup-restore.sh         
 - **Latencia de red desde México:** red p95 105.7 ms y total p95 160.6 ms desde una red doméstica en Tula. Los servicios deben desplegarse cerca de West US (región de ADR-006).
 - **documentdb-local de 2025-06:** la imagen fijada puede diferir del motor actual de Azure (ya difiere en P7); revisar la imagen nueva antes de TT-BD-07.
 - **Traslapes del seed:** un punto puede devolver dos colonias hasta que TT-BD-06 decida.
+
+## Notas de seguimiento
+- **P2, P4 y P6 en Azure vienen de la fase 1** y sus mediciones no se guardaron. Se repiten con el arnés final en Azure (incluido el tiempo del borrado TTL de P6) antes de TT-BD-07.
+- **El enmascarado del script de P8 es parcial:** `mask()` solo oculta `usuario:contraseña`; el host del clúster puede aparecer en los errores de `mongodump`/`mongorestore`. Nunca se pega la salida cruda en un PR, en capturas ni en el chat.
+- **Paquetes del arnés (2026-10-23):** `dotnet list tests/Spike.DocumentDb package --vulnerable --include-transitive` contra nuget.org: «has no vulnerable packages given the current sources», incluidas las dependencias transitivas de `MongoDB.Driver` 3.12.0 y `Testcontainers.MongoDb` 4.16.0. Solo se consultó la base de avisos de NuGet; OSV no.
 
 ## Pendiente de una persona
 - P1: resuelto con la evidencia del líder del 2026-10-21.
