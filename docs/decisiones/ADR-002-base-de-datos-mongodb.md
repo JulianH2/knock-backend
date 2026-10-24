@@ -1,6 +1,6 @@
 # ADR-002 — Base de datos: MongoDB en Azure DocumentDB
 
-> **Estado:** decidida por el Tech Lead el 2026-10-20. **La confirmación técnica depende del spike TT-BD-05.**
+> **Estado:** decidida por el Tech Lead el 2026-10-20 y **confirmada por el spike TT-BD-05 el 2026-10-23** (backend #48; evidencia en `docs/evidencia/KNOCK-147-spike-documentdb.md`). El plan B (Atlas) no se activa.
 > **Reemplaza:** la sección 5 («Datos: PostgreSQL + PostGIS») y la fila «Base de datos» de la sección 1 de `docs/DECISION_TECNICA.md`.
 > **Tarea:** TT-GES-06 · Impacto de implementación: TT-BD-05, TT-BD-06†, TT-BD-07†, TT-BD-08†.
 
@@ -44,6 +44,18 @@ EF Core, Npgsql, NetTopologySuite, las migraciones SQL, el esquema por módulo, 
 6. `mongodump` y restauración.
 
 Si falla alguno que no tenga solución razonable, se pasa al plan B y se registra el cambio aquí.
+
+## Resultado del spike (2026-10-23)
+
+Regla de decisión de la spec: si fallaban P1, P2, P4 o P7 sin solución razonable, se pasaba a Atlas. **Las cuatro pasan en Azure**, así que se sigue con DocumentDB.
+
+- **P1 (clúster gratuito):** `westus`, nivel Free, servidor 8.0, 32 GB y gasto de 0.0 USD frente al presupuesto de 10 USD.
+- **P2 (geo), P4 (transacción y outbox), P6 (TTL) y P7 (64 clientes sin rechazos):** pasan.
+- **P3 (latencia):** la consulta tarda 0.6 ms p95 en el servidor; extremo a extremo son unos 160 ms desde Tula, sin medir desde West US. Se vuelve a medir desde la misma región en TT-AZ-02.
+- **P5 (texto sin acentos): falla** con el índice de texto en español, igual que en `documentdb-local`. Contorno válido: un campo normalizado `nombreBusqueda` con búsqueda por prefijo (TT-BD-06).
+- **P8 (`mongodump` y restauración):** pasa, pero la restauración debe ser **serial**; en paralelo da `WriteConflict` (TT-BD-04).
+- **Hallazgo del seed de colonias:** cuatro pares de polígonos se traslapan (Centro–La Huerta, Centro–San Lorenzo, El Cielito–San Lorenzo y El Llano 1a Sección–Tultengo); un punto ahí devuelve dos colonias. TT-BD-06 decide entre corregir los polígonos o una regla de desempate.
+- **Pendiente de decisión:** la lista de revocación de tokens. La regla 4 de arriba la deja en MongoDB con TTL (P6 lo respalda), pero la constitución 2.2.0 la pone en Redis. Hasta que el líder decida, no se cambia esta regla.
 
 ## Consecuencias
 Se reemplazan TT-BD-01 y TT-BD-02 (ya terminadas con PostgreSQL) por TT-BD-06†; se adaptan TT-API-01, TT-API-07, TT-BD-03, TT-BD-04, TT-QA-01 y el CI. († tarea planificada que se crea en Jira; ver el plan en [`docs/PLAN_ADAPTACION.md`](../PLAN_ADAPTACION.md).) Las historias de zona, mapa, búsqueda, solicitudes y panel cambian sus criterios (ver el plan de adaptación).
