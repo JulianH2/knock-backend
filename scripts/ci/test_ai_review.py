@@ -104,7 +104,7 @@ class AiReviewTests(unittest.TestCase):
         FakeServices.model_content = "**Resumen** cambio pequeño.\n**Veredicto**: Sin bloqueos"
         FakeServices.model_requests = []
         self.env = {"AI_REVIEW_API_KEY": "llave-falsa-de-prueba", "AI_REVIEW_BASE_URL": self.url, "AI_REVIEW_MODEL": "modelo-falso",
-                    "GITHUB_API_URL": self.url, "GITHUB_TOKEN": "token-falso", "GITHUB_REPOSITORY": "o/r", "PR_NUMBER": "7",
+                    "AI_REVIEW_ALLOW_LOCAL": "1", "GITHUB_API_URL": self.url, "GITHUB_TOKEN": "token-falso", "GITHUB_REPOSITORY": "o/r", "PR_NUMBER": "7",
                     "BASE_SHA": self.base, "HEAD_SHA": self.head, "PR_TITLE": "KNOCK-1 · prueba"}
 
     def run_main(self, **extra: str) -> tuple[int, str]:
@@ -152,6 +152,17 @@ class AiReviewTests(unittest.TestCase):
         self.run_main(AI_REVIEW_BASE_URL=self.url)
         self.assertEqual({"type": "disabled"}, FakeServices.model_requests[0]["body"].get("thinking"))
         self.assertNotIn("thinking", FakeServices.model_requests[1]["body"])
+
+    def test_key_is_never_sent_to_an_untrusted_or_insecure_address(self) -> None:
+        for bad in ("http://api.deepseek.com", "https://evil.example.com", "https://api.deepseek.com.evil.example.com", "ftp://api.deepseek.com"):
+            self.assertIsNotNone(ai_review.validate_base_url(bad, "", False), bad)
+        self.assertIsNone(ai_review.validate_base_url("https://api.deepseek.com", "", False))
+        self.assertIsNone(ai_review.validate_base_url("https://generativelanguage.googleapis.com/v1beta/openai", "", False))
+        self.assertIsNotNone(ai_review.validate_base_url("http://127.0.0.1:1", "", False))  # el servidor local solo se admite en pruebas
+        code, output = self.run_main(AI_REVIEW_BASE_URL="https://evil.example.com", AI_REVIEW_ALLOW_LOCAL="0")
+        self.assertEqual(0, code)
+        self.assertEqual([], FakeServices.model_requests)
+        self.assertIn("La llave no se envía", output)
 
     def test_key_is_sent_only_as_bearer_and_never_printed(self) -> None:
         _, output = self.run_main()
