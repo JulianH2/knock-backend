@@ -1,30 +1,36 @@
 # TT-BD-06 — tareas
 
-> Servicio afectado: Mercado. Ninguna tarea empieza hasta que la spec esté Aprobada.
+> Servicio afectado: Mercado. Ninguna tarea empieza hasta que la spec esté Aprobada. Dudas (a)–(j) resueltas por el líder en #53 (2026-10-24).
+
+## T0 — Exportar las semillas desde PostGIS (antes de cualquier retiro)
+- **Estado:** pendiente de aprobación de la spec (decisión (c)). Generador de una sola vez en `db/scripts/` que produce `db/seeds/catalog/colonias.json` (12 colonias, `_id` fijos, `nombreBusqueda`, centro de `ST_PointOnSurface` para las 8 con polígono; las 4 sin polígono con `piloto: false` y sin `geom` ni `centro`) y `oficios.json`; su salida va al PR.
+- **Verificar:** TC-TT-BD-06-11 · TC-TT-BD-06-21
 
 ## T1 — Paquetes, conexión compartida y readiness
-- **Estado:** pendiente de aprobación de la spec (evaluar `MongoDB.Driver` y `Testcontainers.MongoDb`; registrar en `Memoria.md`). `AddKnockMongo` en `Hosting/` con `ConnectionStrings:KnockMongo`, `Mongo:MaxPoolSize` (duda (i)) y `Mongo:Databases:<Módulo>`.
+- **Estado:** pendiente (evaluar `MongoDB.Driver` y `Testcontainers.MongoDb`; registrar en `Memoria.md`). `AddKnockMongo` en `Hosting/` con `ConnectionStrings:KnockMongo`, `Mongo:MaxPoolSize` = 20 (decisión (i)) y `Mongo:Databases:<Módulo>`. Fixture con `documentdb-local` fijada por digest (decisión (a)).
 - **Verificar:** TC-TT-BD-06-13 · TC-TT-BD-06-14 · TC-TT-BD-06-15 · TC-TT-BD-06-18
 
 ## T2 — Modelo, normalizador, índices y semilla
-- **Estado:** pendiente (formato de la semilla y origen del centro según la duda (c); traslapes con el desempate por `nombreBusqueda` de spec §5 y corrección de polígonos según la duda (d); `modalidad` validada en el cargador, `$jsonSchema` como riesgo para TT-BD-07)
-- **Verificar:** TC-TT-BD-06-01 · TC-TT-BD-06-02 · TC-TT-BD-06-03 · TC-TT-BD-06-10
+- **Estado:** pendiente (desempate permanente por `nombreBusqueda`, decisión (d); `modalidad` validada en el cargador y `$jsonSchema` como riesgo para TT-BD-07; solo se declaran los TTL de caché, decisión (f))
+- **Verificar:** TC-TT-BD-06-01 · TC-TT-BD-06-02 · TC-TT-BD-06-03 · TC-TT-BD-06-10 · TC-TT-BD-06-11
 
 ## T3 — Consulta interna e `ICatalogApi` sobre MongoDB
-- **Estado:** pendiente (consulta interna con `{ id, nombre, cp, municipio }` y `ICatalogApi` delegando en ella; firmas existentes sin cambios; miembro nuevo para validar `coloniaId` según la duda (j))
-- **Verificar:** TC-TT-BD-06-04 · TC-TT-BD-06-05 · TC-TT-BD-06-06 · TC-TT-BD-06-07 · TC-TT-BD-06-08 · TC-TT-BD-06-09 · TC-TT-BD-06-17 · TC-TT-BD-06-19
+- **Estado:** pendiente (consulta interna con `{ id, nombre, cp, municipio }` y `ICatalogApi` delegando en ella; firmas existentes sin cambios; nuevo `NeighborhoodExistsAsync`, decisión (j))
+- **Verificar:** TC-TT-BD-06-04 · TC-TT-BD-06-05 · TC-TT-BD-06-06 · TC-TT-BD-06-07 · TC-TT-BD-06-08 · TC-TT-BD-06-09 · TC-TT-BD-06-17 · TC-TT-BD-06-19 · TC-TT-BD-06-20
 
-## T4 — Búsqueda por prefijo y rendimiento
-- **Estado:** pendiente (la búsqueda por prefijo depende de la duda (g))
-- **Verificar:** TC-TT-BD-06-11 · TC-TT-BD-06-12
+## T4 — Rendimiento
+- **Estado:** pendiente (la búsqueda por prefijo salió a HU-012, decisión (g))
+- **Verificar:** TC-TT-BD-06-12
 
-## T5 — Retiro de EF Core, Npgsql, NetTopologySuite y PostGIS
-- **Estado:** pendiente (`oficios.sql` según la duda (e); estado «Reemplazada» de TT-BD-01/02 según la duda (h))
-- **Verificar:** TC-TT-BD-06-16 · TC-TT-BD-06-20
+## T5 — Retiro de EF Core, Npgsql, NetTopologySuite, PostGIS y `oficios.sql`
+- **Estado:** pendiente. Después de T0 y del PR del líder que actualiza `sdd_lint.py` (decisión (h); el estado de TT-BD-01/02 no se cambia aquí). Borrar `db/seeds/catalog/oficios.sql` con la autorización explícita del líder (#53, 2026-10-24; AGENTS.md §4).
+- **Verificar:** TC-TT-BD-06-16 · TC-TT-BD-06-21
 
 ## T6 — Gates de compilación y formato
 - **Estado:** pendiente
-- **Verificar:** TC-TT-BD-06-21
+- **Verificar:** TC-TT-BD-06-22
 
-## Pendiente de decisión (no es tarea todavía)
-- Colección `archivos` de TT-API-05 (duda (b)): si el líder confirma la recomendación, se agrega una tarea con sus casos antes de aprobar la spec.
+## Fuera de esta tarea (decidido)
+- Colección `archivos` y paso de `IMediaFileStore` a camelCase: tarea propia «Colección archivos de Media» (2 puntos, Sprint 3, Alexis); mientras tanto sigue `registros-temporales` (decisión (b)).
+- Búsqueda de oficios por prefijo y su caso: HU-012 (decisión (g)).
+- Corregir los polígonos traslapados: fuera de esta tarea y de este sprint (decisión (d)).
