@@ -53,10 +53,10 @@ Regla de decisión de la spec: si fallaban P1, P2, P4 o P7 sin solución razonab
 - **P2 (geo), P4 (transacción y outbox):** pasan en Azure.
 - **P3 (latencia):** la consulta tarda 0.6 ms p95 en el servidor; de extremo a extremo son **160.6 ms p95 desde Tula** (red p95 105.7 ms), sin medir desde West US. Pasa por la definición de la spec (separa la consulta de la red). Se vuelve a medir desde la misma región en TT-AZ-02.
 - **P5 (texto sin acentos): falla** con el índice de texto en español y también con la colación `es`, igual que en `documentdb-local`. Contorno válido: un campo `nombreBusqueda` que calcula la aplicación, con búsqueda por prefijo anclado y «ñ» = «n», sin stemming (TT-BD-06).
-- **P6 (TTL):** pasa. El tiempo de borrado en Azure no se registró y se repite antes de TT-BD-07; el TTL solo borra tarde, nunca antes.
+- **P6 (TTL):** pasa. El tiempo de borrado en Azure no se registró y se repite antes de TT-BD-07; según la documentación de MongoDB, el TTL solo borra tarde, nunca antes (no se midió en Azure).
 - **P7 (conexiones):** 64 clientes sin rechazos es el tope de la prueba (al menos 256 conexiones medidas; Microsoft no publica una cifra para el nivel gratuito). Condición de adopción: `maxPoolSize` por servicio.
-- **P9 (diferencias entre destinos):** registradas en la evidencia. `documentdb-local` reproduce a Azure en P5 y difiere en P7 y P8; las pruebas de integración de TT-BD-07 usan esa imagen y una prueba de humo contra el clúster real.
 - **P8 (`mongodump` y restauración):** pasa, pero la restauración debe ser **serial**; en paralelo da `WriteConflict` (TT-BD-04).
+- **P9 (diferencias entre destinos):** registradas en la evidencia. `documentdb-local` reproduce a Azure en P5 y difiere en P7 y P8; las pruebas de integración de TT-BD-07 usan esa imagen y una prueba de humo contra el clúster real.
 - **Hallazgo del seed de colonias:** cuatro pares de polígonos se traslapan (Centro–La Huerta, Centro–San Lorenzo, El Cielito–San Lorenzo y El Llano 1a Sección–Tultengo); un punto ahí devuelve dos colonias. TT-BD-06 decide entre corregir los polígonos o una regla de desempate.
 - **Pendiente de decisión:** la lista de revocación de tokens. La regla 4 de arriba la deja en MongoDB con TTL, lo que P6 respalda; la constitución 2.2.0 (borrador, pendiente de ratificar) reparte así: el `jti` del access token en Redis y la huella del refresh, permanente, en MongoDB. Hasta que el líder decida entre ambas, este ADR no cambia la regla 4.
 
