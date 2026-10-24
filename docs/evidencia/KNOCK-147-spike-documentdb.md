@@ -1,6 +1,6 @@
 # Evidencia del spike — KNOCK-147 · TT-BD-05 Azure DocumentDB (nivel gratuito) frente a MongoDB Atlas
 
-> Spec: `specs/TT-BD-05-spike-documentdb-vs-atlas/spec.md` (Aprobada) · Fecha: 2026-10-21 · Arnés: `tests/Spike.DocumentDb/` (fuera de `Knock.slnx` y del CI hasta TT-BD-07)
+> Spec: `specs/TT-BD-05-spike-documentdb-vs-atlas/spec.md` (Firmada) · Fecha: 2026-10-21 · Arnés: `tests/Spike.DocumentDb/` (fuera de `Knock.slnx` y del CI hasta TT-BD-07)
 > Es un spike: entrega mediciones y una recomendación, no código de producto. Solo datos ficticios (seed versionado, puntos y centros sintéticos, documentos inventados).
 > No se registran cadenas de conexión, usuarios, contraseñas ni nombres de host del clúster.
 
