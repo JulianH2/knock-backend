@@ -11,7 +11,7 @@
 - **Verificar:** TC-TT-API-07-07 · TC-TT-API-07-09 · TC-TT-API-07-10 · TC-TT-API-07-11
 
 ## T3 — Contrato OpenAPI
-- **Estado:** pendiente
+- **Estado:** pendiente de la duda (j). `lat` y `lon` como `string` con el patrón fijo, sin transformador (decisión del líder en #54).
 - **Verificar:** TC-TT-API-07-13
 
 ## T4 — Integración con la consulta interna de Catalog en MongoDB
@@ -19,11 +19,11 @@
 - **Verificar:** TC-TT-API-07-03 · TC-TT-API-07-04 · TC-TT-API-07-05 · TC-TT-API-07-08 · TC-TT-API-07-12
 
 ## T5 — Privacidad de la query en los logs
-- **Estado:** pendiente. Aquí solo la guarda del nivel de `Microsoft.AspNetCore`; la redacción de `Microsoft.AspNetCore.Hosting.Diagnostics` es la duda (i), seguimiento de TT-API-03.
+- **Estado:** pendiente. Aquí solo la guarda del nivel de `Microsoft.AspNetCore`; la redacción de `Microsoft.AspNetCore.Hosting.Diagnostics` es una tarea aparte de seguimiento de TT-API-03 (decisión (i)).
 - **Verificar:** TC-TT-API-07-08 · TC-TT-API-07-16
 
 ## T6 — Rendimiento local
-- **Estado:** pendiente de TT-BD-06 y de la duda (e)
+- **Estado:** pendiente de TT-BD-06. Umbrales decididos (decisión (e)): informa contra 150 ms y en el CI falla con más de 500 ms; 150 ms con `KNOCK_PERF_STRICT=1`.
 - **Verificar:** TC-TT-API-07-14
 
 ## T7 — Documentos vivos y gates
