@@ -284,3 +284,7 @@
 - Verificado: dos ejecuciones (una compilando y otra con `--no-build`) dan archivos idénticos de 833 líneas, sin `servers` ni retornos de carro, y no queda ningún proceso de la API ni el puerto abierto.
 - Pendiente: `docs/openapi.v1.json` **no** se versiona en este cambio; lo crea HU-001 (caso 25) junto con `tests/ContractTest`. Mientras no exista, el paso del CI no falla (`git diff` no ve archivos sin versionar); cuando exista, falla si el contrato cambió sin regenerarse.
 - A evitar: editar `docs/openapi.v1.json` a mano; quitar el borrado de `servers`; correr el script sin que el puerto elegido esté libre.
+
+## 2026-10-24 — TT-BD-06 (KNOCK-156): `sdd_lint.py` acepta el estado «Reemplazada»
+- Decisión (líder): `scripts/sdd_lint.py` acepta el estado de spec «Reemplazada» que ya define la constitución 2.2.0 §11 (exige clave de Jira y revisor, como Firmada) y `--trace` de una spec Reemplazada avisa y no verifica sus casos. Porqué: TT-BD-01 y TT-BD-02 las sustituye la migración a MongoDB (TT-BD-06) y sus pruebas se borran; sin esto el lint rechazaba el estado y `--trace` fallaba.
+- A evitar: marcar Reemplazada una spec cuyo código sigue vivo; usar «Reemplazada» para esconder casos que fallan.
