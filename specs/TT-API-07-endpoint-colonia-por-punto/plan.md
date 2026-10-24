@@ -1,6 +1,6 @@
 # plan.md — TT-API-07 — Endpoint de colonia por punto
 
-> Borrador. Servicio afectado: Mercado (módulo Catalog). Incluye la revisión de Guillermo en #54. La duda (a) queda cubierta por TT-BD-06 (#53) y la (g) resuelta; (b) a (f), (h) e (i) de spec §8 siguen abiertas; falta la aprobación de la spec. La implementación espera a que TT-BD-06 (KNOCK-156) esté fusionada con su consulta interna.
+> Borrador. Servicio afectado: Mercado (módulo Catalog). Incluye la revisión de Guillermo en #54. La duda (a) queda cubierta por TT-BD-06 (#53), la (g) resuelta y la (e) y la (i) resueltas por el líder en #54 (2026-10-24); siguen abiertas (b), (c), (d), (f), (h) y la nueva (j) (OpenAPI como `string` frente al enlace a `string[]`); falta la aprobación de la spec. La implementación espera a que TT-BD-06 (KNOCK-156) esté fusionada con su consulta interna.
 
 ## 1. Mapeo de archivos
 - **Reutilizar (buscado con `python scripts/codemap.py --query "neighborhood point colonia coordinates"`):**
@@ -9,22 +9,22 @@
   - `tests/IntegrationTest/Support/` (`KnockApiFactory`, `ConsoleCapture`, `TestHttp`, `AuthHttp`), la fixture de MongoDB y la semilla de TT-BD-06, y `tests/SecurityTest/Logging/SensitiveLogTests` y `tests/IntegrationTest/OpenApi/ScalarTests` como molde.
 - **Crear (por confirmar al implementar):**
   - `src/Knock.Api/Modules/Catalog/Controllers/V1/` (controller de colonias), DTO de consulta con propiedades **`Lat` y `Lon` de tipo `string[]`** (o `StringValues`), DTO de respuesta y validador de coordenadas (exactamente un valor, formato, rangos, cultura invariante), todos `internal`.
-  - Transformador de OpenAPI para documentar `lat` y `lon` como `number` de un solo valor con sus rangos.
+  - Sin transformador de OpenAPI (decisión del líder en #54): `lat` y `lon` se documentan como `string` con el patrón fijo mediante atributos de esquema; cómo se concilia con `string[]` es la duda (j).
   - Doble de la consulta interna con contador en `tests/IntegrationTest/Support/`.
   - Pruebas: `tests/UnitTest/Catalog/` (validador y enlace), `tests/IntegrationTest/Catalog/`, `tests/IntegrationTest/OpenApi/`, `tests/SecurityTest/Catalog/` y `tests/SecurityTest/Logging/AspNetCoreLogLevelGuardTests`.
   - `docs/endpoints.md` si todavía no existe.
 - **Modificar:** `docs/rate-limit-matrix.md` (la ruta va bajo la política global, sin exención); `docs/endpoints.md` (fila de la ruta); `KnockApiFactory` solo si hace falta para la ventana corta del límite o el tiempo de selección de servidor de MongoDB en las pruebas.
-- **No tocar:** `ICatalogApi` y la consulta interna (TT-BD-06), `Modules/Catalog/Data/` (TT-BD-06), `Hosting/` y la configuración de Serilog (TT-API-03; la redacción de `Microsoft.AspNetCore.Hosting.Diagnostics` es la duda (i)), `appsettings*.json` (el caso 16 los lee, no los cambia), `.github/`, `scripts/`, `.agents/`, configuración de analizadores, `constitution.md`, `docs/openapi.v1.json` a mano, specs ajenas.
+- **No tocar:** `ICatalogApi` y la consulta interna (TT-BD-06), `Modules/Catalog/Data/` (TT-BD-06), `Hosting/` y la configuración de Serilog (TT-API-03; la redacción de `Microsoft.AspNetCore.Hosting.Diagnostics` es la tarea de seguimiento de la decisión (i)), `appsettings*.json` (el caso 16 los lee, no los cambia), `.github/`, `scripts/`, `.agents/`, configuración de analizadores, `constitution.md`, `docs/openapi.v1.json` a mano, specs ajenas.
 
 ## 2. Riesgos y efectos secundarios
 - **Dependencia de TT-BD-06:** sin la colección `colonias`, la fixture y la consulta interna con `id`, `cp` y `municipio` (TC-TT-BD-06-19), no se pueden cerrar los casos 03, 04, 05, 08, 12 y 14.
 - **Parámetro repetido:** con `string` MVC toma en silencio el primer valor (`?lat=20.05&lat=99.9` → `20.05`, comprobado por Guillermo en #54). Se enlaza como `string[]` y el validador exige exactamente un valor (casos 02 y 06).
 - **400 automático que repite el valor:** con `double` o `decimal`, `[ApiController]` responde 400 antes del `ValidationFilter` con «The value '20,05x' is not valid», y el enlace numérico acepta `NaN`, `Infinity` y separadores de miles. Sin parámetros tipados (caso 15).
 - **Claves de `errors`:** salen del nombre de la propiedad; `Latitude` con `[FromQuery(Name = "lat")]` daría `errors.latitude`. Propiedades `Lat` y `Lon` (casos 06 y 15).
-- **Logs con la query:** la protección depende de `Microsoft.AspNetCore: Warning`; si alguien lo baja, «Request starting/finished» registran la query (casos 08 y 16; duda (i)).
-- **OpenAPI:** con los parámetros enlazados como `string[]`, el documento generado diría `array` de `string`; hace falta el transformador (caso 13).
+- **Logs con la query:** la protección depende de `Microsoft.AspNetCore: Warning`; si alguien lo baja, «Request starting/finished» registran la query (casos 08 y 16). La redacción sin importar el nivel es la tarea aparte de seguimiento de TT-API-03 (decisión (i)).
+- **OpenAPI:** el líder pidió `string` con el patrón fijo y sin transformador (caso 13); con los parámetros enlazados como `string[]`, el generador los documentaría como `array` de `string` (esperado, sin verificar). Se resuelve con la duda (j) antes de implementar.
 - **Fuga fuera de la API:** la query con coordenadas en el gateway, la entrada de Container Apps y Application Insights (duda (f)).
-- **Pruebas de rendimiento inestables en el CI:** el caso 14 informa contra la meta y falla solo con una desviación clara (duda (e)); si falla por el entorno, se informa y no se cambia el umbral sin decisión del líder.
+- **Pruebas de rendimiento inestables en el CI:** el caso 14 informa contra la meta de 150 ms y falla solo con más de 500 ms (decisión (e)); si falla por el entorno, se informa y no se cambia el umbral sin decisión del líder.
 - **Límite global en las suites:** el caso 14 hace 220 peticiones; necesita una configuración de pruebas que no le dé 429 (como la decisión 9 de TT-API-03).
 
 ## 3. Pruebas por caso
@@ -50,7 +50,7 @@
 | TC-TT-API-07-18 | `dotnet build` + `dotnet format --verify-no-changes` | comando |
 
 ## 4. Secuencia
-1. Aprobación de la spec con las dudas (b) a (f), (h) e (i) resueltas, y TT-BD-06 aprobada con su consulta interna (caso 19 de TT-BD-06).
+1. Aprobación de la spec con las dudas (b), (c), (d), (f), (h) y (j) resueltas, y TT-BD-06 (#53) fusionada con su consulta interna (caso 19 de TT-BD-06); `NeighborhoodExistsAsync` (caso 20 de TT-BD-06) no lo usa este endpoint.
 2. Contrato (spec §4) y pruebas que fallan primero: validador y enlace (casos 01, 02 y 15), endpoint con doble (casos 06, 07, 09, 10, 11 y 13) y guarda del nivel de log (caso 16).
 3. DTO con `Lat`/`Lon` como `string[]`, validador, controller con `[Authorize]`, `Cache-Control: no-store` y la documentación OpenAPI.
 4. Con TT-BD-06 fusionada: casos 03, 04, 05, 08, 12 y 14 con Testcontainers de MongoDB.
