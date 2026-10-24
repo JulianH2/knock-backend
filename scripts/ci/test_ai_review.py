@@ -27,6 +27,7 @@ class FakeServices(BaseHTTPRequestHandler):
 
     comments: list[dict] = []
     model_status = 200
+    model_content = "**Resumen** cambio pequeño.\n**Veredicto**: Sin bloqueos"
     model_requests: list[dict] = []
 
     def log_message(self, *args: object) -> None:
@@ -53,7 +54,7 @@ class FakeServices(BaseHTTPRequestHandler):
             if FakeServices.model_status != 200:
                 self._send(FakeServices.model_status, {"error": "falla simulada"})
                 return
-            self._send(200, {"choices": [{"message": {"content": "**Resumen** cambio pequeño.\n**Veredicto**: Sin bloqueos"}}],
+            self._send(200, {"choices": [{"message": {"content": FakeServices.model_content}}],
                              "usage": {"prompt_tokens": 1200, "completion_tokens": 80}})
             return
         comment = {"id": len(FakeServices.comments) + 1, "body": body["body"]}
@@ -100,6 +101,7 @@ class AiReviewTests(unittest.TestCase):
     def setUp(self) -> None:
         FakeServices.comments = []
         FakeServices.model_status = 200
+        FakeServices.model_content = "**Resumen** cambio pequeño.\n**Veredicto**: Sin bloqueos"
         FakeServices.model_requests = []
         self.env = {"AI_REVIEW_API_KEY": "llave-falsa-de-prueba", "AI_REVIEW_BASE_URL": self.url, "AI_REVIEW_MODEL": "modelo-falso",
                     "GITHUB_API_URL": self.url, "GITHUB_TOKEN": "token-falso", "GITHUB_REPOSITORY": "o/r", "PR_NUMBER": "7",
@@ -137,6 +139,19 @@ class AiReviewTests(unittest.TestCase):
         self.assertEqual(0, code)
         self.assertEqual([], FakeServices.comments)
         self.assertIn("::warning::", output)
+
+    def test_empty_model_answer_posts_nothing(self) -> None:
+        FakeServices.model_content = ""
+        code, output = self.run_main()
+        self.assertEqual(0, code)
+        self.assertEqual([], FakeServices.comments)
+        self.assertIn("no devolvió texto", output)
+
+    def test_deepseek_gets_thinking_disabled_and_other_providers_do_not(self) -> None:
+        self.run_main(AI_REVIEW_BASE_URL=self.url + "/deepseek")
+        self.run_main(AI_REVIEW_BASE_URL=self.url)
+        self.assertEqual({"type": "disabled"}, FakeServices.model_requests[0]["body"].get("thinking"))
+        self.assertNotIn("thinking", FakeServices.model_requests[1]["body"])
 
     def test_key_is_sent_only_as_bearer_and_never_printed(self) -> None:
         _, output = self.run_main()
