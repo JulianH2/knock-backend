@@ -287,4 +287,5 @@
 
 ## 2026-10-24 — TT-BD-06 (KNOCK-156): `sdd_lint.py` acepta el estado «Reemplazada»
 - Decisión (líder): `scripts/sdd_lint.py` acepta el estado de spec «Reemplazada» que ya define la constitución 2.2.0 §11 (exige clave de Jira y revisor, como Firmada) y `--trace` de una spec Reemplazada avisa y no verifica sus casos. Porqué: TT-BD-01 y TT-BD-02 las sustituye la migración a MongoDB (TT-BD-06) y sus pruebas se borran; sin esto el lint rechazaba el estado y `--trace` fallaba.
-- A evitar: marcar Reemplazada una spec cuyo código sigue vivo; usar «Reemplazada» para esconder casos que fallan.
+- Hallazgo de la revisión de pares (Alexis y Guillermo, PR #58): la primera versión buscaba «Reemplazada» en todo el texto de la spec y `--trace` se saltaba la verificación si el cuerpo citaba «**Estado:** Reemplazada» aunque el encabezado dijera Aprobada. Corregido: `trace()` y el lint usan la misma primera línea de estado y exigen el formato exacto «Reemplazada» o «Reemplazada (por <ID>)» (`fullmatch`); hay pruebas mínimas en `scripts/test_sdd_lint.py` (no corren en el CI).
+- A evitar: marcar Reemplazada una spec cuyo código sigue vivo o antes de que se fusione la spec que la reemplaza (nómbrala siempre en «(por <ID>)»); usar «Reemplazada» para esconder casos que fallan; buscar el estado en todo el texto en lugar de en la línea de estado.
