@@ -19,7 +19,7 @@ Los lineamientos piden desplegar «configurado con costo cero» y **al menos 2 i
 - Que la suscripción de estudiante permita las regiones y servicios necesarios.
 - Costo real de una réplica inactiva (tarifa de inactividad) y de DocumentDB gratuito.
 - Estimación para ocho réplicas en la ventana de evaluación frente al presupuesto de 10 USD y al crédito disponible (hay otros proyectos que descuentan del mismo crédito), **con tarifas citadas**. Si no cabe: 2 réplicas solo en los servicios críticos, o subir el presupuesto y automatizar la reducción a cero al llegar a un umbral.
-- La estimación está **pendiente** (TT-AZ-04); hasta tenerla, la fila 15a de la matriz de cumplimiento no se marca como cumplible.
+- **Resultado de la estimación (2026-10-24):** ver `docs/evidencia/KNOCK-145-costo-cero.md`. Con 9 réplicas, la ventana del 25-nov al 5-dic cuesta de 16 a 61 USD (réplicas de 0.25 vCPU y 0.5 GiB) y la ventana corta del 29-nov al 3-dic, de 5.5 a 9.6 USD; todo se paga con el crédito de estudiante. La decisión sobre la ventana y el presupuesto sigue siendo del líder; este ADR no cambia hasta que decida.
 
 ## Hallazgos de la revisión de la suscripción (2026-10-20, solo lectura con `az`)
 - La suscripción es **Azure for Students** y está habilitada. Hay un presupuesto de 10 USD (`budget-knock-dev`).
