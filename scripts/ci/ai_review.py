@@ -125,9 +125,12 @@ def api_json(url: str, payload: dict | None, headers: dict[str, str], method: st
 
 
 def call_model(base_url: str, api_key: str, model: str, messages: list[dict[str, str]]) -> tuple[str, int, int]:
-    payload = {"model": model, "messages": messages, "max_tokens": 1500, "temperature": 0.2, "stream": False}
+    payload: dict = {"model": model, "messages": messages, "max_tokens": 2000, "temperature": 0.2, "stream": False}
+    if "deepseek" in base_url.lower():
+        # DeepSeek razona por defecto y ese razonamiento gasta los tokens de salida (el comentario salía vacío): se desactiva.
+        payload["thinking"] = {"type": "disabled"}
     result = api_json(base_url.rstrip("/") + "/chat/completions", payload, {"Authorization": f"Bearer {api_key}"})
-    text = result["choices"][0]["message"]["content"].strip()
+    text = (result["choices"][0]["message"].get("content") or "").strip()
     usage = result.get("usage", {})
     return text, int(usage.get("prompt_tokens", 0)), int(usage.get("completion_tokens", 0))
 
@@ -188,6 +191,9 @@ def main() -> int:
         text, tokens_in, tokens_out = call_model(env.get("AI_REVIEW_BASE_URL") or "https://api.deepseek.com", api_key, model, messages)
     except (urllib.error.URLError, TimeoutError, KeyError, IndexError, json.JSONDecodeError) as error:
         print(f"::warning::La revisión automática falló ({type(error).__name__}); el PR no se bloquea.")
+        return 0
+    if not text:
+        print(f"::warning::El modelo no devolvió texto ({tokens_in} tokens de entrada, {tokens_out} de salida); no se publica nada.")
         return 0
     cost = tokens_in / 1e6 * PRICE_IN + tokens_out / 1e6 * PRICE_OUT
     body = (f"{MARKER}\n## Pre-revisión automática\n\n{mask_secrets(text)}\n\n---\n"
