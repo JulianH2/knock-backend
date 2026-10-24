@@ -2,10 +2,10 @@
 """Lint de specs SDD de Knock.
 
 Revisa cada carpeta specs/<ID>-<slug>/ (ID = HU-NNN, TT-ÁREA-NN o BUG-NNN):
-  - spec.md con las secciones 1 a 8 y «Aprobación», y un estado válido (Borrador, Aprobada, Firmada)
+  - spec.md con las secciones 1 a 8 y «Aprobación», y un estado válido (Borrador, Aprobada, Firmada, Reemplazada)
   - plan.md, task.md y checklists/gates.md presentes
   - casos de prueba TC-<ID>-KK únicos, consecutivos y del mismo ID que la carpeta
-  - una spec Aprobada o Firmada tiene su clave de Jira (KNOCK-N) y revisor
+  - una spec Aprobada, Firmada o Reemplazada tiene su clave de Jira (KNOCK-N) y revisor
   - constitution.md (raíz) idéntico a .specify/memory/constitution.md
 
 Con --trace <ID> busca en el código de pruebas un test por cada caso:
@@ -30,7 +30,7 @@ REQUIRED_FILES = ("spec.md", "plan.md", "task.md", "checklists/gates.md")
 SECTIONS = [rf"^## {n}\. " for n in range(1, 9)] + [r"^## Aprobación"]
 FOLDER = re.compile(r"^(HU-\d{3}|TT-[A-Z]+-\d{2}|BUG-\d{3})(-[a-z0-9-]+)?$")
 CASE_ROW = re.compile(r"^\|\s*(TC-(HU-\d{3}|TT-[A-Z]+-\d{2}|BUG-\d{3})-(\d{2}))\s*\|", re.M)
-STATES = ("Borrador", "Aprobada", "Firmada")
+STATES = ("Borrador", "Aprobada", "Firmada", "Reemplazada")
 TEST_GLOBS = CONFIG.get("test_globs", ["tests/**/*.cs", "**/test/**/*.dart", "**/integration_test/**/*.dart", "**/*.spec.ts", "**/e2e/**/*.ts"])
 
 
@@ -73,7 +73,7 @@ def lint_spec(folder: Path) -> list[str]:
     nums = [int(c[-2:]) for c in cases if c.startswith(f"TC-{sid}-")]
     if nums and sorted(nums) != list(range(1, len(nums) + 1)):
         errors.append(f"{folder.name}/spec.md: casos no consecutivos {sorted(nums)}")
-    if state and state.group(1).strip().startswith(("Aprobada", "Firmada")):
+    if state and state.group(1).strip().startswith(("Aprobada", "Firmada", "Reemplazada")):
         if not re.search(r"\bKNOCK-\d+\b", text):
             errors.append(f"{folder.name}/spec.md: está {state.group(1).strip()} pero no tiene clave de Jira (KNOCK-N)")
         if re.search(r"- \[ \] Revisor 1", text):
@@ -101,6 +101,9 @@ def trace(spec_id: str) -> int:
         print(f"ERROR: no existe specs/{spec_id}*")
         return 1
     spec_text = (folder / "spec.md").read_text(encoding="utf-8")
+    if re.search(r"\*\*Estado:\*\*\s*Reemplazada", spec_text):
+        print(f"AVISO: {folder.name} está Reemplazada por otra spec; sus casos ya no se verifican")
+        return 0
     cases = cases_of(spec_text)
     files = {f for g in TEST_GLOBS for f in ROOT.glob(g) if f.is_file() and "node_modules" not in f.parts}
     if not files:
