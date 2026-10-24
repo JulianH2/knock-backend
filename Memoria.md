@@ -273,3 +273,8 @@
 - Decisión: el ADR-002 pasa de «decidida» a «confirmada por el spike» (DocumentDB sin plan B). Se agrega al ADR el resultado del spike y la fila 14 de la matriz de cumplimiento pasa a 🔶. Las specs de TT-BD-05 y TT-API-03, ya fusionadas, pasan de Aprobada a Firmada.
 - Pendiente de decisión del líder: dónde vive la lista de revocación de tokens (MongoDB con TTL, que P6 respalda y no cuesta, o Redis, como dice la constitución 2.2.0). El ADR-002 conserva MongoDB hasta que se decida.
 - A evitar: dar por cumplido el criterio de latencia de HU-009 con los 160 ms medidos desde Tula; medir desde West US en TT-AZ-02.
+
+## 2026-10-24 — TT-AZ-04 (KNOCK-145): estimación de costo de la ventana de evaluación
+- Hecho: `docs/evidencia/KNOCK-145-costo-cero.md` con las tarifas de Container Apps (West US, plan Consumption, API pública de precios) y las reglas de facturación de Microsoft Learn. Resultado: 9 réplicas (3 servicios, gateway y Redis) cuestan de 16 a 61 USD en la ventana del 25-nov al 5-dic con réplicas de 0.25 vCPU y 0.5 GiB, y de 5.5 a 9.6 USD en la ventana corta del 29-nov al 3-dic; fuera de la ventana, con todo escalado a cero, 0 USD. Se paga con el crédito de estudiante, no con la cuota gratuita.
+- Decisión pendiente del líder: ventana corta o completa, presupuesto del mes de la ventana (hoy 10 USD) y tamaños de réplica (TT-AZ-02). Pendiente: saldo del crédito en el portal y probar la credencial federada (OIDC).
+- A evitar: llamar «costo cero» a la ventana sin decir que se paga con el crédito; dejar réplicas mínimas encendidas fuera de la ventana (27 a 41 USD al mes); asumir que las alertas de presupuesto frenan el gasto.
