@@ -1,7 +1,7 @@
 ---
-version: 2.2.0
+version: 2.2.1
 ratified: pendiente
-last_amended: 2026-10-22
+last_amended: 2026-10-24
 status: draft
 source_of_truth: .specify/memory/constitution.md
 mirror: ./constitution.md
@@ -119,7 +119,7 @@ No se agregan dependencias sin evaluar necesidad, licencia, mantenimiento y vuln
 ## 9. Flujo de trabajo
 
 - Ramas: `main` (producción) ← `release` (estabilización: sin entorno desplegado; las pruebas pesadas pasan a correr aquí cuando se configure en el CI) ← `develop` (integración) ← `sprint-XX` ← `<tipo>/KNOCK-<N>-<english-description>`; `hotfix/KNOCK-<N>-…` desde main. El CI rechaza nombres y combinaciones fuera del esquema. Hay un solo entorno en Azure y el único despliegue sale de `main`.
-- Commits en inglés, Conventional Commits `type(scope): description in english, imperative, lowercase (KNOCK-N)` (la clave es obligatoria y coincide con la de la rama; sin atribución a IA ni `Co-Authored-By` de agentes; el de una persona del equipo sí se permite); PR `KNOCK-N · <ID> <título>` con plantilla, informe de verificación y sección «Uso de IA»; aprueba y fusiona el Tech Lead (cuando él es el autor, aprueba el revisor de pares); todo PR tiene al menos un comentario de revisión de otro integrante; checks requeridos en verde.
+- Commits en inglés, Conventional Commits `type(scope): description in english, imperative, lowercase (KNOCK-N)` (la clave es obligatoria y coincide con la de la rama; sin atribución a IA ni `Co-Authored-By` de agentes; el de una persona del equipo sí se permite); PR `KNOCK-N · <ID> <título>` con plantilla, informe de verificación y sección «Uso de IA»; aprueba y fusiona el Tech Lead (cuando él es el autor, aprueba el revisor de pares); todo PR que cambie código, workflows, scripts, infraestructura o seguridad tiene al menos un comentario de revisión de otro integrante; un PR que cambie **solo documentación** (specs, ADR, `Memoria.md`, evidencia) necesita la revisión final del Tech Lead y el reporte de la pre-revisión automática (`ai-review.yml`), y el comentario de otro integrante es opcional (si la pre-revisión no corrió o falló, se aplica la regla general; la pre-revisión automática nunca sustituye a una persona en un PR de código); checks requeridos en verde.
 - Versiones `X.Y.Z` por componente (cada servicio, gateway, app, panel y landing), con la **matriz de puntos** y primera versión `1.0.0`. Cada PR declara `puntos-<componente>-N` por cada componente que toca; un despliegue con 0 puntos no cambia la versión; el despliegue suma los puntos y aplica la versión. El `versionCode` de Android es `X×1 000 000 + Y×10 000 + Z×100 + n` (n = subida de esa versión, de 0 a 99). Hasta que TT-CD-03 implemente el control en el CI, la etiqueta se revisa a mano. Esquema y matriz en `docs/VERSIONAMIENTO.md`.
 - Todo despliegue sale del pipeline; nadie sube a producción a mano.
 - Una sola cuenta de GitHub y un solo correo del proyecto para dar de alta los servicios.
