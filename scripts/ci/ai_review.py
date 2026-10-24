@@ -8,7 +8,8 @@ el PR en rojo.
 
 Variables de entorno:
   AI_REVIEW_API_KEY      llave del proveedor (secreto de GitHub; nunca se imprime)
-  AI_REVIEW_BASE_URL     por defecto https://api.deepseek.com
+  AI_REVIEW_BASE_URL     por defecto https://api.deepseek.com; solo https y solo hosts de AI_REVIEW_ALLOWED_HOSTS (si no, la llave no se envía)
+  AI_REVIEW_ALLOWED_HOSTS hosts permitidos separados por comas (por defecto api.deepseek.com y generativelanguage.googleapis.com)
   AI_REVIEW_MODEL        por defecto deepseek-flash
   AI_REVIEW_MAX_DIFF     caracteres máximos del diff enviado (por defecto 60000)
   AI_REVIEW_MAX_RUNS     revisiones máximas por PR (por defecto 4)
@@ -28,6 +29,7 @@ import re
 import subprocess
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -124,6 +126,23 @@ def api_json(url: str, payload: dict | None, headers: dict[str, str], method: st
     return json.loads(body) if body else {}
 
 
+DEFAULT_HOSTS = "api.deepseek.com,generativelanguage.googleapis.com"
+
+
+def validate_base_url(base_url: str, allowed_hosts: str, allow_local: bool) -> str | None:
+    """La llave viaja como Bearer a esta dirección: solo https y solo hosts de la lista (http://127.0.0.1 únicamente en las pruebas)."""
+    parsed = urllib.parse.urlparse(base_url)
+    host = (parsed.hostname or "").lower()
+    if allow_local and parsed.scheme == "http" and host in ("127.0.0.1", "localhost"):
+        return None
+    if parsed.scheme != "https":
+        return "la dirección del proveedor debe ser https"
+    allowed = {h.strip().lower() for h in (allowed_hosts or DEFAULT_HOSTS).split(",") if h.strip()}
+    if host not in allowed:
+        return f"el host del proveedor no está en la lista permitida ({', '.join(sorted(allowed))})"
+    return None
+
+
 def call_model(base_url: str, api_key: str, model: str, messages: list[dict[str, str]]) -> tuple[str, int, int]:
     payload: dict = {"model": model, "messages": messages, "max_tokens": 2000, "temperature": 0.2, "stream": False}
     if "deepseek" in base_url.lower():
@@ -187,8 +206,13 @@ def main() -> int:
         print("::notice::Falta AI_REVIEW_API_KEY: revisión automática omitida.")
         return 0
     model = env.get("AI_REVIEW_MODEL") or "deepseek-flash"
+    base_url = env.get("AI_REVIEW_BASE_URL") or "https://api.deepseek.com"
+    problem = validate_base_url(base_url, env.get("AI_REVIEW_ALLOWED_HOSTS", ""), env.get("AI_REVIEW_ALLOW_LOCAL") == "1")
+    if problem:
+        print(f"::warning::Revisión automática omitida: {problem}. La llave no se envía.")
+        return 0
     try:
-        text, tokens_in, tokens_out = call_model(env.get("AI_REVIEW_BASE_URL") or "https://api.deepseek.com", api_key, model, messages)
+        text, tokens_in, tokens_out = call_model(base_url, api_key, model, messages)
     except (urllib.error.URLError, TimeoutError, KeyError, IndexError, json.JSONDecodeError) as error:
         print(f"::warning::La revisión automática falló ({type(error).__name__}); el PR no se bloquea.")
         return 0
