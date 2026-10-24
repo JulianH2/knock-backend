@@ -65,11 +65,11 @@ Otros servicios: Blob cuesta unos 0.21 USD al mes por cada 10 GB; la ingesta de 
 
 ## Hallazgos de la suscripción (solo lectura)
 - La suscripción es **Azure for Students**, habilitada.
-- Presupuesto `budget-knock-dev`: 10 USD al mes, gasto actual **0.0 USD**. El gasto del mes en el grupo de recursos de Knock y en otro grupo de recursos ajeno a Knock de la misma suscripción es 0.0 USD. El **saldo del crédito de 100 USD no se puede leer con la CLI**: falta comprobarlo en el portal (Suscripciones, Créditos) antes de abrir la ventana.
+- Presupuesto `budget-knock-dev`: 10 USD al mes, gasto actual **0.0 USD**. El gasto del mes en el grupo de recursos de Knock y en otro grupo de recursos ajeno a Knock de la misma suscripción es 0.0 USD. **Crédito de Azure for Students (portal, Education, 2026-10-24): 100 USD disponibles de 100 USD, vence el 2027-10-01 (343 días) y el costo de octubre es 0.00 USD.** La CLI no lo puede leer; se comprobó en el portal. La ventana completa, escenario M con 20 % de actividad, consumiría cerca de un tercio del crédito (31 USD); la corta, de 5 a 12 % (5.5 a 12.4 USD).
 - Los usuarios del tenant **pueden crear registros de aplicaciones** (`allowedToCreateApps = true`), lo que apunta a que las credenciales federadas de GitHub hacia Azure (OIDC) son viables. **No se probó** crearlas, porque eso escribe en el directorio. Plan B: entidad de servicio con secreto en GitHub Environments.
 
 ## Pendiente
-- Comprobar el saldo del crédito en el portal y que otros proyectos de la suscripción no lo consuman.
+- Volver a comprobar el saldo del crédito justo antes de abrir la ventana: la suscripción tiene otro grupo de recursos ajeno a Knock y el crédito es compartido.
 - Crear una credencial federada de prueba cuando se autorice (TT-AZ-02) y confirmar el OIDC.
 - Recalcular con los tamaños reales de TT-AZ-02 y con las tarifas del día de la ventana (las tarifas cambian).
 - La fila 15a de la matriz queda en 🔶: hay estimación, pero no hay infraestructura ni medición real.
