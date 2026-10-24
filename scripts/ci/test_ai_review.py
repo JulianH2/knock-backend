@@ -28,6 +28,7 @@ class FakeServices(BaseHTTPRequestHandler):
     comments: list[dict] = []
     model_status = 200
     model_content = "**Resumen** cambio pequeño.\n**Veredicto**: Sin bloqueos"
+    model_raw: object = None
     model_requests: list[dict] = []
 
     def log_message(self, *args: object) -> None:
@@ -53,6 +54,9 @@ class FakeServices(BaseHTTPRequestHandler):
             FakeServices.model_requests.append({"auth": self.headers.get("Authorization"), "body": body})
             if FakeServices.model_status != 200:
                 self._send(FakeServices.model_status, {"error": "falla simulada"})
+                return
+            if FakeServices.model_raw is not None:
+                self._send(200, FakeServices.model_raw)
                 return
             self._send(200, {"choices": [{"message": {"content": FakeServices.model_content}}],
                              "usage": {"prompt_tokens": 1200, "completion_tokens": 80}})
@@ -152,6 +156,27 @@ class AiReviewTests(unittest.TestCase):
         self.run_main(AI_REVIEW_BASE_URL=self.url)
         self.assertEqual({"type": "disabled"}, FakeServices.model_requests[0]["body"].get("thinking"))
         self.assertNotIn("thinking", FakeServices.model_requests[1]["body"])
+
+    def test_extract_text_tolerates_other_response_shapes(self) -> None:
+        shapes = {
+            "texto": ({"choices": [{"message": {"content": " hola "}}]}, "hola"),
+            "partes": ({"choices": [{"message": {"content": [{"type": "text", "text": "uno "}, {"type": "text", "text": "dos"}]}}]}, "uno dos"),
+            "sin choices": ({"error": {"message": "x"}}, ""),
+            "choices vacío": ({"choices": []}, ""),
+            "sin message": ({"choices": [{"finish_reason": "content_filter"}]}, ""),
+            "content nulo": ({"choices": [{"message": {"content": None}}]}, ""),
+            "no es un objeto": (["x"], ""),
+        }
+        for name, (result, expected) in shapes.items():
+            self.assertEqual(expected, ai_review.extract_text(result), name)
+
+    def test_unexpected_provider_shape_posts_nothing_and_does_not_fail(self) -> None:
+        FakeServices.model_raw = {"error": {"message": "filtro"}}
+        code, output = self.run_main()
+        FakeServices.model_raw = None
+        self.assertEqual(0, code)
+        self.assertEqual([], FakeServices.comments)
+        self.assertIn("no devolvió texto", output)
 
     def test_key_is_never_sent_to_an_untrusted_or_insecure_address(self) -> None:
         for bad in ("http://api.deepseek.com", "https://evil.example.com", "https://api.deepseek.com.evil.example.com", "ftp://api.deepseek.com"):

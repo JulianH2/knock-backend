@@ -149,9 +149,27 @@ def call_model(base_url: str, api_key: str, model: str, messages: list[dict[str,
         # DeepSeek razona por defecto y ese razonamiento gasta los tokens de salida (el comentario salía vacío): se desactiva.
         payload["thinking"] = {"type": "disabled"}
     result = api_json(base_url.rstrip("/") + "/chat/completions", payload, {"Authorization": f"Bearer {api_key}"})
-    text = (result["choices"][0]["message"].get("content") or "").strip()
-    usage = result.get("usage", {})
-    return text, int(usage.get("prompt_tokens", 0)), int(usage.get("completion_tokens", 0))
+    text = extract_text(result)
+    usage = result.get("usage") or {}
+    return text, int(usage.get("prompt_tokens") or 0), int(usage.get("completion_tokens") or 0)
+
+
+def extract_text(result: object) -> str:
+    """Texto de la respuesta tolerando las formas que usan los proveedores compatibles con OpenAI.
+
+    `content` puede ser un texto o una lista de partes (`{"type": "text", "text": ...}`); si la respuesta no trae
+    `choices` o `message` (error del proveedor, filtro de contenido), devuelve cadena vacía y el script no publica nada.
+    """
+    if not isinstance(result, dict):
+        return ""
+    choices = result.get("choices")
+    if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
+        return ""
+    message = choices[0].get("message")
+    content = message.get("content") if isinstance(message, dict) else None
+    if isinstance(content, list):
+        content = "".join(part.get("text", "") for part in content if isinstance(part, dict))
+    return content.strip() if isinstance(content, str) else ""
 
 
 def github(path: str, payload: dict | None = None, method: str = "GET") -> dict | list:
