@@ -8,11 +8,11 @@
 
 ## T2 — Colonias por CP y propuesta por ubicación
 - **Verificar:** TC-HU-009-01 · TC-HU-009-03 · TC-HU-009-04
-- **Pendiente:** `GET /zonas/cp/{cp}` con unitarias (en cobertura y fuera con ciudad piloto) y CP inválido → `422` con `errors.cp`. Propuesta de colonia en el servicio de zona con el resultado de `GET /colonias/en-punto` (unitaria con doble; la consulta la prueba TT-API-07).
+- **Pendiente:** `GET /zonas/cp/{cp}` sin paginar (excepción al principio 11, decisión (e) del líder) con unitarias (en cobertura y fuera con ciudad piloto) y CP inválido → `422` con `errors.cp`. Propuesta de colonia en el servicio de zona con el resultado de `GET /colonias/en-punto` (unitaria con doble; la consulta la prueba TT-API-07).
 
 ## T3 — Lista de espera
 - **Verificar:** TC-HU-009-05 · TC-HU-009-06
-- **Pendiente:** `POST /zonas/lista-espera` idempotente por usuario y CP con unitarias (`201` / `200`, sin `Idempotency-Key` según la duda (f)); validador de `cp` y `municipio` (máximo 100 caracteres y caracteres permitidos); colección `listas_espera` (`cache: no`) con índice único `(usuarioId, cp)` como script versionado.
+- **Pendiente:** `POST /zonas/lista-espera` idempotente por usuario y CP con unitarias (`201` / `200` con el registro existente, sin `Idempotency-Key`: excepción al principio 15, decisión (f) del líder); validador de `cp` y `municipio` (máximo 100 caracteres y caracteres permitidos); colección `listas_espera` (`cache: no`) con índice único `(usuarioId, cp)` como script versionado.
 
 ## T4 — Integración
 - **Verificar:** TC-HU-009-03 · TC-HU-009-04 · TC-HU-009-05

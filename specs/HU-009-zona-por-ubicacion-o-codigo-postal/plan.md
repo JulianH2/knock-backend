@@ -1,6 +1,6 @@
 # plan.md — HU-009 — Zona por ubicación o código postal
 
-> Borrador. Preguntas de spec §8 resueltas por el Tech Lead ((c) y (d) con la evidencia del spike, pendiente de que se fusione #48); falta la aprobación de la spec.
+> Borrador. Decisiones (a)–(f) de spec §8 resueltas por el Tech Lead ((c) y (d) con la evidencia del spike, pendiente de que se fusione #48; (e), (f), caché y validación el 2026-10-23); sigue abierta la duda (g); falta la aprobación de la spec.
 
 ## 0. Cuándo se implementa
 **No en este sprint.** La implementación empieza **después de la migración del catálogo a Azure DocumentDB (TT-BD-06, Sprint 2 según `docs/PLAN_ADAPTACION.md` §E)**. Lo firme (contrato, validaciones, pruebas unitarias, de seguridad y de contrato) puede adelantarse en cuanto exista el esqueleto del servicio Mercado (TT-ARQ-01) y la spec esté Aprobada.
@@ -17,7 +17,8 @@
 ## 2. Riesgos y efectos secundarios
 - Dependencia de TT-API-07 para el flujo con ubicación (TC-HU-009-01) y de HU-001/HU-002 para la zona del perfil (CA6 y CA7 diferidos, futuros casos 07 y 08).
 - Dependencia de HU-001 para `tests/ContractTest`, `docs/openapi.v1.json` y `docs/endpoints.md`: sin ellos, la prueba de contrato de TC-HU-009-03 no se puede cerrar.
-- Excepciones a los principios 11 (paginación) y 15 (`Idempotency-Key`) pendientes de decisión del líder (dudas (e) y (f)).
+- Excepciones a los principios 11 (paginación: `GET /zonas/cp/{cp}` sin cursor, 12 colonias en el extracto) y 15 (`Idempotency-Key`: idempotencia natural por `(usuarioId, cp)`, `200` con el registro existente al repetir), decididas por el líder el 2026-10-23 (decisiones (e) y (f)); deben quedar documentadas en el OpenAPI y en `docs/endpoints.md`.
+- Duda abierta (g): si alguna pantalla sin sesión (HU-005) usa estos endpoints, que hoy exigen JWT.
 - La evidencia del spike está en la rama `chore/KNOCK-147-documentdb-spike` (#48), aún sin fusionar.
 - `documentdb-local` tiene un límite de conexiones menor que Azure (spike P7): las pruebas no deben usarlo como límite real.
 - El seed SEPOMEX tiene traslapes de polígonos (spike P2); lo decide TT-BD-06 y afecta a la colonia por punto, no al listado por CP.
