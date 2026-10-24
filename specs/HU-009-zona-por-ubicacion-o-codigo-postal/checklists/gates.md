@@ -2,7 +2,8 @@
 
 > Estado: borrador. Casillas sin marcar; no representa aprobación, implementación ni ejecución de pruebas.
 
-- [ ] Obtener aprobación humana de la spec (preguntas (a)–(d) de §8 resueltas por el Tech Lead; dudas (e)–(g) de la revisión de #40 pendientes: paginación, `Idempotency-Key` y pantallas sin sesión).
+- [ ] Obtener aprobación humana de la spec (decisiones (a)–(f), caché y validación de §8 resueltas por el Tech Lead; duda (g) abierta: si alguna pantalla sin sesión, HU-005, usa estos endpoints).
+- [ ] Documentar en el OpenAPI y en `docs/endpoints.md` las excepciones decididas: `GET /zonas/cp/{cp}` sin paginar (principio 11) y `POST /zonas/lista-espera` sin `Idempotency-Key`, con `200` y el registro existente al repetir (principio 15).
 - [ ] Confirmar que HU-001 trajo `tests/ContractTest`, `docs/openapi.v1.json` y `docs/endpoints.md` antes de cerrar TC-HU-009-03.
 - [ ] Confirmar que se fusionó #48 (evidencia del spike TT-BD-05) antes de implementar.
 - [ ] Esperar TT-BD-06 antes de implementar (no en este sprint).
