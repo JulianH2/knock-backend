@@ -21,3 +21,4 @@
 | S2 | TT-API-07 | Endpoint de colonia por punto: GET /api/v1/colonias/en-punto (lat, lon), sobre ICatalogApi | API · Mercado (Catalog) | Alexis | 2 | Técnica | [`TT-API-07-endpoint-colonia-por-punto`](TT-API-07-endpoint-colonia-por-punto/spec.md) |
 | Después de TT-BD-06 | HU-009 | Indicar mi zona con mi ubicación o código postal | Mercado · Catalog | Alexis | 3 | Por definir | [`HU-009-zona-por-ubicacion-o-codigo-postal`](HU-009-zona-por-ubicacion-o-codigo-postal/spec.md) |
 | S2 | TT-API-12 | `sub` v8 con SHA-256: reemplazar la derivación GUID v5 / SHA-1 antes de guardar datos | API · Identidad | José | 1 | Técnica | [`TT-API-12-sub-v8-con-sha-256`](TT-API-12-sub-v8-con-sha-256/spec.md) |
+| S2 | HU-001 | Entrar con mi celular y código SMS (registro e inicio son el mismo flujo) | Identidad · Identity | José | 5 | Alta | [`HU-001-entrar-con-celular-y-codigo-sms`](HU-001-entrar-con-celular-y-codigo-sms/spec.md) |
