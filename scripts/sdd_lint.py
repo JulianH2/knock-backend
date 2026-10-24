@@ -30,7 +30,20 @@ REQUIRED_FILES = ("spec.md", "plan.md", "task.md", "checklists/gates.md")
 SECTIONS = [rf"^## {n}\. " for n in range(1, 9)] + [r"^## Aprobación"]
 FOLDER = re.compile(r"^(HU-\d{3}|TT-[A-Z]+-\d{2}|BUG-\d{3})(-[a-z0-9-]+)?$")
 CASE_ROW = re.compile(r"^\|\s*(TC-(HU-\d{3}|TT-[A-Z]+-\d{2}|BUG-\d{3})-(\d{2}))\s*\|", re.M)
-STATES = ("Borrador", "Aprobada", "Firmada", "Reemplazada")
+STATES = ("Borrador", "Aprobada", "Firmada")
+# «Reemplazada» exige el formato exacto de la constitución §11: «Reemplazada (por <ID>)» (el «por» es opcional)
+REPLACED = re.compile(r"Reemplazada(?: \(por (?:HU-\d{3}|TT-[A-Z]+-\d{2}|BUG-\d{3})\))?")
+STATE_LINE = re.compile(r"\*\*Estado:\*\*\s*([^\n]+)")
+
+
+def spec_state(text: str) -> str | None:
+    """Estado de la spec: la primera línea «**Estado:**» (la misma que usa el lint), sin espacios sobrantes."""
+    match = STATE_LINE.search(text)
+    return match.group(1).strip() if match else None
+
+
+def is_replaced(state: str | None) -> bool:
+    return bool(state and REPLACED.fullmatch(state))
 TEST_GLOBS = CONFIG.get("test_globs", ["tests/**/*.cs", "**/test/**/*.dart", "**/integration_test/**/*.dart", "**/*.spec.ts", "**/e2e/**/*.ts"])
 
 
@@ -58,9 +71,9 @@ def lint_spec(folder: Path) -> list[str]:
     for pattern in SECTIONS:
         if not re.search(pattern, text, re.M):
             errors.append(f"{folder.name}/spec.md: falta la sección «## {pattern[4:].replace(chr(92), '').strip()}»")
-    state = re.search(r"\*\*Estado:\*\*\s*([^\n]+)", text)
-    if not state or not any(state.group(1).strip().startswith(s) for s in STATES):
-        errors.append(f"{folder.name}/spec.md: estado inválido (usa {', '.join(STATES)})")
+    state = spec_state(text)
+    if not state or not (any(state.startswith(s) for s in STATES) or is_replaced(state)):
+        errors.append(f"{folder.name}/spec.md: estado inválido (usa {', '.join(STATES)} o «Reemplazada (por <ID>)»)")
     cases = cases_of(text)
     if not cases:
         errors.append(f"{folder.name}/spec.md: sin casos de prueba TC-{sid}-KK en la tabla de §2")
@@ -73,11 +86,11 @@ def lint_spec(folder: Path) -> list[str]:
     nums = [int(c[-2:]) for c in cases if c.startswith(f"TC-{sid}-")]
     if nums and sorted(nums) != list(range(1, len(nums) + 1)):
         errors.append(f"{folder.name}/spec.md: casos no consecutivos {sorted(nums)}")
-    if state and state.group(1).strip().startswith(("Aprobada", "Firmada", "Reemplazada")):
+    if state and (state.startswith(("Aprobada", "Firmada")) or is_replaced(state)):
         if not re.search(r"\bKNOCK-\d+\b", text):
-            errors.append(f"{folder.name}/spec.md: está {state.group(1).strip()} pero no tiene clave de Jira (KNOCK-N)")
+            errors.append(f"{folder.name}/spec.md: está {state} pero no tiene clave de Jira (KNOCK-N)")
         if re.search(r"- \[ \] Revisor 1", text):
-            errors.append(f"{folder.name}/spec.md: está {state.group(1).strip()} sin revisor marcado")
+            errors.append(f"{folder.name}/spec.md: está {state} sin revisor marcado")
     return errors
 
 
@@ -101,7 +114,7 @@ def trace(spec_id: str) -> int:
         print(f"ERROR: no existe specs/{spec_id}*")
         return 1
     spec_text = (folder / "spec.md").read_text(encoding="utf-8")
-    if re.search(r"\*\*Estado:\*\*\s*Reemplazada", spec_text):
+    if is_replaced(spec_state(spec_text)):
         print(f"AVISO: {folder.name} está Reemplazada por otra spec; sus casos ya no se verifican")
         return 0
     cases = cases_of(spec_text)
