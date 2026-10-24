@@ -44,7 +44,7 @@ Activar:
 | `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` | variables | backend | OIDC con Azure (sin secretos de larga vida) |
 | `PRODUCTION_*` (`STAGING_*` sin uso) | variables | ambos | Recursos y URLs |
 | `FRONTEND_CONTRACT_TOKEN` | secreto | backend | PR automático del contrato en knock-frontend (token de grano fino, solo ese repo) |
-| `ANTHROPIC_API_KEY` + `AI_REVIEW=true` | secreto + variable | ambos | Revisión opcional con Claude |
+| `AI_REVIEW_API_KEY` + `AI_REVIEW=true` | secreto + variable | ambos | Pre-revisión automática opcional (DeepSeek por defecto; `AI_REVIEW_BASE_URL` y `AI_REVIEW_MODEL` opcionales) |
 | `SONAR_TOKEN` + `SONAR_ENABLED=true` | secreto + variable | backend | SonarCloud opcional |
 | Firma Android y Play | secretos del environment | frontend | Builds firmados y subida a Play |
 

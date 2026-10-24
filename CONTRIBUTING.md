@@ -58,13 +58,14 @@ Justifica necesidad, licencia (permitidas: MIT, Apache-2.0, BSD, ISC, MPL-2.0…
 Vulnerabilidades: [`SECURITY.md`](SECURITY.md). Nunca subas secretos, datos reales ni documentos de identidad (ni de prueba reales).
 
 ## 8. Revisión con IA en el CI (opcional)
-El workflow `ai-review.yml` revisa cada PR con los agentes `security-reviewer` y `traceability-clerk`. **No sustituye a la revisión humana y no es parte del check requerido `gate`.** Mientras falte cualquiera de las dos piezas de abajo, el job `review` se **omite solo** (aparece como *skipped*, sin poner el PR en rojo).
+El workflow `ai-review.yml` hace una **pre-revisión automática** de cada PR: `scripts/ci/ai_review.py` lee el diff (sin ejecutar nada), lo manda a un modelo de lenguaje con las instrucciones de los agentes `security-reviewer` y `traceability-clerk`, y deja **un comentario** que se actualiza (máximo 4 veces por PR). **No sustituye a la revisión de pares ni a la del Tech Lead y no es parte del check requerido `gate`.** Mientras falte cualquiera de las dos piezas de abajo, el job `review` se **omite solo** (aparece como *skipped*, sin poner el PR en rojo). Si el proveedor falla, el job avisa y termina bien.
 
-Para activarlo cuando exista la cuenta, en **cada repositorio** (knock-backend y knock-frontend), en GitHub → Settings → Secrets and variables → Actions:
-1. **Secreto** (pestaña *Secrets* → New repository secret): nombre `ANTHROPIC_API_KEY`, con la clave de API generada en la consola de Anthropic. Fija un límite de gasto en la cuenta.
+Para activarlo, en **cada repositorio** (knock-backend y knock-frontend), en GitHub → Settings → Secrets and variables → Actions:
+1. **Secreto** (pestaña *Secrets* → New repository secret): nombre `AI_REVIEW_API_KEY`, con la llave del proveedor (hoy DeepSeek, con saldo prepagado, que es el tope de gasto).
 2. **Variable** (pestaña *Variables* → New repository variable): nombre `AI_REVIEW`, valor `true`.
+3. Opcionales (variables): `AI_REVIEW_BASE_URL` (por defecto `https://api.deepseek.com`; sirve cualquier API compatible con OpenAI, por ejemplo la de Gemini) y `AI_REVIEW_MODEL` (por defecto `deepseek-flash`).
 
-La clave nunca va en el código, un issue, un PR ni un chat. Los PR de forks no reciben secretos, por lo que la revisión se omite en ellos.
+La llave nunca va en el código, un issue, un PR ni un chat. Los PR de forks y los borradores no se revisan. Solo sale hacia el proveedor el **diff público** del PR, sin lockfiles, archivos generados, binarios ni archivos con aspecto de secreto, y con patrones de llaves enmascarados. Cuesta menos de un centavo de dólar por revisión.
 
 Si el repositorio es privado y no tiene GitHub Advanced Security, la revisión de dependencias y la subida de SARIF se omiten; para activarlas, crea la variable `GHAS_ENABLED=true`.
 
