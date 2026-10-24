@@ -5,7 +5,7 @@
 > **Depende de:** TT-API-01. **No depende** del spike de MongoDB (TT-BD-05, ADR-002): esta tarea no tiene persistencia ni toca la base de datos.
 > **Fuentes:** DECISION_TECNICA.md §4 · constitución §4 (pipeline) · ADR-001 (reglas 3 y 5)
 > **Skills:** foundation-backend, security-core, api-contract-openapi, testing-strategy-backend, story-workflow
-> **Estado:** Aprobada
+> **Estado:** Firmada
 
 ## 1. Objetivo
 Que todos los endpoints respondan los errores con el mismo formato, que cada petición se pueda rastrear de punta a punta con un `X-Correlation-Id` y que la API tenga una primera defensa contra el abuso (límite de peticiones por IP y validación de entrada con respuesta uniforme).

@@ -268,3 +268,8 @@
 - Pendiente de decisión (TT-BD-06): `IMediaFileStore` documenta campos en snake_case (`propietario_id`) e `_id` UUID v7, mientras la constitución 2.2.0 §5 pide campos camelCase e identificadores `ObjectId`, y la spec §5 usa `propietarioId`. No se cambió nada; lo decide TT-BD-06.
 - Riesgo residual: la descarga ocurre antes de esperar turno, así que cada confirmación en espera retiene hasta 8 MB. Lo acotan el límite por IP y el tamaño máximo, pero no hay tope global de confirmaciones en vuelo.
 - A evitar: asumir que el ETag basta (el rango y la lectura acotada son la segunda defensa; la mutación sin `If-Match` falla en la prueba por la cabecera, y aun así la longitud ya devolvía 422); poner propiedades no anulables en un DTO validado con FluentValidation (MVC responde 400 antes del filtro); esperar en una prueba de concurrencia a que la tarea «no haya terminado» en lugar de una señal desde dentro del trabajo (fue inestable); `S1117` al nombrar `options` una variable local en una clase con constructor primario `options`.
+
+## 2026-10-23 — TT-GES-06 / TT-BD-05: ADR-002 confirmado por el spike
+- Decisión: el ADR-002 pasa de «decidida» a «confirmada por el spike» (DocumentDB sin plan B). Se agrega al ADR el resultado del spike y la fila 14 de la matriz de cumplimiento pasa a 🔶. Las specs de TT-BD-05 y TT-API-03, ya fusionadas, pasan de Aprobada a Firmada.
+- Pendiente de decisión del líder: dónde vive la lista de revocación de tokens (MongoDB con TTL, que P6 respalda y no cuesta, o Redis, como dice la constitución 2.2.0). El ADR-002 conserva MongoDB hasta que se decida.
+- A evitar: dar por cumplido el criterio de latencia de HU-009 con los 160 ms medidos desde Tula; medir desde West US en TT-AZ-02.

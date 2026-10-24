@@ -4,7 +4,7 @@
 > **Repositorio:** knock-backend · **Rama:** `chore/KNOCK-147-documentdb-spike` → PR a `sprint-01`
 > **Fuentes:** `docs/decisiones/ADR-002-base-de-datos-mongodb.md` («El spike debe probar») · `docs/decisiones/ADR-006-costos-y-ventana-de-evaluacion.md` (región y suscripción) · `docs/PLAN_ADAPTACION.md` (TT-BD-05)
 > **Skills:** story-workflow, database-scripts, security-core, testing-strategy-backend
-> **Estado:** Aprobada
+> **Estado:** Firmada
 
 ## 1. Objetivo
 Decidir **con evidencia** si Knock sigue con **Azure DocumentDB en su nivel gratuito** (ADR-002) o pasa a **MongoDB Atlas** (plan B). Es un **spike**: se entregan mediciones y una recomendación, no código de producto.
