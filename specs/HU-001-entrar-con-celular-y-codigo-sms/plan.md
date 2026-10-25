@@ -1,13 +1,14 @@
 # plan.md — HU-001 — Entrar con mi celular y código SMS
 
-> Borrador. Las decisiones 1 a 9 del líder (2026-10-24) están en spec §8; siguen abiertas las dudas 1 a 11 de §8; falta la aprobación de la spec.
+> Borrador. Las decisiones 1 a 9 del líder (2026-10-24) están en spec §8; las 11 dudas de la primera redacción quedaron resueltas como D1 a D11 (spec §8); HU-001 se dividió en tareas hijas A y B (D10); falta la aprobación de la spec.
 
 ## 0. Cuándo y en qué orden se implementa
 **Implementación en Sprint 2.** Esta tarea es solo la spec.
 
-1. **Primero y solo, antes de cualquier dato guardado: el `sub` v8** (decisión 1). Cambio pequeño y sin base de datos: `UserIdDerivation` (UUID v8 con SHA-256, se borra el SHA-1 propio), su prueba (caso 10) y las pruebas de TT-API-02 que usaban el vector v5. Se puede fusionar antes que TT-BD-06 y **debe** fusionar antes de que exista la primera cuenta persistida.
-2. **Esperar TT-BD-06** (KNOCK-156, #53) para todo lo que toca la base: `AddKnockMongo`, `Mongo:Databases:Identity` y la fixture de `documentdb-local`. Si no ha fusionado, ver spec §3 «Dependencia de TT-BD-06»: se adelanta lo que se prueba con dobles y **no** se crea un cliente de Mongo propio.
-3. El resto sigue el orden de `AGENTS.md §1`: contrato (spec §4 + OpenAPI) → colecciones e índices → dominio y servicio + unitarias → controller + integración, seguridad negativa y contrato → `scripts/export_openapi.py` (duda 6) → gates → `Memoria.md` → informe.
+1. **Tarea A «`sub` v8 con SHA-256» (1 punto, clave «por abrir»): primero y antes de cualquier dato guardado** (decisión 1, D10). Sin base de datos ni MongoDB: `UserIdDerivation` (UUID v8 con SHA-256, se borra el SHA-1 propio), su prueba (caso A-01, spec §2 «Casos reubicados») y las pruebas de TT-API-02 que usaban el vector v5. Debe fusionar antes de que exista la primera cuenta persistida; HU-001 depende de ella.
+2. **Tarea B «Contrato vivo» (2 puntos, clave «por abrir»):** `tests/ContractTest`, `docs/openapi.v1.json` y `docs/endpoints.md`; depende de que el líder fusione #61 (`scripts/export_openapi.py`, **no se da por existente** hasta entonces). Puede ir en paralelo a HU-001; su prueba del canje cierra cuando HU-001 implemente 201, 403, 409 y 422 (HU-001 regenera el contrato con sus cambios).
+3. **HU-001 (propuesta 5 puntos) espera a TT-BD-06** (KNOCK-156, #53) para todo lo que toca la base: `AddKnockMongo`, `Mongo:Databases:Identity` y la fixture de `documentdb-local`. **Ruta crítica:** HU-001 depende de TT-BD-06; lo que no toca la base (cifrado, opciones de llaves, validador, huella, política de celular) avanza en paralelo. Si no ha fusionado, ver spec §3 «Dependencia de TT-BD-06»: se adelanta lo que se prueba con dobles y **no** se crea un cliente de Mongo propio.
+4. El resto sigue el orden de `AGENTS.md §1`: contrato (spec §4) → colecciones e índices → dominio y servicio + unitarias → controller + integración y seguridad negativa → regenerar `docs/openapi.v1.json` con el script de #61 → gates → `Memoria.md` → informe.
 
 ## 1. Mapeo de archivos
 - **Servicio:** Identidad (`Knock.Identity.Api`, ADR-001; hoy `src/Knock.Api/Modules/Identity/`).
@@ -25,25 +26,26 @@
   - `tests/ContractTest/` (proyecto nuevo, en `Knock.slnx`), `docs/openapi.v1.json` y `docs/endpoints.md`.
   - Pruebas: `tests/UnitTest/{Identity,Architecture}/`, `tests/IntegrationTest/Identity/`, `tests/SecurityTest/Identity/`, `tests/DatabaseTest/Identity/`, `tests/ContractTest/Identity/` (spec §2).
 - **Modificar (declarado por decisión 1 y por la lista de casos):**
-  - `Modules/Identity/Services/UserIdDerivation.cs` (UUID v8/SHA-256; se **borra** el SHA-1 propio) y su prueba `tests/UnitTest/Identity/UserIdDerivationTests` (vector nuevo, caso 10).
-  - `FirebaseSessionService`, `FirebaseIdTokenVerifier`, `SessionTokenIssuer`, `AuthController` (200/201/403/409), `SessionDtos` (cuerpo y respuesta nuevos) y, según las dudas 4 y 5, `DomainException` + `DomainExceptionHandler` (`code`) y la validación del cuerpo (de `DataAnnotations` a FluentValidation).
-  - Pruebas de TT-API-02 que usan el canje o el vector (se editan **solo** en lo que cambia el contrato, con la autorización del líder; duda 8): `UserIdDerivationTests` (v5 → v8, caso 10), `FirebaseSessionTests` (primer canje 201, TC-TT-API-02-01/06/09; ahora con la base), `FirebaseRequestValidationTests` (TC-TT-API-02-11: 400 → 422 si la duda 5 se aprueba; el 413 no cambia), `SensitiveDataLeakTests` (TC-TT-API-02-13; el celular y la base entran), `SessionTokenIssuerTests` (TC-TT-API-02-07, solo si cambia la firma de `Issue`). Los métodos conservan su sufijo `_TC_TT_API_02_KK` para no romper `sdd_lint --trace TT-API-02`.
+  - `Modules/Identity/Services/UserIdDerivation.cs` (UUID v8/SHA-256; se **borra** el SHA-1 propio) y su prueba `tests/UnitTest/Identity/UserIdDerivationTests` (vector nuevo): **es de la tarea A**, no de esta historia; HU-001 la consume.
+  - `FirebaseSessionService`, `FirebaseIdTokenVerifier`, `SessionTokenIssuer`, `AuthController` (200/201/403/409), `SessionDtos` (cuerpo y respuesta nuevos) y, según D4 (`code` solo para `account_suspended` y `account_conflict`) y D5 (422), `DomainException` + `DomainExceptionHandler` (`code`) y la validación del cuerpo (de `DataAnnotations` a FluentValidation).
+  - Pruebas de TT-API-02 que usan el canje o el vector (se editan **solo** en lo que cambia el contrato, con la autorización del líder; D8): `UserIdDerivationTests` (v5 → v8; tarea A, con el método conservando `_TC_TT_API_02_10`), `FirebaseSessionTests` (primer canje 201, TC-TT-API-02-01/06/09; ahora con la base), `FirebaseRequestValidationTests` (TC-TT-API-02-11: 400 → 422 (D5); el 413 no cambia), `SensitiveDataLeakTests` (TC-TT-API-02-13; el celular y la base entran), `SessionTokenIssuerTests` (TC-TT-API-02-07, solo si cambia la firma de `Issue`). Los métodos conservan su sufijo `_TC_TT_API_02_KK` para no romper `sdd_lint --trace TT-API-02`.
   - `KnockApiFactory`: llaves de pruebas ficticias de `Identity:PhoneProtection:*`, cadena y bases del contenedor de Mongo, y la ventana corta del limitador para el caso 09.
   - `appsettings.json`: solo `Mongo:Databases:Identity` y las versiones vigentes de llave (sin secretos). `Knock.slnx` y, si hace falta, `Knock.Api.csproj` y `packages.lock.json` (ningún paquete nuevo previsto).
   - `docs/rate-limit-matrix.md`: anotar que CA9 se limita por IP (desviación) y que el canje cuenta en la política `/auth`.
-- **No tocar:** `.github/`, `scripts/` (incluido `scripts/export_openapi.py`, duda 6), `.agents/`, configuración de analizadores, `constitution.md`, `ModuleSurfaceTests`, `ModuleBoundaryTests`, `docs/openapi.v1.json` a mano, `Hosting/RateLimitingExtensions.cs`, el catálogo y su base, specs ajenas (incluida la de TT-API-02, Firmada), `AddKnockMongo` (es de TT-BD-06), módulos de negocio.
+- **No tocar:** `.github/`, `scripts/` (incluido `scripts/export_openapi.py`, que agrega el líder en #61, D6), `.agents/`, configuración de analizadores, `constitution.md`, `ModuleSurfaceTests`, `ModuleBoundaryTests`, `docs/openapi.v1.json` a mano, `Hosting/RateLimitingExtensions.cs`, el catálogo y su base, specs ajenas (incluida la de TT-API-02, Firmada), `AddKnockMongo` (es de TT-BD-06), módulos de negocio.
 - **Configuración y secretos:** las llaves AES y HMAC por variable de entorno o user-secrets (Key Vault después, TT-SEC-01); nunca en el repositorio. La cadena `ConnectionStrings:KnockMongo` es de TT-BD-06.
 
 ## 2. Riesgos y efectos secundarios
-- **Orden del `sub`:** si alguna cuenta se guarda antes del cambio v5 → v8, su `sub` queda mal y no se puede corregir sin romper la identidad. Por eso el cambio va primero (§0) y se verifica con el caso 10.
+- **Orden del `sub`:** si alguna cuenta se guarda antes del cambio v5 → v8, su `sub` queda mal y no se puede corregir sin romper la identidad. Por eso el cambio va primero (§0) y se verifica en la tarea A (caso A-01).
 - **Dependencia de TT-BD-06 (#53, Borrador):** cambia de nombre o de forma `AddKnockMongo` o la fixture y se rompen la integración y la base de datos. Antes de implementar se confirma contra lo fusionado. Si no ha fusionado: spec §3.
-- **Pruebas de TT-API-02 que cambian:** son las únicas pruebas ya fusionadas que se editan; cada edición se limita a lo que cambia el contrato y se lista en el PR. Las suites que llaman al canje pasan a necesitar `documentdb-local` (Docker) y llaves de pruebas: `KnockApiFactory` las entrega. Las suites que **no** llegan a la base (token inválido, cuerpo inválido) no deberían necesitarla; el arranque, sin embargo, exige la configuración de Mongo y de llaves (TC-TT-BD-06-14, TC-HU-001-16): la fábrica la provee siempre.
+- **Pruebas de TT-API-02 que cambian:** son las únicas pruebas ya fusionadas que se editan; cada edición se limita a lo que cambia el contrato y se lista en el PR. Las suites que llaman al canje pasan a necesitar `documentdb-local` (Docker) y llaves de pruebas: `KnockApiFactory` las entrega. Las suites que **no** llegan a la base (token inválido, cuerpo inválido) no deberían necesitarla; el arranque, sin embargo, exige la configuración de Mongo y de llaves (TC-TT-BD-06-14, TC-HU-001-15): la fábrica la provee siempre.
 - **Cifrado y llaves:** llave perdida = celulares ilegibles; llave filtrada = celulares descifrables si también se filtra la base (por eso llaves separadas y fuera del repositorio). La rotación de la llave HMAC exige re-hash masivo (límite anotado). Sin llaves la API no arranca (en ningún entorno); hay que documentarlo en el README de ejecución local y en `Memoria.md`.
-- **`FirebaseIdentity` con celular:** un `record` imprime todas sus propiedades en `ToString`; si alguien lo registra, el celular sale en el log. Se redacta y lo cubre el caso 19.
-- **Carrera de creación:** dos canjes simultáneos del mismo celular. Los índices únicos deciden; el perdedor de la transacción reintenta como cuenta existente. Las transacciones de DocumentDB devuelven `WriteConflict` transitorio: se usa `WithTransaction` (reintento del driver) y el caso 11 lo prueba con 8 canjes en paralelo.
-- **Enlace del cuerpo:** un `string` no anulable crea un `[Required]` implícito y el 400 automático de `[ApiController]` llega antes del `ValidationFilter` y puede repetir valores (hallazgo de #54, TT-API-07 caso 15). Con la duda 5 aprobada, los campos se enlazan como anulables con validador; el caso 22 comprueba que ningún valor se repite.
+- **`FirebaseIdentity` con celular:** un `record` imprime todas sus propiedades en `ToString`; si alguien lo registra, el celular sale en el log. Se redacta y lo cubre el caso 18.
+- **Carrera de creación:** dos canjes simultáneos del mismo celular. Los índices únicos deciden; el perdedor de la transacción reintenta como cuenta existente. Las transacciones de DocumentDB devuelven `WriteConflict` transitorio: se usa `WithTransaction` (reintento del driver) y el caso 10 lo prueba con 8 canjes en paralelo.
+- **Enlace del cuerpo:** un `string` no anulable crea un `[Required]` implícito y el 400 automático de `[ApiController]` llega antes del `ValidationFilter` y puede repetir valores (hallazgo de #54, TT-API-07 caso 15). Con la D5 aprobada, los campos se enlazan como anulables con validador; el caso 21 comprueba que ningún valor se repite.
 - **CA9 por IP:** quien comparte IP (NAT) comparte el límite; el «mismo dispositivo» no se limita aquí. Desviación aceptada y anotada (decisión 7).
-- **Contrato vivo:** `docs/openapi.v1.json` y `tests/ContractTest` no existen y `scripts/export_openapi.py` es protegido (duda 6). Sin el script, el caso 25 queda a medias y el CI que lo espera (`ci-pr.yml`) no lo ejecuta aún. HU-009 depende de este contrato.
+- **Contrato vivo (tarea B):** `docs/openapi.v1.json` y `tests/ContractTest` no existen y `scripts/export_openapi.py` lo agrega el líder en #61 (protegido; no se da por existente mientras no fusione, D6). Sin el script, esta historia no puede regenerar el contrato y el CI que lo espera (`ci-pr.yml`) no lo ejecuta aún. HU-009 y TT-API-03 dependen de esa tarea.
+- **`/auth/*` a 10 por minuto por IP:** el grupo o el profesor entrando desde la misma red el día de la evaluación pueden bloquearse entre sí; el valor es configuración y se sube en la ventana de evaluación. HU-009 depende de este contrato.
 - **Firma real del ID token:** el emulador no firma; solo el caso 15 de TT-API-02 (a mano, contra `knock-0`) prueba la firma. Se repite con el canje completo antes de la prueba cerrada.
 - **Contraste con TT-FB-01/02:** SMS reales requieren Blaze (ADR-004); hasta entonces solo números de prueba. HU-001 no controla el costo ni los intentos por número.
 - **Docker, Azure y Firebase** los opera una persona; las pruebas de integración necesitan Docker (`documentdb-local`) y el emulador de Firebase (`npx firebase-tools`, Node 20, 22 o 24) en marcha, y si no están, **fallan** con mensaje claro (no se saltan).
@@ -57,35 +59,33 @@
 | TC-HU-001-07 | `IntegrationTest/Identity/FirebaseLoginRejectionTests` | integración |
 | TC-HU-001-08 | `UnitTest/Identity/FirebaseSessionServiceTests` · `IntegrationTest/Identity/FirebaseLoginTests` | unitaria e integración |
 | TC-HU-001-09 | `IntegrationTest/Identity/FirebaseLoginRateLimitTests` | integración |
-| TC-HU-001-10 | `UnitTest/Identity/UserIdDerivationTests` | unitaria |
-| TC-HU-001-11 | `IntegrationTest/Identity/FirebaseLoginConcurrencyTests` · `DatabaseTest/Identity/IdentityIndexTests` | integración y base de datos |
-| TC-HU-001-12 | `UnitTest/Identity/FirebaseSessionServiceTests` · `IntegrationTest/Identity/FirebaseLoginTests` | unitaria e integración |
-| TC-HU-001-13 | `UnitTest/Identity/PhoneNumberPolicyTests` · `SecurityTest/Identity/PhoneNumberRejectionTests` | unitaria y seguridad negativa |
-| TC-HU-001-14 | `UnitTest/Identity/PhoneProtectorTests` · `DatabaseTest/Identity/UserStorageTests` | unitaria y base de datos |
-| TC-HU-001-15 | `UnitTest/Identity/PhoneProtectorTests` · `DatabaseTest/Identity/UserLookupTests` | unitaria y base de datos |
-| TC-HU-001-16 | `UnitTest/Identity/PhoneProtectionOptionsTests` · `SecurityTest/Identity/PhoneProtectionSecretsTests` | unitaria y seguridad negativa |
-| TC-HU-001-17 | `UnitTest/Identity/RefreshTokenFingerprintTests` · `IntegrationTest/Identity/RefreshFingerprintTests` | unitaria e integración |
-| TC-HU-001-18 | `IntegrationTest/Identity/FirebaseRegistrationAtomicityTests` | integración |
-| TC-HU-001-19 | `SecurityTest/Identity/LoginSensitiveLogTests` | seguridad negativa |
-| TC-HU-001-20 | `SecurityTest/Identity/LoginResponsePrivacyTests` | seguridad negativa |
-| TC-HU-001-21 | `SecurityTest/Identity/AccountEnumerationTests` | seguridad negativa |
-| TC-HU-001-22 | `UnitTest/Identity/FirebaseExchangeRequestValidatorTests` · `SecurityTest/Identity/FirebaseRequestValidationTests` | unitaria y seguridad negativa |
-| TC-HU-001-23 | `DatabaseTest/Identity/IdentityIndexTests` · `DatabaseTest/Identity/IdentityCollectionNamingTests` | base de datos |
-| TC-HU-001-24 | `UnitTest/Architecture/IdentityAccessTests` | arquitectura |
-| TC-HU-001-25 | `ContractTest/Identity/AuthContractTests` | contrato |
-| TC-HU-001-26 | `docs/openapi.v1.json`, `docs/endpoints.md`, `docs/rate-limit-matrix.md`, `dotnet list package`, `grep` de SHA-1, `gitleaks` | comando (evidencia en el PR) |
-| TC-HU-001-27 | `dotnet build` + `dotnet format --verify-no-changes` | comando |
+| TC-HU-001-10 | `IntegrationTest/Identity/FirebaseLoginConcurrencyTests` · `DatabaseTest/Identity/IdentityIndexTests` | integración y base de datos |
+| TC-HU-001-11 | `UnitTest/Identity/FirebaseSessionServiceTests` · `IntegrationTest/Identity/FirebaseLoginTests` | unitaria e integración |
+| TC-HU-001-12 | `UnitTest/Identity/PhoneNumberPolicyTests` · `SecurityTest/Identity/PhoneNumberRejectionTests` | unitaria y seguridad negativa |
+| TC-HU-001-13 | `UnitTest/Identity/PhoneProtectorTests` · `DatabaseTest/Identity/UserStorageTests` | unitaria y base de datos |
+| TC-HU-001-14 | `UnitTest/Identity/PhoneProtectorTests` · `DatabaseTest/Identity/UserLookupTests` | unitaria y base de datos |
+| TC-HU-001-15 | `UnitTest/Identity/PhoneProtectionOptionsTests` · `SecurityTest/Identity/PhoneProtectionSecretsTests` | unitaria y seguridad negativa |
+| TC-HU-001-16 | `UnitTest/Identity/RefreshTokenFingerprintTests` · `IntegrationTest/Identity/RefreshFingerprintTests` | unitaria e integración |
+| TC-HU-001-17 | `IntegrationTest/Identity/FirebaseRegistrationAtomicityTests` | integración |
+| TC-HU-001-18 | `SecurityTest/Identity/LoginSensitiveLogTests` | seguridad negativa |
+| TC-HU-001-19 | `SecurityTest/Identity/LoginResponsePrivacyTests` | seguridad negativa |
+| TC-HU-001-20 | `SecurityTest/Identity/AccountEnumerationTests` | seguridad negativa |
+| TC-HU-001-21 | `UnitTest/Identity/FirebaseExchangeRequestValidatorTests` · `SecurityTest/Identity/FirebaseRequestValidationTests` | unitaria y seguridad negativa |
+| TC-HU-001-22 | `DatabaseTest/Identity/IdentityIndexTests` · `DatabaseTest/Identity/IdentityCollectionNamingTests` | base de datos |
+| TC-HU-001-23 | `UnitTest/Architecture/IdentityAccessTests` | arquitectura |
+| TC-HU-001-24 | `docs/openapi.v1.json` y `docs/endpoints.md` regenerados, `docs/rate-limit-matrix.md`, `dotnet list package`, `gitleaks` | comando (evidencia en el PR) |
+| TC-HU-001-25 | `dotnet build` + `dotnet format --verify-no-changes` | comando |
 
 ## 4. Secuencia
-1. **Aprobación de la spec** (y respuesta a las dudas 1 a 11). Confirmar que #53 (TT-BD-06) fusionó o decidir con el líder qué se adelanta (spec §3).
-2. **`sub` v8** (caso 10): derivación, su prueba con vector independiente, ajuste de las pruebas de TT-API-02 que lo usan. Fusionar antes de cualquier dato.
+1. **Aprobación de la spec** (D1 a D11 ya resueltas; falta confirmar los puntos propuestos y abrir las tareas A y B). Confirmar que #53 (TT-BD-06) fusionó o decidir con el líder qué se adelanta (spec §3).
+2. **Tarea A** (`sub` v8; caso A-01): derivación, prueba con vector independiente y ajuste de las pruebas de TT-API-02 que lo usan. Fusiona antes de cualquier dato; HU-001 la espera.
 3. **Contrato** (spec §4) y pruebas que fallan primero: cuerpo y respuestas del canje (200, 201, 401, 403, 409, 422, 429) y proyecto `tests/ContractTest`.
-4. **Protección del celular** (casos 13 a 17): `PhoneNumberPolicy`, `PhoneProtector`, `PhoneProtectionOptions` con validación de arranque, `RefreshTokenFingerprint`; unitarias.
-5. **Dominio y servicio** con dobles (casos 03, 04, 08, 12 y 22): `User`, `UserState`, flujo del canje, validador, `code` de dominio (dudas 3 a 5).
-6. **Datos** (casos 11, 14, 15, 18 y 23; tras TT-BD-06): repositorios en `Data/`, `IdentityIndexInitializer`, transacción de alta, registro en `IdentityModuleExtensions`.
-7. **Controller** (200/201/403/409, `Cache-Control: no-store`) e integración con el emulador y `documentdb-local` (casos 03, 04, 07, 08, 09, 11, 12, 17 y 18); seguridad negativa (19 a 22); arquitectura (24).
-8. `docs/openapi.v1.json` y `docs/endpoints.md` con el script de la duda 6; `docs/rate-limit-matrix.md`; caso 25.
-9. Gates, `Memoria.md`, informe y evidencia en el PR (casos 26 y 27; firma real contra `knock-0` con número de prueba).
+4. **Protección del celular** (casos 12 a 16): `PhoneNumberPolicy`, `PhoneProtector`, `PhoneProtectionOptions` con validación de arranque, `RefreshTokenFingerprint`; unitarias.
+5. **Dominio y servicio** con dobles (casos 03, 04, 08, 11 y 21): `User`, `UserState`, flujo del canje, validador, `code` de dominio (D3 a D5).
+6. **Datos** (casos 10, 13, 14, 17 y 22; tras TT-BD-06): repositorios en `Data/`, `IdentityIndexInitializer`, transacción de alta, registro en `IdentityModuleExtensions`.
+7. **Controller** (200/201/403/409, `Cache-Control: no-store`) e integración con el emulador y `documentdb-local` (casos 03, 04, 07, 08, 09, 10, 11, 16 y 17); seguridad negativa (18 a 21); arquitectura (23).
+8. Regenerar `docs/openapi.v1.json` y `docs/endpoints.md` con el script de #61 (D6) y ejecutar la prueba de contrato de la tarea B; `docs/rate-limit-matrix.md`.
+9. Gates, `Memoria.md`, informe y evidencia en el PR (casos 24 y 25; firma real contra `knock-0` con número de prueba).
 
 ## 5. Verificación (comandos exactos)
 ```bash
@@ -99,7 +99,7 @@ dotnet test tests/UnitTest -c Release --no-build            # incluye Architectu
 dotnet test tests/IntegrationTest -c Release --no-build     # requiere Docker y el emulador
 dotnet test tests/SecurityTest tests/DatabaseTest tests/ContractTest -c Release --no-build
 dotnet list Knock.slnx package --include-transitive --vulnerable
-python scripts/export_openapi.py                            # cuando exista (duda 6)
+python scripts/export_openapi.py                            # solo cuando #61 haya fusionado (D6)
 python scripts/sdd_lint.py && python scripts/sdd_lint.py --trace HU-001
 python scripts/codemap.py --check
 python scripts/ci/check_exceptions.py
