@@ -6,7 +6,7 @@
 > **Depende de:** TT-API-02 (KNOCK-21, fusionado, Firmada). **No depende** de TT-BD-06 ni de MongoDB: no hay persistencia. **Debe fusionar primero**: HU-001 (KNOCK-43) depende de esta tarea.
 > **Fuentes:** spec HU-001 (§2 «Caso reubicado a TT-API-12» A-01, §3 «Tareas relacionadas», §8 decisiones 1, D1 y D8) · spec TT-API-02 (casos 07, 09 y 10; Firmada, no se edita) · `docs/evidencia/KNOCK-21-spike-firebase.md` («`sub` derivable», «SHA-1 propio») · RFC 9562 §5.8 (UUID v8) · constitución 2.2.0 (principios 3 y 8; §5; §6) · `src/Knock.Api/Modules/Identity/Services/{UserIdDerivation,FirebaseSessionService,SessionTokenIssuer}.cs`
 > **Skills:** story-workflow, spec-first-writing, auth-firebase-jwt, security-core, testing-strategy-backend, reuse-before-create
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Que el `sub` del JWT siga siendo un identificador **determinista del `uid` de Firebase**, pero como **UUID v8 con SHA-256** y no como GUID v5 con SHA-1, **antes de que se guarde ningún dato** (decisión 1 del líder, 2026-10-24). Porqué: un `sub` guardado no se puede cambiar sin cambiar la identidad de la cuenta; el SHA-1 obligaba a mantener una implementación escrita a mano para esquivar los analizadores (CA5350, S4790); y SHA-256 es la primitiva estándar del framework. El `ObjectId` de `usuarios` es aparte (HU-001) y no se toca aquí.
@@ -117,6 +117,6 @@ Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 **Dudas abiertas para el líder:** ninguna de diseño. Recomendación de proceso: anotar en el PR y en `Memoria.md` que TC-TT-API-02-10 (vector v5) queda reemplazado por TC-TT-API-12-01 a 04, ya que la spec firmada no se enmienda.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-10-26
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
