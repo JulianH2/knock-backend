@@ -6,7 +6,7 @@
 > **Depende de:** TT-API-02 (KNOCK-21, spike del canje y de la sesión; fusionado, Firmada) · TT-API-03 (KNOCK-37, ProblemDetails, 422, `X-Correlation-Id` y límite por IP; fusionado, Firmada) · TT-FB-01 (KNOCK-28, proyecto de Firebase y números de prueba; Firmada) · **TT-BD-06 (KNOCK-156, PR #53, Borrador): cliente de Mongo compartido en `Hosting/` (`AddKnockMongo`) y fixture de `documentdb-local`** (decisión 2; qué pasa si no ha fusionado: §3 «Dependencia de TT-BD-06» y `plan.md` §0) · TT-MOB-03 (cliente de la API en la app; otro repositorio) · **TT-API-12 (KNOCK-187, «`sub` v8 con SHA-256», 1 punto; va primero, sin MongoDB; derivada de esta historia por decisión del líder, D10)** · **TT-CI-02 (KNOCK-137, «Contrato vivo», a cargo del líder, Sprint 2): crea `tests/ContractTest`, `docs/openapi.v1.json` y `docs/endpoints.md`, con `scripts/export_openapi.py` del PR #61 (no se da por existente mientras no fusione); HU-001 se apoya en ese proyecto y solo agrega la prueba de contrato del canje**.
 > **Fuentes:** `docs/backlog/HU-001.md` (CA1 a CA9, alcance, reglas) · `docs/referencia/FUNCIONES_Y_FLUJOS.md` §3.2 · `docs/referencia/DECISIONES.md` #2, #21 · `docs/DECISION_TECNICA.md` §8 · ADR-001 (reglas 1, 3 y 5) · ADR-002 (reglas 1, 2 y 5; «Qué se retira») · ADR-004 (SMS solo +52, números de prueba, límite de intentos por número en TT-FB-02) · constitución 2.2.0 (borrador, pendiente de ratificar: principios 2, 3, 9, 10, 13, 15; §3 «Acceso»; §5; §6; §7; §12) · `docs/evidencia/KNOCK-21-spike-firebase.md` («Qué falta para HU-001») · specs TT-API-02, TT-API-03, TT-BD-06 (#53), TT-API-07 (#54) y HU-009 (#40) para alinear términos · `src/Knock.Api/Modules/Identity/`, `Hosting/AuthenticationExtensions`, `Hosting/ValidationExtensions`, `Hosting/RateLimitingExtensions`, `Common/Security/JwtSettings*` · skill `auth-firebase-jwt` · respuestas del líder (2026-10-24), §8.
 > **Skills:** story-workflow, spec-first-writing, auth-firebase-jwt, database-scripts, vertical-slice-api, security-core, api-contract-openapi, testing-strategy-backend, reuse-before-create
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 **Cómo leer esta spec.** HU-001 es la primera historia con persistencia de producto en la base `identity` y la que implementa el canje completo. El `sub` v8 es TT-API-12 (KNOCK-187) y el contrato vivo (`docs/openapi.v1.json`, `docs/endpoints.md`, `tests/ContractTest`, que TT-API-03 y HU-009 esperan) es TT-CI-02 (KNOCK-137); ambos salieron de esta historia por decisión del líder (D10). Cambia código ya fusionado de TT-API-02 (canje, verificador, pruebas) y lo declara en §3 y en `plan.md`. Los casos de la capa Mobile (01, 02, 05 y 06) se verifican en knock-frontend. Las decisiones del líder del 2026-10-24 están en §8 con su porqué; sus respuestas a las 11 dudas de la primera redacción son D1 a D11 (§8).
 
@@ -287,6 +287,6 @@ Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 **Dudas abiertas:** ninguna de diseño. Pendientes de proceso: que el líder fusione #61 (script del contrato), TT-API-12 (KNOCK-187) y TT-BD-06 (#53), y se avance TT-CI-02 (KNOCK-137), y que se confirmen los valores reales de las constantes de versión (D7) al implementar.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-10-26
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
