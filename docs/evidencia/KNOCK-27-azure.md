@@ -9,7 +9,7 @@
 |---|---|---|
 | TC-TT-AZ-01-01 Presupuesto con alertas por correo | Hecho y verificado. No se comprobó que el correo llegue (Cost Management evalúa con retraso). | Sección 3 |
 | TC-TT-AZ-01-02 Grupo de recursos con nombre y etiquetas, una región | Hecho y verificado | Sección 2 |
-| TC-TT-AZ-01-03 Roles mínimos | **Pendiente**: faltan los correos de las personas y cómo entran al directorio | — |
+| TC-TT-AZ-01-03 Roles mínimos | **Hecho (2026-10-26)**: el Tech Lead es el único propietario y nadie más tiene acceso a Azure; el acceso del equipo llega con TT-AZ-02 | Sección 7 |
 
 ## 1. Suscripción y restricciones
 - Suscripción: **Azure for Students** (`Enabled`), ID `<id-de-suscripcion>`.
@@ -49,5 +49,19 @@ Cost Management sí funciona en la suscripción Azure for Students.
 - Riesgo: restricciones por servicio en suscripciones de estudiante (por ejemplo, regiones restringidas en PostgreSQL); se confirma al crear los recursos en KNOCK-34.
 
 ## 6. Pendiente
-- Roles mínimos (TC-03): asignar `Contributor` sobre `rg-knock-dev` a quien corresponda; propietario solo el Tech Lead. Si son cuentas externas, primero se invitan como invitadas al directorio.
-- Comprobar que llega el correo de alerta cuando el gasto cruce un umbral.
+- ~~Roles mínimos (TC-03)~~: resuelto (sección 7).
+- Comprobar que llega el correo de alerta **cuando el gasto cruce un umbral**: con 0.0 USD de gasto no se puede provocar sin generar costo, así que queda como verificación de la ventana de evaluación (TT-AZ-04 y TT-AZ-03). No bloquea el cierre de esta tarea porque el presupuesto y sus cuatro alertas están creados y habilitados (sección 8).
+
+## 7. Roles mínimos (TC-TT-AZ-01-03) — 2026-10-26
+Decisión (Tech Lead): hoy **solo el Tech Lead tiene acceso a Azure**. El equipo no necesita roles de Azure para trabajar: el despliegue sale de GitHub Actions con una identidad federada (TT-AZ-02) y Alexis llega a la base de datos por la regla de firewall de su IP, no por un rol de Azure. Dar roles ahora agregaría acceso que nadie usa. Cuando TT-AZ-02 cree la identidad del pipeline, se le asignará `Contributor` solo sobre `rg-knock-dev` y se agregará aquí.
+
+Comprobación con la CLI, solo lectura (los datos se ocultaron: `<id-de-suscripcion>`):
+```text
+az role assignment list --resource-group rg-knock-dev      → []   (sin asignaciones propias en el grupo de recursos)
+az role assignment list --all                              → Owner · User · /subscriptions/<id>     (el Tech Lead, único propietario)
+                                                             otras asignaciones: solo de un grupo de recursos ajeno a Knock
+```
+Captura de **Access control (IAM)** de `rg-knock-dev` (con el correo y el ID de suscripción tapados): se adjunta en el PR.
+
+## 8. Alertas de presupuesto — 2026-10-26
+`az consumption budget show --budget-name budget-knock-dev --resource-group rg-knock-dev` (solo lectura): monto 10 USD al mes, **gasto 0.0 USD** y **cuatro notificaciones habilitadas** (umbrales 50 %, 80 % y 100 % sobre lo gastado y 100 % sobre lo previsto). El correo no se ha comprobado porque ningún umbral se ha cruzado.
