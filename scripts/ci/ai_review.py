@@ -15,6 +15,9 @@ Variables de entorno:
   AI_REVIEW_MAX_RUNS     revisiones máximas por PR (por defecto 4)
   GITHUB_TOKEN, GITHUB_REPOSITORY, PR_NUMBER, BASE_SHA, HEAD_SHA
 
+Límite conocido: el job ejecuta el script de la rama del PR, así que cualquier integrante con permiso de escritura puede leer la llave
+desde su rama (como con cualquier secreto de Actions); por eso el tope real de gasto es el saldo prepagado del proveedor.
+
 Uso:
   python scripts/ci/ai_review.py            revisa y publica el comentario
   python scripts/ci/ai_review.py --dry-run  muestra tamaño y costo estimado sin llamar al proveedor ni a GitHub
@@ -35,17 +38,31 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 MARKER = "<!-- ai-review -->"
+RUNS_RE = re.compile(r"<!-- ai-review-runs:(\d+) -->")
+BOT = "github-actions[bot]"
+BANNER = ("> **Comentario automático: no aprueba ni bloquea y puede ser manipulado por el contenido del PR. "
+          "Verifica cada hallazgo antes de actuar.**")
 EXCLUDED = (
     "*package-lock.json", "*packages.lock.json", "*pubspec.lock", "*.lock", "docs/architecture/*", "*/l10n/generado/*",
     "*.g.dart", "*.freezed.dart", "*.min.js", "*.map", "*.png", "*.jpg", "*.jpeg", "*.webp", "*.ico", "*.pdf", "*.docx", "*.xlsx",
-    ".env", ".env.*", "*.pem", "*.key", "*.pfx", "*.p12", "*secrets*",
+    "*.pem", "*.key", "*.pfx", "*.p12", "*secrets*", "*credentials*",
+    "*.env", "*.env.*", ".env*", "*/.env*",  # .env en la raíz y en cualquier carpeta (deploy/.env, deploy/.env.local)
+    "*appsettings*.json", "*.tfvars", "*.tfstate", "*.tfstate.*", "*google-services.json", "*GoogleService-Info.plist",
+    "*.jks", "*.keystore", "*id_rsa*", "*id_ed25519*",
 )
 SECRET_PATTERNS = (
     re.compile(r"sk-[A-Za-z0-9_-]{16,}"), re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}"), re.compile(r"AIza[0-9A-Za-z_-]{20,}"),
     re.compile(r"AKIA[0-9A-Z]{16}"), re.compile(r"eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}"),
-    re.compile(r"(?i)(password|passwd|secret|api[_-]?key|token)\s*[:=]\s*[\"']?[^\s\"']{8,}"),
+    # claves con nombre (también en JSON: "Password": "x"), cadenas de conexión, Azure Storage, Bearer y claves privadas
+    re.compile(r"(?i)[\"']?(password|passwd|pwd|secret|api[_-]?key|token|accountkey|sharedaccesskey)[\"']?\s*[:=]\s*[\"']?[^\s\"',;]{4,}"),
+    re.compile(r"(?i)\b(mongodb(\+srv)?|postgres(ql)?|mysql|redis|amqps?)://[^\s\"']+"),
+    re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://[^/\s:@\"']+:[^/\s@\"']+@"),
+    re.compile(r"(?i)\b(AccountKey|Pwd|Password|SharedAccessKey)=[^;\s\"']+"),
+    re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{8,}"),
+    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z ]*PRIVATE KEY-----|$)"),
 )
-# Tarifas de referencia (USD por millón de tokens) solo para la estimación del pie del comentario; no se usan para decidir nada.
+# Tarifas de referencia (USD por millón de tokens, DeepSeek, consultadas el 2026-10-24 en api-docs.deepseek.com; precio de hora pico del
+# modelo deepseek-flash) solo para la estimación del pie del comentario; no se usan para decidir nada.
 PRICE_IN, PRICE_OUT = 0.30, 1.20
 
 
@@ -94,6 +111,12 @@ def agent_guidance() -> str:
         if path.exists():
             parts.append(f"### {name}\n{path.read_text(encoding='utf-8')[:5000]}")
     return "\n\n".join(parts)
+
+
+def sanitize(text: str) -> str:
+    """Texto del modelo apto para publicar: sin llaves, sin comentarios HTML (marcadores falsos) ni el hueco del contador."""
+    text = re.sub(r"<!--.*?-->", "", mask_secrets(text), flags=re.S)
+    return text.replace("{RUNS}", "")
 
 
 def build_messages(title: str, diff: str, skipped: list[str], cut: list[str]) -> list[dict[str, str]]:
@@ -180,10 +203,11 @@ def github(path: str, payload: dict | None = None, method: str = "GET") -> dict 
 def publish(repo: str, number: str, body: str, max_runs: int) -> int:
     """Crea o actualiza el comentario marcado; devuelve cuántas revisiones lleva el PR (0 si ya llegó al máximo)."""
     comments = github(f"/repos/{repo}/issues/{number}/comments?per_page=100")
-    existing = next((c for c in comments if isinstance(c, dict) and MARKER in c.get("body", "")), None)
+    existing = next((c for c in comments if isinstance(c, dict) and MARKER in c.get("body", "")
+                     and (c.get("user") or {}).get("login") == BOT), None)  # nunca un comentario de otra persona con el mismo marcador
     runs = 1
     if existing:
-        found = re.search(r"Revisión automática n\.º (\d+)", existing["body"])
+        found = RUNS_RE.search(existing["body"])
         runs = (int(found.group(1)) if found else 1) + 1
         if runs > max_runs:
             return 0
@@ -217,7 +241,7 @@ def main() -> int:
     approx_tokens = sum(len(m["content"]) for m in messages) // 4
     if args.dry_run:
         print(f"Diff: {len(diff)} caracteres · omitidos {len(skipped)} · recortados {len(cut)} · ~{approx_tokens} tokens de entrada · "
-              f"costo estimado ≤ {approx_tokens / 1e6 * PRICE_IN + 1500 / 1e6 * PRICE_OUT:.4f} USD")
+              f"costo estimado ≤ {approx_tokens / 1e6 * PRICE_IN + 2000 / 1e6 * PRICE_OUT:.4f} USD")
         return 0
     api_key = env.get("AI_REVIEW_API_KEY", "")
     if not api_key:
@@ -231,19 +255,19 @@ def main() -> int:
         return 0
     try:
         text, tokens_in, tokens_out = call_model(base_url, api_key, model, messages)
-    except (urllib.error.URLError, TimeoutError, KeyError, IndexError, json.JSONDecodeError) as error:
+    except (urllib.error.URLError, TimeoutError, KeyError, IndexError, AttributeError, TypeError, ValueError) as error:
         print(f"::warning::La revisión automática falló ({type(error).__name__}); el PR no se bloquea.")
         return 0
     if not text:
         print(f"::warning::El modelo no devolvió texto ({tokens_in} tokens de entrada, {tokens_out} de salida); no se publica nada.")
         return 0
     cost = tokens_in / 1e6 * PRICE_IN + tokens_out / 1e6 * PRICE_OUT
-    body = (f"{MARKER}\n## Pre-revisión automática\n\n{mask_secrets(text)}\n\n---\n"
-            f"_Revisión automática n.º {{RUNS}} con `{model}` ({tokens_in} tokens de entrada, {tokens_out} de salida, ≤ {cost:.4f} USD). "
+    body = (f"{MARKER}\n## Pre-revisión automática\n\n{BANNER}\n\n{sanitize(text)}\n\n---\n"
+            f"<!-- ai-review-runs:{{RUNS}} -->\n_Revisión automática n.º {{RUNS}} con `{model}` ({tokens_in} tokens de entrada, {tokens_out} de salida, ≤ {cost:.4f} USD). "
             "Solo leyó el diff; no ejecutó código ni pruebas. **No sustituye la revisión de pares ni la del Tech Lead.**_")
     try:
         runs = publish(env["GITHUB_REPOSITORY"], env["PR_NUMBER"], body, int(env.get("AI_REVIEW_MAX_RUNS") or "4"))
-    except (urllib.error.URLError, KeyError, json.JSONDecodeError) as error:
+    except (urllib.error.URLError, KeyError, AttributeError, TypeError, ValueError) as error:
         print(f"::warning::No se pudo publicar el comentario ({type(error).__name__}).")
         return 0
     print(f"Comentario publicado (revisión n.º {runs})." if runs else "Se alcanzó el máximo de revisiones por PR; no se publica otra.")
