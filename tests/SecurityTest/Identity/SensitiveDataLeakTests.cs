@@ -1,5 +1,8 @@
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using AwesomeAssertions;
+using Knock.Api.Modules.Identity.Services;
 using Knock.IntegrationTest.Support;
 using Xunit;
 
@@ -56,5 +59,53 @@ public class SensitiveDataLeakTests
         }
 
         rejectionBody.Should().NotContain(rejectedToken).And.NotContain("accessToken").And.NotContain("refreshToken");
+    }
+
+    [Fact]
+    public async Task ExchangeDoesNotLogOrReturnUidOrSub_TC_TT_API_12_06()
+    {
+        var (idToken, uid) = await FirebaseEmulator.SignInWithPhoneAsync(_testPhone);
+        var rejectedToken = idToken[..^25];
+        var sub = UserIdDerivation.Derive(uid).ToString("D");
+        string accessToken = string.Empty;
+        string successBody = string.Empty;
+        string rejectionBody = string.Empty;
+        string meBody = string.Empty;
+
+        var logs = await ConsoleCapture.RunAsync(async () =>
+        {
+            using var factory = new KnockApiFactory();
+            using var client = factory.CreateClient();
+
+            using var ok = await AuthHttp.ExchangeAsync(client, idToken);
+            ok.StatusCode.Should().Be(HttpStatusCode.OK);
+            successBody = await ok.Content.ReadAsStringAsync();
+            (accessToken, _) = await AuthHttp.ReadSessionAsync(ok);
+
+            using var rejected = await AuthHttp.ExchangeAsync(client, rejectedToken);
+            rejected.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            rejectionBody = await rejected.Content.ReadAsStringAsync();
+
+            using var me = await AuthHttp.MeAsync(client, accessToken);
+            meBody = await me.Content.ReadAsStringAsync();
+        });
+
+        logs.Should().Contain("/api/v1/auth/firebase", "la captura debe incluir los eventos de las peticiones (si no, la prueba sería vacía)");
+        logs.Should().NotContain(uid, "los logs no deben contener el uid de Firebase");
+        logs.Should().NotContain(sub, "los logs no deben contener el sub");
+        logs.Should().NotContain(sub.Replace("-", string.Empty, StringComparison.Ordinal), "ni el sub sin guiones");
+
+        // El uid no sale en ninguna respuesta; el sub solo viaja dentro del JWT de acceso y en /me, que lo devuelve a su dueño.
+        successBody.Should().NotContain(uid).And.NotContain(sub, "el sub va dentro del JWT, no en claro en el cuerpo");
+        rejectionBody.Should().NotContain(uid).And.NotContain(sub);
+        meBody.Should().NotContain(uid).And.Contain(sub);
+
+        // El sub no contiene el uid ni una forma trivial de él (texto, Base64, hexadecimal).
+        var uidBytes = Encoding.UTF8.GetBytes(uid);
+        var compact = sub.Replace("-", string.Empty, StringComparison.Ordinal);
+        sub.Should().NotContain(uid);
+        compact.Should().NotContain(Convert.ToHexStringLower(uidBytes));
+        compact.Should().NotContain(Convert.ToBase64String(uidBytes));
+        sub.Should().NotBe(Convert.ToHexStringLower(SHA256.HashData(uidBytes))[..32], "no es el hash simple del uid");
     }
 }
