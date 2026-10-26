@@ -3,7 +3,7 @@
 > **Jira:** KNOCK-47 · **Épica:** EP-02 · **Servicio:** Mercado (`Knock.Market.Api`, ADR-001) · **Módulo:** Catalog · **Sprint:** no en este sprint; se implementa después de la migración del catálogo (TT-BD-06), ver `plan.md` · **Puntos:** 3
 > **Repositorio:** knock-backend (capa [Back]); la capa Mobile (Flutter) vive en knock-frontend
 > **Skills:** story-workflow, spec-first-writing, vertical-slice-api, security-core, api-contract-openapi, testing-strategy-backend
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 **Cómo leer esta spec.** Esta historia **define** el listado de colonias por CP y la lista de espera, y **consume** la colonia por punto de TT-API-07 (KNOCK-141). La zona del perfil (`PUT /me/zona`) es de Identidad y queda fuera, como dependencia de HU-001/HU-002. La base y la consulta quedan cerradas con la evidencia del spike TT-BD-05 (KNOCK-147, `docs/evidencia/KNOCK-147-spike-documentdb.md`, pendiente de que se fusione #48).
 
@@ -116,6 +116,6 @@ Pantalla «¿Dónde buscas expertos?» del registro (después del nombre): «Usa
 - **(g) Pantallas sin sesión.** Los endpoints de §4 exigen JWT. Confirmar que ninguna pantalla sin sesión (HU-005, exploración antes de registrarse) necesita listar colonias por CP o entrar a la lista de espera; si alguna lo necesita, hay que decidir si estos endpoints pasan a públicos con el límite por IP o si HU-005 usa otra ruta.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: fecha:
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-10-26
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
