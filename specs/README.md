@@ -19,3 +19,4 @@
 | S2 | TT-API-03 | Middlewares: errores a ProblemDetails, Serilog con CorrelationId y límites de peticiones | API · Backend base | José | 2 | Técnica | [`TT-API-03-middlewares-errores-problemdetails-serilog`](TT-API-03-middlewares-errores-problemdetails-serilog/spec.md) |
 | S2 | TT-BD-06 | Migración del catálogo a MongoDB: oficios, colonias y consulta de colonia por punto | Base de datos · Catalog | Alexis | 8 | Técnica | [`TT-BD-06-migracion-catalogo-mongodb`](TT-BD-06-migracion-catalogo-mongodb/spec.md) |
 | Después de TT-BD-06 | HU-009 | Indicar mi zona con mi ubicación o código postal | Mercado · Catalog | Alexis | 3 | Por definir | [`HU-009-zona-por-ubicacion-o-codigo-postal`](HU-009-zona-por-ubicacion-o-codigo-postal/spec.md) |
+| S2 | TT-API-12 | `sub` v8 con SHA-256: reemplazar la derivación GUID v5 / SHA-1 antes de guardar datos | API · Identidad | José | 1 | Técnica | [`TT-API-12-sub-v8-con-sha-256`](TT-API-12-sub-v8-con-sha-256/spec.md) |
