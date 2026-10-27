@@ -7,7 +7,7 @@
 > **La consume:** HU-009 (KNOCK-47, #40): TC-HU-009-01 solo usa el resultado de este endpoint.
 > **Fuentes:** ADR-001 (reglas 1, 2, 3 y 5) · ADR-002 · ADR-006 · constitución 2.2.0 (principios 3, 4, 9 y 10; §4 pipeline; §5; §6 «ubicación del dispositivo convertida en colonia y descartada»; §12) · spec TT-API-03 (casos 01, 02, 04, 07, 12 y 15) · spec TT-BD-06 (§4, §5, casos 04 a 09, 12, 17, 19 y 20) · respuestas del líder en #54 (2026-10-24) · spec HU-009 (§4 y decisión (a)) · revisión de Guillermo en #54 (probada con la API y con un proyecto mínimo de MVC) · `src/Knock.Api/Modules/Catalog/` · `docs/rate-limit-matrix.md`
 > **Skills:** story-workflow, spec-first-writing, vertical-slice-api, api-contract-openapi, security-core, testing-strategy-backend, reuse-before-create
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Exponer por HTTP la consulta «colonia de un punto» del catálogo propio: la app manda la ubicación del dispositivo una sola vez y recibe la colonia que le corresponde, o el aviso de que está fuera de cobertura. Las coordenadas **se convierten en colonia y se descartan** (constitución §6): no se guardan, no se registran y no se cachean.
@@ -197,6 +197,6 @@ Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 - **Pregunta cruzada de Identidad — resuelta en TT-BD-06.** La validación de `coloniaId` + `cp` para `PUT /me/zona` es `ICatalogApi.NeighborhoodExistsAsync(coloniaId, cp, ct)` (TC-TT-BD-06-20, decisión (j) de TT-BD-06, #53). Esta spec no la usa ni la prueba.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-10-27
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
