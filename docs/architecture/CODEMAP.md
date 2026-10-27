@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-26T18:23:15Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-10-27T21:58:13Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -8,7 +8,7 @@
 | Módulo | Capas | Archivos | Tipos | Métodos públicos |
 |---|---|---|---|---|
 | `Assistant` | -, services | 3 | 3 | 1 |
-| `Catalog` | -, data, domain, services | 10 | 10 | 11 |
+| `Catalog` | -, controllers, data, domain, dtos, services | 13 | 13 | 15 |
 | `Identity` | -, controllers, dtos, services | 11 | 15 | 10 |
 | `Knock.Api` | -, common, hosting | 18 | 28 | 35 |
 | `Media` | -, controllers, data, domain, dtos, services, validators | 18 | 35 | 48 |
@@ -40,10 +40,15 @@
   - `AddCatalogModule()`:9
 - `src/Knock.Api/Modules/Catalog/ICatalogApi.cs` — interface `ICatalogApi`
 
+**controllers**
+
+- `src/Knock.Api/Modules/Catalog/Controllers/V1/OficiosController.cs` — class `OficiosController`
+  - `List()`:22
+
 **data**
 
 - `src/Knock.Api/Modules/Catalog/Data/CatalogDbContext.cs` — class `CatalogDbContext`
-  - `Configure()`:19, `OnModelCreating()`:24
+  - `Lower()`:23, `Configure()`:26, `OnModelCreating()`:31
 - `src/Knock.Api/Modules/Catalog/Data/CatalogDbContextFactory.cs` — class `CatalogDbContextFactory`
   - `CreateDbContext()`:9
 - `src/Knock.Api/Modules/Catalog/Data/CatalogSeeder.cs` — class `CatalogSeeder`
@@ -59,10 +64,16 @@
   - `Create()`:26
 - `src/Knock.Api/Modules/Catalog/Domain/Oficio.cs` — class `Oficio`
 
+**dtos**
+
+- `src/Knock.Api/Modules/Catalog/Dtos/OficioResponse.cs` — record `OficioResponse`
+
 **services**
 
 - `src/Knock.Api/Modules/Catalog/Services/CatalogApi.cs` — class `CatalogApi`
   - `FindNeighborhoodAtAsync()`:17, `FindNeighborhoodsByPostalCodeAsync()`:36
+- `src/Knock.Api/Modules/Catalog/Services/OficioQueries.cs` — class `OficioQueries`
+  - `OficioQueries()`:8, `ListActiveAsync()`:16
 
 ### Identity
 
