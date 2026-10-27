@@ -25,3 +25,4 @@
 | S2 | HU-001 | Entrar con mi celular y código SMS (registro e inicio son el mismo flujo) | Identidad · Identity | José | 5 | Alta | [`HU-001-entrar-con-celular-y-codigo-sms`](HU-001-entrar-con-celular-y-codigo-sms/spec.md) |
 | S2 | HU-001 | Entrar con mi celular y código SMS (registro e inicio son el mismo flujo) | Identidad · Identity | José | 5 (propuesta; el `sub` v8 de 1 y el contrato vivo de 2 salen a tareas hijas por abrir) | Alta | [`HU-001-entrar-con-celular-y-codigo-sms`](HU-001-entrar-con-celular-y-codigo-sms/spec.md) |
 | S2 | HU-001 | Entrar con mi celular y código SMS (registro e inicio son el mismo flujo) | Identidad · Identity | José | 5 (depende de TT-API-12, 1 punto aparte, y de TT-CI-02) | Alta | [`HU-001-entrar-con-celular-y-codigo-sms`](HU-001-entrar-con-celular-y-codigo-sms/spec.md) |
+
