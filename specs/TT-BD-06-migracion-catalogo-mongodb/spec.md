@@ -6,7 +6,7 @@
 > **Depende de:** TT-BD-05 (KNOCK-147, spike, evidencia en `docs/evidencia/KNOCK-147-spike-documentdb.md`, PR #48 fusionado) · TT-BD-02 (KNOCK-23) y TT-BD-01 (KNOCK-22), que esta tarea reemplaza · el PR del líder que hace que `scripts/sdd_lint.py` acepte el estado «Reemplazada» (decisión (h)).
 > **Fuentes:** ADR-001 (reglas 1 y 2) · ADR-002 («Reglas», «Qué se retira») · ADR-006 (región West US) · constitución 2.2.0 (principios 9, 10 y 11; §3; §4 «Transición de datos»; §5) · evidencia KNOCK-147 (P2, P3, P5, P7, P9 y hallazgos) · spec TT-BD-02 · `src/Knock.Api/Modules/Catalog/` · revisión de #53 (Guillermo y el líder) · respuestas del líder en #53 (2026-10-24) · nota cruzada de TT-API-07 (#54) · decisión del líder en #48 (desempate)
 > **Skills:** story-workflow, spec-first-writing, database-scripts, vertical-slice-api, security-core, testing-strategy-backend, reuse-before-create
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Que el módulo Catalog del servicio de Mercado guarde sus **oficios** y **colonias** en **MongoDB (Azure DocumentDB, ADR-002)** en lugar de PostgreSQL + PostGIS + EF Core, con la consulta «colonia de un punto» resuelta con índice `2dsphere` y `$geoIntersects`, **sin cambiar las firmas actuales de `ICatalogApi`** para quienes lo usan (más un miembro nuevo para validar una colonia), y que se retire del módulo lo que ya no se use (EF Core, Npgsql, NetTopologySuite, migraciones y la semilla SQL de oficios). Es la primera persistencia de producto en MongoDB: fija la conexión **compartida** en `Hosting/` (`AddKnockMongo`: un `MongoClient`, `maxPoolSize`, secreto y readiness) para que cada módulo pida su base por nombre, el acceso a colecciones solo desde `Data/` y el campo normalizado para buscar sin acentos (spike P5).
@@ -237,6 +237,6 @@ Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 **Dudas abiertas para el líder:** ninguna.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-10-27
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
