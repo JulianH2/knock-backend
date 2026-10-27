@@ -164,10 +164,11 @@ internal sealed class MongoReadinessHealthCheck(IMongoClient client) : IHealthCh
             await client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1), cancellationToken: timeout.Token);
             return HealthCheckResult.Healthy();
         }
-        catch (Exception ex) when (ex is MongoException or TimeoutException
-            || (ex is OperationCanceledException && !cancellationToken.IsCancellationRequested))
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
-            // Solo el tipo: el mensaje del driver puede traer el host o el usuario de la cadena (TC-TT-BD-06-14).
+            // Cualquier error, no solo los del driver: si la excepción saliera, HealthCheckService registraría su mensaje,
+            // que puede traer el host o el usuario de la cadena. Solo el tipo, sin la excepción (TC-TT-BD-06-14).
+            // La cancelación que pide quien llama sí se propaga.
             return HealthCheckResult.Unhealthy($"MongoDB did not respond ({ex.GetType().Name}).");
         }
     }

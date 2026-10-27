@@ -16,7 +16,6 @@ namespace Knock.IntegrationTest.Support;
 internal sealed class KnockApiFactory(
     string environment = "Development",
     bool failingReadinessCheck = false,
-    string? connectionString = null,
     IReadOnlyDictionary<string, string?>? settings = null,
     bool withSigningKey = true,
     Action<IServiceCollection>? configureServices = null)
@@ -69,11 +68,6 @@ internal sealed class KnockApiFactory(
                 // La variable del emulador es del proceso; fuera de Development la API no arranca con ella (TC-TT-API-02-14).
                 // Las pruebas que no son del guardia la anulan; la prueba del guardia la vuelve a poner con `settings`.
                 values[FirebaseEmulator.HostVariable] = string.Empty;
-            }
-
-            if (connectionString is not null)
-            {
-                values["ConnectionStrings:KnockDatabase"] = connectionString;
             }
 
             foreach (var (key, value) in settings ?? new Dictionary<string, string?>())

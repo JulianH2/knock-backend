@@ -4,17 +4,16 @@ using AwesomeAssertions;
 namespace Knock.IntegrationTest.Support;
 
 /// <summary>
-/// Verificación compartida: levanta la API con la cadena dada y comprueba que readiness responde 200.
-/// Readiness también exige Blob (TT-API-05) y MongoDB (TT-BD-06), así que se arrancan Azurite y documentdb-local reales junto a la base.
+/// Verificación compartida: levanta la API y comprueba que readiness responde 200. Readiness exige MongoDB (TT-BD-06) y
+/// Blob (TT-API-05), así que se arrancan documentdb-local y Azurite reales.
 /// </summary>
-internal static class PostgisReadinessChecks
+internal static class ReadinessChecks
 {
-    public static async Task AssertReadyReturns200Async(string connectionString)
+    public static async Task AssertReadyReturns200Async()
     {
         await using var azurite = await AzuriteFixture.StartAsync();
         var mongo = await DocumentDbFixture.SharedAsync();
         using var factory = new KnockApiFactory(
-            connectionString: connectionString,
             settings: new Dictionary<string, string?>
             {
                 ["ConnectionStrings:KnockBlob"] = azurite.ConnectionString,

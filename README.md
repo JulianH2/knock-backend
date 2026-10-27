@@ -28,10 +28,11 @@ El proyecto .NET se crea en **TT-API-01** y la base en **TT-BD-01** (ver `specs/
 Para verificar PostGIS: `docker compose --env-file .env -f deploy/docker-compose.local.yml exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT postgis_version();"'`.
 Para reiniciar PostgreSQL sin borrar los datos: `docker compose --env-file .env -f deploy/docker-compose.local.yml restart postgres`. No uses `down -v` para un reinicio que deba conservar el volumen.
 
-La API recibe `ConnectionStrings:KnockDatabase` mediante .NET User Secrets o la variable `ConnectionStrings__KnockDatabase`. El comando EF local solo acepta `localhost` o `127.0.0.1`:
+Desde TT-BD-06 el catálogo vive en MongoDB (base `market`) y la API ya no usa PostgreSQL ni EF Core. La API recibe `ConnectionStrings:KnockMongo` mediante .NET User Secrets o la variable `ConnectionStrings__KnockMongo`; nunca va en `appsettings*.json`:
 ```bash
-dotnet ef database update --project src/Knock.Api --context CatalogDbContext
+dotnet user-secrets set "ConnectionStrings:KnockMongo" "<cadena de tu MongoDB local>" --project src/Knock.Api
 ```
+Las semillas del catálogo son `db/seeds/catalog/oficios.json` y `colonias.json` (`_id` fijos; ver `db/seeds/README.md`). Las aplica el cargador del módulo (`Modules/Catalog/Data/CatalogSeeder`): es repetible, crea los índices y hace upsert por clave natural. Hoy lo invocan las pruebas (`tests/DatabaseTest`, que levantan documentdb-local con Testcontainers); el script de entrega con `mongosh` es de TT-BD-09. El `docker-compose.local.yml` con PostGIS se rehace en TT-ARQ-01.
 
 ## Estructura
 `src/` API · `tests/` pruebas · `db/` scripts de base de datos · `deploy/` compose y Bicep · `specs/` · `docs/` · `security/` · `scripts/`

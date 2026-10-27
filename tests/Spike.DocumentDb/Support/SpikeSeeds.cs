@@ -1,5 +1,5 @@
-using System.Text.RegularExpressions;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 namespace Knock.Spike.DocumentDb.Support;
@@ -8,7 +8,7 @@ namespace Knock.Spike.DocumentDb.Support;
 /// Scripts de índices y semillas del spike (spec §5; la ruta definitiva db/mongo/ es de TT-BD-09).
 /// Lee las semillas versionadas del repositorio sin modificarlas.
 /// </summary>
-internal static partial class SpikeSeeds
+internal static class SpikeSeeds
 {
     public const string Colonias = "colonias";
     public const string Oficios = "oficios";
@@ -88,10 +88,10 @@ internal static partial class SpikeSeeds
         return docs;
     }
 
-    /// <summary>Oficios de db/seeds/catalog/oficios.sql (clave, nombre).</summary>
+    /// <summary>Oficios de db/seeds/catalog/oficios.json (clave, nombre); oficios.sql se retiró en TT-BD-06.</summary>
     public static IReadOnlyList<BsonDocument> LoadOficios() =>
-        OficioRow().Matches(File.ReadAllText(FixturePath("oficios.sql")))
-            .Select(m => new BsonDocument { { "clave", m.Groups["clave"].Value }, { "nombre", m.Groups["nombre"].Value } })
+        BsonSerializer.Deserialize<BsonArray>(File.ReadAllText(FixturePath("oficios.json")))
+            .Select(o => new BsonDocument { { "clave", o["clave"] }, { "nombre", o["nombre"] } })
             .ToList();
 
     public static async Task CreateColoniasAsync(IMongoDatabase db)
@@ -120,7 +120,4 @@ internal static partial class SpikeSeeds
             Math.Round(vertices.Average(v => v[0].ToDouble()), 6),
             Math.Round(vertices.Average(v => v[1].ToDouble()), 6));
     }
-
-    [GeneratedRegex(@"\('(?<clave>[a-z]+)',\s*'(?<nombre>[^']+)'", RegexOptions.CultureInvariant, 1000)]
-    private static partial Regex OficioRow();
 }
