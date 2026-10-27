@@ -1,6 +1,6 @@
 # plan.md — TT-API-12 — `sub` v8 con SHA-256
 
-> Borrador. Decisiones previas en spec §8 (decisión 1 de HU-001, D8 y D10); sin dudas de diseño abiertas; falta la aprobación de la spec.
+> Spec Aprobada (2026-10-26) e implementada en el PR #71. Decisiones previas en spec §8 (decisión 1 de HU-001, D8 y D10); sin dudas de diseño abiertas.
 
 ## 0. Cuándo y en qué orden
 Va **primero**: fusiona antes que HU-001 (KNOCK-43) y antes de que exista ningún dato guardado. No depende de TT-BD-06 ni de MongoDB. Implementación en Sprint 2.
@@ -36,11 +36,11 @@ Va **primero**: fusiona antes que HU-001 (KNOCK-43) y antes de que exista ningú
 | TC-TT-API-12-10 | `dotnet build` + `dotnet format --verify-no-changes` | comando |
 
 ## 4. Secuencia
-1. Aprobación de la spec; recalcular los vectores con una implementación independiente.
+1. Spec aprobada (2026-10-26); vectores recalculados con una implementación independiente.
 2. Pruebas que fallan primero (casos 01 a 04 con vectores v8).
 3. Reemplazar el algoritmo en `UserIdDerivation`; borrar el SHA-1.
 4. Casos 05 y 06; regresión de TT-API-02.
-5. Gates, informe y evidencia en el PR (casos 08 a 10); `Memoria.md` (el líder).
+5. Gates, informe y evidencia en el PR (casos 08 a 10); `Memoria.md` (la escribe quien hace el cambio).
 
 ## 5. Verificación (comandos exactos)
 ```bash

@@ -99,6 +99,6 @@ public class SensitiveDataLeakTests
         var uidBytes = Encoding.UTF8.GetBytes(uid);
         sub.Should().NotContain(uid);
         compactSub.Should().NotContain(Convert.ToHexStringLower(uidBytes)).And.NotContain(Convert.ToBase64String(uidBytes));
-        compactSub.Should().NotBe(Convert.ToHexStringLower(SHA256.HashData(uidBytes))[..32]);
+        compactSub[..12].Should().NotBe(Convert.ToHexStringLower(SHA256.HashData(uidBytes))[..12], "el sub no es el SHA-256 simple del uid");
     }
 }

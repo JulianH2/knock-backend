@@ -74,13 +74,18 @@ public class UserIdDerivationTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
+    [InlineData("\t\t")]
     [InlineData(null)]
     public void EmptyOrBlankUidThrowsArgumentException_TC_TT_API_12_04_TC_TT_API_02_10(string? uid)
     {
         var act = () => UserIdDerivation.Derive(uid!);
 
         var thrown = act.Should().Throw<ArgumentException>().Which;
-        thrown.Message.Should().NotContain("   ", "el mensaje no incluye el valor recibido");
+        thrown.ParamName.Should().Be("uid");
+        if (!string.IsNullOrEmpty(uid))
+        {
+            thrown.Message.Should().NotContain(uid, "el mensaje no incluye el valor recibido");
+        }
     }
 
     [Fact]

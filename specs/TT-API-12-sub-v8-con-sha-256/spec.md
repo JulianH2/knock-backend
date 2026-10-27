@@ -44,7 +44,7 @@ Que el `sub` del JWT siga siendo un identificador **determinista del `uid` de Fi
   - `UserIdDerivation.Derive`: UUID v8 con SHA-256 como en §4; se borra el SHA-1 escrito a mano y su documentación; se actualiza el comentario del tipo (ya no menciona v5 ni la prueba contra Python de v5).
   - `tests/UnitTest/Identity/UserIdDerivationTests`: vectores v8, versión 8 y variante, estabilidad, `uid` vacío y firma; los métodos de derivación conservan el sufijo `_TC_TT_API_02_10` además del `_TC_TT_API_12_KK`.
   - Una prueba de integración nueva (caso 05) y un método nuevo de seguridad (caso 06); ninguna otra prueba de TT-API-02 se edita.
-  - Documentar el cambio en `Memoria.md` lo hace el líder.
+  - La nota de `Memoria.md` la escribe quien hace el cambio, en el PR de la implementación (indicación del líder, 2026-10-26).
 - **Out:**
   - **MongoDB, `usuarios`, el `ObjectId`, el cifrado del celular, el consentimiento, la auditoría y el canje persistente:** HU-001 (KNOCK-43). Esta tarea no depende de TT-BD-06.
   - **Cambios de contrato HTTP u OpenAPI:** ninguno (el JWT sigue con `sub`, `jti`, `iss` y `aud`; `/me` devuelve `{ id }`). Contrato vivo: TT-CI-02 (KNOCK-137).
@@ -102,7 +102,7 @@ No aplican aquí: autorización por recurso, cifrado de campo, biométricos, arc
 
 Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 
-**Gates:** `AGENTS.md §5`: `build -c Release` 0/0, `dotnet format` sin cambios, Unit (con Architecture), Integration y Security en verde (resultado real; la integración necesita el emulador de Firebase en marcha), `sdd_lint.py --trace TT-API-12` y `--trace TT-API-02`, `codemap.py --check`, `check_exceptions.py`, `sync_agents.py --check`, Semgrep, `security-reviewer` LIBERA, `traceability-clerk` sin drift, `Memoria.md` al día (lo escribe el líder) e informe de `story-workflow` en el PR con «Uso de IA». Esta spec es un borrador: no se ha escrito ni ejecutado ninguna prueba ni línea de código.
+**Gates:** `AGENTS.md §5`: `build -c Release` 0/0, `dotnet format` sin cambios, Unit (con Architecture), Integration y Security en verde (resultado real; la integración necesita el emulador de Firebase en marcha), `sdd_lint.py --trace TT-API-12` y `--trace TT-API-02`, `codemap.py --check`, `check_exceptions.py`, `sync_agents.py --check`, Semgrep, `security-reviewer` LIBERA, `traceability-clerk` sin drift, `Memoria.md` al día (la escribe quien hace el cambio) e informe de `story-workflow` en el PR con «Uso de IA». Implementada en el PR #71 (rama `feature/KNOCK-187-sub-v8-sha256`); los resultados reales de los gates están en la descripción del PR.
 
 **Decisiones previas (de HU-001 y el líder, 2026-10-24):**
 1. **`sub` = UUID v8 con SHA-256**, derivado del `uid`, y se cambia antes de guardar datos (decisión 1 de HU-001). Porqué: ver §1.
@@ -114,7 +114,7 @@ Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 - El `sub` sigue siendo derivable por quien conozca el `uid` y el namespace (riesgo aceptado); si se quisiera irreversible sin conocer un secreto, haría falta HMAC con llave (decisión distinta, no tomada).
 - La evidencia `docs/evidencia/KNOCK-21-spike-firebase.md` y la spec firmada de TT-API-02 siguen diciendo «GUID v5» como registro histórico.
 
-**Dudas abiertas para el líder:** ninguna de diseño. Recomendación de proceso: anotar en el PR y en `Memoria.md` que TC-TT-API-02-10 (vector v5) queda reemplazado por TC-TT-API-12-01 a 04, ya que la spec firmada no se enmienda.
+**Dudas abiertas para el líder:** ninguna de diseño. Proceso (cumplido en el PR de la implementación): anotado en el PR y en `Memoria.md` que TC-TT-API-02-10 (vector v5) queda reemplazado por TC-TT-API-12-01 a 04, ya que la spec firmada no se enmienda.
 
 ## Aprobación
 - [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-10-26
