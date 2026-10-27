@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-23T17:08:37Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-10-27T16:27:13Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -10,7 +10,7 @@
 | `Assistant` | -, services | 3 | 3 | 1 |
 | `Catalog` | -, data, domain, services | 10 | 10 | 11 |
 | `Identity` | -, controllers, dtos, services | 11 | 15 | 10 |
-| `Knock.Api` | -, common, hosting | 18 | 28 | 35 |
+| `Knock.Api` | -, common, hosting | 19 | 32 | 40 |
 | `Media` | -, controllers, data, domain, dtos, services, validators | 18 | 35 | 48 |
 | `Messaging` | -, services | 3 | 3 | 1 |
 | `Notifications` | -, services | 3 | 3 | 1 |
@@ -125,11 +125,13 @@
 - `src/Knock.Api/Hosting/HealthExtensions.cs` — class `HealthExtensions`, class `PostgresReadinessHealthCheck`
   - `AddKnockHealth()`:12, `MapKnockHealth()`:19, `CheckHealthAsync()`:29
 - `src/Knock.Api/Hosting/KnockApplicationExtensions.cs` — class `KnockApplicationExtensions`
-  - `AddKnockApi()`:7, `UseKnockApi()`:26
+  - `AddKnockApi()`:7, `UseKnockApi()`:27
 - `src/Knock.Api/Hosting/LoggingExtensions.cs` — class `LoggingExtensions`, class `ScopeRequestPathEnricher`
   - `AddKnockLogging()`:15, `ConfigureRequestLogging()`:29, `Enrich()`:96
 - `src/Knock.Api/Hosting/ModulesExtensions.cs` — class `ModulesExtensions`
   - `AddKnockModules()`:15
+- `src/Knock.Api/Hosting/MongoExtensions.cs` — class `KnockMongoOptions`, class `KnockMongoOptionsValidator`, class `MongoExtensions`, class `MongoReadinessHealthCheck`
+  - `Validate()`:40, `AddKnockMongo()`:95, `AddKnockMongoDatabase()`:117, `CreateSettings()`:131, `CheckHealthAsync()`:156
 - `src/Knock.Api/Hosting/OpenApiExtensions.cs` — class `OpenApiExtensions`
   - `AddKnockOpenApi()`:7, `MapKnockOpenApi()`:14
 - `src/Knock.Api/Hosting/ProblemDetailsExtensions.cs` — class `ProblemDetailsExtensions`

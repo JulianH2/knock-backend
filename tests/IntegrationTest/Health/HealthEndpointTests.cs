@@ -30,12 +30,15 @@ public class HealthEndpointTests
     public async Task Get_HealthReady_BlobNotConfigured_Returns503_TC_TT_API_01_03()
     {
         await using var postgis = await PostgisFixture.StartAsync();
-        using var factory = new KnockApiFactory(connectionString: postgis.ConnectionString);
+        var mongo = await DocumentDbFixture.SharedAsync();
+        using var factory = new KnockApiFactory(
+            connectionString: postgis.ConnectionString,
+            settings: new Dictionary<string, string?> { ["ConnectionStrings:KnockMongo"] = mongo.ConnectionString });
         using var client = factory.CreateClient();
 
         using var ready = await client.GetAsync(new Uri("/health/ready", UriKind.Relative));
 
-        ready.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable, "con PostgreSQL disponible, solo Blob (sin configurar) impide readiness");
+        ready.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable, "con PostgreSQL y MongoDB disponibles, solo Blob (sin configurar) impide readiness");
     }
 
     [Fact]
