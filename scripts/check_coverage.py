@@ -56,8 +56,8 @@ def main() -> int:
     src.add_argument("--cobertura", type=Path)
     src.add_argument("--lcov", type=Path)
     src.add_argument("--istanbul", type=Path)
-    parser.add_argument("--min", type=float, required=True, help="mínimo de líneas (%)")
-    parser.add_argument("--min-branch", type=float, default=None, help="mínimo de ramas (%)")
+    parser.add_argument("--min", type=float, required=True, help="mínimo de líneas (%%)")
+    parser.add_argument("--min-branch", type=float, default=None, help="mínimo de ramas (%%)")
     parser.add_argument("--exclude", action="append", default=[])
     args = parser.parse_args()
     path = args.cobertura or args.lcov or args.istanbul

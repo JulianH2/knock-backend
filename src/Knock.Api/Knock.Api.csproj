@@ -6,7 +6,12 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Asp.Versioning.Mvc" Version="10.2.1" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.30.1" />
     <PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
+    <PackageReference Include="FirebaseAdmin" Version="3.7.0" />
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.13" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -16,8 +21,11 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite" Version="10.0.3" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.18.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="SkiaSharp" Version="4.153.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.153.1" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Knock.UnitTest" />
     <InternalsVisibleTo Include="Knock.IntegrationTest" />
     <InternalsVisibleTo Include="Knock.SecurityTest" />
     <InternalsVisibleTo Include="Knock.DatabaseTest" />

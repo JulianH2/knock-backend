@@ -25,7 +25,7 @@ Activar:
 
 ## 2. Environments
 **Settings → Environments**
-- `staging`: sin revisores; secretos y variables de Staging.
+- `staging`: sin uso (no hay entorno de Staging desplegado). Puede quedar vacío; el entorno de GitHub no cuesta nada.
 - `production`: **Required reviewers** = Tech Lead + 1; *Deployment branches*: solo `main` y tags `api-v*` / `app-v*` / `panel-v*`; **Prevent self-review**.
 
 ## 3. Acciones y permisos
@@ -42,9 +42,9 @@ Activar:
 |---|---|---|---|
 | `AZURE_ENABLED` / `DEPLOY_ENABLED` | variable | backend / frontend | Activa los workflows de despliegue |
 | `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` | variables | backend | OIDC con Azure (sin secretos de larga vida) |
-| `STAGING_*`, `PRODUCTION_*` | variables | ambos | Recursos y URLs |
+| `PRODUCTION_*` (`STAGING_*` sin uso) | variables | ambos | Recursos y URLs |
 | `FRONTEND_CONTRACT_TOKEN` | secreto | backend | PR automático del contrato en knock-frontend (token de grano fino, solo ese repo) |
-| `ANTHROPIC_API_KEY` + `AI_REVIEW=true` | secreto + variable | ambos | Revisión opcional con Claude |
+| `AI_REVIEW_API_KEY` + `AI_REVIEW=true` | secreto + variable | ambos | Pre-revisión automática opcional (DeepSeek por defecto; `AI_REVIEW_BASE_URL` y `AI_REVIEW_MODEL` opcionales) |
 | `SONAR_TOKEN` + `SONAR_ENABLED=true` | secreto + variable | backend | SonarCloud opcional |
 | Firma Android y Play | secretos del environment | frontend | Builds firmados y subida a Play |
 

@@ -8,7 +8,7 @@
   "test_types": ["UB", "INT", "ACC", "NEG", "CON", "MUT", "PERF"],
   "layers": {"BD": "db-builder", "Back": "api-builder"},
   "default_skills": ["vertical-slice-api", "testing-strategy-backend", "security-core"],
-  "scopes": ["identity", "catalog", "requests", "messaging", "reputation", "trust", "notifications", "assistant", "app", "panel", "ci", "infra", "docs"],
+  "scopes": ["identity", "catalog", "requests", "messaging", "reputation", "trust", "notifications", "assistant", "media", "app", "panel", "ci", "infra", "docs"],
   "technical_tasks": ["TT-REPO-01", "TT-REPO-02", "TT-REPO-03", "TT-STD-01", "TT-SDD-01", "TT-API-01", "TT-API-02", "TT-API-03",
                       "TT-API-04", "TT-API-05", "TT-BD-01", "TT-BD-02", "TT-BD-03", "TT-BD-04", "TT-CI-01", "TT-AZ-01", "TT-AZ-02",
                       "TT-FB-01", "TT-CD-01", "TT-CD-02", "TT-CD-03", "TT-SEC-01", "TT-SEC-02", "TT-SEC-03", "TT-OBS-01", "TT-RT-01",

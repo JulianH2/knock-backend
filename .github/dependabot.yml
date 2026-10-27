@@ -7,6 +7,10 @@ updates:
     open-pull-requests-limit: 8
     labels: [dependencias]
     commit-message: {prefix: "build(deps)"}
+    # Decisión del revisor (KNOCK-20): xunit se queda en la versión 2. Dependabot no propone saltos de versión mayor de xunit.
+    ignore:
+      - dependency-name: "xunit"
+        update-types: ["version-update:semver-major"]
     groups:
       aspnetcore: {patterns: ["Microsoft.AspNetCore*", "Microsoft.Extensions*"], update-types: [minor, patch]}
       efcore: {patterns: ["Microsoft.EntityFrameworkCore*", "Npgsql*"], update-types: [minor, patch]}

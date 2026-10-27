@@ -4,6 +4,7 @@
 > **Reemplaza** las decisiones #18 (plataforma), #19 (panel) y #20 (chat) de `DECISIONES.md`. La #4 (verificación) queda como la cerró el equipo en la propuesta v2.0: fotos cifradas con llave propia y borradas al decidir o a los 7 días.
 > **Repositorios:** `knock-backend` (API + scripts de base de datos + infraestructura) y `knock-frontend` (app Flutter + panel Angular). Este documento es idéntico en ambos.
 > **Rector de implementación:** `.specify/memory/constitution.md`. Este documento explica el **porqué**; la constitución fija el **qué no se negocia**.
+> **Actualización 2026-10-20:** quedan reemplazadas por los ADR de [`docs/decisiones/`](decisiones/README.md): de la sección 1, las filas de Arquitectura, API interna, Base de datos, Caché y estado compartido, Nube e IaC; la sección 2 (arquitectura); la 5 (datos); de la 6, el outbox «de EF Core» (ahora con transacciones de MongoDB); de las 7 y 8, el uso de Redis como respaldo de SignalR y como lista de revocación de tokens (ahora una colección con TTL; Redis solo si se aprueba); la 10 (Front Door, Redis, Service Bus y Bicep) y la 14 (riesgos). **Donde haya contradicción, manda el ADR** (regla transitoria en el README de ADR). También quedan desactualizados, y se actualizan aparte: `constitution.md`, `AGENTS.md`, las skills y agentes de `.agents/`, y `.github/CODEOWNERS` (PR backend #45 y frontend #25).
 
 ---
 

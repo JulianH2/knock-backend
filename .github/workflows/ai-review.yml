@@ -1,11 +1,12 @@
 name: ai-review
 
-# Revisión opcional con Claude Code usando los MISMOS agentes revisores del repositorio
-# (security-reviewer y traceability-clerk). No sustituye a la revisión humana ni a los checks,
-# y NO forma parte del check requerido `gate`.
-# Se activa solo cuando existen la variable AI_REVIEW=true y el secreto ANTHROPIC_API_KEY.
-# Si falta cualquiera de los dos (o el PR viene de un fork, donde GitHub no entrega secretos),
-# el job `review` se SALTA (skipped): no falla ni deja el PR en rojo.
+# Pre-revisión automática de cada PR con un modelo de lenguaje (API compatible con OpenAI; hoy DeepSeek).
+# Lee el diff, aplica las instrucciones de nuestros agentes revisores (security-reviewer y traceability-clerk) y deja UN comentario
+# que se actualiza (máximo 4 veces por PR). NO sustituye a la revisión de pares ni a la del Tech Lead y NO forma parte del
+# check requerido `gate`: si falla o no está configurada, el PR no se bloquea.
+# Se activa solo con la variable AI_REVIEW=true y el secreto AI_REVIEW_API_KEY. Opcionales (variables): AI_REVIEW_BASE_URL
+# (por defecto https://api.deepseek.com) y AI_REVIEW_MODEL (por defecto deepseek-flash).
+# No corre en PR de borrador ni en PR que vienen de un fork (GitHub no entrega secretos). El script es scripts/ci/ai_review.py.
 # Cómo activarlo: CONTRIBUTING.md, sección «Revisión con IA en el CI (opcional)».
 
 on:
@@ -14,6 +15,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ai-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   check:
@@ -26,38 +31,41 @@ jobs:
       - id: k
         env:
           AI_REVIEW: ${{ vars.AI_REVIEW }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AI_REVIEW_API_KEY: ${{ secrets.AI_REVIEW_API_KEY }}
         run: |
-          if [ "$AI_REVIEW" = "true" ] && [ -n "$ANTHROPIC_API_KEY" ]; then
+          if [ "$AI_REVIEW" = "true" ] && [ -n "$AI_REVIEW_API_KEY" ]; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
           else
             echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Revisión con IA omitida: falta la variable AI_REVIEW=true o el secreto ANTHROPIC_API_KEY."
+            echo "::notice::Revisión con IA omitida: falta la variable AI_REVIEW=true o el secreto AI_REVIEW_API_KEY."
           fi
 
   review:
     needs: check
     if: needs.check.outputs.enabled == 'true' && github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     permissions:
       contents: read
       pull-requests: write
-      issues: read
-      id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: anthropics/claude-code-action@f27be6b65a4652f08a2ba3cff79114829b588967 # v1
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          prompt: |
-            Revisa el PR #${{ github.event.pull_request.number }} de ${{ github.repository }} contra ${{ github.base_ref }}.
-            1. Actúa como el agente definido en .claude/agents/security-reviewer.md y entrega su tabla PASS/FAIL.
-            2. Actúa como .claude/agents/traceability-clerk.md para la spec del issue (clave KNOCK-N del título).
-            No edites archivos. Publica un solo comentario en el PR con ambas tablas y el veredicto.
-          claude_args: |
-            --max-turns 30
-            --allowedTools "Read,Grep,Glob,Bash(git diff *),Bash(git log *),Bash(python3 scripts/sdd_lint.py *),Bash(python3 scripts/codemap.py *),Bash(gh pr comment *)"
+          python-version: "3.12"
+      - name: Pre-revisión del diff
+        env:
+          AI_REVIEW_API_KEY: ${{ secrets.AI_REVIEW_API_KEY }}
+          AI_REVIEW_BASE_URL: ${{ vars.AI_REVIEW_BASE_URL }}
+          AI_REVIEW_MODEL: ${{ vars.AI_REVIEW_MODEL }}
+          AI_REVIEW_ALLOWED_HOSTS: ${{ vars.AI_REVIEW_ALLOWED_HOSTS }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 scripts/ci/ai_review.py
