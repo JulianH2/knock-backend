@@ -1,10 +1,10 @@
 # HU-001 — tareas
 
-> Borrador. Se implementa en Sprint 2, **después de que la spec esté Aprobada**; las tareas que tocan la base esperan a TT-BD-06 (`plan.md` §0). TT-API-12 (KNOCK-187), TT-CI-02 (KNOCK-137) y la capa Mobile no son de este PR. Puntos: HU-001 = 5 (confirmado por el líder); TT-API-12 = 1 aparte; TT-CI-02 ya está contada en su issue.
+> Spec Aprobada. Se implementa en Sprint 2, **después de que la spec esté Aprobada**; las tareas que tocan la base esperan a TT-BD-06 (`plan.md` §0). TT-API-12 (KNOCK-187), TT-CI-02 (KNOCK-137) y la capa Mobile no son de este PR. Puntos: HU-001 = 5 (confirmado por el líder); TT-API-12 = 1 aparte; TT-CI-02 ya está contada en su issue.
 
 ## Previas (otros issues y otros PR)
 - **TT-API-12 (KNOCK-187) — «`sub` v8 con SHA-256» (1 punto).** Va **primero**, sin MongoDB; debe fusionar antes de cualquier dato guardado. Caso reubicado A-01 (spec §2). El método de prueba conserva el sufijo `_TC_TT_API_02_10` (D8).
-- **TT-CI-02 (KNOCK-137) — «Contrato vivo» (2 puntos, a cargo del líder, Sprint 2).** Crea `tests/ContractTest`, `docs/openapi.v1.json` y `docs/endpoints.md`; depende de #61 (`scripts/export_openapi.py`, no existe hasta que fusione). El caso de contrato se redacta allí; HU-001 solo agrega la prueba de contrato del canje sobre ese proyecto.
+- **TT-CI-02 (KNOCK-137) — «Contrato vivo» (2 puntos, a cargo del líder, Sprint 2).** Crea `tests/ContractTest`, `docs/openapi.v1.json` y `docs/endpoints.md`; usa `scripts/export_openapi.py` (ya existe en `sprint-01`, #61). El caso de contrato se redacta allí; HU-001 solo agrega la prueba de contrato del canje sobre ese proyecto.
 
 ## T1 — Contrato del canje (código y reglas; los documentos vivos y el proyecto `tests/ContractTest` son de TT-CI-02)
 - **Estado:** pendiente de aprobación de la spec

@@ -1,6 +1,6 @@
 # Checklist — HU-001
 
-> Estado: borrador. Casillas sin marcar; no representa aprobación, implementación ni ejecución de pruebas.
+> Casillas sin marcar: no representan implementación ni ejecución de pruebas.
 
 - [ ] Obtener aprobación humana de la spec (decisiones 1 a 9 del líder y respuestas D1 a D11 del 2026-10-24 escritas en §8; sin dudas de diseño abiertas).
 - [ ] Confirmar que TT-BD-06 (#53) fusionó (`AddKnockMongo`, `Mongo:Databases:Identity`, fixture de `documentdb-local`) antes de implementar la base; si no, aplicar spec §3 «Dependencia de TT-BD-06» (no crear un cliente propio).
@@ -12,8 +12,8 @@
 - [ ] Refresh solo como huella SHA-256; ni el token en claro, ni el celular, ni el `uid`, `sub` o huella en logs ni respuestas.
 - [ ] CA9 verificado por IP con el limitador de TT-API-03; desviación anotada en `docs/rate-limit-matrix.md`.
 - [ ] `cache: no` declarado en las cuatro colecciones; paginación no aplica (sin listados); excepciones a los principios 11 y 15 documentadas en el OpenAPI y en `docs/endpoints.md`.
-- [ ] HU-001 = 5 puntos (confirmado por el líder; TT-API-12 cuenta 1 aparte y TT-CI-02 ya está contada). Fusionar #61 (`scripts/export_openapi.py`), TT-API-12 y TT-BD-06 antes de implementar; las 11 dudas están resueltas como D1 a D11.
-- [ ] Dependencia TT-CI-02 (KNOCK-137): `tests/ContractTest`, `docs/openapi.v1.json` y `docs/endpoints.md` los crea esa tarea (HU-009 y TT-API-03 los esperan); esta historia solo agrega la prueba de contrato del canje y regenera los documentos con el script de #61; `docs/events.md` sin cambios; no dar por existente `scripts/export_openapi.py` mientras no fusione.
+- [ ] HU-001 = 5 puntos (confirmado por el líder; TT-API-12 cuenta 1 aparte y TT-CI-02 ya está contada). Fusionar TT-API-12 y TT-BD-06 antes de implementar (#61 ya fusionado); las 11 dudas están resueltas como D1 a D11.
+- [ ] Dependencia TT-CI-02 (KNOCK-137): `tests/ContractTest`, `docs/openapi.v1.json` y `docs/endpoints.md` los crea esa tarea (HU-009 y TT-API-03 los esperan); esta historia solo agrega la prueba de contrato del canje y regenera los documentos con el script de #61; `docs/events.md` sin cambios;.
 - [ ] Build 0 errores / 0 warnings, `dotnet format` sin cambios, Unit (con Architecture), Integration, Security, Database y Contract en verde (resultados reales).
 - [ ] Cobertura (60 % líneas / 50 % ramas) y mutación del módulo Identity en meta (≥ 80 % según la constitución §7, no el 70 % de la ficha); sin supresiones sin EXC-NNN.
 - [ ] `python scripts/sdd_lint.py --trace HU-001`, `codemap.py --check`, `check_exceptions.py`, `sync_agents.py --check` y Semgrep en OK.
