@@ -82,6 +82,7 @@ public class FirebaseSessionTests
 
         using var me = await AuthHttp.MeAsync(client, firstSession.AccessToken);
         me.StatusCode.Should().Be(HttpStatusCode.OK);
-        (await me.Content.ReadAsStringAsync()).Should().Contain(expected, "GET /api/v1/me devuelve el mismo valor como id");
+        using var meBody = JsonDocument.Parse(await me.Content.ReadAsStringAsync());
+        meBody.RootElement.GetProperty("id").GetString().Should().Be(expected, "GET /api/v1/me devuelve el mismo valor como id");
     }
 }
