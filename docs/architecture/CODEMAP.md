@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-28T16:47:49Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-10-28T19:37:45Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | `Assistant` | -, services | 3 | 3 | 1 |
 | `Catalog` | -, data, domain, services | 11 | 11 | 23 |
-| `Identity` | -, controllers, dtos, services | 11 | 15 | 10 |
+| `Identity` | -, controllers, domain, dtos, services | 15 | 23 | 18 |
 | `Knock.Api` | -, common, hosting | 19 | 31 | 40 |
 | `Media` | -, controllers, data, domain, dtos, services, validators | 18 | 35 | 48 |
 | `Messaging` | -, services | 3 | 3 | 1 |
@@ -81,6 +81,11 @@
 - `src/Knock.Api/Modules/Identity/Controllers/V1/MeController.cs` — class `MeController`
   - `Get()`:18
 
+**domain**
+
+- `src/Knock.Api/Modules/Identity/Domain/PhoneNumberPolicy.cs` — class `PhoneNumberPolicy`
+  - `IsValid()`:12
+
 **dtos**
 
 - `src/Knock.Api/Modules/Identity/Dtos/SessionDtos.cs` — record `FirebaseExchangeRequest`, record `SessionResponse`, record `MeResponse`
@@ -93,6 +98,12 @@
   - `FirebaseSessionService()`:4, `ExchangeAsync()`:10
 - `src/Knock.Api/Modules/Identity/Services/IFirebaseIdTokenVerifier.cs` — record `FirebaseIdentity`, interface `IFirebaseIdTokenVerifier`
 - `src/Knock.Api/Modules/Identity/Services/IdentityApi.cs` — class `IdentityApi`
+- `src/Knock.Api/Modules/Identity/Services/PhoneProtectionOptions.cs` — class `PhoneProtectionOptions`, class `PhoneProtectionKeys`, class `PhoneProtectionOptionsValidator`
+  - `TryCreate()`:56, `Validate()`:138
+- `src/Knock.Api/Modules/Identity/Services/PhoneProtector.cs` — record `ProtectedPhone`, record `PhoneHash`, class `PhoneProtector`
+  - `PhoneProtector()`:19, `Protect()`:29, `Hash()`:53, `AssociatedData()`:60
+- `src/Knock.Api/Modules/Identity/Services/RefreshTokenFingerprint.cs` — class `RefreshTokenFingerprint`
+  - `Compute()`:15
 - `src/Knock.Api/Modules/Identity/Services/SessionTokenIssuer.cs` — record `IssuedSession`, class `SessionTokenIssuer`
   - `SessionTokenIssuer()`:12, `Issue()`:18
 - `src/Knock.Api/Modules/Identity/Services/UserIdDerivation.cs` — class `UserIdDerivation`
