@@ -11,6 +11,7 @@ public static class CatalogModuleExtensions
         ArgumentNullException.ThrowIfNull(services);
         services.AddScoped<ICatalogApi, CatalogApi>();
         services.AddScoped<CatalogSeeder>();
+        services.AddScoped<OficioQueries>();
         services.AddDbContext<CatalogDbContext>((provider, options) =>
         {
             var connectionString = provider.GetRequiredService<IConfiguration>()

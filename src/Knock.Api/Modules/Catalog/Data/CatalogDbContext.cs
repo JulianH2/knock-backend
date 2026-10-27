@@ -15,6 +15,13 @@ internal sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> option
 
     public DbSet<Colonia> Colonias => Set<Colonia>();
 
+    /// <summary>
+    /// <c>lower(text)</c> de PostgreSQL para consultas LINQ: <c>string.ToLower</c> lo bloquean CA1304/CA1308 y depende de la cultura.
+    /// Solo se traduce a SQL; llamarlo en memoria lanza <see cref="NotSupportedException"/>.
+    /// </summary>
+    [DbFunction("lower", IsBuiltIn = true)]
+    public static string Lower(string value) => throw new NotSupportedException($"{nameof(Lower)}({value}) only translates to SQL.");
+
     /// <summary>Configuración compartida por el registro del módulo y la fábrica de diseño de EF.</summary>
     public static DbContextOptionsBuilder Configure(DbContextOptionsBuilder options, string connectionString) =>
         options
