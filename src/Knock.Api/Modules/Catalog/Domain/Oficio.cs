@@ -1,16 +1,11 @@
 namespace Knock.Api.Modules.Catalog.Domain;
 
-/// <summary>Oficio del catálogo como dato sembrado (no enum): clave estable, nombre, modalidad y estado.</summary>
-internal sealed class Oficio
+/// <summary>Reglas del oficio del catálogo (dato sembrado, no enum): clave estable, nombre y modalidad.</summary>
+internal static class Oficio
 {
-    public Guid Id { get; init; }
+    public const int MaxClaveLength = 16;
+    public const int MaxNombreLength = 100;
 
-    public required string Clave { get; init; }
-
-    public required string Nombre { get; init; }
-
-    /// <summary><c>domicilio</c> o <c>taller</c>.</summary>
-    public required string Modalidad { get; init; }
-
-    public bool Activo { get; init; }
+    /// <summary>Equivale al antiguo <c>CHECK</c> de PostgreSQL; hoy la única barrera es el cargador (spec §5).</summary>
+    public static bool IsValidModalidad(string? modalidad) => modalidad is "domicilio" or "taller";
 }

@@ -1,16 +1,19 @@
 using System.Net;
+using System.Security.Cryptography;
 using System.Text.Json;
 using AwesomeAssertions;
-using Knock.IntegrationTest.Data;
+using Knock.Api.Modules.Catalog.Data;
 using Knock.IntegrationTest.Support;
-using Npgsql;
+using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using Xunit;
 
 namespace Knock.IntegrationTest.Catalog;
 
 /// <summary>
-/// TT-PRU-01: <c>GET /api/v1/oficios</c> contra PostGIS real (un contenedor por prueba) con migraciones y la semilla versionada.
-/// Las pruebas verifican el orden resultante, no el SQL (spec §8 D4).
+/// TT-PRU-01: <c>GET /api/v1/oficios</c> contra documentdb-local real (un contenedor por ejecución y una base por prueba) con la
+/// semilla versionada. Las pruebas verifican el orden resultante, no la consulta (spec §8 D4).
 /// </summary>
 public sealed class OficiosEndpointTests
 {
@@ -19,9 +22,8 @@ public sealed class OficiosEndpointTests
     [Fact]
     public async Task GetOficios_SeededCatalog_Returns200WithThreeTradesOrderedByName_TC_TT_PRU_01_01()
     {
-        await using var postgis = await PostgisFixture.StartAsync();
-        using var factory = await StartApiAsync(postgis);
-        using var client = factory.CreateClient();
+        await using var host = await StartApiAsync();
+        using var client = host.Factory.CreateClient();
 
         using var response = await TestHttp.GetAsync(client, _path);
 
@@ -36,10 +38,9 @@ public sealed class OficiosEndpointTests
     [Fact]
     public async Task GetOficios_InactiveTrade_IsExcluded_TC_TT_PRU_01_02()
     {
-        await using var postgis = await PostgisFixture.StartAsync();
-        using var factory = await StartApiAsync(postgis);
-        await InsertTradeAsync(postgis, new Trade("alb", "Albañilería", "domicilio"), active: false);
-        using var client = factory.CreateClient();
+        await using var host = await StartApiAsync();
+        await host.AddTradeAsync(new Trade("alb", "Albañilería", "domicilio"), active: false);
+        using var client = host.Factory.CreateClient();
 
         using var response = await TestHttp.GetAsync(client, _path);
 
@@ -50,15 +51,14 @@ public sealed class OficiosEndpointTests
     [Fact]
     public async Task GetOficios_OrderIsByNameNotByKeyOrInsertion_TC_TT_PRU_01_03()
     {
-        await using var postgis = await PostgisFixture.StartAsync();
-        using var factory = await StartApiAsync(postgis);
+        await using var host = await StartApiAsync();
         // Insertado al final y con la clave mayor: por clave o por inserción saldría último; por nombre, primero.
-        await InsertTradeAsync(postgis, new Trade("zap", "Carpintería", "taller"), active: true);
+        await host.AddTradeAsync(new Trade("zap", "Carpintería", "taller"), active: true);
         // En minúsculas: con orden sensible a mayúsculas saldría después de «Plomería».
-        await InsertTradeAsync(postgis, new Trade("her", "herrería", "taller"), active: true);
+        await host.AddTradeAsync(new Trade("her", "herrería", "taller"), active: true);
         // Mismo nombre salvo mayúsculas: empata con «Electricidad» y desempata por clave (ele antes que zzz).
-        await InsertTradeAsync(postgis, new Trade("zzz", "ELECTRICIDAD", "domicilio"), active: true);
-        using var client = factory.CreateClient();
+        await host.AddTradeAsync(new Trade("zzz", "ELECTRICIDAD", "domicilio"), active: true);
+        using var client = host.Factory.CreateClient();
 
         using var response = await TestHttp.GetAsync(client, _path);
 
@@ -70,9 +70,8 @@ public sealed class OficiosEndpointTests
     [Fact]
     public async Task GetOficios_Response_ExposesOnlyClaveNombreModalidad_TC_TT_PRU_01_04()
     {
-        await using var postgis = await PostgisFixture.StartAsync();
-        using var factory = await StartApiAsync(postgis);
-        using var client = factory.CreateClient();
+        await using var host = await StartApiAsync();
+        using var client = host.Factory.CreateClient();
 
         using var response = await TestHttp.GetAsync(client, _path);
         using var body = await TestHttp.ReadJsonAsync(response);
@@ -90,9 +89,8 @@ public sealed class OficiosEndpointTests
     [Fact]
     public async Task GetOficios_WithoutCredentials_Returns200_TC_TT_PRU_01_05()
     {
-        await using var postgis = await PostgisFixture.StartAsync();
-        using var factory = await StartApiAsync(postgis);
-        using var client = factory.CreateClient();
+        await using var host = await StartApiAsync();
+        using var client = host.Factory.CreateClient();
 
         using var response = await TestHttp.GetAsync(client, _path);
 
@@ -101,26 +99,12 @@ public sealed class OficiosEndpointTests
         (await ReadTradesAsync(response)).Should().HaveCount(3);
     }
 
-    private static async Task<KnockApiFactory> StartApiAsync(PostgisFixture postgis)
+    private static async Task<ApiHost> StartApiAsync()
     {
-        var factory = new KnockApiFactory(connectionString: postgis.ConnectionString);
-        await CatalogTestDatabase.MigrateAndSeedAsync(factory.Services);
-        return factory;
-    }
-
-    /// <summary>Oficio sintético insertado solo en el contenedor de la prueba (nunca en la semilla versionada).</summary>
-    private static async Task InsertTradeAsync(PostgisFixture postgis, Trade trade, bool active)
-    {
-        await using var connection = new NpgsqlConnection(postgis.ConnectionString);
-        await connection.OpenAsync();
-        await using var command = new NpgsqlCommand(
-            "INSERT INTO catalog.oficios (clave, nombre, modalidad, activo) VALUES (@clave, @nombre, @modalidad, @activo)",
-            connection);
-        command.Parameters.AddWithValue("clave", trade.Clave);
-        command.Parameters.AddWithValue("nombre", trade.Nombre);
-        command.Parameters.AddWithValue("modalidad", trade.Modalidad);
-        command.Parameters.AddWithValue("activo", active);
-        await command.ExecuteNonQueryAsync();
+        var mongo = await DocumentDbFixture.SharedAsync();
+        var host = new ApiHost(mongo.ConnectionString);
+        await CatalogTestDatabase.SeedAsync(host.Factory.Services);
+        return host;
     }
 
     private static async Task<IReadOnlyList<Trade>> ReadTradesAsync(HttpResponseMessage response)
@@ -133,4 +117,45 @@ public sealed class OficiosEndpointTests
     }
 
     private sealed record Trade(string Clave, string Nombre, string Modalidad);
+
+    /// <summary>API de prueba con su propia base en el contenedor compartido; al terminar se borra la base.</summary>
+    private sealed class ApiHost : IAsyncDisposable
+    {
+        private readonly string _databaseName = "market_oficios_" + Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(4));
+
+        public ApiHost(string connectionString) =>
+            Factory = new KnockApiFactory(settings: new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:KnockMongo"] = connectionString,
+                ["Mongo:Databases:Catalog"] = _databaseName,
+            });
+
+        public KnockApiFactory Factory { get; }
+
+        /// <summary>
+        /// Oficio sintético, solo en la base de la prueba (nunca en la semilla versionada). Pasa por <see cref="CatalogSeeder"/>
+        /// para que exista <c>nombreBusqueda</c>: sin él, un documento se ordena primero y TC-03 pasaría en falso.
+        /// </summary>
+        public async Task AddTradeAsync(Trade trade, bool active)
+        {
+            await using var scope = Factory.Services.CreateAsyncScope();
+            await scope.ServiceProvider.GetRequiredService<CatalogSeeder>().SeedAsync(
+                [new BsonDocument
+                {
+                    { "_id", ObjectId.GenerateNewId() },
+                    { "clave", trade.Clave },
+                    { "nombre", trade.Nombre },
+                    { "modalidad", trade.Modalidad },
+                    { "activo", active },
+                }],
+                [],
+                CancellationToken.None);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await Factory.Services.GetRequiredService<IMongoClient>().DropDatabaseAsync(_databaseName);
+            await Factory.DisposeAsync();
+        }
+    }
 }
