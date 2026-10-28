@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-28T16:23:41Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-10-28T16:47:49Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -8,9 +8,9 @@
 | Módulo | Capas | Archivos | Tipos | Métodos públicos |
 |---|---|---|---|---|
 | `Assistant` | -, services | 3 | 3 | 1 |
-| `Catalog` | -, data, domain, services | 11 | 11 | 19 |
+| `Catalog` | -, data, domain, services | 11 | 11 | 23 |
 | `Identity` | -, controllers, dtos, services | 11 | 15 | 10 |
-| `Knock.Api` | -, common, hosting | 19 | 31 | 39 |
+| `Knock.Api` | -, common, hosting | 19 | 31 | 40 |
 | `Media` | -, controllers, data, domain, dtos, services, validators | 18 | 35 | 48 |
 | `Messaging` | -, services | 3 | 3 | 1 |
 | `Notifications` | -, services | 3 | 3 | 1 |
@@ -45,7 +45,7 @@
 - `src/Knock.Api/Modules/Catalog/Data/CatalogSeeder.cs` — class `CatalogSeeder`
   - `CatalogSeeder()`:13, `SeedAsync()`:19, `SeedAsync()`:29
 - `src/Knock.Api/Modules/Catalog/Data/CatalogStore.cs` — class `CatalogStore`
-  - `EnsureIndexesAsync()`:54, `FindIntersectingAsync()`:77, `FindNearestCenterAsync()`:89, `FindNamesByPostalCodeAsync()`:99, `ColoniaExistsAsync()`:109
+  - `EnsureIndexesAsync()`:60, `FindIntersectingAsync()`:83, `FindNearestCenterAsync()`:87, `FindNamesByPostalCodeAsync()`:90, `ColoniaExistsAsync()`:96, `IntersectingQuery()`:100, `NearestCenterQuery()`:107, `NamesByPostalCodeQuery()`:113, `ColoniaExistsQuery()`:119
 
 **domain**
 
@@ -133,7 +133,7 @@
 - `src/Knock.Api/Hosting/ModulesExtensions.cs` — class `ModulesExtensions`
   - `AddKnockModules()`:15
 - `src/Knock.Api/Hosting/MongoExtensions.cs` — class `KnockMongoOptions`, class `KnockMongoOptionsValidator`, class `MongoExtensions`, class `MongoReadinessHealthCheck`
-  - `Validate()`:40, `AddKnockMongo()`:95, `AddKnockMongoDatabase()`:117, `CreateSettings()`:131, `CheckHealthAsync()`:156
+  - `Seconds()`:51, `Validate()`:67, `AddKnockMongo()`:135, `AddKnockMongoDatabase()`:157, `CreateSettings()`:171, `CheckHealthAsync()`:214
 - `src/Knock.Api/Hosting/OpenApiExtensions.cs` — class `OpenApiExtensions`
   - `AddKnockOpenApi()`:7, `MapKnockOpenApi()`:14
 - `src/Knock.Api/Hosting/ProblemDetailsExtensions.cs` — class `ProblemDetailsExtensions`

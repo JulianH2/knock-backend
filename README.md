@@ -34,5 +34,16 @@ dotnet user-secrets set "ConnectionStrings:KnockMongo" "<cadena de tu MongoDB lo
 ```
 Las semillas del catálogo son `db/seeds/catalog/oficios.json` y `colonias.json` (`_id` fijos; ver `db/seeds/README.md`). Las aplica el cargador del módulo (`Modules/Catalog/Data/CatalogSeeder`): es repetible, crea los índices y hace upsert por clave natural. Hoy lo invocan las pruebas (`tests/DatabaseTest`, que levantan documentdb-local con Testcontainers); el script de entrega con `mongosh` es de TT-BD-09. El `docker-compose.local.yml` con PostGIS se rehace en TT-ARQ-01.
 
+### Índices en un Mongo nuevo (provisional hasta TT-BD-09)
+Hoy los índices solo los crea el cargador de las pruebas (`CatalogStore.EnsureIndexesAsync`). En una base nueva, créalos con los mismos que declara ese método (es repetible):
+```bash
+mongosh "<cadena de tu MongoDB>" --eval '
+const market = db.getSiblingDB("market");
+market.colonias.createIndexes([{ geom: "2dsphere" }, { centro: "2dsphere" }, { cp: 1 }, { nombreBusqueda: 1 }]);
+market.colonias.createIndex({ municipio: 1, cp: 1, nombre: 1 }, { unique: true });
+market.oficios.createIndex({ clave: 1 }, { unique: true });
+market.oficios.createIndex({ nombreBusqueda: 1 });'
+```
+
 ## Estructura
 `src/` API · `tests/` pruebas · `db/` scripts de base de datos · `deploy/` compose y Bicep · `specs/` · `docs/` · `security/` · `scripts/`

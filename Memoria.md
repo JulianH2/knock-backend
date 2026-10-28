@@ -362,6 +362,12 @@
 - Verificado sobre el código de #73 (273fb31): sin el cambio la exportación falla; con el cambio exporta el contrato (833 líneas).
 - A evitar: pasar a la exportación una cadena de conexión real; agregar secretos al script; arrancar la API para exportar con una base real.
 
+## 2026-10-28 — TT-BD-06 (KNOCK-156): timeouts del cliente de MongoDB y `maxTimeMS` en las consultas (revisión de #73)
+- Decisión del líder (Julián, 2026-10-28, punto 1 de Erick en #73): entran en este PR `ServerSelectionTimeout` 5 s, `ConnectTimeout` 5 s, `SocketTimeout` 10 s y `maxTimeMS` de 5 s en las consultas de `CatalogStore`, configurables en `Mongo:ServerSelectionTimeoutSeconds`, `Mongo:ConnectTimeoutSeconds`, `Mongo:SocketTimeoutSeconds` y `Mongo:QueryMaxTimeSeconds` (enteros de 1 a 60, validados al arrancar como `MaxPoolSize`; si la clave falta se usa el valor por defecto). Sigue un solo `MongoClient` por proceso. Porqué: sin ellos el driver espera 30 s a elegir servidor y no corta sockets ni consultas, así que una base caída o lenta deja las peticiones colgadas y agota el pool compartido por todos los módulos.
+- Decisión: las consultas de `CatalogStore` se arman en métodos `internal` que devuelven el `IFindFluent`; las pruebas (TC-TT-BD-06-13) leen `Options.MaxTime` con un `MongoClient` real que nunca se conecta. Porqué: un doble de `IMongoCollection` con `DispatchProxy` choca con CA1812/CA1852/CA1515 y el driver 3.x no trae una clase base abstracta.
+- Decisión del líder: `tests/Spike.DocumentDb` no se borra (su evidencia la cita la spec firmada de TT-BD-05); los puntos de prueba viven en un solo `tests/DatabaseTest/Support/ProbePointsLoader.cs`, enlazado desde el `.csproj` del spike (opción B). Los índices al arrancar quedan para TT-BD-09; mientras, el README trae el comando provisional.
+- A evitar: un timeout en 0 o «infinito» para «arreglar» una prueba lenta; poner `maxTimeMS` solo en algunas consultas (toda consulta nueva del store se arma con `_findOptions`); copiar `ProbePointsLoader.cs` en otro proyecto en vez de enlazarlo; subir `firebase-debug.log` (ya lo ignora `*-debug.log`).
+
 ## 2026-10-26 — TT-API-12 (KNOCK-187): spec en Borrador del `sub` como UUID v8 con SHA-256
 - Estado: spec, plan, task y gates en `specs/TT-API-12-sub-v8-con-sha-256/` (10 casos, Borrador); sin código. Es el primer paso de HU-001 (decisión 1 del líder): va antes de guardar cualquier dato y no depende de TT-BD-06.
 

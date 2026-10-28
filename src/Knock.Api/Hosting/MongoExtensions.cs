@@ -17,12 +17,39 @@ internal sealed class KnockMongoOptions
     public const string ConnectionStringKey = "ConnectionStrings:" + ConnectionStringName;
     public const string MaxPoolSizeKey = "Mongo:MaxPoolSize";
     public const string DatabasesSection = "Mongo:Databases";
+    public const string ServerSelectionTimeoutKey = "Mongo:ServerSelectionTimeoutSeconds";
+    public const string ConnectTimeoutKey = "Mongo:ConnectTimeoutSeconds";
+    public const string SocketTimeoutKey = "Mongo:SocketTimeoutSeconds";
+    public const string QueryMaxTimeKey = "Mongo:QueryMaxTimeSeconds";
     public const int MaxPoolSizeLimit = 100;
+    public const int TimeoutLimitSeconds = 60;
+    public const int DefaultServerSelectionTimeoutSeconds = 5;
+    public const int DefaultConnectTimeoutSeconds = 5;
+    public const int DefaultSocketTimeoutSeconds = 10;
+    public const int DefaultQueryMaxTimeSeconds = 5;
 
     public string? ConnectionString { get; set; }
 
     /// <summary>Conexiones del pool compartido por todos los módulos; <c>null</c> si falta o no es un entero.</summary>
     public int? MaxPoolSize { get; set; }
+
+    /// <summary>
+    /// Tiempos del cliente en segundos (decisión del líder, 2026-10-28): sin ellos, el driver espera 30 s a elegir servidor y
+    /// no corta sockets ni consultas. Si la clave falta se usa el valor por defecto; <c>null</c> si está pero no es un entero.
+    /// </summary>
+    public int? ServerSelectionTimeoutSeconds { get; set; } = DefaultServerSelectionTimeoutSeconds;
+
+    public int? ConnectTimeoutSeconds { get; set; } = DefaultConnectTimeoutSeconds;
+
+    public int? SocketTimeoutSeconds { get; set; } = DefaultSocketTimeoutSeconds;
+
+    /// <summary><c>maxTimeMS</c> de cada consulta de los módulos: el servidor la corta aunque el socket siga vivo.</summary>
+    public int? QueryMaxTimeSeconds { get; set; } = DefaultQueryMaxTimeSeconds;
+
+    public TimeSpan QueryMaxTime => Seconds(QueryMaxTimeSeconds, QueryMaxTimeKey);
+
+    internal static TimeSpan Seconds(int? value, string key) =>
+        TimeSpan.FromSeconds(value ?? throw new InvalidOperationException($"{key} is not configured."));
 
     /// <summary>Base de cada módulo (<c>Mongo:Databases:&lt;Módulo&gt;</c>).</summary>
     public Dictionary<string, string?> Databases { get; } = new(StringComparer.OrdinalIgnoreCase);
@@ -55,6 +82,11 @@ internal sealed partial class KnockMongoOptionsValidator : IValidateOptions<Knoc
             failures.Add($"{KnockMongoOptions.MaxPoolSizeKey} must be an integer from 1 to {KnockMongoOptions.MaxPoolSizeLimit}.");
         }
 
+        ValidateTimeout(failures, options.ServerSelectionTimeoutSeconds, KnockMongoOptions.ServerSelectionTimeoutKey);
+        ValidateTimeout(failures, options.ConnectTimeoutSeconds, KnockMongoOptions.ConnectTimeoutKey);
+        ValidateTimeout(failures, options.SocketTimeoutSeconds, KnockMongoOptions.SocketTimeoutKey);
+        ValidateTimeout(failures, options.QueryMaxTimeSeconds, KnockMongoOptions.QueryMaxTimeKey);
+
         foreach (var module in options.Modules.Order(StringComparer.Ordinal))
         {
             if (!options.Databases.TryGetValue(module, out var database) || database is null || !DatabaseName().IsMatch(database))
@@ -64,6 +96,14 @@ internal sealed partial class KnockMongoOptionsValidator : IValidateOptions<Knoc
         }
 
         return failures.Count == 0 ? ValidateOptionsResult.Success : ValidateOptionsResult.Fail(failures);
+    }
+
+    private static void ValidateTimeout(List<string> failures, int? seconds, string key)
+    {
+        if (seconds is not (>= 1 and <= KnockMongoOptions.TimeoutLimitSeconds))
+        {
+            failures.Add($"{key} must be an integer from 1 to {KnockMongoOptions.TimeoutLimitSeconds} (seconds).");
+        }
     }
 
     private static bool IsValidConnectionString(string connectionString)
@@ -127,26 +167,44 @@ internal static class MongoExtensions
         return services;
     }
 
-    /// <summary>Ajustes del cliente: la cadena da el destino y las credenciales; el tamaño del pool lo fija la configuración.</summary>
+    /// <summary>Ajustes del cliente: la cadena da el destino y las credenciales; el tamaño del pool y los tiempos los fija la configuración.</summary>
     internal static MongoClientSettings CreateSettings(KnockMongoOptions options)
     {
         var settings = MongoClientSettings.FromConnectionString(options.ConnectionString);
         settings.MaxConnectionPoolSize = options.MaxPoolSize
             ?? throw new InvalidOperationException($"{KnockMongoOptions.MaxPoolSizeKey} is not configured.");
+        settings.ServerSelectionTimeout = KnockMongoOptions.Seconds(options.ServerSelectionTimeoutSeconds, KnockMongoOptions.ServerSelectionTimeoutKey);
+        settings.ConnectTimeout = KnockMongoOptions.Seconds(options.ConnectTimeoutSeconds, KnockMongoOptions.ConnectTimeoutKey);
+        settings.SocketTimeout = KnockMongoOptions.Seconds(options.SocketTimeoutSeconds, KnockMongoOptions.SocketTimeoutKey);
         return settings;
     }
 
     private static void Bind(KnockMongoOptions options, IConfiguration configuration)
     {
         options.ConnectionString = configuration.GetConnectionString(KnockMongoOptions.ConnectionStringName);
-        options.MaxPoolSize = int.TryParse(
-            configuration[KnockMongoOptions.MaxPoolSizeKey], NumberStyles.None, CultureInfo.InvariantCulture, out var size)
-            ? size
-            : null;
+        options.MaxPoolSize = ParseInteger(configuration[KnockMongoOptions.MaxPoolSizeKey]);
+        options.ServerSelectionTimeoutSeconds = ParseSeconds(
+            configuration, KnockMongoOptions.ServerSelectionTimeoutKey, KnockMongoOptions.DefaultServerSelectionTimeoutSeconds);
+        options.ConnectTimeoutSeconds = ParseSeconds(
+            configuration, KnockMongoOptions.ConnectTimeoutKey, KnockMongoOptions.DefaultConnectTimeoutSeconds);
+        options.SocketTimeoutSeconds = ParseSeconds(
+            configuration, KnockMongoOptions.SocketTimeoutKey, KnockMongoOptions.DefaultSocketTimeoutSeconds);
+        options.QueryMaxTimeSeconds = ParseSeconds(
+            configuration, KnockMongoOptions.QueryMaxTimeKey, KnockMongoOptions.DefaultQueryMaxTimeSeconds);
         foreach (var database in configuration.GetSection(KnockMongoOptions.DatabasesSection).GetChildren())
         {
             options.Databases[database.Key] = database.Value;
         }
+    }
+
+    private static int? ParseInteger(string? value) =>
+        int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var number) ? number : null;
+
+    /// <summary>Clave ausente: el valor por defecto. Presente pero vacía o no entera: <c>null</c>, y el validador la rechaza.</summary>
+    private static int? ParseSeconds(IConfiguration configuration, string key, int defaultSeconds)
+    {
+        var value = configuration[key];
+        return value is null ? defaultSeconds : ParseInteger(value);
     }
 }
 
