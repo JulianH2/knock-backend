@@ -11,17 +11,7 @@ internal static class CatalogSeedData
     public static readonly IReadOnlyList<string> WithoutPolygon = ["Mastrantos", "Bugambilias", "Del Llano", "Tierra Blanca"];
 
     /// <summary>Puntos sintéticos interiores (los del spike P2/P3): a ≥ 78 m de cualquier borde y dentro de un solo polígono.</summary>
-    public static readonly IReadOnlyList<(string Colonia, double Longitude, double Latitude)> InteriorPoints =
-    [
-        ("Centro", -99.3495, 20.0505),
-        ("El Cielito", -99.3321, 20.0541),
-        ("El Llano 1a Sección", -99.3243, 20.0616),
-        ("El Llano 2a Sección", -99.3060, 20.0460),
-        ("San Lorenzo", -99.3372, 20.0484),
-        ("Tultengo", -99.32637, 20.06399),
-        ("Iturbe", -99.3234, 20.0757),
-        ("La Huerta", -99.3531, 20.0556),
-    ];
+    public static readonly IReadOnlyList<(string Colonia, double Longitude, double Latitude)> InteriorPoints = Knock.DatabaseTest.Support.ProbePointsLoader.LoadLongLat();
 
     /// <summary>Fuera de los 8 polígonos y a ≤ 1.2 km de cada vértice de Tultengo: hay un centro a 2 km o menos.</summary>
     public static readonly (double Longitude, double Latitude) NearCenterOutsidePolygons = (-99.3300, 20.0640);

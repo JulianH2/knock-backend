@@ -55,3 +55,4 @@ venv/
 
 # Configuracion local de agentes (cada persona la suya)
 .claude/settings.local.json
+*-debug.log
