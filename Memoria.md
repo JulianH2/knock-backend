@@ -357,3 +357,9 @@
 - Hallazgo: #73 (TT-BD-06) sigue abierto contra `sprint-02`; esta tarea depende de que se fusione. El job `dast` hoy se salta porque `deploy/docker-compose.ci.yml` no existe.
 - Decisión (propuesta): `DocumentDbFixture.Image` es la única fuente del digest; el compose local debe coincidir con ella. La prueba de humo contra DocumentDB real y la imagen `1.0` quedan fuera hasta que el líder responda P1 y P2.
 - A evitar: editar `.github/` o `.agents/knock.json` desde un agente (los hace o autoriza el Tech Lead); editar a mano los adaptadores generados en lugar de sus fuentes en `.agents/`; quitar `sql-lint` sin quitarlo de `gate.needs`.
+
+## 2026-10-27 — TT-BD-03 (KNOCK-40): spec en Borrador de semillas ficticias para MongoDB
+- Hecho: `specs/TT-BD-03-semillas-ficticias-mongodb/` en Borrador; 10 casos (8 con prueba, 2 por comando). Formato de `db/seeds/catalog/*.json` (#73); JSON en `db/seeds/demo/<base>/`.
+- Hallazgo: el `.docx` de la ficha no está, pero sí su versión generada `docs/backlog/TT-BD-03.md` (20 técnicos, 10 clientes, script repetible, Bogus sugerido); es anterior a ADR-002.
+- Hallazgo: los modelos de perfil, técnico y solicitud (HU-002, HU-017, HU-024) no tienen spec; los 4 números de prueba de Firebase son `+1 650 555 01xx` y HU-001 solo acepta `+52`; los usuarios sembrados no tienen `uid` de Firebase para derivar el `sub`. Todo va en las preguntas P1–P9.
+- A evitar: guardar el celular de demostración en claro (constitución §6: celular cifrado); reutilizar un `_id` del catálogo; cargar demostración en `Production`.
