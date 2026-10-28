@@ -1,0 +1,32 @@
+[
+  {
+    "_id": {
+      "$oid": "6adfe9802fb81ddc3fc17f73"
+    },
+    "clave": "ele",
+    "nombre": "Electricidad",
+    "nombreBusqueda": "ELECTRICIDAD",
+    "modalidad": "domicilio",
+    "activo": true
+  },
+  {
+    "_id": {
+      "$oid": "6adfe98015da927e686ba8c3"
+    },
+    "clave": "mec",
+    "nombre": "Mecánica",
+    "nombreBusqueda": "MECANICA",
+    "modalidad": "taller",
+    "activo": true
+  },
+  {
+    "_id": {
+      "$oid": "6adfe9808f15f40c8979cb8d"
+    },
+    "clave": "plo",
+    "nombre": "Plomería",
+    "nombreBusqueda": "PLOMERIA",
+    "modalidad": "domicilio",
+    "activo": true
+  }
+]

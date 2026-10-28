@@ -3,7 +3,7 @@
 > **Jira:** KNOCK-23 · **Área:** Base de datos · **Responsable:** Ángel Alexis Blas Castillo · **Sprint:** S0 · **Puntos:** 3
 > **Repositorio:** knock-backend · **Ficha:** TT-BD-02_CatalogoBase3Oficios_Knock.docx
 > **Skills:** story-workflow, testing-strategy-backend, security-core, database-scripts, postgis-geo
-> **Estado:** Aprobada
+> **Estado:** Reemplazada (por TT-BD-06)
 
 ## 1. Objetivo
 Sembrar los oficios Plomería, Electricidad y Mecánica como datos de catálogo, no como enum; cargar los códigos postales y nombres de colonia de Tula de Allende, Hidalgo, desde SEPOMEX; y consultar la colonia de un punto con PostGIS. El equipo decidió el 2026-10-13 que Tula de Allende es la ciudad piloto de este catálogo; la actualización de la ficha y documentación general corresponde a un PR separado.

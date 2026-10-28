@@ -1,0 +1,482 @@
+[
+  {
+    "_id": {
+      "$oid": "6adfe980511e3d878359ca07"
+    },
+    "nombre": "Centro",
+    "nombreBusqueda": "CENTRO",
+    "cp": "42800",
+    "municipio": "Tula de Allende",
+    "piloto": true,
+    "aproximado": true,
+    "geom": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -99.34579,
+              20.058682
+            ],
+            [
+              -99.352743,
+              20.053747
+            ],
+            [
+              -99.348494,
+              20.045257
+            ],
+            [
+              -99.340074,
+              20.0462
+            ],
+            [
+              -99.33567,
+              20.053965
+            ],
+            [
+              -99.34579,
+              20.058682
+            ]
+          ]
+        ]
+      ]
+    },
+    "centro": {
+      "type": "Point",
+      "coordinates": [
+        -99.344394146,
+        20.0499735
+      ]
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adfe980443c930885c0d6d7"
+    },
+    "nombre": "El Cielito",
+    "nombreBusqueda": "EL CIELITO",
+    "cp": "42803",
+    "municipio": "Tula de Allende",
+    "piloto": true,
+    "aproximado": true,
+    "geom": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -99.328667,
+              20.057918
+            ],
+            [
+              -99.335268,
+              20.053768
+            ],
+            [
+              -99.33439,
+              20.044531
+            ],
+            [
+              -99.325078,
+              20.04506
+            ],
+            [
+              -99.320324,
+              20.04987
+            ],
+            [
+              -99.320851,
+              20.055414
+            ],
+            [
+              -99.328667,
+              20.057918
+            ]
+          ]
+        ]
+      ]
+    },
+    "centro": {
+      "type": "Point",
+      "coordinates": [
+        -99.327796005,
+        20.051819
+      ]
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adfe9806df422238d8f0791"
+    },
+    "nombre": "San Lorenzo",
+    "nombreBusqueda": "SAN LORENZO",
+    "cp": "42803",
+    "municipio": "Tula de Allende",
+    "piloto": true,
+    "aproximado": true,
+    "geom": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -99.337329,
+              20.052984
+            ],
+            [
+              -99.33953,
+              20.049094
+            ],
+            [
+              -99.335937,
+              20.044465
+            ],
+            [
+              -99.330962,
+              20.048904
+            ],
+            [
+              -99.33238,
+              20.052948
+            ],
+            [
+              -99.337329,
+              20.052984
+            ]
+          ]
+        ]
+      ]
+    },
+    "centro": {
+      "type": "Point",
+      "coordinates": [
+        -99.335554631,
+        20.0466845
+      ]
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adfe980242a88c7249395d8"
+    },
+    "nombre": "El Llano 1a Sección",
+    "nombreBusqueda": "EL LLANO 1A SECCION",
+    "cp": "42803",
+    "municipio": "Tula de Allende",
+    "piloto": true,
+    "aproximado": true,
+    "geom": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -99.319462,
+              20.072238
+            ],
+            [
+              -99.32534,
+              20.068773
+            ],
+            [
+              -99.325882,
+              20.060784
+            ],
+            [
+              -99.318724,
+              20.057794
+            ],
+            [
+              -99.312215,
+              20.063281
+            ],
+            [
+              -99.315269,
+              20.070214
+            ],
+            [
+              -99.315269,
+              20.070214
+            ],
+            [
+              -99.319462,
+              20.072238
+            ]
+          ]
+        ]
+      ]
+    },
+    "centro": {
+      "type": "Point",
+      "coordinates": [
+        -99.319475458,
+        20.066027
+      ]
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adfe980b9726d82f18b0a5f"
+    },
+    "nombre": "Iturbe",
+    "nombreBusqueda": "ITURBE",
+    "cp": "42803",
+    "municipio": "Tula de Allende",
+    "piloto": true,
+    "aproximado": true,
+    "geom": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -99.321593,
+              20.082579
+            ],
+            [
+              -99.324964,
+              20.076887
+            ],
+            [
+              -99.323712,
+              20.071942
+            ],
+            [
+              -99.31634,
+              20.074856
+            ],
+            [
+              -99.31792,
+              20.08051
+            ],
+            [
+              -99.317997,
+              20.080621
+            ],
+            [
+              -99.317997,
+              20.080621
+            ],
+            [
+              -99.321593,
+              20.082579
+            ]
+          ]
+        ]
+      ]
+    },
+    "centro": {
+      "type": "Point",
+      "coordinates": [
+        -99.320652473,
+        20.0786985
+      ]
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adfe980c2e14adcd0925331"
+    },
+    "nombre": "Tultengo",
+    "nombreBusqueda": "TULTENGO",
+    "cp": "42803",
+    "municipio": "Tula de Allende",
+    "piloto": true,
+    "aproximado": true,
+    "geom": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -99.323469,
+              20.071044
+            ],
+            [
+              -99.327577,
+              20.063509
+            ],
+            [
+              -99.322428,
+              20.062463
+            ],
+            [
+              -99.318592,
+              20.065123
+            ],
+            [
+              -99.323469,
+              20.071044
+            ]
+          ]
+        ]
+      ]
+    },
+    "centro": {
+      "type": "Point",
+      "coordinates": [
+        -99.323056766,
+        20.0680835
+      ]
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adfe98018e06ffc9b42fbbf"
+    },
+    "nombre": "El Llano 2a Sección",
+    "nombreBusqueda": "EL LLANO 2A SECCION",
+    "cp": "42803",
+    "municipio": "Tula de Allende",
+    "piloto": true,
+    "aproximado": true,
+    "geom": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -99.301955,
+              20.055821
+            ],
+            [
+              -99.306411,
+              20.051335
+            ],
+            [
+              -99.307649,
+              20.045206
+            ],
+            [
+              -99.300861,
+              20.040686
+            ],
+            [
+              -99.291431,
+              20.04895
+            ],
+            [
+              -99.293414,
+              20.056328
+            ],
+            [
+              -99.301955,
+              20.055821
+            ]
+          ]
+        ]
+      ]
+    },
+    "centro": {
+      "type": "Point",
+      "coordinates": [
+        -99.300419001,
+        20.047078
+      ]
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adfe980924d6d1330b020ce"
+    },
+    "nombre": "Mastrantos",
+    "nombreBusqueda": "MASTRANTOS",
+    "cp": "42803",
+    "municipio": "Tula de Allende",
+    "piloto": false,
+    "aproximado": false
+  },
+  {
+    "_id": {
+      "$oid": "6adfe9805cb151b54aa8e1c6"
+    },
+    "nombre": "Bugambilias",
+    "nombreBusqueda": "BUGAMBILIAS",
+    "cp": "42803",
+    "municipio": "Tula de Allende",
+    "piloto": false,
+    "aproximado": false
+  },
+  {
+    "_id": {
+      "$oid": "6adfe9805fba7680757c22df"
+    },
+    "nombre": "Del Llano",
+    "nombreBusqueda": "DEL LLANO",
+    "cp": "42803",
+    "municipio": "Tula de Allende",
+    "piloto": false,
+    "aproximado": false
+  },
+  {
+    "_id": {
+      "$oid": "6adfe980676c4dcf810cb428"
+    },
+    "nombre": "Tierra Blanca",
+    "nombreBusqueda": "TIERRA BLANCA",
+    "cp": "42803",
+    "municipio": "Tula de Allende",
+    "piloto": false,
+    "aproximado": false
+  },
+  {
+    "_id": {
+      "$oid": "6adfe98022d58ac1ecef9bfb"
+    },
+    "nombre": "La Huerta",
+    "nombreBusqueda": "LA HUERTA",
+    "cp": "42803",
+    "municipio": "Tula de Allende",
+    "piloto": true,
+    "aproximado": true,
+    "geom": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              -99.352353,
+              20.059066
+            ],
+            [
+              -99.354823,
+              20.056601
+            ],
+            [
+              -99.353822,
+              20.05353
+            ],
+            [
+              -99.348814,
+              20.052082
+            ],
+            [
+              -99.345888,
+              20.055532
+            ],
+            [
+              -99.346801,
+              20.059806
+            ],
+            [
+              -99.349839,
+              20.060018
+            ],
+            [
+              -99.352353,
+              20.059066
+            ]
+          ]
+        ]
+      ]
+    },
+    "centro": {
+      "type": "Point",
+      "coordinates": [
+        -99.350325478,
+        20.0560665
+      ]
+    }
+  }
+]

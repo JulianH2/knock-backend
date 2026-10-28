@@ -1,6 +1,6 @@
 # plan.md — TT-BD-07 — Adaptar CI y pruebas a MongoDB (Testcontainers); quitar sqlfluff y PostgreSQL
 
-> Borrador. Servicio afectado: Transversal (CI, pruebas y entorno local). Falta la aprobación de la spec y las respuestas P1–P6 de spec §8. Los archivos protegidos los implementa o autoriza el Tech Lead.
+> Borrador. Servicio afectado: Transversal (CI, pruebas y entorno local). Falta la aprobación de la spec; las respuestas P1–P6 del líder (2026-10-28) están en spec §8. Los archivos protegidos los implementa o autoriza el Tech Lead.
 
 ## 1. Mapeo de archivos
 - **Reutilizar:**
@@ -19,6 +19,7 @@
 - **Conexiones de documentdb-local (P7):** varias suites en paralelo contra contenedores propios pueden agotar recursos del runner; si pasa, serializar las suites, no subir reintentos.
 - **Adaptadores generados:** `sync_agents.py` puede reescribir más archivos que los dos citados; todos van en el mismo PR y los revisa el Tech Lead.
 - **Pruebas que leen archivos:** dependen de rutas relativas a la raíz; deben fallar con un mensaje claro si el archivo no existe (no pasar en vacío).
+- **Prueba del caso 06:** `DocumentDbFixture` es `internal` de `IntegrationTest` y `UnitTest` no la referencia; la prueba lee `DocumentDbFixture.cs` como texto (expresión regular del digest) y lo compara con el compose.
 - **Compose:** la imagen de documentdb-local genera un certificado TLS autofirmado; el README debe explicar que `AllowInsecureTls` es solo local.
 
 ## 3. Pruebas por caso

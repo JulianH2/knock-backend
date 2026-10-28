@@ -63,7 +63,9 @@ jobs:
           KEY=$(echo "$HEAD_REF" | grep -oE 'KNOCK-[0-9]+' || true)
           SPEC=""
           if [ -n "$KEY" ]; then
-            SPEC=$(grep -lE "\b$KEY\b" specs/*/spec.md 2>/dev/null | head -1 | cut -d/ -f2 | grep -oE '^(HU-[0-9]{3}|TT-[A-Z]+-[0-9]{2}|BUG-[0-9]{3})' || true)
+            # Solo cuenta la cabecera «> **Jira:** KNOCK-N · …»: otra spec puede citar la clave en su texto
+            # (p. ej. TT-BD-06 cita KNOCK-29) y, por orden alfabético, ganaría a la spec propia de la tarea.
+            SPEC=$(grep -lE "^> \*\*Jira:\*\* [A-Z0-9, -]*\b$KEY\b" specs/*/spec.md 2>/dev/null | head -1 | cut -d/ -f2 | grep -oE '^(HU-[0-9]{3}|TT-[A-Z]+-[0-9]{2}|BUG-[0-9]{3})' || true)
           fi
           # La trazabilidad caso ↔ prueba solo tiene sentido si el PR toca código o pruebas; los PR de configuración,
           # documentación o gobierno de una tarea con spec no deben fallar por «casos sin prueba».
