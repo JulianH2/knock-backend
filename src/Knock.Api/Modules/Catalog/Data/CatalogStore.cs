@@ -45,6 +45,12 @@ internal sealed class CatalogStore(
         .Include(CpField)
         .Include(MunicipioField);
 
+    private static readonly ProjectionDefinition<BsonDocument> _oficioProjection = Builders<BsonDocument>.Projection
+        .Include(ClaveField)
+        .Include(NombreField)
+        .Include(ModalidadField)
+        .Exclude(IdField);
+
     /// <summary>Desempate permanente (decisión (d)): menor <c>nombreBusqueda</c> y, si empata, menor <c>_id</c>.</summary>
     private static readonly SortDefinition<BsonDocument> _tieBreak = Builders<BsonDocument>.Sort
         .Ascending(NombreBusquedaField)
@@ -79,6 +85,16 @@ internal sealed class CatalogStore(
             cancellationToken);
     }
 
+    /// <summary>Oficios activos ordenados por <c>nombreBusqueda</c> y, a igual valor, por <c>clave</c> (spec TT-PRU-01 §8 D4).</summary>
+    public async Task<IReadOnlyList<OficioListing>> FindActiveOficiosAsync(CancellationToken cancellationToken)
+    {
+        var documents = await ActiveOficiosQuery().ToListAsync(cancellationToken);
+        return [.. documents.Select(document => new OficioListing(
+            document[ClaveField].AsString,
+            document[NombreField].AsString,
+            document[ModalidadField].AsString))];
+    }
+
     /// <summary>Colonias cuyo polígono contiene o toca el punto (<c>$geoIntersects</c>), con el desempate; la primera o nada.</summary>
     public async Task<Colonia?> FindIntersectingAsync(GeoPosition position, CancellationToken cancellationToken) =>
         ToColonia(await IntersectingQuery(position).FirstOrDefaultAsync(cancellationToken));
@@ -97,6 +113,12 @@ internal sealed class CatalogStore(
         await ColoniaExistsQuery(id, postalCode).FirstOrDefaultAsync(cancellationToken) is not null;
 
     // Las consultas se arman aparte para que las pruebas lean sus opciones (maxTimeMS) sin servidor.
+    internal IFindFluent<BsonDocument, BsonDocument> ActiveOficiosQuery() =>
+        Oficios
+            .Find(_filter.Eq(ActivoField, true), _findOptions)
+            .Project(_oficioProjection)
+            .Sort(Builders<BsonDocument>.Sort.Ascending(NombreBusquedaField).Ascending(ClaveField));
+
     internal IFindFluent<BsonDocument, BsonDocument> IntersectingQuery(GeoPosition position) =>
         Colonias
             .Find(_filter.GeoIntersects(GeomField, ToGeoJson(position)), _findOptions)
