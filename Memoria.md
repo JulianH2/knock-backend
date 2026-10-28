@@ -418,6 +418,11 @@
 - Condiciones: la pre-revisión automática (KNOCK-181, backend #62 y frontend #36) tiene que estar activa y haber corrido en ese PR; si no, rige la regla general. No usar la excepción de la §11 (el Tech Lead aprueba solo un PR de documentación) para aprobar este mismo cambio: necesita 2 de los 4.
 - A evitar: contar la pre-revisión como revisión de pares en un PR de código; aplicar esta regla antes de que se apruebe; dejar las cuatro copias de la constitución distintas.
 
+## 2026-10-24 — TT-GES-06 (KNOCK-144): quién aprueba specs y explicación del PR con IA (propuesta)
+- Decisión (propuesta del líder, pendiente de que el equipo la acepte el lunes 26): la spec la aprueba el Tech Lead o Guillermo, en menos de 24 horas y nunca el autor; el Tech Lead firma las críticas (sesión, datos sensibles, nube y constitución). La plantilla de PR pide, en «Uso de IA», explicar en 2 o 3 frases qué hace el código y cómo se validó. Porqué: las specs esperaban días por firma, y cualquier integrante puede ser interrogado sobre su código.
+- No cambia la constitución: ya dice que aprueba «una persona» con revisor. Cambian `docs/FLUJO_EQUIPO.md`, el ADR-005 y la plantilla de PR.
+- A evitar: que el autor apruebe su propia spec; que el agente firme; fusionar esto antes de que el equipo lo acepte. Conflicto con backend #63 y frontend #37 (también tocan FLUJO_EQUIPO y el ADR-005): el que se fusione segundo hace rebase.
+
 ## 2026-10-28 — TT-GES-14 (KNOCK-193): el CI detecta la spec de la tarea solo por su cabecera Jira
 - Decisión: en `ci-pr.yml` (job `governance`, paso `detect`) la spec de una tarea se busca solo en la cabecera `> **Jira:** KNOCK-N` de `specs/*/spec.md`, no en cualquier mención de la clave. Porqué: TT-BD-06 cita KNOCK-29 en su texto y, por orden alfabético, ganaba a la spec propia de #31 (TT-PRU-01): el CI trazaba TT-BD-06 y marcaba 20 casos sin prueba aunque `sdd_lint --trace TT-PRU-01` daba OK en local (diagnóstico de Erick en #31).
 - Verificado contra las 20 specs de `sprint-02` y las ramas de #31, #73, #75 y #74: todas tienen la cabecera, ninguna repite clave y `KNOCK-2` no coincide con `KNOCK-29`. Falta confirmarlo en el runner volviendo a correr `governance` en #31 una vez fusionado este PR.

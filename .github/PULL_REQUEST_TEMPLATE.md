@@ -29,6 +29,7 @@
 - Herramienta:
 - Qué generó:
 - Cómo se validó (pruebas que fallarían si la lógica estuviera mal, revisión del diff):
+- Explica en 2 o 3 frases qué hace el código y cómo lo validaste (con tus palabras: se te puede preguntar por él):
 
 ## Evidencia
 <!-- Capturas o video para cambios visuales; reporte del security-reviewer y del traceability-clerk. -->
