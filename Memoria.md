@@ -351,3 +351,9 @@
 - Decisión (propuesta del líder, pendiente de la aprobación de al menos 2 de los 4 en los dos repositorios): los PR que cambian solo documentación necesitan la revisión final del Tech Lead y el reporte de la pre-revisión automática; el comentario de otro integrante pasa a ser opcional. Todo PR de código, workflows, scripts, infraestructura o seguridad sigue necesitando un par humano. Porqué: esperar al par en cambios de bajo riesgo retrasaba los sprints. Cambia la constitución §9 (versión 2.2.0 → 2.2.1; sigue `ratified: pendiente` y `status: draft`), el ADR-005 y `docs/FLUJO_EQUIPO.md`.
 - Condiciones: la pre-revisión automática (KNOCK-181, backend #62 y frontend #36) tiene que estar activa y haber corrido en ese PR; si no, rige la regla general. No usar la excepción de la §11 (el Tech Lead aprueba solo un PR de documentación) para aprobar este mismo cambio: necesita 2 de los 4.
 - A evitar: contar la pre-revisión como revisión de pares en un PR de código; aplicar esta regla antes de que se apruebe; dejar las cuatro copias de la constitución distintas.
+
+## 2026-10-27 — TT-BD-07 (KNOCK-157): spec en Borrador de CI y pruebas con MongoDB
+- Hecho: `specs/TT-BD-07-ci-y-pruebas-con-mongodb/` (spec, plan, tareas, gates) en Borrador; 9 casos (7 con prueba de regresión que lee archivos, 2 por comando).
+- Hallazgo: #73 (TT-BD-06) sigue abierto contra `sprint-02`; esta tarea depende de que se fusione. El job `dast` hoy se salta porque `deploy/docker-compose.ci.yml` no existe.
+- Decisión (propuesta): `DocumentDbFixture.Image` es la única fuente del digest; el compose local debe coincidir con ella. La prueba de humo contra DocumentDB real y la imagen `1.0` quedan fuera hasta que el líder responda P1 y P2.
+- A evitar: editar `.github/` o `.agents/knock.json` desde un agente (los hace o autoriza el Tech Lead); editar a mano los adaptadores generados en lugar de sus fuentes en `.agents/`; quitar `sql-lint` sin quitarlo de `gate.needs`.
