@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-28T19:37:45Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-10-28T20:40:09Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | `Assistant` | -, services | 3 | 3 | 1 |
 | `Catalog` | -, data, domain, services | 11 | 11 | 23 |
-| `Identity` | -, controllers, domain, dtos, services | 15 | 23 | 18 |
+| `Identity` | -, controllers, data, domain, dtos, services | 18 | 32 | 26 |
 | `Knock.Api` | -, common, hosting | 19 | 31 | 40 |
 | `Media` | -, controllers, data, domain, dtos, services, validators | 18 | 35 | 48 |
 | `Messaging` | -, services | 3 | 3 | 1 |
@@ -72,7 +72,7 @@
 
 - `src/Knock.Api/Modules/Identity/IIdentityApi.cs` — interface `IIdentityApi`
 - `src/Knock.Api/Modules/Identity/IdentityModuleExtensions.cs` — class `IdentityModuleExtensions`
-  - `AddIdentityModule()`:9
+  - `AddIdentityModule()`:10
 
 **controllers**
 
@@ -81,8 +81,17 @@
 - `src/Knock.Api/Modules/Identity/Controllers/V1/MeController.cs` — class `MeController`
   - `Get()`:18
 
+**data**
+
+- `src/Knock.Api/Modules/Identity/Data/IdentityDataExtensions.cs` — class `IdentityDataExtensions`
+  - `AddIdentityData()`:10
+- `src/Knock.Api/Modules/Identity/Data/IdentityStore.cs` — class `IdentityStore`
+  - `EnsureIndexesAsync()`:69, `FindBySubAsync()`:94, `FindByPhoneHashAsync()`:99, `CreateAccountAsync()`:108, `AddRefreshTokenAsync()`:135, `IsDuplicateKey()`:141
+
 **domain**
 
+- `src/Knock.Api/Modules/Identity/Domain/IdentityDomain.cs` — class `UserState`, class `ConsentDocuments`, class `AuditEvents`, record `UserAccount`, record `RefreshTokenRecord`, record `NewAccount`, enum `AccountCreation`
+  - `RefreshTokenRecord()`:44
 - `src/Knock.Api/Modules/Identity/Domain/PhoneNumberPolicy.cs` — class `PhoneNumberPolicy`
   - `IsValid()`:12
 
