@@ -344,3 +344,8 @@
   - Dar por bueno el caso 16 solo con `GetReferencedAssemblies()`, porque el paquete sigue en el `deps.json`.
   - Una ruta `db/scripts/...` dentro de un heredoc con `>>`: `knock-guard` la toma por `scripts/` y la bloquea.
   - Simular `IMongoClient` con `DispatchProxy` (CA1812 y CA1852 piden suprimir) o heredar de `MongoClient` (es `sealed`). Para que el driver falle con una excepción propia sin conectarse, usa un `MongoClient` real hacia un host `.invalid` con un `ClusterConfigurator` que lance en `ClusterSelectingServerEvent`.
+
+## 2026-10-28 — TT-BD-06 (KNOCK-156): la exportación del contrato usa una cadena de MongoDB sintética
+- Decisión: `scripts/export_openapi.py` le pasa a la API `ConnectionStrings__KnockMongo` con un destino sintético que no responde (`mongodb://127.0.0.1:9/?directConnection=true`, el mismo criterio de `KnockApiFactory`). Porqué: la API ya no arranca sin esa cadena (TT-BD-06, validación al arrancar) y la exportación del contrato fallaba con la API terminando antes de responder, lo que rompía el job de build de #73; la exportación solo lee `/openapi/v1.json` y no necesita conectarse a MongoDB. Siempre usa la cadena sintética: nunca una del entorno.
+- Verificado sobre el código de #73 (273fb31): sin el cambio la exportación falla; con el cambio exporta el contrato (833 líneas).
+- A evitar: pasar a la exportación una cadena de conexión real; agregar secretos al script; arrancar la API para exportar con una base real.
