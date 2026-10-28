@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-27T18:41:15Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-10-28T16:23:41Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -96,7 +96,7 @@
 - `src/Knock.Api/Modules/Identity/Services/SessionTokenIssuer.cs` — record `IssuedSession`, class `SessionTokenIssuer`
   - `SessionTokenIssuer()`:12, `Issue()`:18
 - `src/Knock.Api/Modules/Identity/Services/UserIdDerivation.cs` — class `UserIdDerivation`
-  - `Derive()`:16
+  - `Derive()`:18
 
 ### Knock.Api
 

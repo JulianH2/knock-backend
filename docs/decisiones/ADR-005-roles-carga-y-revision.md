@@ -36,6 +36,8 @@ Todo PR necesita al menos un comentario de revisión de otra persona **antes** d
 | Gateway | Guillermo (dueño) · revisa Alexis |
 | José Julián (gobierno, CI, Azure, Terraform, Firebase) | quien tenga más contexto |
 
+**Excepción para documentación (2026-10-24, propuesta pendiente de la aprobación de 2 de los 4):** un PR que cambie **solo documentación** (specs, ADR, `Memoria.md`, evidencia) necesita la revisión final del Tech Lead y el reporte de la pre-revisión automática (`ai-review.yml`); el comentario de otro integrante es opcional. Todo PR que cambie código, workflows, scripts, infraestructura o seguridad sigue necesitando al menos un comentario de otro integrante, y la pre-revisión automática nunca lo sustituye. Si la pre-revisión no corrió o falló, se aplica la regla general. Porqué: la espera del par humano en cambios de bajo riesgo retrasaba los sprints; el riesgo se limita a documentación y se cubre con la revisión del Tech Lead más un revisor automático independiente.
+
 ## Consecuencias
 - Se actualizan `docs/FLUJO_EQUIPO.md`, `.github/CODEOWNERS` por servicio (PR backend #45 y frontend #25) y las etiquetas `resp-*` en Jira (las etiquetas viejas `resp-angel` se corrigen a Alexis cuando se actualicen).
 - Las historias del panel interno quedan como `resp-libre`, con la prioridad más baja frente a lo que evalúa el docente (nube, base de datos, backend, móvil y landing).
