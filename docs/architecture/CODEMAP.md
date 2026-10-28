@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-27T18:41:15Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-10-28T02:30:50Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -8,7 +8,7 @@
 | Módulo | Capas | Archivos | Tipos | Métodos públicos |
 |---|---|---|---|---|
 | `Assistant` | -, services | 3 | 3 | 1 |
-| `Catalog` | -, data, domain, services | 11 | 11 | 19 |
+| `Catalog` | -, controllers, data, domain, dtos, services, validators | 17 | 19 | 21 |
 | `Identity` | -, controllers, dtos, services | 11 | 15 | 10 |
 | `Knock.Api` | -, common, hosting | 19 | 31 | 39 |
 | `Media` | -, controllers, data, domain, dtos, services, validators | 18 | 35 | 48 |
@@ -39,6 +39,13 @@
 - `src/Knock.Api/Modules/Catalog/CatalogModuleExtensions.cs` — class `CatalogModuleExtensions`
   - `AddCatalogModule()`:13
 - `src/Knock.Api/Modules/Catalog/ICatalogApi.cs` — interface `ICatalogApi`
+- `src/Knock.Api/Modules/Catalog/ModelBinders/SingleValueQueryModelBinder.cs` — class `SingleValueQueryModelBinder`, class `SingleValueFromQueryAttribute`
+  - `BindModelAsync()`:16
+
+**controllers**
+
+- `src/Knock.Api/Modules/Catalog/Controllers/V1/ColoniasController.cs` — class `ColoniasController`
+  - `GetAtPoint()`:29
 
 **data**
 
@@ -59,12 +66,23 @@
 - `src/Knock.Api/Modules/Catalog/Domain/SearchNameNormalizer.cs` — class `SearchNameNormalizer`
   - `Normalize()`:12
 
+**dtos**
+
+- `src/Knock.Api/Modules/Catalog/Dtos/NeighborhoodAtPointQuery.cs` — class `NeighborhoodAtPointQuery`
+- `src/Knock.Api/Modules/Catalog/Dtos/NeighborhoodAtPointResponse.cs` — record `NeighborhoodAtPointResponse`, record `NeighborhoodAtPointColoniaResponse`
+
 **services**
 
 - `src/Knock.Api/Modules/Catalog/Services/CatalogApi.cs` — class `CatalogApi`
   - `FindNeighborhoodAtAsync()`:11, `FindNeighborhoodsByPostalCodeAsync()`:14, `NeighborhoodExistsAsync()`:25
+- `src/Knock.Api/Modules/Catalog/Services/INeighborhoodLocator.cs` — interface `INeighborhoodLocator`
 - `src/Knock.Api/Modules/Catalog/Services/NeighborhoodLocator.cs` — class `NeighborhoodLocator`
-  - `NeighborhoodLocator()`:10, `FindAtAsync()`:19
+  - `FindAtAsync()`:19
+
+**validators**
+
+- `src/Knock.Api/Modules/Catalog/Validators/NeighborhoodAtPointQueryValidator.cs` — class `NeighborhoodAtPointQueryValidator`
+  - `Parse()`:31
 
 ### Identity
 
