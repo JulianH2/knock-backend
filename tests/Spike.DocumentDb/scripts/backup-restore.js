@@ -21,9 +21,8 @@ function seed() {
   src.solicitudes.insertOne({ _id: solicitudId, estado: 'Creada' });
   src.outbox.insertOne({ tipo: 'SolicitudCreada', solicitudId });
 
-  // P5: oficios de db/seeds/catalog/oficios.sql con índice de texto en español.
-  const sql = fs.readFileSync(env.SPIKE_P8_OFICIOS, 'utf8');
-  const oficios = [...sql.matchAll(/\('([a-z]+)',\s*'([^']+)'/g)].map((m) => ({ clave: m[1], nombre: m[2] }));
+  // P5: oficios de db/seeds/catalog/oficios.json (oficios.sql se retiró en TT-BD-06) con índice de texto en español.
+  const oficios = JSON.parse(fs.readFileSync(env.SPIKE_P8_OFICIOS, 'utf8')).map((o) => ({ clave: o.clave, nombre: o.nombre }));
   src.oficios.createIndex({ nombre: 'text' }, { default_language: 'spanish' });
   src.oficios.insertMany(oficios);
 

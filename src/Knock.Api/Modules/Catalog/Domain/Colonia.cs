@@ -1,36 +1,16 @@
-using NetTopologySuite.Geometries;
-
 namespace Knock.Api.Modules.Catalog.Domain;
 
-/// <summary>Colonia SEPOMEX con polígono aproximado opcional (no oficial) y punto central.</summary>
-internal sealed class Colonia
+/// <summary>
+/// Colonia SEPOMEX tal como la devuelve la consulta interna de colonia por punto: <c>{ id, nombre, cp, municipio }</c>.
+/// <c>Id</c> es el <c>_id</c> fijo de <c>colonias.json</c> en 24 caracteres hexadecimales.
+/// </summary>
+internal sealed record Colonia(string Id, string Nombre, string Cp, string Municipio)
 {
-    private Colonia()
-    {
-    }
+    public const int MaxNombreLength = 150;
+    public const int MaxMunicipioLength = 100;
+    public const int PostalCodeLength = 5;
 
-    public Guid Id { get; init; }
-
-    public string Nombre { get; private set; } = string.Empty;
-
-    public string Cp { get; private set; } = string.Empty;
-
-    public string Municipio { get; private set; } = string.Empty;
-
-    public bool Piloto { get; private set; }
-
-    public MultiPolygon? Geom { get; private set; }
-
-    public Point Centro { get; private set; } = Point.Empty;
-
-    public static Colonia Create(string nombre, string cp, string municipio, MultiPolygon? geom, Point centro) =>
-        new()
-        {
-            Nombre = nombre,
-            Cp = cp,
-            Municipio = municipio,
-            Piloto = geom is not null,
-            Geom = geom,
-            Centro = centro,
-        };
+    /// <summary>Exactamente cinco dígitos ASCII (<c>^[0-9]{5}$</c>; <c>\d</c> aceptaría otros dígitos Unicode).</summary>
+    public static bool IsPostalCode(string? value) =>
+        value is { Length: PostalCodeLength } && value.All(char.IsAsciiDigit);
 }

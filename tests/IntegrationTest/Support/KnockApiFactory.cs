@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using MongoDB.Driver;
 
 namespace Knock.IntegrationTest.Support;
 
@@ -15,7 +16,6 @@ namespace Knock.IntegrationTest.Support;
 internal sealed class KnockApiFactory(
     string environment = "Development",
     bool failingReadinessCheck = false,
-    string? connectionString = null,
     IReadOnlyDictionary<string, string?>? settings = null,
     bool withSigningKey = true,
     Action<IServiceCollection>? configureServices = null)
@@ -26,6 +26,16 @@ internal sealed class KnockApiFactory(
 
     /// <summary>Encabezado que solo entiende el host de pruebas: fija <c>Connection.RemoteIpAddress</c> (TestServer no trae IP).</summary>
     public const string RemoteIpHeader = "X-Test-Remote-Ip";
+
+    /// <summary>
+    /// MongoDB por defecto: sin la cadena la API no arranca (TT-BD-06), así que se da un destino sintético que no responde
+    /// (readiness en 503). Las pruebas que necesitan MongoDB pasan <c>ConnectionStrings:KnockMongo</c> en <c>settings</c>.
+    /// </summary>
+    public static readonly string UnreachableMongoConnectionString = new MongoUrlBuilder
+    {
+        Server = new MongoServerAddress("127.0.0.1", 9),
+        DirectConnection = true,
+    }.ToString();
 
     /// <summary>Límite alto por defecto: las suites que no prueban el limitador no deben recibir 429 (el limitador sigue activo).</summary>
     private const string _highLimit = "1000000";
@@ -46,6 +56,7 @@ internal sealed class KnockApiFactory(
                 ["Jwt:Audience"] = TestAudience,
                 ["RateLimiting:Global:PermitLimit"] = _highLimit,
                 ["RateLimiting:Auth:PermitLimit"] = _highLimit,
+                ["ConnectionStrings:KnockMongo"] = UnreachableMongoConnectionString,
             };
             if (withSigningKey)
             {
@@ -57,11 +68,6 @@ internal sealed class KnockApiFactory(
                 // La variable del emulador es del proceso; fuera de Development la API no arranca con ella (TC-TT-API-02-14).
                 // Las pruebas que no son del guardia la anulan; la prueba del guardia la vuelve a poner con `settings`.
                 values[FirebaseEmulator.HostVariable] = string.Empty;
-            }
-
-            if (connectionString is not null)
-            {
-                values["ConnectionStrings:KnockDatabase"] = connectionString;
             }
 
             foreach (var (key, value) in settings ?? new Dictionary<string, string?>())
