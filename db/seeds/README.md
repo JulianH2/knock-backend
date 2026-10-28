@@ -1,5 +1,18 @@
 # Seeds de catálogo
 
+## Semillas de MongoDB (`catalog/`)
+
+Desde TT-BD-06 el catálogo vive en MongoDB (base `market`, colecciones `oficios` y `colonias`). El cargador del módulo (`Modules/Catalog/Data/CatalogSeeder`) aplica:
+
+| Archivo | Contenido |
+|---|---|
+| `catalog/oficios.json` | Oficios con `_id` fijos (`ObjectId`), `clave`, `nombre`, `nombreBusqueda`, `modalidad` (`domicilio` o `taller`) y `activo`. |
+| `catalog/colonias.json` | Las 12 colonias del extracto SEPOMEX con `_id` fijos. Las 8 con polígono llevan `geom` (MultiPolygon de `colonias_tula.geojson`) y `centro` (exportado una vez de PostGIS con `ST_PointOnSurface`); las 4 sin polígono no tienen esos campos. |
+
+Los `_id` son iguales en todos los entornos (los referencian TT-BD-03 y la zona del perfil): **no se cambian**. El cargador es repetible (upsert por clave natural), recalcula `nombreBusqueda`, valida todo antes de escribir y solo sube `version` si cambia el contenido.
+
+Los dos JSON los generó una sola vez `db/scripts/generate_catalog_seeds.py` desde el GeoJSON, el CSV y la antigua `oficios.sql`, con un PostGIS desechable para el centro. Al volver a correrlo reutiliza los `_id` existentes. `oficios.sql` se retiró en TT-BD-06 (autorización del líder en #53), así que hoy el generador solo sirve como registro de cómo se obtuvieron los centros.
+
 ## GeoJSON piloto de Tula
 
 `colonias_tula.geojson` contiene ocho geometrías piloto aproximadas, no oficiales. Cada feature documenta su autor y fecha de elaboración; las geometrías no se deben presentar como límites oficiales. Antes de integrar o modificar el archivo, ejecutar:

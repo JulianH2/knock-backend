@@ -22,7 +22,7 @@ suffix="$(od -An -N4 -tx1 /dev/urandom | tr -d ' \n')"
 export SPIKE_P8_SRC="knock_spike_p8_${suffix}"
 export SPIKE_P8_DST="knock_spike_p8_${suffix}_restored"
 export SPIKE_P8_GEOJSON="$repo/db/seeds/colonias_tula.geojson"
-export SPIKE_P8_OFICIOS="$repo/db/seeds/catalog/oficios.sql"
+export SPIKE_P8_OFICIOS="$repo/db/seeds/catalog/oficios.json"
 
 # El dump va a un directorio temporal fuera del repositorio y se borra al terminar (spec §6).
 umask 077

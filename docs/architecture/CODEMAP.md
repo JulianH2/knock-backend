@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-26T18:23:15Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-10-28T16:47:49Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -8,9 +8,9 @@
 | Módulo | Capas | Archivos | Tipos | Métodos públicos |
 |---|---|---|---|---|
 | `Assistant` | -, services | 3 | 3 | 1 |
-| `Catalog` | -, data, domain, services | 10 | 10 | 11 |
+| `Catalog` | -, data, domain, services | 11 | 11 | 23 |
 | `Identity` | -, controllers, dtos, services | 11 | 15 | 10 |
-| `Knock.Api` | -, common, hosting | 18 | 28 | 35 |
+| `Knock.Api` | -, common, hosting | 19 | 31 | 40 |
 | `Media` | -, controllers, data, domain, dtos, services, validators | 18 | 35 | 48 |
 | `Messaging` | -, services | 3 | 3 | 1 |
 | `Notifications` | -, services | 3 | 3 | 1 |
@@ -37,32 +37,34 @@
 **-**
 
 - `src/Knock.Api/Modules/Catalog/CatalogModuleExtensions.cs` — class `CatalogModuleExtensions`
-  - `AddCatalogModule()`:9
+  - `AddCatalogModule()`:13
 - `src/Knock.Api/Modules/Catalog/ICatalogApi.cs` — interface `ICatalogApi`
 
 **data**
 
-- `src/Knock.Api/Modules/Catalog/Data/CatalogDbContext.cs` — class `CatalogDbContext`
-  - `Configure()`:19, `OnModelCreating()`:24
-- `src/Knock.Api/Modules/Catalog/Data/CatalogDbContextFactory.cs` — class `CatalogDbContextFactory`
-  - `CreateDbContext()`:9
 - `src/Knock.Api/Modules/Catalog/Data/CatalogSeeder.cs` — class `CatalogSeeder`
-  - `CatalogSeeder()`:10, `SeedAsync()`:12
-- `src/Knock.Api/Modules/Catalog/Data/LocalMigrationConnectionGuard.cs` — class `LocalMigrationConnectionGuard`
-  - `EnsureLocalHost()`:7
+  - `CatalogSeeder()`:13, `SeedAsync()`:19, `SeedAsync()`:29
+- `src/Knock.Api/Modules/Catalog/Data/CatalogStore.cs` — class `CatalogStore`
+  - `EnsureIndexesAsync()`:60, `FindIntersectingAsync()`:83, `FindNearestCenterAsync()`:87, `FindNamesByPostalCodeAsync()`:90, `ColoniaExistsAsync()`:96, `IntersectingQuery()`:100, `NearestCenterQuery()`:107, `NamesByPostalCodeQuery()`:113, `ColoniaExistsQuery()`:119
 
 **domain**
 
 - `src/Knock.Api/Modules/Catalog/Domain/CatalogCoordinates.cs` — class `CatalogCoordinates`
-  - `ToPoint()`:11
-- `src/Knock.Api/Modules/Catalog/Domain/Colonia.cs` — class `Colonia`
-  - `Create()`:26
+  - `ToPosition()`:7
+- `src/Knock.Api/Modules/Catalog/Domain/Colonia.cs` — record `Colonia`
+  - `Colonia()`:7, `IsPostalCode()`:14
+- `src/Knock.Api/Modules/Catalog/Domain/GeoPosition.cs` — record struct `GeoPosition`
 - `src/Knock.Api/Modules/Catalog/Domain/Oficio.cs` — class `Oficio`
+  - `IsValidModalidad()`:10
+- `src/Knock.Api/Modules/Catalog/Domain/SearchNameNormalizer.cs` — class `SearchNameNormalizer`
+  - `Normalize()`:12
 
 **services**
 
 - `src/Knock.Api/Modules/Catalog/Services/CatalogApi.cs` — class `CatalogApi`
-  - `FindNeighborhoodAtAsync()`:17, `FindNeighborhoodsByPostalCodeAsync()`:36
+  - `FindNeighborhoodAtAsync()`:11, `FindNeighborhoodsByPostalCodeAsync()`:14, `NeighborhoodExistsAsync()`:25
+- `src/Knock.Api/Modules/Catalog/Services/NeighborhoodLocator.cs` — class `NeighborhoodLocator`
+  - `NeighborhoodLocator()`:10, `FindAtAsync()`:19
 
 ### Identity
 
@@ -122,14 +124,16 @@
   - `TryHandleAsync()`:14
 - `src/Knock.Api/Hosting/ForwardedHeadersExtensions.cs` — class `ForwardedHeadersExtensions`
   - `AddKnockForwardedHeaders()`:15
-- `src/Knock.Api/Hosting/HealthExtensions.cs` — class `HealthExtensions`, class `PostgresReadinessHealthCheck`
-  - `AddKnockHealth()`:12, `MapKnockHealth()`:19, `CheckHealthAsync()`:29
+- `src/Knock.Api/Hosting/HealthExtensions.cs` — class `HealthExtensions`
+  - `AddKnockHealth()`:10, `MapKnockHealth()`:16
 - `src/Knock.Api/Hosting/KnockApplicationExtensions.cs` — class `KnockApplicationExtensions`
-  - `AddKnockApi()`:7, `UseKnockApi()`:26
+  - `AddKnockApi()`:7, `UseKnockApi()`:27
 - `src/Knock.Api/Hosting/LoggingExtensions.cs` — class `LoggingExtensions`, class `ScopeRequestPathEnricher`
   - `AddKnockLogging()`:15, `ConfigureRequestLogging()`:29, `Enrich()`:96
 - `src/Knock.Api/Hosting/ModulesExtensions.cs` — class `ModulesExtensions`
   - `AddKnockModules()`:15
+- `src/Knock.Api/Hosting/MongoExtensions.cs` — class `KnockMongoOptions`, class `KnockMongoOptionsValidator`, class `MongoExtensions`, class `MongoReadinessHealthCheck`
+  - `Seconds()`:51, `Validate()`:67, `AddKnockMongo()`:135, `AddKnockMongoDatabase()`:157, `CreateSettings()`:171, `CheckHealthAsync()`:214
 - `src/Knock.Api/Hosting/OpenApiExtensions.cs` — class `OpenApiExtensions`
   - `AddKnockOpenApi()`:7, `MapKnockOpenApi()`:14
 - `src/Knock.Api/Hosting/ProblemDetailsExtensions.cs` — class `ProblemDetailsExtensions`
