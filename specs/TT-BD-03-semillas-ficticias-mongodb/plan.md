@@ -1,52 +1,54 @@
-# plan.md — TT-BD-03 — Semillas ficticias en JSON para MongoDB: clientes, técnicos y solicitudes de prueba
+# plan.md — TT-BD-03 — Semillas ficticias en JSON para MongoDB: clientes de prueba
 
-> Borrador. Servicios afectados: Identidad y confianza y Mercado. Falta la aprobación de la spec y las respuestas P1–P9 de spec §8; las rutas y colecciones de abajo son propuesta.
+> Borrador. Servicio afectado: Identidad y confianza. Falta la aprobación de la spec; las preguntas P1–P9 ya tienen respuesta (spec §8, decisiones D1–D8 del 2026-10-28). Técnicos y solicitudes quedan fuera de alcance hasta que existan las specs de HU-017 y HU-024.
 
 ## 1. Mapeo de archivos
 - **Reutilizar (buscar con `python scripts/codemap.py --query "seed loader json catalog encrypt phone"`):**
   - Patrón de `Modules/Catalog/Data/CatalogSeeder` (#73): lectura de JSON con `_id` fijos, validación previa, upsert y `version` solo si cambia el contenido.
-  - `db/seeds/catalog/colonias.json` y `oficios.json` (#73): `_id` de colonias piloto y oficios activos; no se editan.
-  - Cifrado y hash del celular del módulo Identity (HU-001): mismo servicio, mismas llaves, mismos campos.
+  - Cifrado y hash del celular del módulo Identity (**implementación de HU-001, PR #75, sin fusionar**): mismo servicio, mismas llaves, mismos campos.
+  - `UserIdDerivation.Derive(uid)` (`Modules/Identity/Services/`, TT-API-12) para el `sub`.
   - `tests/IntegrationTest/Support/DocumentDbFixture.cs` y `tests/DatabaseTest/Support/` (#73) para las pruebas de carga.
-  - `AddKnockMongo` (`Hosting/`, #73) para pedir las bases `identity` y `market`.
-- **Crear (por confirmar al implementar):**
-  - `db/seeds/demo/identity/usuarios.json`, `db/seeds/demo/identity/tecnicos.json`, `db/seeds/demo/market/solicitudes.json`.
-  - Cargador de demostración en `Modules/Identity/Data/` y en el `Data/` del módulo de solicitudes (P3), con la guarda de entorno.
+  - `AddKnockMongo` (`Hosting/`, #73) para pedir la base `identity`.
+- **Crear (al implementar):**
+  - `db/seeds/demo/identity/usuarios.json` (10 clientes).
+  - Cargador de demostración en `Modules/Identity/Data/`, con la guarda de entorno (D3).
   - Pruebas: `tests/DatabaseTest/Demo/{DemoSeedFileTests,DemoSeedLoaderTests}.cs`, `tests/UnitTest/Architecture/DemoSeedBoundaryTests.cs`.
 - **Modificar:** `db/seeds/README.md` (sección de demostración).
-- **No tocar:** `db/seeds/catalog/*.json`, `db/seeds/colonias_tula.geojson`, `db/sepomex/`, archivos protegidos (`.github/`, `scripts/`, `security/`, `constitution.md`, `*.csproj` y `packages.lock.json` salvo dependencia aprobada en P7), specs de otras tareas.
+- **No tocar:** `db/seeds/catalog/*.json`, `db/seeds/colonias_tula.geojson`, `db/sepomex/`, archivos protegidos (`.github/`, `scripts/`, `security/`, `constitution.md`, `*.csproj` y `packages.lock.json`: sin dependencias nuevas, D7), specs de otras tareas.
 
 ## 2. Riesgos y efectos secundarios
-- **Modelos sin spec (P1):** si HU-002, HU-017 o HU-024 cambian la forma, los JSON se rehacen.
-- **Orden:** sin #73 fusionado no hay `colonias.json` ni `oficios.json` que referenciar.
+- **HU-001 sin fusionar:** el cifrado del celular depende del código del PR #75, no solo de su spec; sin #75 fusionado no se empieza el cargador.
+- **Orden:** sin #73 fusionado no hay patrón de cargador ni `DocumentDbFixture`.
 - **Cifrado del celular:** un cargador que escriba el JSON tal cual dejaría el celular en claro; el caso 06 lo impide.
-- **Staging (P2):** si no existe, el caso 09 no se puede cerrar; no se declara terminado sin esa evidencia o sin la decisión del líder.
-- **`_id` repetidos entre archivos:** un `_id` de demostración igual a uno del catálogo haría que un upsert pisara el otro; el caso 01 lo prohíbe.
+- **`sub`:** si se calculara distinto de TT-API-12, no coincidiría con el de una sesión; el caso 04 lo impide.
+- **`_id` repetidos con el catálogo:** un upsert pisaría otro documento; el caso 01 lo prohíbe.
 - **Nombres:** inventados no significa que no coincidan con alguien conocido; los revisa una persona en el PR.
+- **`nombre`:** si HU-002 lo ubica en otra colección, se ajusta el JSON.
 
 ## 3. Pruebas por caso
 | Caso | Prueba | Suite |
 |---|---|---|
 | TC-TT-BD-03-01 | `DatabaseTest/Demo/DemoSeedFileTests` | base de datos |
 | TC-TT-BD-03-02 | `DatabaseTest/Demo/DemoSeedFileTests` | base de datos |
-| TC-TT-BD-03-03 | `DatabaseTest/Demo/DemoSeedFileTests` | base de datos |
-| TC-TT-BD-03-04 | `DatabaseTest/Demo/DemoSeedFileTests` | base de datos (seguridad negativa) |
+| TC-TT-BD-03-03 | `DatabaseTest/Demo/DemoSeedFileTests` | base de datos (seguridad negativa) |
+| TC-TT-BD-03-04 | `DatabaseTest/Demo/DemoSeedLoaderTests` | base de datos |
 | TC-TT-BD-03-05 | `DatabaseTest/Demo/DemoSeedLoaderTests` | base de datos |
 | TC-TT-BD-03-06 | `DatabaseTest/Demo/DemoSeedLoaderTests` | base de datos (seguridad negativa) |
 | TC-TT-BD-03-07 | `DatabaseTest/Demo/DemoSeedLoaderTests` | base de datos (seguridad negativa) |
 | TC-TT-BD-03-08 | `UnitTest/Architecture/DemoSeedBoundaryTests` | arquitectura |
-| TC-TT-BD-03-09 | conteos en Staging y captura del mapa | comando (evidencia en el PR) |
+| TC-TT-BD-03-09 | conteos en `documentdb-local` tras dos cargas | comando (evidencia en el PR) |
 | TC-TT-BD-03-10 | `dotnet build` + `dotnet format --verify-no-changes` | comando |
 
 ## 4. Secuencia
-1. Aprobación de la spec y respuestas P1–P9; confirmar que #73 está fusionado.
-2. Pruebas de archivos (casos 01 a 04) que fallan primero; luego los JSON.
-3. Cargadores con guarda de entorno y cifrado (casos 05 a 08).
+1. Aprobación de la spec; confirmar que #73 (TT-BD-06) y #75 (HU-001) están fusionados.
+2. Pruebas de archivo (casos 01 a 03) que fallan primero; luego el JSON.
+3. Cargador con `sub`, cifrado y guarda de entorno (casos 04 a 08).
 4. `db/seeds/README.md`.
-5. Carga en Staging (o en el entorno que decida P2) y evidencia (caso 09); gates (caso 10); `Memoria.md`.
+5. Carga dos veces en `documentdb-local` y conteos (caso 09); gates (caso 10); `Memoria.md`.
 
 ## 5. Verificación (comandos exactos)
 ```bash
+docker compose -f deploy/docker-compose.local.yml up -d   # incluye documentdb-local (TT-BD-07)
 dotnet restore Knock.slnx && dotnet tool restore
 dotnet build Knock.slnx -c Release --no-restore
 dotnet format Knock.slnx --verify-no-changes
