@@ -6,7 +6,7 @@
 > **Depende de:** TT-BD-06 (KNOCK-156, PR #73, **fusionado** en `sprint-02` el 2026-10-28): retira EF Core, Npgsql, NetTopologySuite, `Testcontainers.PostgreSql` y `db/seeds/catalog/oficios.sql`, y crea `tests/IntegrationTest/Support/DocumentDbFixture.cs` con `documentdb-local` fijada por digest. Con #73 ya fusionado, la tarea empieza cuando esta spec esté Aprobada.
 > **Fuentes:** `docs/PLAN_ADAPTACION.md` (C3, C4, C5, D «TT-CI-01» y «TT-REPO-06», E) · ADR-002 («Qué se retira») · constitución 2.2.x (principio 9; §3 «Calidad»; §4 «Transición de datos»; §6 «Secretos»; §7) · spec TT-BD-06 (§3 «Out», §8 decisión (a) y «Límites conocidos») · lectura de `.github/workflows/ci-pr.yml`, `.github/dependabot.yml`, `deploy/docker-compose.local.yml`, `README.md`, `.agents/` y de la rama de #73 (2026-10-27)
 > **Skills:** story-workflow, spec-first-writing, testing-strategy-backend, database-scripts, security-core, reuse-before-create
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Que el CI, el entorno local y las instrucciones de los agentes dejen de suponer PostgreSQL + PostGIS + sqlfluff, y que **todas** las suites de .NET corran en el CI contra MongoDB (`documentdb-local` con Testcontainers, la imagen fijada por TT-BD-06), sin bajar ningún umbral ni quitar ninguna verificación que siga teniendo objeto.
@@ -127,6 +127,6 @@ Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 - **P6 — Autorización.** **Resuelto (líder, 2026-10-28): los cambios de `.github/` y `.agents/knock.json` los hace el Tech Lead; para el compose local, el README y las pruebas autoriza por escrito en el PR de implementación.** *Pregunta original:* ¿Implementa el Tech Lead los cambios de `.github/` y `.agents/knock.json`, o autoriza por escrito en el PR a quien implemente el resto?
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ____________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-10-28
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
