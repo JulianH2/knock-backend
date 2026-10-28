@@ -448,3 +448,7 @@
 - Porqué: el campo `nombreBusqueda` ya viene normalizado (mayúsculas, sin acentos, espacios colapsados) e indexado por el seeder, así que desaparece el límite de acentos de `COLLATE "C"` y los casos 01 a 06 no cambian. El desempate por `clave` es estable porque la clave es única.
 - Pruebas: los casos 01 a 05 usan documentdb-local con una base por prueba; los oficios sintéticos de 02 y 03 entran por `CatalogSeeder.SeedAsync` para que exista `nombreBusqueda`. `CatalogStoreMaxTimeTests` incluye la consulta nueva.
 - A evitar: insertar oficios en la colección sin `nombreBusqueda` (se ordenarían primero y TC-03 pasaría en falso); volver a abrir una consulta de Mongo fuera de `CatalogStore`.
+
+## 2026-10-28 — TT-AZ-01 (KNOCK-27): spec firmada tras fusionar #70
+- Decisión (líder): la spec de TT-AZ-01 pasa de Aprobada a Firmada porque el PR #70 (evidencia de los roles mínimos, el presupuesto y las alertas) se fusionó en `sprint-02`. Solo cambia el estado; el bloque de aprobación (2026-10-12) no se toca.
+- A evitar: editar una spec Firmada sin abrir una spec nueva o un cambio aprobado; firmarla antes de que se fusione su PR.
