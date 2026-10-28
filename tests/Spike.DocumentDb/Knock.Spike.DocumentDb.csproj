@@ -17,6 +17,10 @@
     <!-- Semillas versionadas del repositorio; se copian sin modificarlas. -->
     <None Include="..\..\db\seeds\colonias_tula.geojson" Link="Fixtures\colonias_tula.geojson" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\db\sepomex\tula_colonias.csv" Link="Fixtures\tula_colonias.csv" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\..\db\seeds\catalog\oficios.sql" Link="Fixtures\oficios.sql" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\db\seeds\catalog\oficios.json" Link="Fixtures\oficios.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Una sola copia de los puntos de prueba (opción B de TT-BD-06): se comparte con DatabaseTest. -->
+    <Compile Include="..\DatabaseTest\Support\ProbePointsLoader.cs" Link="Support\ProbePointsLoader.cs" />
   </ItemGroup>
 </Project>
