@@ -24,7 +24,7 @@ public static partial class AppSettingsSecretsTests
         return findings;
     }
 
-    private static string ApiProjectDirectory()
+    internal static string ApiProjectDirectory()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "Knock.slnx")))

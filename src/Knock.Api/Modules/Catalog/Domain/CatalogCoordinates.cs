@@ -1,14 +1,10 @@
-using NetTopologySuite.Geometries;
-
 namespace Knock.Api.Modules.Catalog.Domain;
 
-/// <summary>Convierte latitud/longitud en un punto SRID 4326 con X = longitud e Y = latitud.</summary>
+/// <summary>Valida latitud y longitud antes de cualquier consulta y las ordena como GeoJSON (longitud primero).</summary>
 internal static class CatalogCoordinates
 {
-    public const int Srid = 4326;
-
     /// <remarks>Las excepciones no incluyen el valor recibido para no exponer la ubicación.</remarks>
-    public static Point ToPoint(double latitude, double longitude)
+    public static GeoPosition ToPosition(double latitude, double longitude)
     {
         if (!double.IsFinite(latitude) || latitude is < -90 or > 90)
         {
@@ -20,6 +16,6 @@ internal static class CatalogCoordinates
             throw new ArgumentOutOfRangeException(nameof(longitude), "Longitude must be between -180 and 180.");
         }
 
-        return new Point(longitude, latitude) { SRID = Srid };
+        return new GeoPosition(longitude, latitude);
     }
 }

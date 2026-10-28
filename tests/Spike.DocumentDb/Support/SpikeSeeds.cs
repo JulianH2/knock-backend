@@ -1,5 +1,5 @@
-using System.Text.RegularExpressions;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 namespace Knock.Spike.DocumentDb.Support;
@@ -8,7 +8,7 @@ namespace Knock.Spike.DocumentDb.Support;
 /// Scripts de índices y semillas del spike (spec §5; la ruta definitiva db/mongo/ es de TT-BD-09).
 /// Lee las semillas versionadas del repositorio sin modificarlas.
 /// </summary>
-internal static partial class SpikeSeeds
+internal static class SpikeSeeds
 {
     public const string Colonias = "colonias";
     public const string Oficios = "oficios";
@@ -30,17 +30,7 @@ internal static partial class SpikeSeeds
         };
 
     /// <summary>Puntos sintéticos interiores, a ≥ 60 m de cualquier borde y fuera de las zonas donde el seed se traslapa.</summary>
-    public static readonly IReadOnlyList<(string Colonia, double Lng, double Lat)> InteriorPoints =
-    [
-        ("Centro", -99.3495, 20.0505),
-        ("El Cielito", -99.3321, 20.0541),
-        ("El Llano 1a Sección", -99.3243, 20.0616),
-        ("El Llano 2a Sección", -99.3060, 20.0460),
-        ("San Lorenzo", -99.3372, 20.0484),
-        ("Tultengo", -99.32637, 20.06399),
-        ("Iturbe", -99.3234, 20.0757),
-        ("La Huerta", -99.3531, 20.0556),
-    ];
+    public static readonly IReadOnlyList<(string Colonia, double Lng, double Lat)> InteriorPoints = Knock.DatabaseTest.Support.ProbePointsLoader.LoadLngLat();
 
     private static string FixturePath(string file) => Path.Combine(AppContext.BaseDirectory, "Fixtures", file);
 
@@ -88,10 +78,10 @@ internal static partial class SpikeSeeds
         return docs;
     }
 
-    /// <summary>Oficios de db/seeds/catalog/oficios.sql (clave, nombre).</summary>
+    /// <summary>Oficios de db/seeds/catalog/oficios.json (clave, nombre); oficios.sql se retiró en TT-BD-06.</summary>
     public static IReadOnlyList<BsonDocument> LoadOficios() =>
-        OficioRow().Matches(File.ReadAllText(FixturePath("oficios.sql")))
-            .Select(m => new BsonDocument { { "clave", m.Groups["clave"].Value }, { "nombre", m.Groups["nombre"].Value } })
+        BsonSerializer.Deserialize<BsonArray>(File.ReadAllText(FixturePath("oficios.json")))
+            .Select(o => new BsonDocument { { "clave", o["clave"] }, { "nombre", o["nombre"] } })
             .ToList();
 
     public static async Task CreateColoniasAsync(IMongoDatabase db)
@@ -120,7 +110,4 @@ internal static partial class SpikeSeeds
             Math.Round(vertices.Average(v => v[0].ToDouble()), 6),
             Math.Round(vertices.Average(v => v[1].ToDouble()), 6));
     }
-
-    [GeneratedRegex(@"\('(?<clave>[a-z]+)',\s*'(?<nombre>[^']+)'", RegexOptions.CultureInvariant, 1000)]
-    private static partial Regex OficioRow();
 }
