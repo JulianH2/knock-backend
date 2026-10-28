@@ -421,6 +421,7 @@
 ## 2026-10-26 — TT-AZ-01 (KNOCK-27): roles mínimos resueltos
 - Decisión (líder): solo el Tech Lead tiene acceso a Azure (único propietario, comprobado con `az role assignment list` en solo lectura). El acceso del equipo no se necesita hoy: el despliegue usará una identidad federada de GitHub (TT-AZ-02) y la base se alcanza por firewall de IP. Porqué: roles mínimos; dar acceso que nadie usa solo agrega riesgo.
 - Queda pendiente solo comprobar que llega el correo de alerta cuando el gasto cruce un umbral (con 0.0 USD no se puede provocar sin generar costo); se verifica en la ventana de evaluación.
+- Cierre (2026-10-28): se quitó la regla de firewall temporal del spike en `knock-docdb` y se desactivó el acceso público desde servicios de Azure (el acceso por IP queda sin reglas); `az role assignment list --all --include-inherited` (solo lectura, ejecutada por Claude Code con la sesión del Tech Lead) dio el mismo resultado que sin heredados. La evidencia no registra IPs.
 - A evitar: dar `Owner` o `Contributor` a cuentas personales del equipo «por si acaso»; subir la captura de IAM sin tapar el correo y el ID de suscripción.
 
 ## 2026-10-28 — TT-GES-14 (KNOCK-193): el CI detecta la spec de la tarea solo por su cabecera Jira

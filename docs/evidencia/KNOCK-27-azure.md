@@ -1,7 +1,7 @@
 # Evidencia — KNOCK-27 · TT-AZ-01 Cuenta de Azure, grupo de recursos, presupuesto y alertas
 
 > Spec: `specs/TT-AZ-01-cuenta-de-azure-grupo-de-recursos-presup/spec.md` (Aprobada) · Fecha: 2026-10-13 (actualizada el 2026-10-26)
-> Los comandos los ejecutó el Tech Lead en su terminal; ningún agente operó Azure. Esta nota resume sus salidas.
+> Los comandos los ejecutó el Tech Lead en su terminal; ningún agente cambió nada en Azure. Única excepción: la consulta de solo lectura `az role assignment list --all --include-inherited` de la sección 7, que ejecutó Claude Code con la sesión del Tech Lead. Esta nota resume las salidas.
 > Se ocultaron el ID de suscripción, el tenant y el correo (`<id-de-suscripcion>`, `<correo-del-responsable>`).
 
 ## Resumen por caso
@@ -50,7 +50,7 @@ Cost Management sí funciona en la suscripción Azure for Students.
 
 ## 6. Pendiente
 - ~~Roles mínimos (TC-03)~~: resuelto (sección 7).
-- **Tech Lead:** el spike de MongoDB ya cerró (#48 y #56 fusionados); se quita la regla de firewall temporal de `knock-docdb` que se abrió para esa prueba y se anota aquí cuando se haga.
+- ~~Tech Lead: quitar la regla de firewall temporal de `knock-docdb` del spike de MongoDB~~: hecho el 2026-10-28 por el Tech Lead en el portal (Redes del clúster, sin reglas de firewall). También se desactivó «Permitir acceso público de servicios y recursos de Azure a este clúster desde Azure». El acceso público por dirección IP sigue habilitado, sin reglas, hasta que alguien agregue una IP concreta con autorización del Tech Lead. Este documento no registra direcciones IP.
 - Comprobar que llega el correo de alerta **cuando el gasto cruce un umbral**: con 0.0 USD de gasto no se puede provocar sin generar costo, así que queda como verificación de la ventana de evaluación (TT-AZ-04 y TT-AZ-03). No bloquea el cierre de esta tarea porque el presupuesto y sus cuatro alertas están creados y habilitados (sección 8).
 
 ## 7. Roles mínimos (TC-TT-AZ-01-03) — 2026-10-26
@@ -62,7 +62,7 @@ az role assignment list --resource-group rg-knock-dev      → []   (sin asignac
 az role assignment list --all                              → Owner · User · /subscriptions/<id-de-suscripcion>     (el Tech Lead, único propietario)
                                                              otras asignaciones: solo en un grupo de recursos ajeno a Knock; ninguna otra a nivel suscripción
 ```
-Alcance de la comprobación: `az role assignment list --all` no muestra los roles heredados de un grupo de administración ni los roles de Microsoft Entra ID. Para incluir los heredados se usa `--include-inherited`; si se repite la consulta con ese parámetro, el resultado se anota aquí.
+Alcance de la comprobación: `az role assignment list --all` no muestra los roles heredados de un grupo de administración ni los roles de Microsoft Entra ID. Para incluir los heredados se usa `--include-inherited`. Repetida el 2026-10-28 con `az role assignment list --all --include-inherited` (solo lectura): 4 asignaciones. Una es `Owner` de tipo User a nivel suscripción (el Tech Lead) y las otras tres son de tipo ServicePrincipal sobre recursos de un grupo de recursos ajeno a Knock (`SQL Server Contributor` y dos `Website Contributor`). No hay roles heredados de un grupo de administración ni otra asignación a nivel suscripción, así que el resultado coincide con lo anotado arriba.
 Captura de **Access control (IAM)** de `rg-knock-dev` (con el correo y el ID de suscripción tapados): está en el [comentario de este PR](https://github.com/JulianH2/knock-backend/pull/70#issuecomment-6422979649).
 
 ## 8. Alertas de presupuesto — 2026-10-26
