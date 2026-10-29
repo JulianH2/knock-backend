@@ -3,7 +3,7 @@
 > **Jira:** KNOCK-22 · **Área:** Base de datos · **Responsable:** Ángel Alexis Blas Castillo · **Sprint:** S0 · **Puntos:** 2
 > **Repositorio:** knock-backend · **Ficha:** TT-BD-01_PostgresqlPostgisDockerCompose_Knock.docx
 > **Skills:** story-workflow, testing-strategy-backend, security-core, database-scripts, foundation-backend
-> **Estado:** Aprobada
+> **Estado:** Reemplazada (por TT-BD-06)
 
 ## 1. Objetivo
 Levantar PostgreSQL con PostGIS en Docker Compose para desarrollo local, conectar la API de TT-API-01 a PostgreSQL con EF Core, Npgsql y NetTopologySuite, y crear la migración inicial. La base local debe prepararse con Docker Compose y la API debe poder aplicar la migración con un comando EF. La cadena de conexión y contraseñas se configuran fuera del repositorio.
