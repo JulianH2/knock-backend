@@ -452,3 +452,10 @@
 ## 2026-10-28 — TT-AZ-01 (KNOCK-27): spec firmada tras fusionar #70
 - Decisión (líder): la spec de TT-AZ-01 pasa de Aprobada a Firmada porque el PR #70 (evidencia de los roles mínimos, el presupuesto y las alertas) se fusionó en `sprint-02`. Solo cambia el estado; el bloque de aprobación (2026-10-12) no se toca.
 - A evitar: editar una spec Firmada sin abrir una spec nueva o un cambio aprobado; firmarla antes de que se fusione su PR.
+
+## 2026-10-27 — TT-BD-07 (KNOCK-157): spec en Borrador de CI y pruebas con MongoDB
+- Hecho: `specs/TT-BD-07-ci-y-pruebas-con-mongodb/` (spec, plan, tareas, gates) en Borrador; 9 casos (7 con prueba de regresión que lee archivos, 2 por comando).
+- Hallazgo: #73 (TT-BD-06) se fusionó en `sprint-02` el 2026-10-28 (merge commit `9870cd6`) y ya no bloquea; la tarea empieza cuando la spec esté Aprobada. El job `dast` hoy se salta porque `deploy/docker-compose.ci.yml` no existe.
+- Decisión (líder, 2026-10-28): respuestas P1 a P6 registradas en spec §8. La prueba de humo contra DocumentDB real sale de esta tarea y se abre otra aparte; se mantiene el digest del spike; el job `dast` solo renombra sus pasos; las skills con PostgreSQL van en otra tarea de documentación; spec e implementación van a `sprint-02`; los cambios de `.github/` y `.agents/knock.json` los hace el Tech Lead.
+- Decisión (propuesta): `DocumentDbFixture.Image` es la única fuente del digest; el compose local debe coincidir con ella. La prueba de humo contra DocumentDB real y la imagen `1.0` quedan fuera hasta que el líder responda P1 y P2.
+- A evitar: editar `.github/` o `.agents/knock.json` desde un agente (los hace o autoriza el Tech Lead); editar a mano los adaptadores generados en lugar de sus fuentes en `.agents/`; quitar `sql-lint` sin quitarlo de `gate.needs`.
