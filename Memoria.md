@@ -449,6 +449,10 @@
 - Pruebas: los casos 01 a 05 usan documentdb-local con una base por prueba; los oficios sintéticos de 02 y 03 entran por `CatalogSeeder.SeedAsync` para que exista `nombreBusqueda`. `CatalogStoreMaxTimeTests` incluye la consulta nueva.
 - A evitar: insertar oficios en la colección sin `nombreBusqueda` (se ordenarían primero y TC-03 pasaría en falso); volver a abrir una consulta de Mongo fuera de `CatalogStore`.
 
+## 2026-10-28 — TT-AZ-01 (KNOCK-27): spec firmada tras fusionar #70
+- Decisión (líder): la spec de TT-AZ-01 pasa de Aprobada a Firmada porque el PR #70 (evidencia de los roles mínimos, el presupuesto y las alertas) se fusionó en `sprint-02`. Solo cambia el estado; el bloque de aprobación (2026-10-12) no se toca.
+- A evitar: editar una spec Firmada sin abrir una spec nueva o un cambio aprobado; firmarla antes de que se fusione su PR.
+
 ## 2026-10-27 — TT-API-06 (KNOCK-138): spec en Borrador del pipeline de seguridad (encabezados, HSTS, HTTPS y CORS)
 - Estado: spec, plan, task y gates en `specs/TT-API-06-pipeline-de-seguridad-headers-hsts-cors/` (20 casos, Borrador); sin código. Alcance reducido a SecurityHeaders, HSTS, HttpsRedirection y CORS: ForwardedHeaders y el rate limiter ya los entregó TT-API-03 y solo se verifican (la ficha de Jira todavía los lista; duda 13).
 - Hallazgos al leer el código: `ForwardedHeaders` solo procesa `X-Forwarded-For`, así que detrás de Container Apps `Request.IsHttps` sería siempre falso y HSTS no se emitiría (la spec propone procesar también `X-Forwarded-Proto` con proxies de confianza; toca código firmado de TT-API-03, duda 4); `/health/ready` abre una conexión a PostgreSQL por petición, anónima y sin límite, y contradice la nota «no hacen trabajo costoso» de `docs/rate-limit-matrix.md` (duda 8); el encabezado `Server` de Kestrel no se apaga en ningún sitio.
