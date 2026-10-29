@@ -452,3 +452,9 @@
 ## 2026-10-28 — TT-AZ-01 (KNOCK-27): spec firmada tras fusionar #70
 - Decisión (líder): la spec de TT-AZ-01 pasa de Aprobada a Firmada porque el PR #70 (evidencia de los roles mínimos, el presupuesto y las alertas) se fusionó en `sprint-02`. Solo cambia el estado; el bloque de aprobación (2026-10-12) no se toca.
 - A evitar: editar una spec Firmada sin abrir una spec nueva o un cambio aprobado; firmarla antes de que se fusione su PR.
+
+## 2026-10-27 — TT-BD-03 (KNOCK-40): spec en Borrador de semillas ficticias para MongoDB
+- Hecho: `specs/TT-BD-03-semillas-ficticias-mongodb/` en Borrador; 10 casos (8 con prueba, 2 por comando). Formato de `db/seeds/catalog/*.json` (#73); JSON en `db/seeds/demo/<base>/`.
+- Hallazgo: el `.docx` de la ficha no está, pero sí su versión generada `docs/backlog/TT-BD-03.md` (20 técnicos, 10 clientes, script repetible, Bogus sugerido); es anterior a ADR-002.
+- Hallazgo: los modelos de perfil, técnico y solicitud (HU-002, HU-017, HU-024) no tienen spec; los 4 números de prueba de Firebase son `+1 650 555 01xx` y HU-001 solo acepta `+52`; los usuarios sembrados no tienen `uid` de Firebase para derivar el `sub`. Todo va en las preguntas P1–P9.
+- A evitar: guardar el celular de demostración en claro (constitución §6: celular cifrado); reutilizar un `_id` del catálogo; cargar demostración en `Production`.
