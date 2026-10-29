@@ -463,7 +463,5 @@
 - Hallazgo: el OpenAPI generado documenta la ruta como `/api/v{version}/colonias/en-punto`, igual que el resto de la API, no como `/api/v1/...` (que es lo que dice TC-TT-API-07-13). La prueba acepta la plantilla. Lo decide el líder.
 - Hallazgo: `deploy/docker-compose.local.yml` no trae el emulador de Firebase Auth, aunque AGENTS.md §2 dice que sí. Se arranca con `npx firebase-tools@15.34.0 emulators:start --only auth --project demo-knock`.
 - Medición TC-TT-API-07-14, en proceso con documentdb-local: p50 8.1 ms, p95 13.3 ms y p99 18.2 ms (meta: p95 < 150 ms).
-- Contrato (2026-10-29): tras fusionar `sprint-02` (TT-PRU-01) se regeneró `docs/openapi.v1.json` con `scripts/export_openapi.py` porque la API ya expone `GET /api/v1/oficios`; el cambio es solo aditivo (la ruta y `OficioResponse`). El script se corrió en Windows y se normalizaron los saltos de línea `
-` de dos descripciones a `
-`, como los genera el CI en Linux.
+- Contrato (2026-10-29): tras fusionar `sprint-02` (TT-PRU-01) se regeneró `docs/openapi.v1.json` con `scripts/export_openapi.py` porque la API ya expone `GET /api/v1/oficios`; el cambio es solo aditivo (la ruta y `OficioResponse`). El script se corrió en Windows y se normalizaron los saltos de línea CRLF de dos descripciones a LF, como los genera el CI en Linux.
 - A evitar: `[InlineData]` o arreglos literales en `TheoryData` con `string[]`, porque CA1861 y CA1825 los rechazan. Usa cadenas separadas por `|`. Tampoco llames `field` a una variable dentro de un accesor de propiedad (C# 14 lo trata como palabra clave).
