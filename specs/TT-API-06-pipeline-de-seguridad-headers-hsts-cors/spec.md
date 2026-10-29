@@ -5,7 +5,7 @@
 > **Depende de:** — (ficha). En la práctica parte de lo ya fusionado y firmado en TT-API-03 (KNOCK-37): `ForwardedHeaders`, rate limiter y `docs/MIDDLEWARES.md`.
 > **Fuentes:** constitución 2.2.0 (§4 «Orden fijo de la tubería», §6 «Seguridad y privacidad», principio 12) · ADR-001 (regla 3) · `docs/DECISION_TECNICA.md` · `docs/PLAN_ADAPTACION.md` (fila «TT-CI-02, TT-API-06») · `docs/MIDDLEWARES.md` · `docs/rate-limit-matrix.md` · spec TT-API-03 · `Memoria.md` (entrada de TT-API-03) · skill `security-core` (check 12: «CSP, HSTS, nosniff, DENY; CORS solo el origen del panel»; checks 6 y 11) · `docs/QA_DEVSECOPS.md` (API8: «Pipeline fijo, headers, CORS de un origen»)
 > **Skills:** foundation-backend, security-core, api-contract-openapi, testing-strategy-backend, story-workflow
-> **Estado:** Borrador
+> **Estado:** Aprobada 
 
 ## 1. Objetivo
 Cerrar el pipeline de seguridad de la constitución §4: que toda respuesta de la API (también las de error) lleve los encabezados de seguridad, que HSTS y la exigencia de HTTPS funcionen detrás del ingress de Container Apps sin bucles, que CORS solo abra el origen del panel por configuración (y falle cerrado), y que quede probado que cada endpoint público está bajo un límite de peticiones.
@@ -179,6 +179,6 @@ Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 13. **Jira:** el texto de la ficha de KNOCK-138 aún menciona ForwardedHeaders y rate limiter; `Memoria.md` dice que el revisor ajusta TT-API-06 en Jira. *Recomendación:* confirmar que la ficha quedó con el alcance de esta spec (SecurityHeaders, HSTS, HTTPS, CORS y la verificación de los límites).
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: fecha:
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-10-29
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
