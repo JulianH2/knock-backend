@@ -3,7 +3,8 @@
 > **Jira:** KNOCK-40 · **Área:** Base de datos · **Servicio:** Identidad y confianza (clientes, base `identity`) (ADR-001) · **Módulo:** Identity · **Responsable:** Ángel Alexis Blas Castillo · **Sprint:** la ficha dice S1; `docs/PLAN_ADAPTACION.md` §D la mueve a **S2** · **Puntos:** 1 (se mantiene con el alcance recortado, decisión D1) · **Capas:** BD
 > **Repositorio:** knock-backend · **Otra parte en:** — · **Rama:** `docs/KNOCK-40-fake-demo-seeds-spec` (spec) → PR a `sprint-02`; la implementación va en su propia rama tras la aprobación (la ficha cita `chore/KNOCK-40-semillas-ficticias`)
 > **Ficha:** `docs/backlog/TT-BD-03.md` (generada del adjunto `TT-BD-03_SemillasFicticiasClientesTecnicos_Knock.docx`; el `.docx` no está disponible, solo esta ficha). La ficha es anterior a ADR-002: pide `deploy/seeds/ficticios.sql` y depende de TT-BD-02; el plan de adaptación la cambia a «semillas en JSON para MongoDB».
-> **Depende de:** TT-BD-06 (KNOCK-156, PR #73 abierto contra `sprint-02`): `db/seeds/catalog/*.json` con `_id` fijos y el patrón del cargador idempotente (`Modules/Catalog/Data/CatalogSeeder`) · **HU-001 (KNOCK-43): la implementación, no solo la spec** — modelo de `usuarios` en la base `identity` y el cifrado y hash del celular viven en el PR #75, **aún sin fusionar**; sin ese código el cargador no puede cifrar el celular (decisión D3) · TT-API-12: `UserIdDerivation.Derive(uid)` para el `sub` (decisión D4) · TT-BD-07 (KNOCK-157): compose local con el contenedor `documentdb-local`.
+> **Depende de:** TT-BD-06 (KNOCK-156, PR #73, ya fusionado en `sprint-02`): `db/seeds/catalog/*.json` con `_id` fijos y el patrón del cargador idempotente (`Modules/Catalog/Data/CatalogSeeder`) · **HU-001 (KNOCK-43): la implementación, no solo la spec** — modelo de `usuarios` en la base `identity` y el cifrado y hash del celular viven en el PR #75 (`Modules/Identity/Services/PhoneProtector`, llaves en `Identity:PhoneProtection`), **aún sin fusionar**; sin ese código el cargador no puede cifrar el celular (decisión D3) · TT-API-12: `UserIdDerivation.Derive(uid)` para el `sub` (decisión D4) · TT-BD-07 (KNOCK-157): compose local con el contenedor `documentdb-local`.
+> **Calendario:** el cargador se implementa cuando se fusione #75 (HU-001). Si #75 no se fusiona antes del 30-oct-2026, la tarea pasa al siguiente sprint; lo decide el equipo.
 > **Fuentes:** ficha `docs/backlog/TT-BD-03.md` (pasos 1–4, V1–V2) · `docs/PLAN_ADAPTACION.md` §D · ADR-001 (regla 1) · ADR-002 (regla 2) · constitución 2.2.x (principios 3, 5 y 10; §5; §6 «Biométricos», «CURP solo como HMAC; dirección y celular cifrados», «No se usan datos personales reales») · spec HU-001 §5 · spec TT-API-12 · spec TT-BD-06 §3 y §5 · `db/seeds/README.md` y `db/seeds/catalog/*.json` de #73 · respuestas del líder (2026-10-28, §8 «Decisiones»)
 > **Skills:** story-workflow, spec-first-writing, database-scripts, security-core, testing-strategy-backend, reuse-before-create
 > **Estado:** Borrador
@@ -38,14 +39,14 @@ Que el entorno local y las demos tengan **clientes creíbles e inventados**, car
 | TC-TT-BD-03-05 | Dada una base `identity` vacía, cuando el cargador de demostración se aplica, entonces `usuarios` tiene exactamente 10 documentos con `demo: true` y los mismos `_id` del JSON; y cuando se aplica **otra vez**, el conteo, los `_id` y `version` no cambian (ficha, V2). | `DatabaseTest/Demo/DemoSeedLoaderTests.ApplyingTwiceKeepsCountsIdsAndVersion_TC_TT_BD_03_05` |
 | TC-TT-BD-03-06 | Dada la semilla aplicada, cuando se busca en la colección `usuarios` el texto de cada celular del JSON, entonces no aparece en claro en ningún campo; cada usuario tiene `celularCifrado` y `celularHash` calculados con el código de HU-001 (PR #75) y la llave del entorno, y descifrar `celularCifrado` con la llave de la prueba devuelve el celular ficticio del JSON. | `DatabaseTest/Demo/DemoSeedLoaderTests.PhonesAreStoredEncryptedAndHashedLikeHu001_TC_TT_BD_03_06` |
 | TC-TT-BD-03-07 | Dado el cargador de demostración, cuando se ejecuta con el entorno `Production` o sin la marca de configuración `Seed:Demo = true`, entonces termina con error que nombra la causa sin valores de configuración y **no escribe** ningún documento (conteo en 0). | `DatabaseTest/Demo/DemoSeedLoaderTests.LoaderRefusesProductionOrMissingFlagAndWritesNothing_TC_TT_BD_03_07` |
-| TC-TT-BD-03-08 | Dado el ensamblado de la API, cuando corren las pruebas de arquitectura, entonces el cargador de demostración de Identity vive en `Modules/Identity/Data/`, solo usa la base `identity` y no lee colecciones de otro módulo (ADR-001 regla 1; constitución, principio 10). | `UnitTest/Architecture/DemoSeedBoundaryTests.IdentityDemoLoaderOnlyTouchesItsOwnDatabase_TC_TT_BD_03_08` |
-| TC-TT-BD-03-09 | Dado el contenedor local `documentdb-local` (compose de TT-BD-07) con la base `identity` vacía, cuando la persona responsable corre el cargador de demostración dos veces, entonces `countDocuments({ demo: true })` en `usuarios` da 10 tras cada corrida (ficha, V1–V2 adaptadas sin Staging). | (comando) salida de los conteos tras cada carga en el PR, sin cadenas ni credenciales |
+| TC-TT-BD-03-08 | Dado el ensamblado de la API, cuando corren las pruebas de arquitectura, entonces el cargador de demostración vive en el módulo Identity (carpeta según P10: `Modules/Identity/Data/`, junto a `IdentityStore` de #75), cifra con `Modules/Identity/Services/PhoneProtector`, solo usa la base `identity` y no lee colecciones de otro módulo (ADR-001 regla 1; constitución, principio 10). | `UnitTest/Architecture/DemoSeedBoundaryTests.IdentityDemoLoaderOnlyTouchesItsOwnDatabase_TC_TT_BD_03_08` |
+| TC-TT-BD-03-09 | Dado el contenedor local `documentdb-local` (compose de TT-BD-07) con la base `identity` vacía, cuando la persona responsable corre el cargador de demostración dos veces, entonces `countDocuments({ demo: true })` en `usuarios` da 10 tras cada corrida (ficha, V1–V2 adaptadas sin Staging). La evidencia se toma cuando TT-BD-07 esté implementado (hoy `deploy/docker-compose.local.yml` es PostgreSQL); mientras tanto, con un `documentdb-local` levantado a mano con la misma imagen y digest que `DocumentDbFixture` (ver §7). | (comando) salida de los conteos tras cada carga en el PR, sin cadenas ni credenciales |
 | TC-TT-BD-03-10 | Dado el cambio terminado, cuando se compila y se revisa el formato, entonces `dotnet build Knock.slnx -c Release --no-restore` da 0 errores y 0 warnings y `dotnet format Knock.slnx --verify-no-changes` no reporta cambios. | (comando) salida en el PR |
 
 ## 3. Alcance / No-alcance
 - **In (este repositorio):**
   - `db/seeds/demo/identity/usuarios.json` con el formato de `db/seeds/catalog/*.json`: 10 clientes con nombres escritos a mano, `uid` ficticio y celulares del rango `+5200000NNNNN`.
-  - Un cargador de demostración del servicio de Identidad **dentro de la API** (`Modules/Identity/Data/`, donde viven las llaves de cifrado), repetible: upsert por `_id`, valida formato **antes** de escribir (si algo falla no escribe nada), deriva el `sub` con `UserIdDerivation.Derive(uid)`, cifra y calcula el hash del celular con el código de HU-001, y se niega a correr en `Production` o sin `Seed:Demo = true`.
+  - Un cargador de demostración del servicio de Identidad **dentro de la API**, en el módulo Identity junto al servicio de cifrado de HU-001 (`Modules/Identity/Services/PhoneProtector`, que recibe las llaves de `Identity:PhoneProtection` por variable de entorno o user-secrets; carpeta del cargador según P10), repetible: upsert por `_id`, valida formato **antes** de escribir (si algo falla no escribe nada), deriva el `sub` con `UserIdDerivation.Derive(uid)`, cifra y calcula el hash del celular con el código de HU-001, y se niega a correr en `Production` o sin `Seed:Demo = true`.
   - `db/seeds/README.md`: sección de demostración (qué contiene, cómo se carga en `documentdb-local`, cómo se cuenta y se borra con `demo: true`).
   - Pruebas de los casos 01 a 08 y evidencia de 09 y 10.
 - **Out:**
@@ -66,7 +67,7 @@ Que el entorno local y las demos tengan **clientes creíbles e inventados**, car
   - **TT-API-12:** `UserIdDerivation.Derive(uid)` para el `sub`.
   - **HU-002:** dueña del perfil; el campo `nombre` se concilia con ella si su spec lo ubica en otra colección.
   - **HU-017 y HU-024:** cuando existan sus specs, una tarea nueva (o una ampliación de esta) agrega técnicos y solicitudes.
-  - **TT-BD-07 (KNOCK-157):** compose local con `documentdb-local` para la evidencia del caso 09.
+  - **TT-BD-07 (KNOCK-157):** compose local con `documentdb-local` para la evidencia del caso 09 (mientras no exista, contenedor a mano; §7).
   - **TT-ML-01:** depende de esta tarea (ficha de TT-ML-01); necesitará los técnicos y solicitudes del trabajo futuro.
 
 ## 4. Contratos API y eventos
@@ -102,7 +103,7 @@ STRIDE breve. El riesgo está en meter datos reales, en guardar datos personales
 | **Fuga (I):** la llave de cifrado o una cadena de conexión aparece en el JSON, el PR o la evidencia. | Llaves solo por user-secrets o Key Vault; la evidencia del caso 09 son conteos, sin cadenas. | TC-TT-BD-03-09 (revisión de la evidencia) |
 | **Alteración (T):** se carga demostración en producción o se mezclan datos de demostración con datos reales. | Guarda de entorno y marca `Seed:Demo`; `demo: true` en cada documento. | TC-TT-BD-03-07 · TC-TT-BD-03-01 |
 | **Alteración (T):** duplicados tras correr el cargador varias veces. | `_id` fijos, upsert por `_id`, validación previa; si algo falla no se escribe nada. | TC-TT-BD-03-05 |
-| **Elevación (E):** el cargador escribe en la base de otro servicio. | Cargador en `Modules/Identity/Data/` con su base; prueba de arquitectura. | TC-TT-BD-03-08 |
+| **Elevación (E):** el cargador escribe en la base de otro servicio. | Cargador en el módulo Identity (carpeta según P10) con su base; prueba de arquitectura. | TC-TT-BD-03-08 |
 | **Suplantación (S):** un usuario de demostración inicia sesión, o su `sub` coincide con el de una cuenta real. | Rango sin ladas reales; sin cuentas de Firebase (D8); `uid` con prefijo `demo-cliente-` que Firebase no emite; `sub` derivado con la misma función que la sesión. | TC-TT-BD-03-02 · TC-TT-BD-03-03 · TC-TT-BD-03-04 |
 | **IA (principio 5):** los datos de demostración se mandan a Azure OpenAI con celulares. | Los celulares nunca salen del módulo Identity; no hay textos libres más allá del nombre. | TC-TT-BD-03-03 |
 | **Repudio (R) / denegación (D):** no aplican: no hay endpoints ni acciones de usuario. | — | — |
@@ -118,7 +119,7 @@ STRIDE breve. El riesgo está en meter datos reales, en guardar datos personales
 | Base de datos | Sí | Archivo, datos ficticios, `sub`, carga repetible, cifrado y guarda de entorno con `documentdb-local` (Testcontainers). TC-TT-BD-03-01 a 07. `tests/DatabaseTest/Demo/`. |
 | Arquitectura | Sí | El cargador solo en su base. TC-TT-BD-03-08. |
 | Seguridad negativa | Sí, dentro de base de datos | Guarda de entorno y ausencia de datos sensibles (TC-TT-BD-03-03, 06 y 07). |
-| Smoke local | Sí, manual | Conteos en `documentdb-local` tras dos cargas (TC-TT-BD-03-09). |
+| Smoke local | Sí, manual | Conteos en `documentdb-local` tras dos cargas (TC-TT-BD-03-09). Con el compose de TT-BD-07 cuando exista; mientras tanto, a mano:<br>`docker run -d --rm --name documentdb-local -p 10260:10260 ghcr.io/microsoft/documentdb/documentdb-local@sha256:0fcf634531c1917ad0855ff9f4354aca0a5c5d8e435f08250568deb37eeb0ad5 --username knock --password "$KNOCK_DEMO_DB_PASSWORD"`<br>(misma imagen, digest, puerto y argumentos que `tests/IntegrationTest/Support/DocumentDbFixture.cs`; la contraseña solo en la variable de entorno, nunca en la evidencia; TLS autofirmado, solo local). |
 | Contrato HTTP, eventos, UI, rendimiento, mutación | No | Sin endpoints ni lógica de negocio. |
 
 Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
@@ -126,7 +127,7 @@ Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 **Gates:** `AGENTS.md §5`: build Release 0/0, `dotnet format`, Unit (con Architecture) y Database en verde con resultado real, `sdd_lint.py --trace TT-BD-03`, `codemap.py --check`, `check_exceptions.py`, `sync_agents.py --check`, Semgrep, `security-reviewer` LIBERA, `traceability-clerk` sin drift, `Memoria.md` al día. Esta spec es un borrador: no se ha escrito ni ejecutado ninguna prueba.
 
 **Límites conocidos:**
-- El cifrado del celular depende de la **implementación** de HU-001 (PR #75, aún sin fusionar); si #75 cambia el servicio de cifrado o los campos, el cargador lo sigue.
+- El cifrado del celular depende de la **implementación** de HU-001 (PR #75, aún sin fusionar; `Services/PhoneProtector`); si #75 cambia el servicio de cifrado o los campos, el cargador lo sigue.
 - Con `_id` fijos, un cambio de forma en el JSON necesita que el cargador suba `version` solo si cambia el contenido (como el de TT-BD-06).
 - Los usuarios de demostración no pueden iniciar sesión (D8).
 - Sin técnicos ni solicitudes, la demostración no cubre el mapa ni el flujo de solicitud hasta el trabajo futuro de HU-017 y HU-024.
@@ -141,7 +142,8 @@ Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 - **D7 (P7) — Nombres.** Escritos a mano, sin Bogus.
 - **D8 (P8) — Inicio de sesión.** Los usuarios de demostración no inician sesión.
 
-**Preguntas abiertas para el líder:** ninguna.
+**Preguntas abiertas para el líder:**
+- **P10 — Carpeta del cargador.** En la rama de #75 el cifrado está en `Modules/Identity/Services/PhoneProtector` y la carpeta `Modules/Identity/Data/` existe con `IdentityStore`, pero la prueba de arquitectura de HU-001 (`IdentityAccessTests`, TC-HU-001-23) exige que `IdentityStore` sea el **único** tipo del módulo con `IMongoCollection`. Opciones: (a) cargador en `Modules/Identity/Data/` que escribe con un método nuevo de `IdentityStore` y cifra con `PhoneProtector` (no toca TC-HU-001-23); (b) cargador en `Modules/Identity/Data/` con su propia colección, ampliando TC-HU-001-23 para admitirlo; (c) cargador en `Modules/Identity/Services/` junto a `PhoneProtector`, escribiendo vía `IdentityStore`. La ruta del caso 08 se fija con la respuesta. Queda a decisión del líder.
 
 ## Aprobación
 - [ ] Revisor 1 — nombre: ____________ fecha: ________

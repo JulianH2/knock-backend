@@ -4,8 +4,9 @@
 
 - [ ] spec con 8 secciones + Aprobación, estado Aprobada (revisor y fecha) y clave KNOCK-40
 - [ ] Decisiones D1–D8 de spec §8 (2026-10-28) reflejadas; técnicos y solicitudes fuera de alcance hasta HU-017 y HU-024
-- [ ] PR #73 (TT-BD-06) fusionado: patrón de cargador y `DocumentDbFixture` disponibles; `db/seeds/catalog/*.json` sin cambios
-- [ ] PR #75 (HU-001) fusionado: el cifrado y hash del celular usan su implementación
+- [ ] PR #73 (TT-BD-06) fusionado (ya lo está en `sprint-02`): patrón de cargador y `DocumentDbFixture` disponibles; `db/seeds/catalog/*.json` sin cambios
+- [ ] PR #75 (HU-001) fusionado: el cifrado y hash del celular usan `Services/PhoneProtector` (si no llega antes del 30-oct-2026, pasa al siguiente sprint)
+- [ ] P10 respondida: carpeta del cargador y ruta del caso 08
 - [ ] Cada caso TC-TT-BD-03-01 a 08 tiene prueba con su ID (`sdd_lint --trace TT-BD-03` en OK); 09 y 10 con su salida en el PR
 - [ ] Solo datos ficticios: nombres escritos a mano y revisados por una persona, celulares `+5200000NNNNN`, `uid` `demo-cliente-NN`, sin campos sensibles
 - [ ] `sub` derivado con `UserIdDerivation.Derive(uid)` (TT-API-12)
