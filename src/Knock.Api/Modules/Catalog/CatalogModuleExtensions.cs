@@ -19,6 +19,7 @@ public static class CatalogModuleExtensions
         services.AddSingleton<INeighborhoodLocator>(sp => sp.GetRequiredService<NeighborhoodLocator>());
         services.AddScoped<ICatalogApi, CatalogApi>();
         services.AddScoped<CatalogSeeder>();
+        services.AddScoped<OficioQueries>();
         return services;
     }
 }

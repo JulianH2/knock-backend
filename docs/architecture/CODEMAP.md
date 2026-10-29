@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-28T02:30:50Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-10-29T18:42:44Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -8,9 +8,9 @@
 | Módulo | Capas | Archivos | Tipos | Métodos públicos |
 |---|---|---|---|---|
 | `Assistant` | -, services | 3 | 3 | 1 |
-| `Catalog` | -, controllers, data, domain, dtos, services, validators | 17 | 19 | 21 |
+| `Catalog` | -, controllers, data, domain, dtos, services, validators | 21 | 23 | 30 |
 | `Identity` | -, controllers, dtos, services | 11 | 15 | 10 |
-| `Knock.Api` | -, common, hosting | 19 | 31 | 39 |
+| `Knock.Api` | -, common, hosting | 19 | 31 | 40 |
 | `Media` | -, controllers, data, domain, dtos, services, validators | 18 | 35 | 48 |
 | `Messaging` | -, services | 3 | 3 | 1 |
 | `Notifications` | -, services | 3 | 3 | 1 |
@@ -46,13 +46,15 @@
 
 - `src/Knock.Api/Modules/Catalog/Controllers/V1/ColoniasController.cs` — class `ColoniasController`
   - `GetAtPoint()`:29
+- `src/Knock.Api/Modules/Catalog/Controllers/V1/OficiosController.cs` — class `OficiosController`
+  - `List()`:22
 
 **data**
 
 - `src/Knock.Api/Modules/Catalog/Data/CatalogSeeder.cs` — class `CatalogSeeder`
   - `CatalogSeeder()`:13, `SeedAsync()`:19, `SeedAsync()`:29
 - `src/Knock.Api/Modules/Catalog/Data/CatalogStore.cs` — class `CatalogStore`
-  - `EnsureIndexesAsync()`:54, `FindIntersectingAsync()`:77, `FindNearestCenterAsync()`:89, `FindNamesByPostalCodeAsync()`:99, `ColoniaExistsAsync()`:109
+  - `EnsureIndexesAsync()`:66, `FindActiveOficiosAsync()`:89, `FindIntersectingAsync()`:99, `FindNearestCenterAsync()`:103, `FindNamesByPostalCodeAsync()`:106, `ColoniaExistsAsync()`:112, `ActiveOficiosQuery()`:116, `IntersectingQuery()`:122, `NearestCenterQuery()`:129, `NamesByPostalCodeQuery()`:135, `ColoniaExistsQuery()`:141
 
 **domain**
 
@@ -63,6 +65,7 @@
 - `src/Knock.Api/Modules/Catalog/Domain/GeoPosition.cs` — record struct `GeoPosition`
 - `src/Knock.Api/Modules/Catalog/Domain/Oficio.cs` — class `Oficio`
   - `IsValidModalidad()`:10
+- `src/Knock.Api/Modules/Catalog/Domain/OficioListing.cs` — record `OficioListing`
 - `src/Knock.Api/Modules/Catalog/Domain/SearchNameNormalizer.cs` — class `SearchNameNormalizer`
   - `Normalize()`:12
 
@@ -70,6 +73,7 @@
 
 - `src/Knock.Api/Modules/Catalog/Dtos/NeighborhoodAtPointQuery.cs` — class `NeighborhoodAtPointQuery`
 - `src/Knock.Api/Modules/Catalog/Dtos/NeighborhoodAtPointResponse.cs` — record `NeighborhoodAtPointResponse`, record `NeighborhoodAtPointColoniaResponse`
+- `src/Knock.Api/Modules/Catalog/Dtos/OficioResponse.cs` — record `OficioResponse`
 
 **services**
 
@@ -78,6 +82,8 @@
 - `src/Knock.Api/Modules/Catalog/Services/INeighborhoodLocator.cs` — interface `INeighborhoodLocator`
 - `src/Knock.Api/Modules/Catalog/Services/NeighborhoodLocator.cs` — class `NeighborhoodLocator`
   - `FindAtAsync()`:19
+- `src/Knock.Api/Modules/Catalog/Services/OficioQueries.cs` — class `OficioQueries`
+  - `OficioQueries()`:7, `ListActiveAsync()`:14
 
 **validators**
 
@@ -114,7 +120,7 @@
 - `src/Knock.Api/Modules/Identity/Services/SessionTokenIssuer.cs` — record `IssuedSession`, class `SessionTokenIssuer`
   - `SessionTokenIssuer()`:12, `Issue()`:18
 - `src/Knock.Api/Modules/Identity/Services/UserIdDerivation.cs` — class `UserIdDerivation`
-  - `Derive()`:16
+  - `Derive()`:18
 
 ### Knock.Api
 
@@ -151,7 +157,7 @@
 - `src/Knock.Api/Hosting/ModulesExtensions.cs` — class `ModulesExtensions`
   - `AddKnockModules()`:15
 - `src/Knock.Api/Hosting/MongoExtensions.cs` — class `KnockMongoOptions`, class `KnockMongoOptionsValidator`, class `MongoExtensions`, class `MongoReadinessHealthCheck`
-  - `Validate()`:40, `AddKnockMongo()`:95, `AddKnockMongoDatabase()`:117, `CreateSettings()`:131, `CheckHealthAsync()`:156
+  - `Seconds()`:51, `Validate()`:67, `AddKnockMongo()`:135, `AddKnockMongoDatabase()`:157, `CreateSettings()`:171, `CheckHealthAsync()`:214
 - `src/Knock.Api/Hosting/OpenApiExtensions.cs` — class `OpenApiExtensions`
   - `AddKnockOpenApi()`:7, `MapKnockOpenApi()`:14
 - `src/Knock.Api/Hosting/ProblemDetailsExtensions.cs` — class `ProblemDetailsExtensions`

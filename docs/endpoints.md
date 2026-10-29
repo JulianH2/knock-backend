@@ -1,7 +1,9 @@
-# Endpoints
+# Endpoints de la API
 
-> Fuente única de verdad para rutas HTTP expuestas. Actualizar al añadir o cambiar endpoints.
+> AGENTS.md §5. Una fila por operación HTTP de negocio, con su spec. El contrato completo se genera del código (`GET /openapi/v1.json`, solo en Development); la exportación a `docs/openapi.v1.json` llega con TT-CI-02.
+> Límites de peticiones: `docs/rate-limit-matrix.md` (la política global aplica a todas las filas salvo que se diga otra cosa).
 
-| Método | Ruta | Autenticación | Entrada | Respuestas | Notas / Caso |
-| --- | --- | --- | --- | --- | --- |
-| GET | `/api/v1/colonias/en-punto` | JWT Bearer | Query: `lat` (string, requerido, un solo valor), `lon` (string, requerido, un solo valor). Formato `^-?\d{1,3}(\.\d{1,10})?$`, máx 16 caracteres, punto decimal, cultura invariante. Rangos `[-90,90]` y `[-180,180]`. | 200 `{enCobertura:boolean, colonia:{id,nombre,cp,municipio} o null}`; 401 ProblemDetails; 422 `errors.lat`/`errors.lon` (repetido, ausente, fuera de rango o mal formado); 429 ProblemDetails con `Retry-After`; 500 ProblemDetails genérico | Catálogo propio. Sin caché (`Cache-Control: no-store`). No guarda ni registra coordenadas. Usa la consulta interna de Catalog. Límite global por IP, sin exención. TT-API-07 (KNOCK-141), casos TC-TT-API-07-03 a 16. |
+| Método y ruta | Módulo | Auth | Respuesta | Caché | Spec | Notas |
+|---|---|---|---|---|---|---|
+| `GET /api/v1/oficios` | Catalog | pública (`[AllowAnonymous]`) | 200 `application/json`: arreglo de `{ clave, nombre, modalidad }` | `86400` s (declarada; sin implementar) | TT-PRU-01 | Solo oficios activos, ordenados por nombre sin importar mayúsculas y luego por clave. Arreglo sin paginar: excepción a la constitución §11 (catálogo acotado; si pasa de 50 elementos, `CursorPage<T>` en `v2`). `modalidad` es texto con valores conocidos `domicilio` y `taller`, no enum cerrado. |
+| `GET /api/v1/colonias/en-punto` | Catalog | JWT Bearer | 200 `application/json`: `{ enCobertura, colonia: { id, nombre, cp, municipio } }` (`colonia` es `null` si el punto está fuera de cobertura); 401, 422 (`errors.lat` o `errors.lon`), 429 y 500 en ProblemDetails | sin caché (`Cache-Control: no-store`) | TT-API-07 | Query `lat` y `lon`: texto, un valor cada uno, patrón `^-?\d{1,3}(\.\d{1,10})?$`, máx. 16 caracteres y rangos [-90, 90] y [-180, 180]. No guarda ni registra coordenadas. Límite global por IP, sin exención. KNOCK-141, casos TC-TT-API-07-03 a 16. |

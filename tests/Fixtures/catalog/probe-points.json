@@ -1,0 +1,42 @@
+[
+  {
+    "colonia": "Centro",
+    "longitude": -99.3495,
+    "latitude": 20.0505
+  },
+  {
+    "colonia": "El Cielito",
+    "longitude": -99.3321,
+    "latitude": 20.0541
+  },
+  {
+    "colonia": "El Llano 1a Secci\u00f3n",
+    "longitude": -99.3243,
+    "latitude": 20.0616
+  },
+  {
+    "colonia": "El Llano 2a Secci\u00f3n",
+    "longitude": -99.306,
+    "latitude": 20.046
+  },
+  {
+    "colonia": "San Lorenzo",
+    "longitude": -99.3372,
+    "latitude": 20.0484
+  },
+  {
+    "colonia": "Tultengo",
+    "longitude": -99.32637,
+    "latitude": 20.06399
+  },
+  {
+    "colonia": "Iturbe",
+    "longitude": -99.3234,
+    "latitude": 20.0757
+  },
+  {
+    "colonia": "La Huerta",
+    "longitude": -99.3531,
+    "latitude": 20.0556
+  }
+]

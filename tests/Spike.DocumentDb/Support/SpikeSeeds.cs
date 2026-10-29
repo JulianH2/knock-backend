@@ -30,17 +30,7 @@ internal static class SpikeSeeds
         };
 
     /// <summary>Puntos sintéticos interiores, a ≥ 60 m de cualquier borde y fuera de las zonas donde el seed se traslapa.</summary>
-    public static readonly IReadOnlyList<(string Colonia, double Lng, double Lat)> InteriorPoints =
-    [
-        ("Centro", -99.3495, 20.0505),
-        ("El Cielito", -99.3321, 20.0541),
-        ("El Llano 1a Sección", -99.3243, 20.0616),
-        ("El Llano 2a Sección", -99.3060, 20.0460),
-        ("San Lorenzo", -99.3372, 20.0484),
-        ("Tultengo", -99.32637, 20.06399),
-        ("Iturbe", -99.3234, 20.0757),
-        ("La Huerta", -99.3531, 20.0556),
-    ];
+    public static readonly IReadOnlyList<(string Colonia, double Lng, double Lat)> InteriorPoints = Knock.DatabaseTest.Support.ProbePointsLoader.LoadLngLat();
 
     private static string FixturePath(string file) => Path.Combine(AppContext.BaseDirectory, "Fixtures", file);
 
