@@ -19,6 +19,7 @@ internal static class KnockApplicationExtensions
             .AddKnockAuthentication()
             .AddKnockOpenApi()
             .AddKnockHealth()
+            .AddKnockMongo()
             .AddKnockModules();
         return builder;
     }

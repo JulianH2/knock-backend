@@ -3,7 +3,9 @@
 
 Arranca la API en Development en un puerto libre de 127.0.0.1, lee /openapi/v1.json, quita lo que cambia entre ejecuciones
 (la lista «servers», que lleva el puerto) y guarda el JSON con formato estable y salto de línea LF. No agrega paquetes
-ni toca la base de datos: solo lee el documento que la API ya publica en Development.
+ni toca la base de datos: solo lee el documento que la API ya publica en Development. La API no arranca sin
+ConnectionStrings:KnockMongo (TT-BD-06), así que se le da una cadena sintética hacia un destino que no responde, igual que
+KnockApiFactory en las pruebas: la exportación no se conecta a MongoDB y nunca usa una cadena real del entorno.
 
 Uso:
   python scripts/export_openapi.py              compila (Release) y exporta
@@ -30,6 +32,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT = ROOT / "src" / "Knock.Api" / "Knock.Api.csproj"
 DEFAULT_OUTPUT = ROOT / "docs" / "openapi.v1.json"
+# Cadena sintética: puerto 9 (descarte) en loopback, sin credenciales. La API solo la valida al arrancar; el cliente no conecta.
+UNREACHABLE_MONGO = "mongodb://127.0.0.1:9/?directConnection=true"
 
 
 def free_port() -> int:
@@ -84,7 +88,12 @@ def main() -> int:
     command = ["dotnet", "run", "--project", str(PROJECT), "-c", "Release", "--no-launch-profile"]
     if args.no_build:
         command.append("--no-build")
-    environment = {**os.environ, "ASPNETCORE_ENVIRONMENT": "Development", "ASPNETCORE_URLS": f"http://127.0.0.1:{port}"}
+    environment = {
+        **os.environ,
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": f"http://127.0.0.1:{port}",
+        "ConnectionStrings__KnockMongo": UNREACHABLE_MONGO,
+    }
     popen_options: dict[str, object] = {"start_new_session": True} if os.name != "nt" else {}
     process = subprocess.Popen(command, cwd=ROOT, env=environment, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **popen_options)
     try:

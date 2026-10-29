@@ -1,6 +1,5 @@
 using System.Net;
 using AwesomeAssertions;
-using Knock.IntegrationTest.Data;
 using Knock.IntegrationTest.Support;
 using Xunit;
 
@@ -22,20 +21,20 @@ public class HealthEndpointTests
     [Fact]
     public async Task Get_HealthReady_Returns200_TC_TT_API_01_02()
     {
-        await using var postgis = await PostgisFixture.StartAsync();
-        await PostgisReadinessChecks.AssertReadyReturns200Async(postgis.ConnectionString);
+        await ReadinessChecks.AssertReadyReturns200Async();
     }
 
     [Fact]
     public async Task Get_HealthReady_BlobNotConfigured_Returns503_TC_TT_API_01_03()
     {
-        await using var postgis = await PostgisFixture.StartAsync();
-        using var factory = new KnockApiFactory(connectionString: postgis.ConnectionString);
+        var mongo = await DocumentDbFixture.SharedAsync();
+        using var factory = new KnockApiFactory(
+            settings: new Dictionary<string, string?> { ["ConnectionStrings:KnockMongo"] = mongo.ConnectionString });
         using var client = factory.CreateClient();
 
         using var ready = await client.GetAsync(new Uri("/health/ready", UriKind.Relative));
 
-        ready.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable, "con PostgreSQL disponible, solo Blob (sin configurar) impide readiness");
+        ready.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable, "con MongoDB disponible, solo Blob (sin configurar) impide readiness");
     }
 
     [Fact]
