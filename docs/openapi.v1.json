@@ -677,6 +677,39 @@
           }
         }
       }
+    },
+    "/api/v{version}/oficios": {
+      "get": {
+        "tags": [
+          "Oficios"
+        ],
+        "summary": "Oficios activos como arreglo sin paginar: excepción documentada a la constitución §11 (catálogo acotado, D9).\n`[AllowAnonymous]` explícito para que siga público aunque se agregue una política de autorización global (D3).",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OficioResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -814,6 +847,29 @@
             ]
           }
         }
+      },
+      "OficioResponse": {
+        "required": [
+          "clave",
+          "nombre",
+          "modalidad"
+        ],
+        "type": "object",
+        "properties": {
+          "clave": {
+            "type": "string",
+            "description": "Clave estable del catálogo (≤ 16 caracteres)."
+          },
+          "nombre": {
+            "type": "string",
+            "description": "Nombre para mostrar, en español (≤ 100 caracteres)."
+          },
+          "modalidad": {
+            "type": "string",
+            "description": "Valores conocidos: `domicilio` o `taller`. Es texto, no enum cerrado, para admitir modalidades futuras."
+          }
+        },
+        "description": "Oficio activo del catálogo tal como lo ve la app: solo clave, nombre y modalidad (nunca id ni activo)."
       },
       "ProblemDetails": {
         "type": "object",
@@ -968,6 +1024,9 @@
     },
     {
       "name": "Colonias"
+    },
+    {
+      "name": "Oficios"
     }
   ]
 }
