@@ -68,7 +68,7 @@ Regresión sin editar: TC-TT-API-03-03, 04, 05, 06, 07, 12 y 16; TC-TT-API-02-02
 4. `SecurityHeadersMiddleware`, `Cache-Control` y Kestrel sin `Server` (casos 01 a 04).
 5. HSTS y redirección opcional (casos 05, 06 y 08).
 6. CORS con falla cerrada, validación y arranque (casos 09 a 15).
-7. Prueba de endpoints públicos (caso 16) y, si el líder lo decide, ajuste de la exención de `/health/ready` (duda 8).
+7. Prueba de endpoints públicos (caso 16) y política propia por IP de `/health/ready`, 60 por minuto configurable (duda 8, resuelta por el líder el 2026-10-28).
 8. Orden del pipeline y documentos (`docs/MIDDLEWARES.md`, `docs/security-headers.md`, nota en `docs/rate-limit-matrix.md`; casos 17 a 19), prueba de Scalar (caso 18).
 9. Gates, `Memoria.md`, informe y evidencia en el PR (`curl -I` del caso 04).
 

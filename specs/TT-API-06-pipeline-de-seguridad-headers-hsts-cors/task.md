@@ -19,7 +19,7 @@
 - **Verificar:** TC-TT-API-06-09 · TC-TT-API-06-10 · TC-TT-API-06-11 · TC-TT-API-06-12
 
 ## T5 — Endpoints públicos con límite
-- **Estado:** pendiente (prueba que enumera los públicos; depende de la duda 8 sobre `/health` y `/health/ready`)
+- **Estado:** pendiente (prueba que enumera los públicos; la duda 8 está resuelta: `/health` exento y `/health/ready` con política propia de 60 por minuto)
 - **Verificar:** TC-TT-API-06-16 · (regresión) TC-TT-API-03-03 · TC-TT-API-03-04 · TC-TT-API-03-06
 
 ## T6 — Documentación y gates
