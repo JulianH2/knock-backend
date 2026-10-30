@@ -23,7 +23,6 @@ fuente: "TT-API-04_OutboxTransaccionalMensajesProgramados_Knock.docx"
 - **Épica:** EP-13
 - **Responsable:** José Guillermo Rangel Hernández
 - **Sprint:** Backlog (etiqueta sprint-2; se trae al sprint si hay capacidad)
-- **Día sugerido:** Lunes 26 – martes 27
 - **Clave de Jira:** KNOCK-50
 - **Rama:** chore/KNOCK-50-outbox-mensajes  →  PR a sprint-02
 - **Depende de:** TT-API-01, TT-BD-06
@@ -36,7 +35,7 @@ Que los eventos (avisos, oleadas, vencimientos) no se pierdan si el servicio se 
 ## 3. Alcance
 
 - Outbox transaccional con transacciones de MongoDB: el evento se guarda junto con el cambio de estado.
-- Procesamiento del outbox: cada tarea se reserva con una operación atómica para que solo una réplica la ejecute.
+- Procesamiento del outbox: cada tarea se reserva con una operación atómica y con un tiempo de expiración (lease), para que solo una réplica la ejecute y una tarea reservada por una réplica que se cae vuelva a quedar disponible.
 - Reintentos con espera creciente, límite de intentos y estado de error visible.
 - Idempotencia: procesar dos veces el mismo evento no repite su efecto.
 - Mensajes programados (15 min, 48 h, 7 días).
@@ -50,8 +49,9 @@ Que los eventos (avisos, oleadas, vencimientos) no se pierdan si el servicio se 
 ## 5. Pasos
 
 1. Decidir la biblioteca de mensajes programados con una comparación escrita (licencia, soporte del outbox sobre MongoDB, costo cero, facilidad de prueba) o una implementación propia detrás de IEventBus e IScheduler; registrar la decisión y su justificación en Memoria.md. No elegir antes de comparar.
-1. Guardar el evento en la misma transacción de MongoDB que el cambio de estado.
-1. Procesar el outbox reservando cada tarea con una operación atómica, para que solo una réplica la ejecute.
+1. Antes de implementar, confirmar que Azure DocumentDB y documentdb-local soportan transacciones de varios documentos (en MongoDB requieren réplica) y anotar el resultado en Memoria.md. Si no las soportan, plan B: guardar el evento dentro del mismo documento que el cambio de estado, porque la escritura de un solo documento ya es atómica.
+1. Guardar el evento en la misma transacción de MongoDB que el cambio de estado (o, en el plan B, en el mismo documento).
+1. Procesar el outbox reservando cada tarea con una operación atómica y con un tiempo de expiración (lease): si la réplica que la reservó se cae, al vencer la reserva otra réplica puede tomarla. El procesamiento idempotente del paso siguiente cubre que una tarea lenta se ejecute dos veces.
 1. Reintentar con espera creciente y límite de intentos; al agotarlos, dejar el evento en estado de error visible.
 1. Hacer el procesamiento idempotente (identificador del evento), de modo que repetirlo no duplique su efecto.
 1. Configurar mensajes programados.
@@ -63,7 +63,7 @@ Que los eventos (avisos, oleadas, vencimientos) no se pierdan si el servicio se 
 | Archivo, comando o herramienta | Para qué |
 |---|---|
 | Biblioteca de mensajes programados (a decidir en el paso 1) | Mensajes programados; la decisión se justifica por escrito |
-| Transacciones de MongoDB | El evento y el cambio de estado se guardan juntos |
+| Transacciones de MongoDB (requieren réplica; confirmar el soporte) | El evento y el cambio de estado se guardan juntos |
 
 ## 7. Cómo se verifica (criterios de terminado)
 
@@ -74,6 +74,8 @@ Que los eventos (avisos, oleadas, vencimientos) no se pierdan si el servicio se 
 | V3 | Reintentos con límite: tras agotar los intentos el evento queda en estado de error | Prueba de integración |
 | V4 | Repetir el mismo evento no duplica su efecto | Prueba de integración |
 | V5 | La decisión de la biblioteca está justificada por escrito | Revisión en el PR (Memoria.md) |
+| V6 | Una tarea reservada por una réplica que se cae se reasigna al vencer su reserva y se procesa una sola vez | Prueba de integración |
+| V7 | El soporte de transacciones de varios documentos (o el plan B) está confirmado y anotado | Revisión en el PR (Memoria.md) |
 
 ## 8. Seguridad y reglas
 
