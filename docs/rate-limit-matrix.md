@@ -32,3 +32,5 @@
 - **Detrás de Container Apps la IP de conexión es la del proxy de entrada.** Sin `ForwardedHeaders:KnownProxies` o `ForwardedHeaders:KnownNetworks` configurados, todos los clientes compartirían la misma partición (100 por minuto global y 10 por minuto en `/auth`): una denegación de servicio autoinfligida. El despliegue (Terraform, ADR-003) debe fijar la red del ingress, por ejemplo `ForwardedHeaders__KnownNetworks__0=<CIDR del ingress>`.
 - **No usar `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true`:** haría que el host confiara en cualquier remitente y permitiría evadir el límite con `X-Forwarded-For`. El Dockerfile no la define y no debe definirse.
 - Un valor de red demasiado amplio también permite evadir el límite: usar el CIDR mínimo del ingress.
+
+- `/api/v1/colonias/en-punto` va bajo la política global por IP sin exención (TT-API-07, KNOCK-141).

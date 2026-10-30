@@ -7,7 +7,7 @@ namespace Knock.Api.Modules.Catalog.Services;
 /// Consulta interna de colonia por punto (no es contrato entre módulos). La usan <see cref="CatalogApi"/> y el controller de
 /// TT-API-07: una sola implementación del desempate (TC-TT-BD-06-19).
 /// </summary>
-internal sealed class NeighborhoodLocator(CatalogStore store)
+internal sealed class NeighborhoodLocator(CatalogStore store) : INeighborhoodLocator
 {
     public const double CenterFallbackMeters = 2000;
 

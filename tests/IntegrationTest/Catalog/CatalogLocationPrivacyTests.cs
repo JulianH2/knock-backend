@@ -6,7 +6,6 @@ using Knock.Api.Modules.Catalog.Services;
 using Knock.IntegrationTest.Support;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
 
@@ -34,7 +33,7 @@ public sealed class CatalogLocationPrivacyTests
         await CatalogTestDatabase.SeedAsync(factory.Services);
         var client = factory.Services.GetRequiredService<IMongoClient>();
         var database = client.GetDatabase(databaseName);
-        var before = await ReadStorageSnapshotAsync(database);
+        var before = await CatalogTestDatabase.ReadStorageSnapshotAsync(database);
 
         string? fromApi = null;
         string? fromInternal = null;
@@ -54,21 +53,7 @@ public sealed class CatalogLocationPrivacyTests
         output.Should().NotContain(_latitude.ToString("0.######", CultureInfo.InvariantCulture));
         output.Should().NotContain(Math.Abs(_longitude).ToString("0.######", CultureInfo.InvariantCulture));
         client.Settings.ClusterConfigurator.Should().BeNull("sin suscriptores de eventos de comandos que registren su cuerpo");
-        (await ReadStorageSnapshotAsync(database)).Should().Be(before);
+        (await CatalogTestDatabase.ReadStorageSnapshotAsync(database)).Should().Be(before);
         await client.DropDatabaseAsync(databaseName);
-    }
-
-    /// <summary>Colecciones de la base del módulo y documentos de cada una: la consulta no debe crear ni cambiar nada.</summary>
-    private static async Task<string> ReadStorageSnapshotAsync(IMongoDatabase database)
-    {
-        var names = (await (await database.ListCollectionNamesAsync()).ToListAsync()).Order(StringComparer.Ordinal).ToList();
-        var counts = new List<string>();
-        foreach (var name in names)
-        {
-            var count = await database.GetCollection<BsonDocument>(name).CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty);
-            counts.Add($"{name}={count}");
-        }
-
-        return string.Join(',', counts);
     }
 }
