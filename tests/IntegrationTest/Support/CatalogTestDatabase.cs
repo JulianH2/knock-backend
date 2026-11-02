@@ -1,5 +1,7 @@
 using Knock.Api.Modules.Catalog.Data;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace Knock.IntegrationTest.Support;
 
@@ -12,6 +14,21 @@ internal static class CatalogTestDatabase
     {
         await using var scope = services.CreateAsyncScope();
         await scope.ServiceProvider.GetRequiredService<CatalogSeeder>().SeedAsync(SeedsDirectory, CancellationToken.None);
+    }
+
+    /// <summary>Colecciones de la base y documentos de cada una: una consulta no debe crear ni cambiar nada.</summary>
+    public static async Task<string> ReadStorageSnapshotAsync(IMongoDatabase database)
+    {
+        ArgumentNullException.ThrowIfNull(database);
+        var names = (await (await database.ListCollectionNamesAsync()).ToListAsync()).Order(StringComparer.Ordinal).ToList();
+        var counts = new List<string>();
+        foreach (var name in names)
+        {
+            var count = await database.GetCollection<BsonDocument>(name).CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty);
+            counts.Add($"{name}={count}");
+        }
+
+        return string.Join(',', counts);
     }
 
     private static string FindSeedsDirectory()

@@ -22,6 +22,7 @@ public sealed class CatalogStoreMaxTimeTests
 
         var queries = new[]
         {
+            store.ActiveOficiosQuery(),
             store.IntersectingQuery(position),
             store.NearestCenterQuery(position, 2000),
             store.NamesByPostalCodeQuery("42803"),
