@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-28T16:47:49Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-10-29T18:42:44Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -8,7 +8,7 @@
 | Módulo | Capas | Archivos | Tipos | Métodos públicos |
 |---|---|---|---|---|
 | `Assistant` | -, services | 3 | 3 | 1 |
-| `Catalog` | -, data, domain, services | 11 | 11 | 23 |
+| `Catalog` | -, controllers, data, domain, dtos, services, validators | 21 | 23 | 30 |
 | `Identity` | -, controllers, dtos, services | 11 | 15 | 10 |
 | `Knock.Api` | -, common, hosting | 19 | 31 | 40 |
 | `Media` | -, controllers, data, domain, dtos, services, validators | 18 | 35 | 48 |
@@ -39,13 +39,22 @@
 - `src/Knock.Api/Modules/Catalog/CatalogModuleExtensions.cs` — class `CatalogModuleExtensions`
   - `AddCatalogModule()`:13
 - `src/Knock.Api/Modules/Catalog/ICatalogApi.cs` — interface `ICatalogApi`
+- `src/Knock.Api/Modules/Catalog/ModelBinders/SingleValueQueryModelBinder.cs` — class `SingleValueQueryModelBinder`, class `SingleValueFromQueryAttribute`
+  - `BindModelAsync()`:16
+
+**controllers**
+
+- `src/Knock.Api/Modules/Catalog/Controllers/V1/ColoniasController.cs` — class `ColoniasController`
+  - `GetAtPoint()`:29
+- `src/Knock.Api/Modules/Catalog/Controllers/V1/OficiosController.cs` — class `OficiosController`
+  - `List()`:22
 
 **data**
 
 - `src/Knock.Api/Modules/Catalog/Data/CatalogSeeder.cs` — class `CatalogSeeder`
   - `CatalogSeeder()`:13, `SeedAsync()`:19, `SeedAsync()`:29
 - `src/Knock.Api/Modules/Catalog/Data/CatalogStore.cs` — class `CatalogStore`
-  - `EnsureIndexesAsync()`:60, `FindIntersectingAsync()`:83, `FindNearestCenterAsync()`:87, `FindNamesByPostalCodeAsync()`:90, `ColoniaExistsAsync()`:96, `IntersectingQuery()`:100, `NearestCenterQuery()`:107, `NamesByPostalCodeQuery()`:113, `ColoniaExistsQuery()`:119
+  - `EnsureIndexesAsync()`:66, `FindActiveOficiosAsync()`:89, `FindIntersectingAsync()`:99, `FindNearestCenterAsync()`:103, `FindNamesByPostalCodeAsync()`:106, `ColoniaExistsAsync()`:112, `ActiveOficiosQuery()`:116, `IntersectingQuery()`:122, `NearestCenterQuery()`:129, `NamesByPostalCodeQuery()`:135, `ColoniaExistsQuery()`:141
 
 **domain**
 
@@ -56,15 +65,30 @@
 - `src/Knock.Api/Modules/Catalog/Domain/GeoPosition.cs` — record struct `GeoPosition`
 - `src/Knock.Api/Modules/Catalog/Domain/Oficio.cs` — class `Oficio`
   - `IsValidModalidad()`:10
+- `src/Knock.Api/Modules/Catalog/Domain/OficioListing.cs` — record `OficioListing`
 - `src/Knock.Api/Modules/Catalog/Domain/SearchNameNormalizer.cs` — class `SearchNameNormalizer`
   - `Normalize()`:12
+
+**dtos**
+
+- `src/Knock.Api/Modules/Catalog/Dtos/NeighborhoodAtPointQuery.cs` — class `NeighborhoodAtPointQuery`
+- `src/Knock.Api/Modules/Catalog/Dtos/NeighborhoodAtPointResponse.cs` — record `NeighborhoodAtPointResponse`, record `NeighborhoodAtPointColoniaResponse`
+- `src/Knock.Api/Modules/Catalog/Dtos/OficioResponse.cs` — record `OficioResponse`
 
 **services**
 
 - `src/Knock.Api/Modules/Catalog/Services/CatalogApi.cs` — class `CatalogApi`
   - `FindNeighborhoodAtAsync()`:11, `FindNeighborhoodsByPostalCodeAsync()`:14, `NeighborhoodExistsAsync()`:25
+- `src/Knock.Api/Modules/Catalog/Services/INeighborhoodLocator.cs` — interface `INeighborhoodLocator`
 - `src/Knock.Api/Modules/Catalog/Services/NeighborhoodLocator.cs` — class `NeighborhoodLocator`
-  - `NeighborhoodLocator()`:10, `FindAtAsync()`:19
+  - `FindAtAsync()`:19
+- `src/Knock.Api/Modules/Catalog/Services/OficioQueries.cs` — class `OficioQueries`
+  - `OficioQueries()`:7, `ListActiveAsync()`:14
+
+**validators**
+
+- `src/Knock.Api/Modules/Catalog/Validators/NeighborhoodAtPointQueryValidator.cs` — class `NeighborhoodAtPointQueryValidator`
+  - `Parse()`:31
 
 ### Identity
 

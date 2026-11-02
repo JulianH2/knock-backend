@@ -3,7 +3,7 @@
 > **Jira:** KNOCK-27 · **Área:** Azure · **Responsable:** José Julián Hernández Hernández · **Sprint:** S0 · **Puntos:** 1
 > **Repositorio:** knock-backend · **Ficha:** TT-AZ-01_CuentaAzureGrupoRecursos_Knock.docx
 > **Skills:** story-workflow, vertical-slice-api, testing-strategy-backend, security-core
-> **Estado:** Aprobada
+> **Estado:** Firmada
 
 ## 1. Objetivo
 Crear la cuenta de Azure del proyecto con un grupo de recursos, un presupuesto y alertas de costo, antes de provisionar infraestructura.
