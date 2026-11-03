@@ -19,7 +19,7 @@ Ver errores, tiempos y uso de la API (y de la app) para detectar problemas antes
 | Pieza | Hoy | En esta tarea |
 |---|---|---|
 | `Hosting/CorrelationIdMiddleware` + `CorrelationId` | Asigna o propaga `X-Correlation-Id` (máx. 64 de `[A-Za-z0-9._-]`), lo pone en `HttpContext.Items`, en la respuesta y en el `LogContext` de Serilog. | **Se extiende:** además pone el id como atributo `knock.correlation_id` en el span de la petición (`Activity.Current`). Sin cambio de reglas, de encabezado ni de orden. |
-| `Hosting/ProblemDetailsExtensions` | Cuerpo de error con `traceId` (lo pone ASP.NET Core: `Activity.Current.Id`, formato W3C `00-<trace-id>-<span-id>-01`) y `correlationId`, separados (decisión 4 de TT-API-03). | **Sin cambios.** Con OpenTelemetry el `Activity` es el mismo, así que el `<trace-id>` del `traceId` es el `operation_Id` de Application Insights (caso 04). |
+| `Hosting/ProblemDetailsExtensions` | Cuerpo de error con `traceId` (lo pone ASP.NET Core: `Activity.Current.Id`, formato W3C `00-<trace-id>-<span-id>-<banderas>`, contrato en §4) y `correlationId`, separados (decisión 4 de TT-API-03). | **Sin cambios.** Con OpenTelemetry el `Activity` es el mismo, así que el `<trace-id>` del `traceId` es el `operation_Id` de Application Insights (caso 04). |
 | `Hosting/LoggingExtensions.AddKnockLogging` | Serilog a consola en JSON, `Enrich.FromLogContext`, `ScopeRequestPathEnricher`, niveles desde `appsettings` (`Microsoft.AspNetCore: Warning`). | **Se extiende lo mínimo:** Serilog reenvía sus eventos ya filtrados al proveedor de logs de OpenTelemetry (`writeToProviders: true`), así los niveles y los enriquecedores siguen siendo los de TT-API-03. La consola no cambia. |
 | `Hosting/KnockApplicationExtensions` | `AddKnockApi` / `UseKnockApi` con el orden de `docs/MIDDLEWARES.md`. | **Se agrega** `AddKnockObservability(configuration, environment)` en `AddKnockApi`. **No hay middleware nuevo**: la instrumentación escucha los eventos de diagnóstico, así que el orden de la tubería y `PipelineOrderTests` no cambian. |
 | Application Insights / OpenTelemetry / Sentry | No existen (ni paquetes, ni configuración, ni recurso). | **Nuevo:** extensión de observabilidad, procesador de redacción, opciones `Observability:*`, pruebas con exportador en memoria y `docs/OBSERVABILIDAD.md` (alertas y verificación manual). |
@@ -86,16 +86,28 @@ Ver errores, tiempos y uso de la API (y de la app) para detectar problemas antes
   - Editar `.github/`, `scripts/`, `.agents/`, `constitution.md`, `security/exceptions.yaml`, `docs/openapi.v1.json`, configuración de analizadores y specs ajenas.
 
 ## 4. Contratos API y eventos
-**Sin endpoints ni eventos nuevos y sin cambios en el OpenAPI.** La respuesta de error ya trae `traceId` y `correlationId` (TT-API-03); no cambian ni su nombre ni su formato.
+**Sin endpoints ni eventos nuevos.** El contrato **sí incluye** dos identificadores de rastreo que la API ya expone desde TT-API-03 y que esta tarea no cambia (ni nombre, ni ubicación, ni formato); se declaran aquí porque hasta ahora no estaban escritos (decisión del 2026-11-03, abajo). Verificado en `CorrelationIdMiddleware`, `ProblemDetailsExtensions`, `ProblemResponses` y `ObservabilityExtensions`.
+
+**Lo que expone la API:**
+
+| Nombre | Ubicación | Formato | En qué respuestas aparece | Fuente en el código |
+|---|---|---|---|---|
+| `X-Correlation-Id` | Encabezado de respuesta | Si la petición trae **un solo** `X-Correlation-Id` válido (1 a 64 caracteres de `[A-Za-z0-9._-]`), se devuelve el mismo valor; si no (falta, se repite, es largo o tiene otros caracteres), uno generado: GUID sin guiones, `^[0-9a-f]{32}$` | **Todas**: éxitos, errores en ProblemDetails, el 403 sin cuerpo de `[Authorize]` y `/health*` (se escribe en `Response.OnStarting`, también cuando el manejador de excepciones limpia la respuesta) | `CorrelationIdMiddleware` (paso 2 de `docs/MIDDLEWARES.md`) |
+| `correlationId` | Campo de extensión del cuerpo ProblemDetails (`application/problem+json`) | El mismo valor del encabezado `X-Correlation-Id` de esa respuesta | Toda respuesta ProblemDetails: 400 (excepción de dominio o enlace de modelo de MVC), 401, 403 (excepción de dominio), 404, 409, 413, 422 (validación o dominio), 429 y 500 | `ProblemDetailsExtensions.CustomizeProblemDetails` |
+| `traceId` | Campo de extensión del cuerpo ProblemDetails | `Activity.Current.Id` en W3C: `^00-[0-9a-f]{32}-[0-9a-f]{16}-0[01]$` (55 caracteres: versión `00`, `<trace-id>` de **32 hex**, `<span-id>` de 16 hex y banderas; `01` si la traza se muestrea, que es lo normal con `SamplingRatio` 1.0, decisión P7). El `<trace-id>` es el `operation_Id` de Application Insights y el código de soporte de la app (decisión P1). Si no hubiera `Activity`, ASP.NET Core pone `HttpContext.TraceIdentifier`; con OpenTelemetry siempre registrado no ocurre en las rutas de negocio | Las mismas respuestas ProblemDetails que `correlationId` | ASP.NET Core (`ProblemDetailsDefaults`, vía `IProblemDetailsService` y `ProblemDetailsFactory`); el código de Knock no lo escribe |
+
+Ninguno aparece en el cuerpo de las respuestas de éxito ni en `/health*` (que no usan ProblemDetails). **No** se exponen encabezados `traceparent`, `traceresponse`, `tracestate`, `baggage` ni `Request-Id` en las respuestas; el `traceparent` del cliente se ignora (decisión P9) y solo se envía `traceparent` en las llamadas **salientes** de `HttpClient` (caso 11), que no son parte del contrato del cliente. En Development, el cuerpo de un 500 lleva además `detail` y `stackTrace` (fuera de Development, nunca). Pruebas que lo cubren: `IntegrationTest/Errors/ErrorResponseCorrelationTests` (500, 404, 401, 422, 413 y 429 con encabezado, `correlationId` y `traceId`; id generado de 32 hex), `IntegrationTest/Correlation/CorrelationIdTests` (encabezado en éxitos), `IntegrationTest/Observability/CorrelationTelemetryTests` (formato W3C de `traceId` y su `<trace-id>` = traza exportada, caso 04) y `SecurityTest/RateLimiting/RateLimitResponseLeakTests` (el 429 solo tiene `type`, `title`, `status`, `traceId` y `correlationId`). El 400 de enlace de modelo de MVC no tiene prueba propia: hereda el mismo `CustomizeProblemDetails`.
+
+**OpenAPI (`docs/openapi.v1.json`, protegido; no se edita a mano):** hoy no declara nada de lo anterior: los esquemas `ProblemDetails` y `ValidationProblemDetails` no tienen `traceId` ni `correlationId`, y ninguna respuesta declara el encabezado `X-Correlation-Id`. Regenerarlo con `scripts/export_openapi.py` **no** lo cambia, porque el documento sale del código y ningún transformador de OpenAPI los declara (`OpenApiExtensions` solo llama a `AddOpenApi("v1")`). Para que el OpenAPI coincida con este contrato hace falta un cambio de código (transformadores de esquema y de operación) y después regenerar; los cambios esperados son: `traceId` (`string`, `pattern` `^00-[0-9a-f]{32}-[0-9a-f]{16}-0[01]$`) y `correlationId` (`string`, `pattern` `^[A-Za-z0-9._-]{1,64}$`) en los dos esquemas de error, y el encabezado `X-Correlation-Id` (mismo patrón) en todas las respuestas. Lo decide y lo hace el líder (fuera de esta tarea).
 
 **Relación entre `traceId` (OpenTelemetry) y `X-Correlation-Id` (TT-API-03):**
 
 | Identificador | Quién lo genera | Dónde se ve | Uso |
 |---|---|---|---|
 | `X-Correlation-Id` / `correlationId` | El cliente (si es válido) o la API (`CorrelationIdMiddleware`); después, el gateway (ADR-001) | Encabezado de respuesta, cuerpo de error, propiedad `CorrelationId` de cada log (consola y Application Insights) y atributo `knock.correlation_id` del span de la petición | Id de negocio para soporte, estable a través de servicios y reintentos del cliente |
-| `traceId` (W3C `00-<trace-id>-<span-id>-01`) | ASP.NET Core / OpenTelemetry (`Activity`) | Cuerpo de error (`traceId`), `operation_Id` en Application Insights, `TraceId` de cada log exportado y `traceparent` saliente | Traza técnica de la petición y sus dependencias |
+| `traceId` (W3C `00-<trace-id>-<span-id>-<banderas>`) | ASP.NET Core / OpenTelemetry (`Activity`) | Cuerpo de error (`traceId`), `operation_Id` en Application Insights (el `<trace-id>`), `TraceId` de cada log exportado y `traceparent` saliente | Traza técnica de la petición y sus dependencias |
 
-Ninguno sustituye al otro y ninguno sirve para autorizar. No se agrega encabezado `traceparent` ni `traceresponse` a las respuestas.
+Ninguno sustituye al otro y ninguno sirve para autorizar.
 
 **Configuración:** `APPLICATIONINSIGHTS_CONNECTION_STRING` (variable de entorno; en Container Apps, referencia a un secreto de Key Vault). Nunca en `appsettings*.json`, en el repositorio, en los logs ni en el PR. En Development y en las pruebas no se define.
 
@@ -174,6 +186,9 @@ Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 - **P7 — Muestreo y cuota:** 100 % de las trazas con el tope diario del recurso; Live Metrics apagado.
 - **P8 — Paquetes:** lista explícita de §3. El líder autoriza agregarlos en la implementación, con versión fija, licencia y evaluación en `Memoria.md`, y OSV-Scanner y dependency-review en verde.
 - **P9 — `traceparent` del cliente:** la API inicia siempre una traza nueva e ignora el `traceparent` externo hasta que exista el gateway.
+
+**Decisión del líder (2026-11-03, PR #89):**
+- **Contrato de rastreo declarado:** la §4 decía «sin cambios en el OpenAPI» y que el contrato no cambiaba, pero no declaraba lo que la API ya expone. Se documenta exactamente lo verificado en el código: encabezado `X-Correlation-Id` en todas las respuestas y campos `correlationId` y `traceId` en todo ProblemDetails, con su formato. Porqué: knock-frontend (Sentry y código de soporte, decisión P1) depende de esos nombres y formatos y debe poder leerlos en el contrato. El código no cambia en este commit; el OpenAPI generado tampoco los declara todavía (ver §4).
 
 ## Aprobación
 - [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-02
