@@ -15,7 +15,7 @@
 - **Verificar:** TC-TT-BD-07-07
 
 ## T4 — Workflow y Dependabot (Tech Lead)
-- **Estado:** pendiente. `ci-pr.yml`: renombrar pasos, quitar el `if` de `DatabaseTest`, borrar `sql-lint`, la salida `sql` y su entrada en `gate.needs`; el comentario de las líneas 10 y 11; `dependabot.yml`: quitar `efcore`, agregar `MongoDB.*`; `.gitleaks.toml`: regla para `mongodb://` solo si el líder acepta la pregunta P7.
+- **Estado:** pendiente. `ci-pr.yml`: renombrar pasos, quitar el `if` de `DatabaseTest`, borrar `sql-lint`, la salida `sql` y su entrada en `gate.needs`; el comentario de las líneas 10 y 11; `dependabot.yml`: quitar `efcore`, agregar `MongoDB.*`; `.gitleaks.toml`: la regla para `mongodb://` la agrega el líder en el PR #101 (pregunta P7, resuelta).
 - **Verificar:** TC-TT-BD-07-01 · TC-TT-BD-07-02 · TC-TT-BD-07-03
 
 ## T5 — CI en verde y gates
