@@ -39,7 +39,7 @@ Cada línea empieza con el nombre exacto de la llamada en `UseKnockApi` (para `U
 
 ## Respuestas que cada capa produce
 
-Todas son `application/problem+json` (salvo el 308 y el 204 de abajo), llevan el encabezado `X-Correlation-Id`, los encabezados de seguridad de `docs/security-headers.md` y los campos `traceId` y `correlationId` (independientes) en el cuerpo.
+Todas son `application/problem+json` (salvo el 308 y el 204 de abajo), llevan el encabezado `X-Correlation-Id`, los encabezados de seguridad de `docs/security-headers.md` y los campos `traceId` y `correlationId` (independientes) en el cuerpo. Formatos (contrato en la §4 de la spec TT-OBS-01): `X-Correlation-Id` y `correlationId` son el mismo valor, el recibido si es válido (1 a 64 caracteres de `[A-Za-z0-9._-]`) o uno generado de 32 hex; `traceId` es W3C `00-<trace-id de 32 hex>-<span-id de 16 hex>-<banderas>`. El encabezado `X-Correlation-Id` también va en las respuestas de éxito; la API no devuelve `traceparent` ni `traceresponse`.
 
 | Capa | Códigos |
 |---|---|
