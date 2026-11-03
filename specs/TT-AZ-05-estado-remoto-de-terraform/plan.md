@@ -21,8 +21,8 @@
 |---|---|---|
 | TC-TT-AZ-05-01 | Salida de `terraform init` y `ls` sin `terraform.tfstate` | comando |
 | TC-TT-AZ-05-02 | `git ls-files` filtrado y reglas de `.gitignore` | comando |
-| TC-TT-AZ-05-03 | Captura de dos terminales con el bloqueo | manual |
-| TC-TT-AZ-05-04 | `az storage account show` y `blob-service-properties show` con `--query` | comando |
+| TC-TT-AZ-05-03 | Captura de dos terminales: la primera con `terraform apply` en la pregunta de confirmación, la segunda con el error de bloqueo | manual |
+| TC-TT-AZ-05-04 | `az storage account show`, `blob-service-properties show` con `--query` y `az role assignment list --scope <contenedor>` | comando |
 | TC-TT-AZ-05-05 | `gitleaks` limpio y revisión del diff | CI / manual |
 
 ## 4. Secuencia
