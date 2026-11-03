@@ -524,3 +524,9 @@
 - Decisión: el caso 13 pasa de `ConnectionStringNotInRepoTests` (se elimina) a `SecurityTest/Secrets/AppSettingsSecretsTests`, sin «(comando)», y revisa además `docs/OBSERVABILIDAD.md` y `.env.example` solo si existe. Los casos 15 y 16 siguen con «(comando)» y una aclaración de que son manuales en Azure, porque `sdd_lint` no reconoce otra marca.
 - A evitar: que la prueba del caso 02 ponga la variable de Statsbeat antes de construir la API (así no comprueba nada); abrir `.env.example` desde un agente (permiso denegado): la prueba lo lee en tiempo de ejecución.
 
+## 2026-11-03 — TT-OBS-01 (KNOCK-51): redacción ampliada tras la revisión de pares (Guillermo)
+- Estado: `TelemetryRedactor` redacta además `curp`, `cookie`, `set-cookie`, `accessToken`, `password`, `secret` y los `snake_case` `id_token`, `access_token` y `refresh_token` (atributo y `clave=valor`), `Cookie:`/`Set-Cookie:` completos, CURP en minúsculas y textos dentro de `object[]` e `IEnumerable<string>`. `TracingTests` fija que un 404 de dominio no deja el span en `Error`.
+- Decisión: `Cookie` y `Set-Cookie` tienen su propia expresión que llega al fin de línea. Porqué: con la de `clave=valor` (que corta en `;`) el segundo par de la cookie quedaba visible.
+- Decisión: el celular nacional sin `+` no se redacta en texto libre (riesgo aceptado, anotado en `docs/OBSERVABILIDAD.md`; pregunta abierta al líder en el PR #89). Porqué: taparía ids, folios y tiempos; HU-001 solo maneja `+52`.
+- A evitar: la palabra «todo» en un comentario de C# (Sonar S1135 la toma como `TODO` y rompe el build con warnings como error); agregar a `RedactAttribute` un tipo con texto sin llevarlo a `RedactAttribute_TextContainers_AreRedacted_TC_TT_OBS_01_12`.
+

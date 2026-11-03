@@ -39,6 +39,7 @@ public class TracingTests
             oficiosSpan.GetTagItem("url.path").Should().Be("/api/v1/oficios");
             parameterSpan.GetTagItem("http.response.status_code").Should().Be(404);
             parameterSpan.GetTagItem("url.path").Should().Be("/api/v1/test/domain/{kind}", "url.path es la plantilla, sin el valor del parámetro");
+            parameterSpan.Status.Should().NotBe(ActivityStatusCode.Error, "una excepción de dominio (404) no marca el span como error: solo lo que termina en 500");
             spans.Should().AllSatisfy(s => s.Kind.Should().Be(ActivityKind.Server));
 
             var resource = factory.Services.GetRequiredService<TracerProvider>().GetResource().Attributes.ToDictionary(a => a.Key, a => a.Value);

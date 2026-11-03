@@ -9,10 +9,12 @@ namespace Knock.Api.Hosting;
 
 /// <summary>
 /// Segunda barrera de privacidad de la telemetría (TT-OBS-01 §6): la primera es no capturar cuerpos, encabezados ni la query.
-/// Las claves conocidas se redactan siempre; en texto libre, celulares, JWT, <c>Bearer</c>, CURP, <c>clave=valor</c> de esas claves
-/// y pares de coordenadas (dos números seguidos con 4 o más decimales). Un número suelto, como el <c>12.3456 ms</c> del log de
-/// petición, no se toca (decisión P6). Las expresiones no tienen cuantificadores anidados y empiezan en un límite de palabra (sin
-/// retroceso catastrófico ni reintentos a mitad de una corrida); cada una corre solo si el texto trae el carácter que la dispara.
+/// Las claves conocidas se redactan siempre; en texto libre, celulares con prefijo internacional, JWT, <c>Bearer</c>, CURP (sin importar
+/// mayúsculas), <c>clave=valor</c> de esas claves, <c>Cookie</c>/<c>Set-Cookie</c> completos y pares de coordenadas (con separador).
+/// Un número suelto, como el <c>12.3456 ms</c> del log de petición, no se toca (decisión P6). El celular nacional sin <c>+</c> no se
+/// busca: riesgo aceptado (HU-001 solo maneja <c>+52</c>; ver <c>docs/OBSERVABILIDAD.md</c>). Las expresiones no tienen
+/// cuantificadores anidados y empiezan en un límite de palabra (sin retroceso catastrófico ni reintentos a mitad de una corrida);
+/// cada una corre solo si el texto trae el carácter que la dispara.
 /// Si una expresión agota su tiempo, el valor se reemplaza entero.
 /// </summary>
 internal static partial class TelemetryRedactor
@@ -27,7 +29,8 @@ internal static partial class TelemetryRedactor
 
     private static readonly FrozenSet<string> _sensitiveKeys = new[]
     {
-        "lat", "lon", "phone", "celular", "token", "idToken", "refreshToken", "code", "sig", "authorization",
+        "lat", "lon", "phone", "celular", "curp", "token", "idToken", "id_token", "accessToken", "access_token", "refreshToken",
+        "refresh_token", "code", "sig", "authorization", "cookie", "set-cookie", "password", "secret",
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     /// <summary><see langword="true"/> si el nombre exacto de la clave (sin importar mayúsculas) es de las que siempre se redactan.</summary>
@@ -46,6 +49,7 @@ internal static partial class TelemetryRedactor
             var result = value.Contains("eyJ", StringComparison.Ordinal) ? Jwt().Replace(value, Placeholder) : value;
             result = result.Contains("bearer", StringComparison.OrdinalIgnoreCase) ? Bearer().Replace(result, Placeholder) : result;
             result = result.AsSpan().ContainsAny('=', ':') ? KeyValue().Replace(result, "${key}${separator}" + Placeholder) : result;
+            result = result.Contains("cookie", StringComparison.OrdinalIgnoreCase) ? Cookie().Replace(result, "${key}${separator}" + Placeholder) : result;
             result = result.AsSpan().ContainsAny('+', '%') ? Phone().Replace(result, Placeholder) : result;
             result = result.Length >= 18 ? Curp().Replace(result, Placeholder) : result;
             return CoordinatePairs.Redact(result);
@@ -56,7 +60,12 @@ internal static partial class TelemetryRedactor
         }
     }
 
-    /// <summary>Valor de un atributo: el de una clave conocida se reemplaza entero; los textos pasan por <see cref="Redact(string)"/>.</summary>
+    /// <summary>
+    /// Valor de un atributo: el de una clave conocida se reemplaza entero; los textos pasan por <see cref="Redact(string)"/>, también
+    /// dentro de <c>string[]</c>, <c>object[]</c> y cualquier <see cref="IEnumerable{T}"/> de <see cref="string"/> (se devuelve como
+    /// <c>string[]</c>). Los demás tipos (números, booleanos) pasan tal cual: **un tipo nuevo que pueda llevar texto debe agregarse aquí**
+    /// y a <c>RedactAttribute_TextContainers_AreRedacted_TC_TT_OBS_01_12</c>.
+    /// </summary>
     public static object? RedactAttribute(string key, object? value)
     {
         ArgumentNullException.ThrowIfNull(key);
@@ -74,6 +83,8 @@ internal static partial class TelemetryRedactor
         {
             string text => Redact(text),
             string[] texts => Array.ConvertAll(texts, Redact),
+            object?[] items => Array.ConvertAll(items, item => item is string text ? Redact(text) : item),
+            IEnumerable<string> texts => texts.Select(Redact).ToArray(),
             _ => value,
         };
     }
@@ -120,16 +131,20 @@ internal static partial class TelemetryRedactor
 
     /// <summary><c>clave=valor</c> o <c>"clave":"valor"</c> de una clave conocida; el nombre debe ser exacto (<c>StatusCode</c> no es <c>code</c>).</summary>
     [GeneratedRegex(
-        @"\b(?<key>lat|lon|phone|celular|token|idToken|refreshToken|code|sig|authorization)(?<separator>""?\s*[=:]\s*""?)[^\s&;,""]+",
+        @"\b(?<key>lat|lon|phone|celular|curp|token|idToken|id_token|accessToken|access_token|refreshToken|refresh_token|code|sig|authorization|password|secret)(?<separator>""?\s*[=:]\s*""?)[^\s&;,""]+",
         _options | RegexOptions.IgnoreCase,
         _timeoutMilliseconds)]
     private static partial Regex KeyValue();
+
+    /// <summary><c>Cookie</c> o <c>Set-Cookie</c> con el valor completo hasta el fin de línea o la comilla: lleva varios pares separados por <c>;</c>.</summary>
+    [GeneratedRegex(@"\b(?<key>set-cookie|cookie)(?<separator>""?\s*[=:]\s*""?)[^\r\n""]+", _options | RegexOptions.IgnoreCase, _timeoutMilliseconds)]
+    private static partial Regex Cookie();
 
     /// <summary>Celular con prefijo internacional (<c>+</c> o <c>%2B</c>) y 10 a 14 dígitos, con o sin espacios, puntos o guiones.</summary>
     [GeneratedRegex(@"(?:\+|%2[Bb])[0-9](?:[\s.-]?[0-9]){9,13}", _options, _timeoutMilliseconds)]
     private static partial Regex Phone();
 
-    [GeneratedRegex(@"\b[A-Z]{4}[0-9]{6}[HMX][A-Z]{5}[A-Z0-9][0-9]\b", _options, _timeoutMilliseconds)]
+    [GeneratedRegex(@"\b[A-Z]{4}[0-9]{6}[HMX][A-Z]{5}[A-Z0-9][0-9]\b", _options | RegexOptions.IgnoreCase, _timeoutMilliseconds)]
     private static partial Regex Curp();
 }
 

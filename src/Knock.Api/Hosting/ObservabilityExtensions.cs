@@ -86,6 +86,8 @@ internal static class ObservabilityExtensions
         // Decisión P9: ASP.NET Core no toma el contexto de traza ni el baggage del cliente, y OpenTelemetry tampoco los vuelve a
         // extraer (solo lo hace si el propagador por defecto no es W3C Trace Context). El traceparent saliente no cambia.
         services.AddSingleton<DistributedContextPropagator>(new IgnoreIncomingTraceContextPropagator());
+        // Sdk.SetDefaultTextMapPropagator es global del proceso, no del host: corre una vez por cada host que se construye (cada
+        // WebApplicationFactory de las pruebas) y siempre fija el mismo propagador, así que repetirlo es idempotente.
         Sdk.SetDefaultTextMapPropagator(new TraceContextPropagator());
         // Después del manejador de dominio (AddKnockProblemDetails): solo anota en el span las excepciones que terminan en 500.
         services.AddExceptionHandler<TelemetryExceptionRecorder>();

@@ -32,6 +32,17 @@ public class TelemetryRedactorTests
     [InlineData("{\"idToken\":\"tok-1\"}", "tok-1")]
     [InlineData("refreshToken=r-secret-1", "r-secret-1")]
     [InlineData("celular=5555123456", "5555123456")]
+    [InlineData("curp xexx010101hnexxxa4 found", "xexx010101hnexxxa4")]
+    [InlineData("curp=XEXX010101HNEXXXA4", "XEXX010101HNEXXXA4")]
+    [InlineData("accessToken=a-secret-1", "a-secret-1")]
+    [InlineData("?id_token=i-secret-1&x=1", "i-secret-1")]
+    [InlineData("access_token: a-secret-2", "a-secret-2")]
+    [InlineData("{\"refresh_token\":\"r-secret-2\"}", "r-secret-2")]
+    [InlineData("password=p-secret-1", "p-secret-1")]
+    [InlineData("secret: s-secret-1", "s-secret-1")]
+    [InlineData("Cookie: session=c-secret-1; theme=c-secret-2", "c-secret-1")]
+    [InlineData("Cookie: session=c-secret-1; theme=c-secret-2", "c-secret-2")]
+    [InlineData("Set-Cookie: sid=c-secret-3; Path=/; HttpOnly", "c-secret-3")]
     public void Redact_KnownSensitivePatternsAndKeys_LeavesOthersIntact_TC_TT_OBS_01_12(string input, string secret)
     {
         var redacted = TelemetryRedactor.Redact(input);
@@ -60,6 +71,15 @@ public class TelemetryRedactorTests
     [InlineData("idToken", "tok")]
     [InlineData("authorization", "anything")]
     [InlineData("sig", "abc")]
+    [InlineData("curp", "XEXX010101HNEXXXA4")]
+    [InlineData("cookie", "session=abc")]
+    [InlineData("Set-Cookie", "sid=abc")]
+    [InlineData("accessToken", "tok")]
+    [InlineData("access_token", "tok")]
+    [InlineData("id_token", "tok")]
+    [InlineData("refresh_token", "tok")]
+    [InlineData("password", "p")]
+    [InlineData("secret", "s")]
     public void RedactAttribute_KnownKey_IsAlwaysReplaced_TC_TT_OBS_01_12(string key, object value) =>
         TelemetryRedactor.RedactAttribute(key, value).Should().Be(TelemetryRedactor.Placeholder);
 
@@ -69,6 +89,20 @@ public class TelemetryRedactorTests
     [InlineData("RequestPath", "/api/v1/oficios")]
     public void RedactAttribute_OtherKeys_KeepTheirValue_TC_TT_OBS_01_12(string key, object value) =>
         TelemetryRedactor.RedactAttribute(key, value).Should().Be(value);
+
+    [Fact]
+    public void RedactAttribute_TextContainers_AreRedacted_TC_TT_OBS_01_12()
+    {
+        // Fija qué tipos se redactan: un tipo nuevo que pueda llevar texto debe agregarse a RedactAttribute y aquí.
+        const string phone = "+52 55 5555 0101";
+
+        TelemetryRedactor.RedactAttribute("note", phone).Should().Be(TelemetryRedactor.Placeholder);
+        TelemetryRedactor.RedactAttribute("notes", new[] { phone, "ok" }).Should().BeEquivalentTo(new[] { TelemetryRedactor.Placeholder, "ok" });
+        TelemetryRedactor.RedactAttribute("items", new object[] { phone, 42 }).Should().BeEquivalentTo(new object[] { TelemetryRedactor.Placeholder, 42 });
+        TelemetryRedactor.RedactAttribute("list", new List<string> { phone }).Should().BeEquivalentTo(new[] { TelemetryRedactor.Placeholder });
+        TelemetryRedactor.RedactAttribute("count", 42).Should().Be(42);
+        TelemetryRedactor.RedactAttribute("flag", true).Should().Be(true);
+    }
 
     [Fact]
     public void RedactUrl_RemovesEveryQueryValue_KeepsNames_TC_TT_OBS_01_12()
