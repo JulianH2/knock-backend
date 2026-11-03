@@ -5,7 +5,7 @@
 > **Depende de:** TT-AZ-01 (KNOCK-27, firmada: suscripción, grupo de recursos y presupuesto). **Habilita:** TT-AZ-02 (KNOCK-34), TT-AZ-03 (KNOCK-165) y TT-CD-01 (KNOCK-35).
 > **Fuentes:** ADR-003 (reglas 1, 2 y 5) · ADR-006 («Hallazgos de la revisión de la suscripción») · constitución 2.2.x (§6 «Secretos», §7 «Calidad») · `docs/PLAN_ADAPTACION.md` (A3, TT-AZ-05) · `docs/evidencia/KNOCK-27-azure.md`
 > **Skills:** story-workflow, security-core, testing-strategy-backend
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Que Terraform guarde su estado en una cuenta de almacenamiento de Azure con bloqueo, y nunca en el repositorio (ADR-003, regla 1), antes de que TT-AZ-02 escriba los módulos. Sin esto, dos personas o un pipeline pueden aplicar a la vez y pisarse, o un archivo de estado con datos de la infraestructura terminaría en un repositorio público.
@@ -65,6 +65,6 @@ Que Terraform guarde su estado en una cuenta de almacenamiento de Azure con bloq
 7. Un agente no opera Azure: el Tech Lead ejecuta los comandos y comparte la evidencia sin identificadores.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-03
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
