@@ -1,5 +1,6 @@
 # Gitleaks: reglas por defecto + reglas de Knock. Sin listas blancas globales: un falso positivo se
 # registra en security/exceptions.yaml y se marca en la línea con «gitleaks:allow EXC-NNN».
+# Única excepción por ruta: la de EXC-005, acotada a una regla y a un archivo (ver [rules.allowlist] de knock-mongodb-connection-string).
 title = "knock"
 
 [extend]
