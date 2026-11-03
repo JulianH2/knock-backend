@@ -480,3 +480,9 @@
 - Paquetes (consultados el 2026-10-29, no agregados; los agrega el líder o con su autorización): `Azure.Monitor.OpenTelemetry.Exporter` 1.10.0 (MIT), `OpenTelemetry.Extensions.Hosting`, `.Instrumentation.AspNetCore`, `.Instrumentation.Http` y `.Exporter.InMemory` 1.20.1 (Apache-2.0), `sentry_flutter` 10.2.0 (MIT).
 - Dudas abiertas para el líder: P1 a P9 en la spec §8 (código de soporte, spec de la app, umbrales de alerta, dependencia con TT-AZ-02, error de prueba, coordenadas en texto libre, muestreo, paquetes y `traceparent` del cliente).
 - A evitar: escribir la cadena de conexión o el DSN en `appsettings*.json` o en el PR; dejar encendido en contenedores el almacenamiento local de reintentos del exportador; confiar sin una prueba en la redacción de la query que trae por defecto la instrumentación.
+
+## 2026-11-02 — TT-OBS-01 (KNOCK-51): respuestas del líder aplicadas a la spec
+- Estado: spec, plan, task y gates con las decisiones P1 a P9 en la spec §8 (comentario en el PR #89); sigue en Borrador hasta que el líder la apruebe. Sin código ni paquetes.
+- Decisión: la parte de la app pasa a una spec espejo en knock-frontend (Erick, Sprint 3) y el líder crea a mano los recursos de Azure. Porqué: los casos 01 a 14 se cierran sin Azure ni la app.
+- Decisión: la API ignora todo `traceparent` externo hasta que exista el gateway, y en texto libre solo se redactan pares de coordenadas. Porqué: el log de petición escribe `{Elapsed:0.0000} ms` (plantilla por defecto de Serilog.AspNetCore 10.0.0), un número suelto con 4 decimales.
+- A evitar: escribir el correo del proyecto en el repositorio; redactar números sueltos en texto libre.
