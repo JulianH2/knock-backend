@@ -7,7 +7,7 @@
 > **La consumen:** TT-API-07 (KNOCK-141, decisión (f): quitar la query con coordenadas de la telemetría de Application Insights, con su prueba) · TT-ARQ-01/02 (gateway y servicios separados) · ADR-001 regla 5.
 > **Fuentes:** ficha TT-OBS-01 · constitución 2.2.1 (principios 3, 8, 9 y 16; §3 «Nube»; §6 secretos; §12 «Observabilidad») · `docs/DECISION_TECNICA.md` §10 · ADR-001 (regla 5) · ADR-006 (punto 5, capa gratuita de Application Insights) · spec TT-API-03 (casos 08 a 12, 15 y 16; decisión 4) · spec TT-API-07 (§3, §6 y decisión (f)) · `docs/MIDDLEWARES.md` · `src/Knock.Api/Hosting/{KnockApplicationExtensions,CorrelationIdMiddleware,LoggingExtensions,ProblemDetailsExtensions}.cs` · `src/Knock.Api/appsettings*.json` · `tests/SecurityTest/Logging/SensitiveLogTests.cs` · `tests/IntegrationTest/Support/{KnockApiFactory,ConsoleCapture}.cs`
 > **Skills:** story-workflow, spec-first-writing, foundation-backend, security-core, testing-strategy-backend, reuse-before-create
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Ver errores, tiempos y uso de la API (y de la app) para detectar problemas antes que los usuarios, **sin enviar datos personales a la telemetría**: la API emite trazas, métricas y logs con OpenTelemetry y, solo cuando hay cadena de conexión por configuración, los exporta a Application Insights; la app reporta sus errores a Sentry con el entorno, la versión y el `traceId` de la API para que soporte encuentre la petición (spec espejo en knock-frontend, Sprint 3, decisión P2).
@@ -176,6 +176,6 @@ Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 - **P9 — `traceparent` del cliente:** la API inicia siempre una traza nueva e ignora el `traceparent` externo hasta que exista el gateway.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: fecha:
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-02
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
