@@ -61,9 +61,9 @@ excepciones:
     justificacion: >-
       Falso positivo. Los cuatro hallazgos son valores sintéticos de prueba (un token JWT ficticio, un token de baggage y un token secreto de ejemplo) que las pruebas de privacidad y de propagación de trazas
       usan para comprobar que no salen en spans ni en registros; no son credenciales de ningún servicio y no hay nada que rotar. El texto ya se corrigió en el commit 27e5d4f de la misma rama,
-      pero Gitleaks revisa todos los commits del PR y el repositorio no permite squash, así que el commit original sigue en la historia. Solo se aceptan esas cuatro huellas exactas:
+      pero Gitleaks revisa todos los commits del PR y el repositorio no permite squash, así que el commit original sigue en la historia. Las huellas llevan el SHA `de1c61a`: el PR #89 debe fusionarse con **merge commit** y no con «Rebase and merge», que reescribe los SHA y haría que el Gitleaks del push a `sprint-02` volviera a marcar los cuatro hallazgos. Solo se aceptan esas cuatro huellas exactas:
       la regla sigue activa para cualquier otro archivo, línea o commit. Evidencia: salida de Gitleaks en el CI del PR #89.
     responsable: José Julián Hernández Hernández
     creada: 2026-11-03
     vence: 2027-01-31
-    plan: retirar la excepción y el archivo .gitleaksignore cuando el PR #89 esté fusionado y el commit ya no entre en ningún análisis de PR, o antes de que venza.
+    plan: fusionar el PR #89 con merge commit, comprobar el CI del push a `sprint-02` justo después y retirar la excepción y el archivo .gitleaksignore cuando el commit ya no entre en ningún análisis, o antes de que venza.
