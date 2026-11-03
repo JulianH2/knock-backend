@@ -1,0 +1,6 @@
+# Huellas de Gitleaks aceptadas. Cada una está respaldada por una excepción en security/exceptions.yaml.
+# EXC-004: valores sintéticos de prueba del commit de1c61a (PR #89, TT-OBS-01); el texto ya se corrigió en 27e5d4f.
+de1c61af882345e0a8b75cf1afbce7213e245b22:tests/IntegrationTest/Support/TestController.cs:jwt:91
+de1c61af882345e0a8b75cf1afbce7213e245b22:tests/SecurityTest/Observability/TraceContextInjectionTests.cs:generic-api-key:15
+de1c61af882345e0a8b75cf1afbce7213e245b22:tests/IntegrationTest/Observability/OutgoingHttpTelemetryTests.cs:generic-api-key:13
+de1c61af882345e0a8b75cf1afbce7213e245b22:tests/SecurityTest/Observability/SpanPrivacyTests.cs:jwt:42
