@@ -15,7 +15,7 @@ Que Terraform guarde su estado en una cuenta de almacenamiento de Azure con bloq
 
 | Caso | Criterio (Dado / Cuando / Entonces) | Verificación |
 |---|---|---|
-| TC-TT-AZ-05-01 | Dado el bloque `backend "azurerm"` de `deploy/terraform/`, cuando se ejecuta `terraform init`, entonces Terraform configura el backend remoto y no crea ningún `terraform.tfstate` local. | Salida de `terraform init` («Successfully configured the backend "azurerm"») y `ls` sin archivos de estado; la ejecuta una persona |
+| TC-TT-AZ-05-01 | Dado el bloque `backend "azurerm"` de cada raíz de Terraform (`deploy/` y `deploy/persistent/`), cuando se ejecuta `terraform init` en ella, entonces Terraform configura el backend remoto y no crea ningún `terraform.tfstate` local. | Salida de `terraform init` («Successfully configured the backend "azurerm"») y `ls` sin archivos de estado; la ejecuta una persona |
 | TC-TT-AZ-05-02 | Dado el repositorio, entonces ningún archivo `*.tfstate`, `*.tfstate.*`, `*.tfvars` ni carpeta `.terraform/` está versionado y `.gitignore` los excluye. | `git ls-files` filtrado (sin resultados) y las reglas en `.gitignore`; el repositorio es público |
 | TC-TT-AZ-05-03 | Dado un `terraform plan` que mantiene el bloqueo, cuando una segunda ejecución intenta tomar el estado, entonces falla con «state blob is already locked» y no modifica nada. | Captura de las dos terminales; la ejecuta una persona |
 | TC-TT-AZ-05-04 | Dada la cuenta de almacenamiento del estado, entonces exige TLS 1.2 como mínimo, no permite acceso público a blobs, tiene el versionado de blobs activado y no permite llaves compartidas (solo identidad de Entra ID). | `az storage account show` y `az storage account blob-service-properties show` con `--query` de esos campos; la ejecuta una persona |
@@ -23,8 +23,8 @@ Que Terraform guarde su estado en una cuenta de almacenamiento de Azure con bloq
 
 ## 3. Alcance / No-alcance
 - **In (este repositorio):**
-  - `deploy/terraform/backend.tf` con el bloque `backend "azurerm"` (solo nombres, autenticación con Entra ID).
-  - `deploy/terraform/README.md` con los comandos únicos de arranque (grupo de recursos aparte, cuenta de almacenamiento y contenedor) y cómo verificar cada caso.
+  - `deploy/backend.tf` y `deploy/persistent/backend.tf` con el bloque `backend "azurerm"` (solo nombres, autenticación con Entra ID). La constitución §Datos fija `deploy/` como raíz de Terraform y `deploy/persistent/` como raíz aparte para el clúster gratuito de DocumentDB, que el destroy principal no toca; por eso hay dos raíces y dos estados.
+  - `deploy/README.md` con los comandos únicos de arranque (grupo de recursos aparte, cuenta de almacenamiento y contenedor) y cómo verificar cada caso.
   - Reglas de `.gitignore` para estado, `.terraform/` y `*.tfvars`.
   - Evidencia en `docs/evidencia/KNOCK-158-estado-remoto.md`, con el ID de suscripción, el tenant y los correos ocultos.
   - La misma tarea no se cubre en `knock-frontend`: no hay infraestructura allá.
@@ -60,7 +60,7 @@ Que Terraform guarde su estado en una cuenta de almacenamiento de Azure con bloq
 2. **Grupo de recursos aparte.** **Resuelto (líder, 2026-11-03):** la cuenta vive en `rg-knock-tfstate`, no en `rg-knock-dev`, para que `terraform destroy` no se lleve el estado.
 3. **Región.** Debe ser una de las cinco que permite la política de la suscripción (ADR-006). **Resuelto (líder, 2026-11-03):** la misma del grupo de recursos actual, North Central US.
 4. **Autenticación.** **Resuelto (líder, 2026-11-03):** Entra ID con `use_azuread_auth = true`, rol «Storage Blob Data Contributor» para el Tech Lead y llaves compartidas desactivadas; el pipeline lo agrega TT-CD-01.
-5. **Cuántos estados.** **Resuelto (líder, 2026-11-03):** un blob por entorno, hoy solo `dev` (`knock-dev.tfstate`), con los módulos por servicio dentro del mismo estado; TT-AZ-02 puede dividirlo.
+5. **Cuántos estados.** **Resuelto (líder, 2026-11-03) y ajustado a la constitución:** un blob por raíz y por entorno, hoy solo `dev`: `dev.tfstate` para `deploy/` y `dev-persistent.tfstate` para `deploy/persistent/`, con los módulos por servicio dentro del estado de `deploy/`; TT-AZ-02 puede dividirlo. (Antes decía un solo `knock-dev.tfstate`; se corrigió porque la constitución separa la raíz del clúster de datos.)
 6. **Costo.** Almacenamiento LRS estándar con un archivo pequeño; se confirma con tarifas citadas al ejecutar el arranque. Cuenta contra el crédito de estudiante, no es gratuito.
 7. Un agente no opera Azure: el Tech Lead ejecuta los comandos y comparte la evidencia sin identificadores.
 

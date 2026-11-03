@@ -3,8 +3,8 @@
 ## 1. Mapeo de archivos
 - **Reutilizar:** `docs/decisiones/ADR-003-terraform.md` (reglas 1 y 2), `docs/evidencia/KNOCK-27-azure.md` (grupo de recursos y restricciones de regiones) y el patrón de evidencia de TT-AZ-01.
 - **Archivos de la tarea:**
-  - `deploy/terraform/backend.tf` (nuevo)
-  - `deploy/terraform/README.md` (nuevo)
+  - `deploy/backend.tf` y `deploy/persistent/backend.tf` (nuevos)
+  - `deploy/README.md` (nuevo)
   - `.gitignore` (reglas de estado, `.terraform/` y `*.tfvars`)
   - `docs/evidencia/KNOCK-158-estado-remoto.md` (nuevo)
   - `Memoria.md`
