@@ -73,5 +73,6 @@ internal static class TestHttp
         ["RateLimiting:Global:Window"] = window,
         ["RateLimiting:Auth:PermitLimit"] = authPermits.ToString(System.Globalization.CultureInfo.InvariantCulture),
         ["RateLimiting:Auth:Window"] = window,
+        ["RateLimiting:Ready:PermitLimit"] = "1000000",
     };
 }

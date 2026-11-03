@@ -8,17 +8,21 @@
 
 Cada línea empieza con el nombre exacto de la llamada en `UseKnockApi` (para `UseMiddleware<T>` es el tipo `T`).
 
-1. `UseForwardedHeaders` — sustituye la IP de la conexión por la de `X-Forwarded-For` solo si la petición viene de un proxy o red de confianza configurados.
+1. `UseForwardedHeaders` — sustituye la IP de la conexión por la de `X-Forwarded-For`, y el esquema por el de `X-Forwarded-Proto`, solo si la petición viene de un proxy o red de confianza configurados. No procesa `X-Forwarded-Host`.
 2. `CorrelationIdMiddleware` — asigna o propaga `X-Correlation-Id`, lo agrega a cada log (`LogContext`) y a la respuesta.
-3. `UseExceptionHandler` — convierte excepciones en ProblemDetails (excepciones de dominio a 400, 403, 404, 409 y 422; lo demás, 500).
-4. `UseSerilogRequestLogging` — un log por petición con la plantilla de la ruta (nunca la ruta con valores ni la query).
-5. `UseRateLimiter` — límite por IP (global y estricto para `/auth`); responde 429 antes de autenticar.
-6. `RequestBodyLimitMiddleware` — aplica `[RequestSizeLimit]` y responde 413.
-7. `UseAuthentication` — JWT propio; 401 uniforme.
-8. `UseAuthorization` — políticas y `[Authorize]`.
-9. `MapKnockHealth` — `/health` y `/health/ready`.
-10. `MapKnockOpenApi` — OpenAPI y Scalar (según entorno).
-11. `MapControllers` — endpoints de los módulos.
+3. `SecurityHeadersMiddleware` — fija en `OnStarting` los encabezados de seguridad de toda respuesta (también las de error y el 429), `Cache-Control: no-store` si el endpoint no define el suyo, y quita `Server`, `X-Powered-By` y `X-AspNet-Version`.
+4. `UseExceptionHandler` — convierte excepciones en ProblemDetails (excepciones de dominio a 400, 403, 404, 409 y 422; lo demás, 500).
+5. `UseSerilogRequestLogging` — un log por petición con la plantilla de la ruta (nunca la ruta con valores ni la query).
+6. `UseHsts` — `Strict-Transport-Security` solo fuera de Development y solo si la petición es HTTPS (nunca a `localhost`).
+7. `UseHttpsRedirection` — 308 a HTTPS solo fuera de Development y solo si hay `Security:Https:RedirectPort`.
+8. `CorsMiddleware` — CORS por configuración (`Security:Cors`); responde el preflight 204 antes del limitador y aplica los encabezados en `OnStarting`.
+9. `UseRateLimiter` — límite por IP (global, estricto para `/auth` y propio para `/health/ready`); responde 429 antes de autenticar.
+10. `RequestBodyLimitMiddleware` — aplica `[RequestSizeLimit]` y responde 413.
+11. `UseAuthentication` — JWT propio; 401 uniforme.
+12. `UseAuthorization` — políticas y `[Authorize]`.
+13. `MapKnockHealth` — `/health` y `/health/ready`.
+14. `MapKnockOpenApi` — OpenAPI y Scalar (según entorno).
+15. `MapControllers` — endpoints de los módulos.
 
 ## Por qué en este orden
 
