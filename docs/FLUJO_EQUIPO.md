@@ -15,12 +15,13 @@ Guía corta para empezar. Detalle del método: [`docs/SDD_GUIA.md`](SDD_GUIA.md)
 | 1 | Autor | Crea la rama desde la rama del sprint (`sprint-00` esta semana): `git switch -c <tipo>/KNOCK-N-<english-kebab> origin/sprint-XX` | Rama con la clave de Jira |
 | 2 | Autor + agente | El agente `spec-writer` crea o refina `specs/<ID>-…/` a partir de la ficha. **Solo spec, sin código.** Estado: Borrador. `python scripts/sdd_lint.py` en OK | Spec lista para revisar |
 | 3 | Autor | Commit de la spec y **PR en *draft*** hacia `sprint-XX` (título `KNOCK-N · <ID> <título>`, plantilla completa) | PR en draft |
-| 4 | **Revisor (Tech Lead)** | Lee la spec en el PR y comenta. Cuando está bien, **edita a mano las líneas de aprobación** (Estado: Aprobada, casillas marcadas, nombre y fecha) y sube ese commit a la misma rama | Spec Aprobada |
+| 4 | **Revisor (Tech Lead o su suplente)** | Lee la spec en el PR y comenta. Cuando está bien, **edita a mano las líneas de aprobación** (Estado: Aprobada, casillas marcadas, nombre y fecha) y sube ese commit a la misma rama | Spec Aprobada |
 | 5 | Autor + agente | En la **misma rama** implementa con el agente constructor, con pruebas y evidencia real. Sin spec aprobada el guardián bloquea el commit de código | Código y pruebas |
 | 6 | Autor | Con el CI en verde y la evidencia, marca el PR como *ready*. Otra persona lo revisa y deja su comentario (**obligatorio**, ver «Quién revisa a quién» abajo); **la aprobación final y el merge los hace el Tech Lead** con «Rebase and merge»; nadie más fusiona. Se exige el check `gate` y, en zonas sensibles, el Code Owner. Después la spec pasa a Firmada | Merge |
 
 Reglas que no cambian:
 - **El agente nunca aprueba ni firma una spec**, y el autor tampoco aprueba la suya: lo hace el revisor.
+- **Quién aprueba una spec (propuesta pendiente de aceptación del equipo):** el Tech Lead o Guillermo, el que esté libre, en menos de 24 horas y nunca el autor. El Tech Lead firma siempre las críticas: sesión y login, datos sensibles, nube e infraestructura y constitución. El merge sigue siendo del Tech Lead.
 - Si una tarea toca los dos repositorios, hay un PR en cada uno con la misma clave; el backend va primero si cambia el contrato.
 - Commits en inglés: `type(scope): description (KNOCK-N)`. Sin `Co-Authored-By` ni «Generated with…» de agentes; el uso de IA se declara solo en la sección «Uso de IA» del PR.
 - Casos que solo se verifican con un comando (build, formato, auditoría de dependencias): en la spec, columna Verificación, se marcan **«(comando)»** y la salida del comando va en el PR. Lo agrega el revisor porque la spec ya está aprobada.
