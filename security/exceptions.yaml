@@ -54,3 +54,16 @@ excepciones:
     creada: 2026-10-15
     vence: 2027-01-13
     plan: revisar con cada cambio de la imagen base y retirar las claves aceptadas que ya no aparezcan.
+  - id: EXC-004
+    herramienta: gitleaks
+    regla: jwt, generic-api-key
+    alcance: huellas en .gitleaksignore (commit de1c61af882345e0a8b75cf1afbce7213e245b22 del PR #89; tests/IntegrationTest/Support/TestController.cs, tests/SecurityTest/Observability/TraceContextInjectionTests.cs, tests/IntegrationTest/Observability/OutgoingHttpTelemetryTests.cs, tests/SecurityTest/Observability/SpanPrivacyTests.cs)
+    justificacion: >-
+      Falso positivo. Los cuatro hallazgos son valores sintéticos de prueba (un token JWT ficticio, un token de baggage y un token secreto de ejemplo) que las pruebas de privacidad y de propagación de trazas
+      usan para comprobar que no salen en spans ni en registros; no son credenciales de ningún servicio y no hay nada que rotar. El texto ya se corrigió en el commit 27e5d4f de la misma rama,
+      pero Gitleaks revisa todos los commits del PR y el repositorio no permite squash, así que el commit original sigue en la historia. Solo se aceptan esas cuatro huellas exactas:
+      la regla sigue activa para cualquier otro archivo, línea o commit. Evidencia: salida de Gitleaks en el CI del PR #89.
+    responsable: José Julián Hernández Hernández
+    creada: 2026-11-03
+    vence: 2027-01-31
+    plan: retirar la excepción y el archivo .gitleaksignore cuando el PR #89 esté fusionado y el commit ya no entre en ningún análisis de PR, o antes de que venza.
