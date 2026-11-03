@@ -1,12 +1,12 @@
 ---
 name: events-outbox
-description: Eventos, saga y plazos programados en Knock con MassTransit y outbox transaccional de EF Core (oleadas a 15 min, vencimiento a 48 h, gracia de 7 días, borrados programados). Úsala cuando una HU tenga pasos asíncronos o plazos.
+description: Eventos, saga y plazos programados en Knock con outbox transaccional sobre MongoDB y mensajes programados (MassTransit 8 o Wolverine, se fija en TT-API-04) (oleadas a 15 min, vencimiento a 48 h, gracia de 7 días, borrados programados). Úsala cuando una HU tenga pasos asíncronos o plazos.
 ---
 
 # events-outbox
 
 ## Reglas
-- Publicar siempre dentro de la transacción del cambio de estado: `AddEntityFrameworkOutbox<TDbContext>()` + `UseBusOutbox()`.
+- Publicar siempre dentro de la transacción de MongoDB del cambio de estado: el documento y el mensaje del outbox se escriben juntos (constitución §3, «Eventos y plazos»); el paquete concreto lo fija TT-API-04.
 - Plazos con mensajes programados (`ScheduleSend` / `SchedulePublish`), **nunca** `Task.Delay`, timers ni `BackgroundService` con `while`.
 - Consumidores **idempotentes**: guardar el `MessageId` procesado o verificar el estado antes de actuar (si la solicitud ya venció, ignorar).
 - Reintentos: `UseMessageRetry(r => r.Exponential(5, 1s, 60s, 5s))`; luego cola de errores (DLQ).
@@ -19,7 +19,7 @@ description: Eventos, saga y plazos programados en Knock con MassTransit y outbo
 - **Eliminar cuenta (decisión #11):** `AccountDeletionScheduled` → `ExecuteAccountDeletion` a +7 días, cancelable.
 - **Verificación (HU de Trust):** `VerificationSubmitted` → `AlertVerifier` a +24 h y `PurgeVerificationMedia` a +7 días (borra las fotos y destruye la llave; estado vuelve a «Sin verificar» con aviso). Al decidir antes, se purga en el mismo momento.
 - **Disponible hoy:** se apaga a medianoche (America/Mexico_City) con un mensaje programado.
-- La librería (MassTransit 8 o Wolverine) se fija en TT-API-04; las reglas de arriba aplican a ambas.
+- La librería (MassTransit 8 o Wolverine) se fija en TT-API-04; las reglas de arriba aplican a ambas. Con 2 réplicas, cada tarea programada se reserva con una operación atómica para que solo una réplica la ejecute (constitución §12).
 - **Ventanas:** reseña hasta 30 días, reporte «no se terminó» hasta 7 días: se validan con fecha en el servicio, no con mensajes.
 
 ## Verificación
