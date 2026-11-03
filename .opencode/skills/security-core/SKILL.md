@@ -9,9 +9,9 @@ description: Matriz de seguridad y privacidad de Knock basada en OWASP Top 10 y 
 | # | Control | OWASP |
 |---|---|---|
 | 1 | Autorización por recurso en el servidor: el usuario solo ve o cambia lo suyo; el técnico solo ve la **colonia** hasta ser elegido; panel por permisos (`verification:review`, `reports:moderate`…) con doble factor | API1, API5, A01 |
-| 2 | Autenticación: token de Firebase validado en servidor; JWT propio HS256 15 min, `ClockSkew=0`, algoritmos fijos, blacklist por `jti`; refresh rotativo con detección de reuso | API2, A07 |
+| 2 | Autenticación: token de Firebase validado en servidor; JWT propio HS256 15 min, `ClockSkew=0`, algoritmos fijos, revocación del `jti` en Redis; refresh rotativo con detección de reuso | API2, A07 |
 | 3 | Validación en frontera (FluentValidation / validadores de formulario) aunque el cliente valide; tamaños máximos; tipos de archivo | API3, API8, A03 |
-| 4 | Inyección: EF Core parametrizado; nada de SQL interpolado; sin `innerHTML` ni `bypassSecurityTrust` en Angular; sin rutas de archivo desde el usuario (traversal) | A03, API8 |
+| 4 | Inyección: filtros tipados del driver de MongoDB, sin JSON ni operadores armados con la entrada del usuario; nada de SQL interpolado; sin `innerHTML` ni `bypassSecurityTrust` en Angular; sin rutas de archivo desde el usuario (traversal) | A03, API8 |
 | 5 | SSRF: el backend no descarga URLs que manda el usuario; integraciones con lista permitida | API7, A10 |
 | 6 | Límites: rate limits de `docs/rate-limit-matrix.md`, 429 uniforme, paginación con máximo, tamaño de cuerpo | API4 |
 | 7 | Datos sensibles: dirección y celular cifrados a nivel de campo; CURP solo como HMAC; nunca en logs, errores, fixtures ni prompts de IA | API3, A02 |
