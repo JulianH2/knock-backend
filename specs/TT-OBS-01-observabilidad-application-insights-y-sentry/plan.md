@@ -1,6 +1,6 @@
 # plan.md — TT-OBS-01 — Observabilidad: Application Insights en la API y Sentry en la app
 
-> Borrador. Servicio afectado: Transversal (`src/Knock.Api/Hosting/`). Decisiones P1 a P9 del líder en la spec §8 (2026-11-02). Nada implementado; los paquetes de la spec §3 están autorizados y se agregan en la implementación, una vez aprobada la spec.
+> Spec Aprobada (2026-11-02) y cambiada el 2026-11-03 (decisiones D1 a D5 del líder en la spec §8; pendiente de nueva revisión). Servicio afectado: Transversal (`src/Knock.Api/Hosting/`). Parte de la API implementada en esta rama; los casos 15 y 16 esperan el recurso de Azure.
 
 ## 1. Mapeo de archivos
 - **Reutilizar (buscado con `python scripts/codemap.py --query "telemetry tracing correlation logging"`):**
@@ -10,11 +10,11 @@
   - `src/Knock.Api/Hosting/ObservabilityExtensions.cs` (`AddKnockObservability`), `ObservabilityOptions`, `TelemetryRedactor` y los procesadores de spans y logs, todos `internal`.
   - `docs/OBSERVABILIDAD.md` (qué se envía, relación de ids, KQL de soporte, alertas y verificación manual).
   - Pruebas: `tests/UnitTest/Hosting/TelemetryRedactorTests`, `tests/IntegrationTest/Observability/*`, `tests/SecurityTest/Observability/*` y un apoyo de captura en memoria en `tests/IntegrationTest/Support/` (p. ej. `TelemetryCapture`).
-- **Modificar:** `Hosting/KnockApplicationExtensions.AddKnockApi` (una línea), `Hosting/CorrelationIdMiddleware` (atributo del span), `Hosting/LoggingExtensions.AddKnockLogging` (`writeToProviders: true`), `appsettings.json` (`Observability:*` sin secretos), `KnockApiFactory` (exportador en memoria), `src/Knock.Api/Knock.Api.csproj` y los `.csproj` de pruebas **solo con los paquetes autorizados (decisión P8)**.
+- **Modificar:** `Hosting/KnockApplicationExtensions.AddKnockApi` (una línea), `Hosting/CorrelationIdMiddleware` (atributo del span), `Hosting/LoggingExtensions.AddKnockLogging` (sink propio `OpenTelemetryLogSink`, decisión D1), `Hosting/LoggingExtensions.RoutePath` (visibilidad: de `private` a `internal`, para reutilizarla en `url.path`), `Hosting/HealthExtensions` (constante `LivenessPath` para el filtro de spans), `tests/SecurityTest/Secrets/AppSettingsSecretsTests` (caso 13), `appsettings.json` (`Observability:*` sin secretos), `KnockApiFactory` (exportador en memoria), `src/Knock.Api/Knock.Api.csproj` y los `.csproj` de pruebas **solo con los paquetes autorizados (decisión P8)**.
 - **No tocar:** `UseKnockApi` y `docs/MIDDLEWARES.md` (no hay middleware nuevo), `PipelineOrderTests`, las pruebas de TT-API-03 y TT-API-07, `.github/`, `scripts/`, `.agents/`, `constitution.md`, `security/exceptions.yaml`, `docs/openapi.v1.json`, configuración de analizadores.
 
 ## 2. Riesgos y efectos secundarios
-- **Logs dobles o con otros niveles:** el proveedor de logs de OpenTelemetry tiene su propio filtro (`Logging:LogLevel`). Con `writeToProviders: true` Serilog filtra primero; hay que comprobar que no se registra además el proveedor por la ruta de `ILoggingBuilder` (caso 06) y que las propiedades del `LogContext` (`CorrelationId`) llegan como atributos (por verificar con la versión de Serilog.Extensions.Hosting).
+- **Logs dobles o con otros niveles:** el proveedor de logs de OpenTelemetry tiene su propio filtro (`Logging:LogLevel`). Se resolvió con el sink propio `OpenTelemetryLogSink` (decisión D1): Serilog filtra primero y el sink reenvía solo lo filtrado; hay que comprobar que no se registra además el proveedor por la ruta de `ILoggingBuilder` (caso 06) y que las propiedades del `LogContext` (`CorrelationId`) llegan como atributos (por verificar con la versión de Serilog.Extensions.Hosting).
 - **`url.path` con valores:** la instrumentación pone la ruta real en `url.path`; hay que reemplazarla por la plantilla en el `Enrich`/procesador (caso 08). Application Insights usa `url.path` + `url.query` para la columna `url` de `requests`.
 - **Redacción de la query por defecto:** las instrumentaciones 1.20 redactan los valores de la query (`Redacted`), pero se controla por variable de entorno; la prueba no confía en el valor por defecto (casos 08 y 11).
 - **`traceparent` externo (decisión P9):** ASP.NET Core y la instrumentación de OpenTelemetry extraen el contexto de la petición por separado; hay que anular la extracción en los dos sin apagar la inyección del `traceparent` saliente de `HttpClient` (casos 05 y 11).
@@ -41,10 +41,10 @@
 | TC-TT-OBS-01-10 | `SecurityTest/Observability/ExceptionTelemetryPrivacyTests` | seguridad negativa |
 | TC-TT-OBS-01-11 | `IntegrationTest/Observability/OutgoingHttpTelemetryTests` | integración (servidor HTTP local) |
 | TC-TT-OBS-01-12 | `UnitTest/Hosting/TelemetryRedactorTests` | unitaria |
-| TC-TT-OBS-01-13 | `SecurityTest/Observability/ConnectionStringNotInRepoTests` + `gitleaks` | seguridad negativa + comando |
+| TC-TT-OBS-01-13 | `SecurityTest/Secrets/AppSettingsSecretsTests` (incluye `docs/OBSERVABILIDAD.md` y `.env.example` si existe) | seguridad negativa |
 | TC-TT-OBS-01-14 | `IntegrationTest/Observability/ObservabilityRegressionTests` + suites existentes | regresión |
-| TC-TT-OBS-01-15 | `docs/OBSERVABILIDAD.md` §«Verificación manual» | manual en Azure (capturas) |
-| TC-TT-OBS-01-16 | `docs/OBSERVABILIDAD.md` §«Alertas» | manual en Azure (captura) |
+| TC-TT-OBS-01-15 | `docs/OBSERVABILIDAD.md` §«Verificación manual» | manual en Azure, marcado «(comando)» por `sdd_lint` (capturas en el PR) |
+| TC-TT-OBS-01-16 | `docs/OBSERVABILIDAD.md` §«Alertas» | manual en Azure, marcado «(comando)» por `sdd_lint` (captura en el PR) |
 | TC-TT-OBS-01-17 | `dotnet list package --vulnerable`, `check_exceptions.py` | comando |
 | TC-TT-OBS-01-18 | `dotnet build` + `dotnet format --verify-no-changes` | comando |
 | TC-TT-OBS-01-19 a 22 | knock-frontend, spec espejo (Sprint 3) | otro repo |
@@ -53,7 +53,7 @@
 1. Aprobación de la spec por el líder; se agregan los paquetes autorizados de §3 con su evaluación (decisión P8).
 2. Pruebas que fallan primero: redactor (12), registro sin y con cadena (01, 02) y privacidad de spans y logs (08, 09, 10).
 3. `TelemetryRedactor` y procesadores; `AddKnockObservability` con la tubería común y el exportador condicional; filtro de `/health`; plantilla de la ruta en `url.path`.
-4. Atributo `knock.correlation_id` en `CorrelationIdMiddleware` y `writeToProviders` en Serilog (04, 05, 06); métricas (07); llamadas salientes (11).
+4. Atributo `knock.correlation_id` en `CorrelationIdMiddleware` y el sink `OpenTelemetryLogSink` en Serilog (04, 05, 06); dos propagadores para P9 (D2); `SamplingRatio = 1`, `TracesPerSecond = null` (D3) y Statsbeat apagado (D5); métricas (07); llamadas salientes (11).
 5. Regresión de TT-API-03 y TT-API-07 sin editar (14); configuración sin secretos (13).
 6. `docs/OBSERVABILIDAD.md` con alertas y pasos manuales; el líder crea el recurso, el grupo de acciones y las alertas (decisión P4), y se ejecutan los casos 15 y 16 con la cadena por variable.
 7. Gates, `Memoria.md` (evaluación de cada paquete), informe y capturas en el PR.

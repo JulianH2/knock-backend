@@ -517,3 +517,10 @@
 - Pendiente para el líder: `docs/openapi.v1.json` no declara `traceId`, `correlationId` ni el encabezado; regenerarlo no lo cambia porque ningún transformador de OpenAPI los declara. Hace falta código (transformadores) y luego `scripts/export_openapi.py`.
 - A evitar: escribir «sin cambios en el contrato» sin revisar qué expone ya la API; decir que `traceId` mide 32 hex (eso es su `<trace-id>`; el campo completo mide 55).
 
+## 2026-11-03 — TT-OBS-01 (KNOCK-51): decisiones del líder sobre la implementación aplicadas
+- Estado: spec, plan, task y checklist reflejan la implementación con las decisiones D1 a D5 (spec §8, comentario del líder en el PR #89). La spec cambió respecto de lo aprobado el 2026-11-02: queda pendiente de nueva revisión del líder.
+- Decisión (líder): D1 sink propio `OpenTelemetryLogSink` en lugar de `writeToProviders`; D2 P9 con dos propagadores; D3 `SamplingRatio = 1` y `TracesPerSecond = null`; D4 separador obligatorio en los pares de coordenadas (pruebas `19.4326,-99.1332` se redacta y `19.4326-99.1332` no). Porqué: ver la entrada de la implementación del 2026-11-02.
+- Decisión (líder): D5 Statsbeat apagado. La API fija `APPLICATIONINSIGHTS_STATSBEAT_DISABLED=true` en `AddKnockObservability` cuando hay cadena de conexión (el exportador solo la lee de la variable al construirse), y el caso 02 parte sin la variable y comprueba que la API la puso. Porqué: es un envío a Microsoft fuera del recurso que el aviso de privacidad no contempla; en código no depende de que alguien la defina en Container Apps.
+- Decisión: el caso 13 pasa de `ConnectionStringNotInRepoTests` (se elimina) a `SecurityTest/Secrets/AppSettingsSecretsTests`, sin «(comando)», y revisa además `docs/OBSERVABILIDAD.md` y `.env.example` solo si existe. Los casos 15 y 16 siguen con «(comando)» y una aclaración de que son manuales en Azure, porque `sdd_lint` no reconoce otra marca.
+- A evitar: que la prueba del caso 02 ponga la variable de Statsbeat antes de construir la API (así no comprueba nada); abrir `.env.example` desde un agente (permiso denegado): la prueba lo lee en tiempo de ejecución.
+

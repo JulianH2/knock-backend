@@ -42,13 +42,20 @@ public class ExporterRegistrationTests
     public async Task SyntheticConnectionString_ExportsWithoutBlockingRequests_TC_TT_OBS_01_02()
     {
         var statsbeat = Environment.GetEnvironmentVariable(_statsbeatVariable);
-        // Sin Statsbeat el exportador no intenta salir a los puntos de Microsoft: la prueba no toca la red.
-        Environment.SetEnvironmentVariable(_statsbeatVariable, "true");
+        // La API debe apagar Statsbeat por sí sola (decisión del líder, 2026-11-03): la prueba parte sin la variable y la revisa
+        // después del registro de la API y antes de construir los exportadores. Si faltara, la apaga igual para no salir a la red.
+        Environment.SetEnvironmentVariable(_statsbeatVariable, null);
+        string? statsbeatSetByApi = null;
         try
         {
             await using var factory = new KnockApiFactory(
                 "Production",
-                settings: new Dictionary<string, string?> { [ObservabilityExtensions.ConnectionStringKey] = SyntheticConnectionString() });
+                settings: new Dictionary<string, string?> { [ObservabilityExtensions.ConnectionStringKey] = SyntheticConnectionString() },
+                configureServices: _ =>
+                {
+                    statsbeatSetByApi = Environment.GetEnvironmentVariable(_statsbeatVariable);
+                    Environment.SetEnvironmentVariable(_statsbeatVariable, "true");
+                });
             var statuses = new List<HttpStatusCode>();
             using (var client = factory.CreateClient())
             {
@@ -66,6 +73,7 @@ public class ExporterRegistrationTests
 
             statuses.Should().HaveCount(20).And.AllBeEquivalentTo(HttpStatusCode.OK, "la exportación no bloquea ni lanza");
             status.Enabled.Should().BeTrue();
+            statsbeatSetByApi.Should().Be("true", "Statsbeat apagado en producción con APPLICATIONINSIGHTS_STATSBEAT_DISABLED=true");
             status.Signals.Keys.Should().BeEquivalentTo(
                 [ObservabilityExtensions.TracesSignal, ObservabilityExtensions.MetricsSignal, ObservabilityExtensions.LogsSignal],
                 "se construyen los tres exportadores");

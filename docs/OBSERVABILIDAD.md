@@ -22,7 +22,9 @@ El exportador trae por defecto un muestreo de 5 trazas por segundo. El código l
 | Métricas | `http.server.request.duration` y las de ASP.NET Core, Kestrel y `System.Runtime`, con plantilla, método y código | Ruta con valores, query y `X-Correlation-Id` (cardinalidad y privacidad) |
 | Logs | Los mismos eventos que Serilog escribe en consola, con sus niveles (`Microsoft.AspNetCore` en `Warning`), sus propiedades (por ejemplo `CorrelationId`) y la excepción como `exception.*` | Lo que Serilog ya filtra («Request starting/finished») y los valores sensibles, que se redactan |
 
-**Redacción** (segunda barrera, la primera es no capturar cuerpos, encabezados ni la query): las claves `lat`, `lon`, `phone`, `celular`, `token`, `idToken`, `refreshToken`, `code`, `sig` y `authorization` se redactan siempre. En texto libre se redactan los celulares con `+` o `%2B`, los JWT, `Bearer <x>`, la CURP, `clave=valor` de esas claves y los **pares** de coordenadas (dos números seguidos con 4 o más decimales). Un número suelto, como el `12.3456 ms` del log de petición, no se toca (decisión P6).
+**Redacción** (segunda barrera, la primera es no capturar cuerpos, encabezados ni la query): las claves `lat`, `lon`, `phone`, `celular`, `token`, `idToken`, `refreshToken`, `code`, `sig` y `authorization` se redactan siempre. En texto libre se redactan los celulares con `+` o `%2B`, los JWT, `Bearer <x>`, la CURP, `clave=valor` de esas claves y los **pares** de coordenadas: dos números con 1 a 3 enteros y 4 o más decimales, separados por espacios, `,`, `;` o `/` (`19.4326, -99.1332` y `19.4326,-99.1332` se redactan; `19.4326-99.1332`, sin separador, no). Un número suelto, como el `12.3456 ms` del log de petición, no se toca (decisión P6).
+
+**Statsbeat apagado** (decisión del líder, 2026-11-03): el exportador de Azure Monitor envía por defecto *Statsbeat*, estadísticas internas del SDK (versión, éxito o falla de los envíos) a puntos de Microsoft fuera del recurso de Application Insights, sin datos de las peticiones. Se apaga con `APPLICATIONINSIGHTS_STATSBEAT_DISABLED=true`: la API la fija al registrar los exportadores (solo cuando hay cadena de conexión), así que en producción no hace falta definirla a mano y no se puede dejar encendido por olvido. Lo comprueba el caso 02 (`ExporterRegistrationTests`).
 
 **Contexto de traza:** la API ignora el `traceparent`, el `tracestate` y el `baggage` que llegan en la petición y siempre inicia una traza nueva (decisión P9, hasta que exista el gateway). Las llamadas salientes sí propagan `traceparent`.
 
@@ -30,7 +32,7 @@ El exportador trae por defecto un muestreo de 5 trazas por segundo. El código l
 
 | Campo del error | Formato | En Application Insights |
 |---|---|---|
-| `traceId` | `00-<trace-id>-<span-id>-01` | `<trace-id>` es el `operation_Id` de la petición, sus dependencias, excepciones y logs |
+| `traceId` | `00-<trace-id>-<span-id>-<banderas>` (W3C, 55 caracteres; contrato en la §4 de la spec) | `<trace-id>` es el `operation_Id` de la petición, sus dependencias, excepciones y logs |
 | `correlationId` | El `X-Correlation-Id` de la respuesta | `customDimensions["knock.correlation_id"]` de la petición y `customDimensions.CorrelationId` de cada log |
 
 El código de soporte que muestra la app es el `<trace-id>` (decisión P1, spec espejo en knock-frontend).

@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-03T07:02:25Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-03T17:15:01Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -159,7 +159,7 @@
 - `src/Knock.Api/Hosting/MongoExtensions.cs` — class `KnockMongoOptions`, class `KnockMongoOptionsValidator`, class `MongoExtensions`, class `MongoReadinessHealthCheck`
   - `Seconds()`:51, `Validate()`:67, `AddKnockMongo()`:135, `AddKnockMongoDatabase()`:157, `CreateSettings()`:171, `CheckHealthAsync()`:214
 - `src/Knock.Api/Hosting/ObservabilityExtensions.cs` — class `ObservabilityOptions`, record `AzureMonitorSignalSettings`, class `AzureMonitorExportStatus`, class `ObservabilityExtensions`, class `TelemetryExceptionRecorder`, class `IgnoreIncomingTraceContextPropagator`, class `OpenTelemetryLogSink`, class `SerilogLogState`
-  - `Record()`:46, `AddKnockObservability()`:64, `TryHandleAsync()`:162, `Inject()`:185, `ExtractTraceIdAndState()`:187, `ExtractBaggage()`:193, `Emit()`:209, `GetEnumerator()`:270
+  - `Record()`:46, `AddKnockObservability()`:67, `TryHandleAsync()`:171, `Inject()`:194, `ExtractTraceIdAndState()`:196, `ExtractBaggage()`:202, `Emit()`:218, `GetEnumerator()`:279
 - `src/Knock.Api/Hosting/OpenApiExtensions.cs` — class `OpenApiExtensions`
   - `AddKnockOpenApi()`:7, `MapKnockOpenApi()`:14
 - `src/Knock.Api/Hosting/ProblemDetailsExtensions.cs` — class `ProblemDetailsExtensions`

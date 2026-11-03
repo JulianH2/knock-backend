@@ -52,6 +52,9 @@ internal static class ObservabilityExtensions
     /// <summary>Única fuente de la cadena de conexión: variable de entorno o referencia de Key Vault en Container Apps.</summary>
     public const string ConnectionStringKey = "APPLICATIONINSIGHTS_CONNECTION_STRING";
 
+    /// <summary>Variable que lee el exportador de Azure Monitor para no enviar Statsbeat (estadísticas internas del SDK a Microsoft).</summary>
+    public const string StatsbeatDisabledKey = "APPLICATIONINSIGHTS_STATSBEAT_DISABLED";
+
     public const string CorrelationIdAttribute = "knock.correlation_id";
     public const string TracesSignal = "traces";
     public const string MetricsSignal = "metrics";
@@ -74,6 +77,12 @@ internal static class ObservabilityExtensions
         var connectionString = configuration[ConnectionStringKey];
         var status = new AzureMonitorExportStatus { Enabled = !string.IsNullOrWhiteSpace(connectionString) };
         services.AddSingleton(status);
+        if (status.Enabled)
+        {
+            // Decisión del líder (2026-11-03): Statsbeat apagado. El exportador solo lo lee de la variable de entorno al construirse.
+            Environment.SetEnvironmentVariable(StatsbeatDisabledKey, "true");
+        }
+
         // Decisión P9: ASP.NET Core no toma el contexto de traza ni el baggage del cliente, y OpenTelemetry tampoco los vuelve a
         // extraer (solo lo hace si el propagador por defecto no es W3C Trace Context). El traceparent saliente no cambia.
         services.AddSingleton<DistributedContextPropagator>(new IgnoreIncomingTraceContextPropagator());
