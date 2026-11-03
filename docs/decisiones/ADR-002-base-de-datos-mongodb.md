@@ -29,7 +29,7 @@ Los lineamientos del curso (punto 14) piden bases de datos **NoSQL**; el número
 1. **Cada servicio es dueño de su base lógica**; ningún otro servicio la consulta (ADR-001).
 2. Las colecciones, llaves e índices se definen en la spec de cada historia y se versionan como **scripts de índices y semillas** (TT-BD-09†), que también son parte de la entrega.
 3. **Sin respaldo automático:** se programa `mongodump` a un almacenamiento de Azure y se prueba la restauración (TT-BD-04).
-4. **Redis** es un complemento opcional (caché y respaldo de SignalR), no una base principal. **La lista de revocación de tokens** (cierre de sesión, lineamiento 10) vive en una colección de MongoDB del servicio de Identidad con **índice TTL** sobre la expiración del token; solo pasa a Redis si ADR-006 lo aprueba.
+4. **Redis 7** (contenedor propio en Container Apps, ADR-006) es la segunda base NoSQL, de clave-valor, y no sustituye a MongoDB como base principal. Guarda la caché, los contadores del límite de peticiones y el respaldo de SignalR. **La lista de revocación de tokens** (cierre de sesión, lineamiento 10) se reparte así, como fija la constitución 2.2.x: el `jti` del access token revocado va en Redis, con vencimiento igual a su vigencia restante, y la huella del refresh token vive en MongoDB, de forma permanente. Riesgo aceptado: si Redis se reinicia, un access token cerrado vale hasta 15 minutos; la revocación del refresh no se pierde.
 5. Los secretos de conexión viven en Key Vault (TT-SEC-01); nunca en el repositorio, que es público.
 
 ## Qué se retira
@@ -58,7 +58,7 @@ Regla de decisión de la spec: si fallaban P1, P2, P4 o P7 sin solución razonab
 - **P8 (`mongodump` y restauración):** pasa, pero la restauración debe ser **serial**; en paralelo da `WriteConflict` (TT-BD-04).
 - **P9 (diferencias entre destinos):** registradas en la evidencia. `documentdb-local` reproduce a Azure en P5 y difiere en P7 y P8; las pruebas de integración de TT-BD-07 usan esa imagen y una prueba de humo contra el clúster real.
 - **Hallazgo del seed de colonias:** cuatro pares de polígonos se traslapan (Centro–La Huerta, Centro–San Lorenzo, El Cielito–San Lorenzo y El Llano 1a Sección–Tultengo); un punto ahí devuelve dos colonias. TT-BD-06 decide entre corregir los polígonos o una regla de desempate.
-- **Pendiente de decisión:** la lista de revocación de tokens. La regla 4 de arriba la deja en MongoDB con TTL, lo que P6 respalda; la constitución 2.2.0 (borrador, pendiente de ratificar) reparte así: el `jti` del access token en Redis y la huella del refresh, permanente, en MongoDB. Hasta que el líder decida entre ambas, este ADR no cambia la regla 4.
+- **Lista de revocación de tokens (resuelto, TT-GES-09):** la regla 4 se alinea con la constitución 2.2.x, ya aprobada: el `jti` del access token en Redis y la huella del refresh, permanente, en MongoDB. P6 (índice TTL en MongoDB) sigue siendo válido y se usa para la caducidad de otros documentos; ya no es el lugar de la revocación del access token.
 
 ## Consecuencias
 Se reemplazan TT-BD-01 y TT-BD-02 (ya terminadas con PostgreSQL) por TT-BD-06†; se adaptan TT-API-01, TT-API-07, TT-BD-03, TT-BD-04, TT-QA-01 y el CI. († tarea planificada que se crea en Jira; ver el plan en [`docs/PLAN_ADAPTACION.md`](../PLAN_ADAPTACION.md).) Las historias de zona, mapa, búsqueda, solicitudes y panel cambian sus criterios (ver el plan de adaptación).
