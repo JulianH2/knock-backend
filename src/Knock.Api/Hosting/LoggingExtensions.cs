@@ -1,4 +1,5 @@
 using System.Text;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Serilog;
 using Serilog.AspNetCore;
@@ -11,14 +12,18 @@ namespace Knock.Api.Hosting;
 internal static class LoggingExtensions
 {
 
-    /// <summary>Serilog a consola en JSON (una línea por evento), configurable desde appsettings.</summary>
+    /// <summary>
+    /// Serilog a consola en JSON (una línea por evento), configurable desde appsettings. Los mismos eventos, ya filtrados y enriquecidos,
+    /// van a OpenTelemetry (TT-OBS-01) con <see cref="OpenTelemetryLogSink"/>.
+    /// </summary>
     public static IServiceCollection AddKnockLogging(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSerilog(logger => logger
+        services.AddSerilog((provider, logger) => logger
             .ReadFrom.Configuration(configuration)
             .Enrich.FromLogContext()
             .Enrich.With<ScopeRequestPathEnricher>()
-            .WriteTo.Console(new RenderedCompactJsonFormatter()));
+            .WriteTo.Console(new RenderedCompactJsonFormatter())
+            .WriteTo.Sink(new OpenTelemetryLogSink(provider)));
         return services;
     }
 
@@ -40,10 +45,14 @@ internal static class LoggingExtensions
 
     public const string UnmatchedRoute = "(unmatched)";
 
-    /// <summary>Plantilla de la ruta con los literales y la versión de la API (<c>/api/v1/x/{id}</c>); los demás parámetros quedan como <c>{nombre}</c>.</summary>
-    private static string RoutePath(HttpContext context)
+    /// <summary>
+    /// Plantilla de la ruta con los literales y la versión de la API (<c>/api/v1/x/{id}</c>); los demás parámetros quedan como <c>{nombre}</c>.
+    /// También es el <c>url.path</c> de los spans de servidor (TT-OBS-01).
+    /// </summary>
+    internal static string RoutePath(HttpContext context)
     {
-        if (context.GetEndpoint() is not RouteEndpoint endpoint)
+        var (current, routeValues) = OriginalRoute(context);
+        if (current is not RouteEndpoint endpoint)
         {
             return UnmatchedRoute;
         }
@@ -60,7 +69,7 @@ internal static class LoggingExtensions
                         path.Append(literal.Content);
                         break;
                     case RoutePatternParameterPart parameter:
-                        path.Append(IsVersion(parameter.Name, context.Request.RouteValues, out var version) ? version : $"{{{parameter.Name}}}");
+                        path.Append(IsVersion(parameter.Name, routeValues, out var version) ? version : $"{{{parameter.Name}}}");
                         break;
                     default:
                         break;
@@ -69,6 +78,18 @@ internal static class LoggingExtensions
         }
 
         return path.Length == 0 ? "/" : path.ToString();
+    }
+
+    /// <summary>Tras una excepción, <c>UseExceptionHandler</c> vuelve a ejecutar sin endpoint: la ruta original queda en <see cref="IExceptionHandlerFeature"/>.</summary>
+    private static (Endpoint? Endpoint, RouteValueDictionary RouteValues) OriginalRoute(HttpContext context)
+    {
+        if (context.GetEndpoint() is { } endpoint)
+        {
+            return (endpoint, context.Request.RouteValues);
+        }
+
+        var handled = context.Features.Get<IExceptionHandlerFeature>();
+        return (handled?.Endpoint, handled?.RouteValues ?? context.Request.RouteValues);
     }
 
     private static bool IsVersion(string parameterName, RouteValueDictionary values, out string version)
