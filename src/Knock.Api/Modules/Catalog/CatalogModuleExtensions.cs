@@ -16,8 +16,10 @@ public static class CatalogModuleExtensions
         services.AddKnockMongoDatabase(ModuleKey);
         services.AddSingleton<CatalogStore>();
         services.AddSingleton<NeighborhoodLocator>();
+        services.AddSingleton<INeighborhoodLocator>(sp => sp.GetRequiredService<NeighborhoodLocator>());
         services.AddScoped<ICatalogApi, CatalogApi>();
         services.AddScoped<CatalogSeeder>();
+        services.AddScoped<OficioQueries>();
         return services;
     }
 }
