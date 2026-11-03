@@ -63,6 +63,7 @@ internal sealed class KnockApiFactory(
                 ["Jwt:Audience"] = TestAudience,
                 ["RateLimiting:Global:PermitLimit"] = _highLimit,
                 ["RateLimiting:Auth:PermitLimit"] = _highLimit,
+                ["RateLimiting:Ready:PermitLimit"] = _highLimit,
                 ["ConnectionStrings:KnockMongo"] = UnreachableMongoConnectionString,
             };
             if (withSigningKey)

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using Serilog;
 
 namespace Knock.Api.Hosting;
@@ -10,6 +11,7 @@ internal static class KnockApplicationExtensions
             .AddKnockLogging(builder.Configuration)
             .AddControllers(options => options.Filters.Add<ValidationFilter>())
             .AddInternalControllers();
+        builder.AddKnockSecurity();
         builder.Services
             .AddKnockProblemDetails()
             .AddKnockValidation()
@@ -29,8 +31,21 @@ internal static class KnockApplicationExtensions
     {
         app.UseForwardedHeaders();
         app.UseMiddleware<CorrelationIdMiddleware>();
+        app.UseMiddleware<SecurityHeadersMiddleware>();
         app.UseExceptionHandler();
         app.UseSerilogRequestLogging(LoggingExtensions.ConfigureRequestLogging);
+        var securedTransport = !app.Environment.IsDevelopment();
+        if (securedTransport)
+        {
+            app.UseHsts();
+        }
+
+        if (securedTransport && app.Services.GetRequiredService<IOptions<SecuritySettings>>().Value.Https.RedirectPort is not null)
+        {
+            app.UseHttpsRedirection();
+        }
+
+        app.UseMiddleware<CorsMiddleware>();
         app.UseRateLimiter();
         app.UseMiddleware<RequestBodyLimitMiddleware>();
         app.UseAuthentication();

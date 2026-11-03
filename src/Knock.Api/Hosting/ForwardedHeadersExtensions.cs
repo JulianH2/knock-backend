@@ -8,7 +8,7 @@ internal static class ForwardedHeadersExtensions
     public const string SectionName = "ForwardedHeaders";
 
     /// <summary>
-    /// IP real detrás del proxy: solo se acepta <c>X-Forwarded-For</c> de los proxies y redes de <c>ForwardedHeaders:KnownProxies</c> y
+    /// IP real y esquema detrás del proxy: solo se aceptan <c>X-Forwarded-For</c> y <c>X-Forwarded-Proto</c> de los proxies y redes de <c>ForwardedHeaders:KnownProxies</c> y
     /// <c>ForwardedHeaders:KnownNetworks</c> (CIDR). Sin ninguno configurado NO se confía en nadie (ni siquiera en loopback): se usa la IP de la conexión.
     /// El repositorio no trae valores de producción; una persona los define al desplegar.
     /// </summary>
@@ -35,8 +35,10 @@ internal static class ForwardedHeadersExtensions
             }
 
             // El middleware confía en TODOS los remitentes cuando no hay proxies ni redes: sin configuración se deshabilita el reenvío.
+            // Con proxies de confianza también se lee X-Forwarded-Proto (sin él `IsHttps` sería siempre falso detrás del ingress y HSTS no
+            // saldría nunca); X-Forwarded-Host no se procesa.
             options.ForwardedHeaders = options.KnownProxies.Count > 0 || options.KnownIPNetworks.Count > 0
-                ? ForwardedHeaders.XForwardedFor
+                ? ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
                 : ForwardedHeaders.None;
         });
         return services;
