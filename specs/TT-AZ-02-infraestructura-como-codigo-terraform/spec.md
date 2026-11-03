@@ -5,7 +5,7 @@
 > **Depende de:** TT-AZ-01 (KNOCK-27, firmada) y TT-AZ-05 (KNOCK-158, estado remoto: sin él esta tarea no puede aplicar). **Habilita:** TT-AZ-06 (KNOCK-180), TT-CD-01 (KNOCK-35), TT-AZ-03 (KNOCK-165) y TT-AZ-07 (KNOCK-184).
 > **Fuentes:** ADR-001 (servicios y regla 6) · ADR-002 (DocumentDB y Redis) · ADR-003 (reglas 1 a 5) · ADR-006 (costos, regiones y ventana de evaluación) · constitución 2.2.x (§3 «Nube», §4 «Datos», §6 «Secretos», §12 y §13) · `docs/PLAN_ADAPTACION.md` · `docs/evidencia/KNOCK-27-azure.md`
 > **Skills:** story-workflow, security-core, testing-strategy-backend
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Que el entorno de Azure del proyecto se cree desde cero con Terraform y no a mano: un entorno de Container Apps con una aplicación por servicio (Identidad y confianza, Mensajería y notificaciones, Mercado) y el gateway, Redis como contenedor propio, Key Vault, Blob Storage y, en una raíz aparte, el clúster gratuito de DocumentDB que el destroy principal no toca (constitución §Datos).
@@ -81,6 +81,6 @@ Que el entorno de Azure del proyecto se cree desde cero con Terraform y no a man
 10. Un agente no opera Azure: el Tech Lead ejecuta `terraform plan` y `apply` y comparte la evidencia sin identificadores.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-03
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
