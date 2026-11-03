@@ -68,15 +68,15 @@ Que el entorno de Azure del proyecto se cree desde cero con Terraform y no a man
 ## 8. Pruebas, gates y límites
 **Plan de pruebas:** No aplican las pruebas unitarias, de integración, contrato, mutación, rendimiento ni de UI: es infraestructura sin código de producto. Cada caso se verifica con el comando o la evidencia indicada. Checkov y `gitleaks` corren en el CI.
 **Gates:** `AGENTS.md §5` en lo que aplique: `sdd_lint.py`, `sync_agents.py --check`, `codemap.py --check` y `check_exceptions.py` en OK, `terraform fmt` y `validate` en OK, `Memoria.md` al día y «Uso de IA» completo en el PR.
-**Límites y dudas abiertas** (recomendación entre paréntesis; las decide el Tech Lead):
-1. **Dos raíces y «un comando».** (Recomendación: un comando por raíz, documentado en el README; no se agrega un script que los encadene.)
-2. **Registro de imágenes.** Azure Container Registry no tiene capa gratuita (ADR-006) y no se despliega sin decisión. (Recomendación: GitHub Container Registry; los repositorios y las imágenes son públicos, sin secretos dentro.)
-3. **Imagen inicial.** Antes de TT-CD-01 no hay imágenes de los servicios. (Recomendación: una imagen pública de ejemplo como marcador, reemplazada por TT-CD-01.)
-4. **Región.** DocumentDB gratuito solo en `westus`, `francecentral` y `norwayeast` entre las cinco permitidas (ADR-006; candidata: West US); el grupo de recursos está en `northcentralus`. (Recomendación: Container Apps y DocumentDB en `westus`, para no añadir latencia; el grupo de recursos se queda donde está.)
-5. **Servicios sin código todavía.** (Recomendación: crear ya las cuatro aplicaciones con el marcador, para que TT-ARQ-01 y TT-CD-01 solo cambien la imagen.)
-6. **Key Vault.** (Recomendación: autorización por roles, borrado temporal activo y sin protección contra purga, para poder recrearlo con el mismo nombre tras un destroy en este proyecto escolar.)
-7. **Application Insights.** (Recomendación: esta tarea crea solo Log Analytics; Application Insights y las alertas siguen manuales en TT-OBS-01.)
-8. **Réplica de 0 en un servicio.** Qué servicio ejecuta los procesos con tiempo lo fija TT-ARQ-01. (Recomendación: todos con mínimo 1 hasta entonces.)
+**Límites y decisiones** (recomendaciones confirmadas por el Tech Lead el 2026-11-03):
+1. **Dos raíces y «un comando».** **Resuelto (líder, 2026-11-03):** un comando por raíz, documentado en el README; no se agrega un script que los encadene.
+2. **Registro de imágenes.** Azure Container Registry no tiene capa gratuita (ADR-006) y no se despliega sin decisión. **Resuelto (líder, 2026-11-03):** GitHub Container Registry; los repositorios y las imágenes son públicos, sin secretos dentro.
+3. **Imagen inicial.** Antes de TT-CD-01 no hay imágenes de los servicios. **Resuelto (líder, 2026-11-03):** una imagen pública de ejemplo como marcador, reemplazada por TT-CD-01.
+4. **Región.** DocumentDB gratuito solo en `westus`, `francecentral` y `norwayeast` entre las cinco permitidas (ADR-006; candidata: West US); el grupo de recursos está en `northcentralus`. **Resuelto (líder, 2026-11-03):** Container Apps y DocumentDB en `westus`, para no añadir latencia; el grupo de recursos se queda donde está.
+5. **Servicios sin código todavía.** **Resuelto (líder, 2026-11-03):** crear ya las cuatro aplicaciones con el marcador, para que TT-ARQ-01 y TT-CD-01 solo cambien la imagen.
+6. **Key Vault.** **Resuelto (líder, 2026-11-03):** autorización por roles, borrado temporal activo y sin protección contra purga, para poder recrearlo con el mismo nombre tras un destroy en este proyecto escolar.
+7. **Application Insights.** **Resuelto (líder, 2026-11-03):** esta tarea crea solo Log Analytics; Application Insights y las alertas siguen manuales en TT-OBS-01.
+8. **Réplica de 0 en un servicio.** Qué servicio ejecuta los procesos con tiempo lo fija TT-ARQ-01. **Resuelto (líder, 2026-11-03):** todos con mínimo 1 hasta entonces.
 9. **Costo.** Con 4 aplicaciones y Redis, el consumo cuenta contra el crédito de estudiante; se estima con tarifas citadas al ejecutar el `plan` (TT-AZ-04, `docs/evidencia/KNOCK-145-costo-cero.md`).
 10. Un agente no opera Azure: el Tech Lead ejecuta `terraform plan` y `apply` y comparte la evidencia sin identificadores.
 
