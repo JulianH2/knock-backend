@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-29T18:42:44Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-03T06:14:42Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -10,7 +10,7 @@
 | `Assistant` | -, services | 3 | 3 | 1 |
 | `Catalog` | -, controllers, data, domain, dtos, services, validators | 21 | 23 | 30 |
 | `Identity` | -, controllers, dtos, services | 11 | 15 | 10 |
-| `Knock.Api` | -, common, hosting | 19 | 31 | 40 |
+| `Knock.Api` | -, common, hosting | 23 | 39 | 48 |
 | `Media` | -, controllers, data, domain, dtos, services, validators | 18 | 35 | 48 |
 | `Messaging` | -, services | 3 | 3 | 1 |
 | `Notifications` | -, services | 3 | 3 | 1 |
@@ -144,6 +144,8 @@
   - `AddKnockAuthentication()`:14, `AddInternalControllers()`:55, `IsController()`:73, `StartAsync()`:90, `StopAsync()`:108
 - `src/Knock.Api/Hosting/CorrelationIdMiddleware.cs` — class `CorrelationId`, class `CorrelationIdMiddleware`
   - `IsValid()`:13, `Create()`:32, `Current()`:35, `CorrelationIdMiddleware()`:46, `InvokeAsync()`:48
+- `src/Knock.Api/Hosting/CorsMiddleware.cs` — class `CorsMiddleware`
+  - `CorsMiddleware()`:13, `InvokeAsync()`:24
 - `src/Knock.Api/Hosting/DomainExceptionHandler.cs` — class `DomainExceptionHandler`
   - `TryHandleAsync()`:14
 - `src/Knock.Api/Hosting/ForwardedHeadersExtensions.cs` — class `ForwardedHeadersExtensions`
@@ -151,7 +153,7 @@
 - `src/Knock.Api/Hosting/HealthExtensions.cs` — class `HealthExtensions`
   - `AddKnockHealth()`:10, `MapKnockHealth()`:16
 - `src/Knock.Api/Hosting/KnockApplicationExtensions.cs` — class `KnockApplicationExtensions`
-  - `AddKnockApi()`:7, `UseKnockApi()`:27
+  - `AddKnockApi()`:8, `UseKnockApi()`:29
 - `src/Knock.Api/Hosting/LoggingExtensions.cs` — class `LoggingExtensions`, class `ScopeRequestPathEnricher`
   - `AddKnockLogging()`:15, `ConfigureRequestLogging()`:29, `Enrich()`:96
 - `src/Knock.Api/Hosting/ModulesExtensions.cs` — class `ModulesExtensions`
@@ -163,9 +165,15 @@
 - `src/Knock.Api/Hosting/ProblemDetailsExtensions.cs` — class `ProblemDetailsExtensions`
   - `AddKnockProblemDetails()`:8
 - `src/Knock.Api/Hosting/RateLimitingExtensions.cs` — class `RateLimitPolicySettings`, class `RateLimitSettings`, class `RateLimitingExtensions`
-  - `AddKnockRateLimiting()`:40, `ClientKey()`:102
+  - `AddKnockRateLimiting()`:43, `ClientKey()`:131
 - `src/Knock.Api/Hosting/RequestBodyLimitMiddleware.cs` — class `ProblemResponses`, class `RequestBodyLimitMiddleware`
   - `WriteAsync()`:9, `RequestBodyLimitMiddleware()`:30, `InvokeAsync()`:32
+- `src/Knock.Api/Hosting/SecurityExtensions.cs` — class `SecurityExtensions`
+  - `AddKnockSecurity()`:12
+- `src/Knock.Api/Hosting/SecurityHeadersMiddleware.cs` — class `SecurityHeadersMiddleware`
+  - `SecurityHeadersMiddleware()`:11, `InvokeAsync()`:17
+- `src/Knock.Api/Hosting/SecuritySettings.cs` — class `HstsSettings`, class `HttpsSettings`, class `CorsSettings`, class `SecuritySettings`, class `SecuritySettingsValidator`
+  - `Validate()`:46, `Errors()`:49, `IsValidOrigin()`:83
 - `src/Knock.Api/Hosting/ValidationExtensions.cs` — class `ValidationExtensions`, class `ValidationFilter`
   - `AddKnockValidation()`:11, `OnActionExecutionAsync()`:27, `ToCamelCasePath()`:63
 

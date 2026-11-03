@@ -1,5 +1,6 @@
 # Gitleaks: reglas por defecto + reglas de Knock. Sin listas blancas globales: un falso positivo se
 # registra en security/exceptions.yaml y se marca en la línea con «gitleaks:allow EXC-NNN».
+# Única excepción por ruta: la de EXC-005, acotada a una regla y a un archivo (ver [rules.allowlist] de knock-mongodb-connection-string).
 title = "knock"
 
 [extend]
@@ -22,3 +23,13 @@ id = "knock-azure-storage-key"
 description = "Llave de Azure Storage"
 regex = '''(?i)AccountKey=[A-Za-z0-9+/=]{40,}'''
 tags = ["azure", "knock"]
+
+[[rules]]
+id = "knock-mongodb-connection-string"
+description = "Cadena de conexión de MongoDB con usuario y contraseña"
+regex = '''(?i)mongodb(?:\+srv)?://[^:/\s"'@<>$]+:[^@\s"'<>$]{3,}@'''
+tags = ["mongodb", "knock"]
+
+[rules.allowlist]
+description = "EXC-005: muestra sintética de la prueba de enmascarado de secretos (solo ese archivo)"
+paths = ['''scripts/ci/test_ai_review\.py''']
