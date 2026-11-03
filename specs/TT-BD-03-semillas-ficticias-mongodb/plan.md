@@ -1,6 +1,6 @@
 # plan.md — TT-BD-03 — Semillas ficticias en JSON para MongoDB: clientes de prueba
 
-> Borrador. Servicio afectado: Identidad y confianza. Falta la aprobación de la spec; las preguntas P1–P9 ya tienen respuesta (spec §8, decisiones D1–D8 del 2026-10-28); P10 (carpeta del cargador) está abierta. Técnicos y solicitudes quedan fuera de alcance hasta que existan las specs de HU-017 y HU-024.
+> Borrador. Servicio afectado: Identidad y confianza. Falta la aprobación de la spec; todas las preguntas tienen respuesta (spec §8: decisiones D1–D8 del 2026-10-28 y D9 del 2026-11-02). Técnicos y solicitudes quedan fuera de alcance hasta que existan las specs de HU-017 y HU-024.
 
 ## 1. Mapeo de archivos
 - **Reutilizar (buscar con `python scripts/codemap.py --query "seed loader json catalog encrypt phone"`):**
@@ -11,15 +11,15 @@
   - `AddKnockMongo` (`Hosting/`, #73) para pedir la base `identity`.
 - **Crear (al implementar):**
   - `db/seeds/demo/identity/usuarios.json` (10 clientes).
-  - Cargador de demostración en el módulo Identity, carpeta según P10 (spec §8), con la guarda de entorno (D3).
+  - Cargador de demostración en `Modules/Identity/Data/` (D9), con la guarda de entorno (D3).
   - Pruebas: `tests/DatabaseTest/Demo/{DemoSeedFileTests,DemoSeedLoaderTests}.cs`, `tests/UnitTest/Architecture/DemoSeedBoundaryTests.cs`.
-- **Modificar:** `db/seeds/README.md` (sección de demostración).
+- **Modificar:** `db/seeds/README.md` (sección de demostración); `IdentityStore` (`Modules/Identity/Data/`, #75): método nuevo de upsert por `_id` fijo, coordinado con Guillermo y agregado cuando #75 esté fusionado (D9).
 - **No tocar:** `db/seeds/catalog/*.json`, `db/seeds/colonias_tula.geojson`, `db/sepomex/`, archivos protegidos (`.github/`, `scripts/`, `security/`, `constitution.md`, `*.csproj` y `packages.lock.json`: sin dependencias nuevas, D7), specs de otras tareas.
 
 ## 2. Riesgos y efectos secundarios
 - **HU-001 sin fusionar:** el cifrado del celular depende del código del PR #75, no solo de su spec; sin #75 fusionado no se empieza el cargador.
 - **Calendario:** si #75 no se fusiona antes del 30-oct-2026, la tarea pasa al siguiente sprint (lo decide el equipo).
-- **Frontera de colecciones:** TC-HU-001-23 solo admite `IdentityStore` con `IMongoCollection`; P10 decide si el cargador escribe por él.
+- **Frontera de colecciones:** TC-HU-001-23 solo admite `IdentityStore` con `IMongoCollection`; el cargador escribe por él (D9), con el upsert dentro de `IdentityStore`.
 - **Cifrado del celular:** un cargador que escriba el JSON tal cual dejaría el celular en claro; el caso 06 lo impide.
 - **`sub`:** si se calculara distinto de TT-API-12, no coincidiría con el de una sesión; el caso 04 lo impide.
 - **`_id` repetidos con el catálogo:** un upsert pisaría otro documento; el caso 01 lo prohíbe.
@@ -41,9 +41,9 @@
 | TC-TT-BD-03-10 | `dotnet build` + `dotnet format --verify-no-changes` | comando |
 
 ## 4. Secuencia
-1. Aprobación de la spec y respuesta a P10; confirmar que #75 (HU-001) está fusionado (#73 ya lo está).
+1. Aprobación de la spec; confirmar que #75 (HU-001) está fusionado (#73 ya lo está) y coordinar con Guillermo el método nuevo de `IdentityStore` (D9).
 2. Pruebas de archivo (casos 01 a 03) que fallan primero; luego el JSON.
-3. Cargador con `sub`, cifrado y guarda de entorno (casos 04 a 08).
+3. Método nuevo de `IdentityStore` y cargador con `sub`, cifrado y guarda de entorno (casos 04 a 08).
 4. `db/seeds/README.md`.
 5. Carga dos veces en `documentdb-local` y conteos (caso 09); gates (caso 10); `Memoria.md`.
 

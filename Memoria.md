@@ -478,3 +478,9 @@
 - Hallazgo: el `.docx` de la ficha no está, pero sí su versión generada `docs/backlog/TT-BD-03.md` (20 técnicos, 10 clientes, script repetible, Bogus sugerido); es anterior a ADR-002.
 - Hallazgo: los modelos de perfil, técnico y solicitud (HU-002, HU-017, HU-024) no tienen spec; los 4 números de prueba de Firebase son `+1 650 555 01xx` y HU-001 solo acepta `+52`; los usuarios sembrados no tienen `uid` de Firebase para derivar el `sub`. Todo va en las preguntas P1–P9.
 - A evitar: guardar el celular de demostración en claro (constitución §6: celular cifrado); reutilizar un `_id` del catálogo; cargar demostración en `Production`.
+
+## 2026-11-02 — TT-BD-03 (KNOCK-40): carpeta del cargador decidida
+- Decisión (líder, D9, P10 opción a): el cargador vive en `Modules/Identity/Data/` y escribe con un método nuevo de `IdentityStore` (upsert por `_id` fijo), cifrando con `PhoneProtector`.
+- Porqué: sigue el precedente de `CatalogSeeder` con `CatalogStore` y no toca TC-HU-001-23.
+- Pendiente: coordinar el método con Guillermo y agregarlo cuando #75 esté fusionado.
+- A evitar: copiar el `UpsertAsync` de `CatalogSeeder`, que recibe `IMongoCollection`; en Identity ese tipo solo lo tiene `IdentityStore`.

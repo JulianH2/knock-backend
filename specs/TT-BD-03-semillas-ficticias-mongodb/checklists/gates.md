@@ -6,7 +6,7 @@
 - [ ] Decisiones D1–D8 de spec §8 (2026-10-28) reflejadas; técnicos y solicitudes fuera de alcance hasta HU-017 y HU-024
 - [ ] PR #73 (TT-BD-06) fusionado (ya lo está en `sprint-02`): patrón de cargador y `DocumentDbFixture` disponibles; `db/seeds/catalog/*.json` sin cambios
 - [ ] PR #75 (HU-001) fusionado: el cifrado y hash del celular usan `Services/PhoneProtector` (si no llega antes del 30-oct-2026, pasa al siguiente sprint)
-- [ ] P10 respondida: carpeta del cargador y ruta del caso 08
+- [ ] Decisión D9 (P10, 2026-11-02) reflejada: cargador en `Modules/Identity/Data/` (ruta del caso 08) que escribe con un método nuevo de `IdentityStore`, coordinado con Guillermo y agregado tras fusionar #75; TC-HU-001-23 sin cambios
 - [ ] Cada caso TC-TT-BD-03-01 a 08 tiene prueba con su ID (`sdd_lint --trace TT-BD-03` en OK); 09 y 10 con su salida en el PR
 - [ ] Solo datos ficticios: nombres escritos a mano y revisados por una persona, celulares `+5200000NNNNN`, `uid` `demo-cliente-NN`, sin campos sensibles
 - [ ] `sub` derivado con `UserIdDerivation.Derive(uid)` (TT-API-12)

@@ -7,7 +7,7 @@
 - **Verificar:** TC-TT-BD-03-01 · TC-TT-BD-03-02 · TC-TT-BD-03-03
 
 ## T2 — Cargador repetible de Identity
-- **Estado:** pendiente. En el módulo Identity (carpeta según P10, spec §8), cifrando con `Services/PhoneProtector`: upsert por `_id`, validación previa, `sub` con `UserIdDerivation.Derive(uid)`, cifrado del celular con el código de HU-001, guarda de entorno (`Production` y `Seed:Demo`).
+- **Estado:** pendiente. En `Modules/Identity/Data/` (D9, spec §8), cifrando con `Services/PhoneProtector`: upsert por `_id` con un método nuevo de `IdentityStore` (se coordina con Guillermo y se agrega cuando #75 esté fusionado), validación previa, `sub` con `UserIdDerivation.Derive(uid)`, cifrado del celular con el código de HU-001, guarda de entorno (`Production` y `Seed:Demo`).
 - **Verificar:** TC-TT-BD-03-04 · TC-TT-BD-03-05 · TC-TT-BD-03-06 · TC-TT-BD-03-07 · TC-TT-BD-03-08
 
 ## T3 — Documentación
