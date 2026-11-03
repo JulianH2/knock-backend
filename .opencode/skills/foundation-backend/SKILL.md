@@ -28,7 +28,7 @@ deploy/  docker-compose.local.yml  docker-compose.ci.yml  terraform/
 - Health: `/health` (liveness) y `/health/ready` (MongoDB, Redis, Blob).
 - Versionado `/api/v1`, ProblemDetails, Scalar solo en Dev, Serilog JSON con CorrelationId y filtro de secretos.
 - Herramientas locales en `.config/dotnet-tools.json` (crear con `python scripts/bootstrap_dotnet_tools.py`): dotnet-stryker, reportgenerator, CycloneDX, dotnet-sonarscanner.
-- `deploy/docker-compose.local.yml`: `documentdb-local` fijado por digest (el mismo que `DocumentDbFixture.Image`), `redis:7-alpine`, Azurite y el emulador de Firebase Auth.
+- `deploy/docker-compose.local.yml` (con TT-BD-07; hoy el archivo sigue con PostGIS): `documentdb-local` fijado por digest (el mismo que `DocumentDbFixture.Image`), `redis:7-alpine`, Azurite y el emulador de Firebase Auth.
 - Secretos: `dotnet user-secrets` en local, Key Vault con identidad administrada en Azure.
 
 ## Verificación
