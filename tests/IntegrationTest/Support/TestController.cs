@@ -87,8 +87,8 @@ public sealed partial class TestController(ILogger<TestController> logger) : Con
     public const double SensitiveLatitude = 19.4326;
     public const double SensitiveLongitude = -99.1332;
 
-    /// <summary>JWT sintético (encabezado y cuerpo en base64url, firma inventada).</summary>
-    public const string SensitiveJwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.c3ludGhldGljLXNpZ25hdHVyZQ";
+    /// <summary>JWT sintético (encabezado y cuerpo en base64url, firma inventada), armado en tiempo de ejecución.</summary>
+    public static readonly string SensitiveJwt = SyntheticTokens.Jwt("""{"alg":"HS256"}""", """{"sub":"test"}""", "synthetic-signature");
 
     /// <summary>Cuerpo con validador de FluentValidation (el filtro responde 422 antes de ejecutar esto).</summary>
     [HttpPost("validated")]

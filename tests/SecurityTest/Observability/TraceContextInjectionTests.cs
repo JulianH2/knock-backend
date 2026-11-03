@@ -12,7 +12,7 @@ public class TraceContextInjectionTests
     private const string _clientTraceId = "4bf92f3577b34da6a3ce929d0e0e4736";
     private const string _validTraceparent = "00-" + _clientTraceId + "-00f067aa0ba902b7-01";
     private const string _baggagePhone = "15555550199";
-    private const string _baggageToken = "tok-SECRET-baggage-05";
+    private static readonly string _baggageToken = SyntheticTokens.Opaque("tok", "SECRET", "baggage", "05");
 
     [Fact]
     public async Task HostileTraceContextAndBaggage_DoNotReachTelemetry_TC_TT_OBS_01_05()

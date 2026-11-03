@@ -10,7 +10,7 @@ namespace Knock.IntegrationTest.Observability;
 
 public class OutgoingHttpTelemetryTests
 {
-    private const string _secretToken = "tok-SECRET-11-outgoing";
+    private static readonly string _secretToken = SyntheticTokens.Opaque("tok", "SECRET", "11", "outgoing");
     private const string _secretSignature = "sig-SECRET-11";
 
     [Fact]

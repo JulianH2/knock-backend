@@ -39,7 +39,7 @@ internal static class SensitiveTraffic
     public const int RequestCount = 4;
     public const string Phone = "15555550199";
     public const string QueryToken = "tok-SECRET-08-query";
-    public const string IdToken = "eyJhbGciOiJSUzI1NiJ9.eyJmaXJlYmFzZSI6InRlc3QifQ.c3ludGhldGljLWlkLXRva2Vu";
+    public static readonly string IdToken = SyntheticTokens.Jwt("""{"alg":"RS256"}""", """{"firebase":"test"}""", "synthetic-id-token");
     public const string Cookie = "cookie-SECRET-08";
 
     public static KnockApiFactory CreateFactory() => new(configureServices: services =>
