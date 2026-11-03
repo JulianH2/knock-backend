@@ -496,3 +496,9 @@
 - Porqué: sigue el precedente de `CatalogSeeder` con `CatalogStore` y no toca TC-HU-001-23.
 - Pendiente: coordinar el método con Guillermo y agregarlo cuando #75 esté fusionado.
 - A evitar: copiar el `UpsertAsync` de `CatalogSeeder`, que recibe `IMongoCollection`; en Identity ese tipo solo lo tiene `IdentityStore`.
+
+## 2026-11-03 — TT-BD-03 (KNOCK-40): revisión de pares de Erick en #85
+- Decisión (D10, propuesta del líder): como `PhoneProtector` usa un nonce aleatorio, la repetibilidad se compara por `celularHash` y no por `celularCifrado`; `version` no cuenta `celularCifrado`. Para descifrar hace falta el dato asociado `usuarios|celular|<_id>`.
+- Decisión (D12): el upsert es por `_id`. Si choca con el índice único de `celularHash` o `sub`, se falla antes de escribir; queda probado con el caso nuevo TC-TT-BD-03-11. D13: el `docker run` manual publica solo en `127.0.0.1`.
+- Pendiente del líder: D11 (cargador al arrancar la API con `Seed:Demo = true` fuera de `Production`; hoy `CatalogSeeder` solo lo invocan las pruebas) y D16 (Sprint 3, porque #75 no se fusionó antes del 30-oct). La spec estaba Aprobada; estos cambios alteran lo aprobado y piden otra revisión.
+- A evitar: comparar campos cifrados con nonce aleatorio para decidir si algo cambió; remitir a una sección de la spec sin comprobar su número.
