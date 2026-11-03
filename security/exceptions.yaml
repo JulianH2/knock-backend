@@ -67,3 +67,15 @@ excepciones:
     creada: 2026-11-03
     vence: 2027-01-31
     plan: fusionar el PR #89 con merge commit, comprobar el CI del push a `sprint-02` justo después y retirar la excepción y el archivo .gitleaksignore cuando el commit ya no entre en ningún análisis, o antes de que venza.
+  - id: EXC-005
+    herramienta: gitleaks
+    regla: knock-mongodb-connection-string
+    alcance: scripts/ci/test_ai_review.py (solo ese archivo, en la regla; no es una lista blanca global)
+    justificacion: >-
+      Falso positivo. La línea 169 de la prueba de enmascarado de secretos del script de pre-revisión contiene una cadena de MongoDB inventada
+      para comprobar que el script oculta ese formato; no es una credencial de ningún servicio. La regla nueva sigue activa para cualquier otro archivo.
+      Evidencia: análisis de Gitleaks con la regla nueva sobre el árbol de `sprint-02` (un solo hallazgo, ese archivo).
+    responsable: José Julián Hernández Hernández
+    creada: 2026-11-03
+    vence: 2027-01-31
+    plan: sustituir la muestra por una construida en tiempo de ejecución (como se hizo en el PR #89) y retirar la excepción antes de vencer.
