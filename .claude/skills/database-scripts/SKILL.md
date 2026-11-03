@@ -1,6 +1,6 @@
 ---
 name: database-scripts
-description: Modelo de datos en MongoDB, índices, semillas JSON, catálogo SEPOMEX con polígonos GeoJSON, respaldos y pruebas de base de datos de knock-backend. Úsala en tareas con capa [BD] (TT-BD-01..09, HU con colecciones nuevas) y al escribir consultas o semillas.
+description: Modelo de datos en MongoDB, índices, semillas JSON, catálogo SEPOMEX con polígonos GeoJSON, respaldos y pruebas de base de datos de knock-backend. Úsala en tareas con capa [BD] (TT-BD-*, HU con colecciones nuevas) y al escribir consultas o semillas.
 ---
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/database-scripts/SKILL.md. No editar a mano. -->
 # database-scripts

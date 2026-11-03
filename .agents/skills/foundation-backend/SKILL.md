@@ -23,6 +23,7 @@ deploy/  docker-compose.local.yml  docker-compose.ci.yml  terraform/
 `SecurityHeaders → ExceptionHandling → ForwardedHeaders → HSTS (no Dev) → HttpsRedirection → CORS → RateLimiter → Authentication → Authorization → MapControllers / MapHubs`. Una prueba de arquitectura verifica el orden.
 
 ## Base
+- Versión de .NET: destino **.NET 11**; hoy el código está en **net10**. Las skills y la constitución cambian de versión en el mismo PR que cambie el código.
 - `Directory.Build.props`: `TreatWarningsAsErrors`, `AnalysisMode=All`, `EnforceCodeStyleInBuild`, `NuGetAudit` (all), SonarAnalyzer.CSharp.
 - Health: `/health` (liveness) y `/health/ready` (MongoDB, Redis, Blob).
 - Versionado `/api/v1`, ProblemDetails, Scalar solo en Dev, Serilog JSON con CorrelationId y filtro de secretos.
