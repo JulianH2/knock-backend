@@ -548,3 +548,7 @@
 - Decisión: `Cookie` y `Set-Cookie` tienen su propia expresión que llega al fin de línea. Porqué: con la de `clave=valor` (que corta en `;`) el segundo par de la cookie quedaba visible.
 - Decisión: el celular nacional sin `+` no se redacta en texto libre (riesgo aceptado, anotado en `docs/OBSERVABILIDAD.md`; pregunta abierta al líder en el PR #89). Porqué: taparía ids, folios y tiempos; HU-001 solo maneja `+52`.
 - A evitar: la palabra «todo» en un comentario de C# (Sonar S1135 la toma como `TODO` y rompe el build con warnings como error); agregar a `RedactAttribute` un tipo con texto sin llevarlo a `RedactAttribute_TextContainers_AreRedacted_TC_TT_OBS_01_12`.
+
+## 2026-11-03 — TT-OBS-01 (KNOCK-51): spec alineada con lo implementado tras aceptar el líder las cinco desviaciones
+- Decisión (líder): se aceptan D1 a D5 (sink propio `OpenTelemetryLogSink`, dos propagadores para P9, `SamplingRatio = 1` y `TracesPerSecond = null`, separador obligatorio en coordenadas, Statsbeat apagado en producción). La spec lo registra como D6 y anota dos límites: las respuestas que no genera la API (502 o 504 del ingress) no llevan `traceId` ni `correlationId`, y declarar esos campos en `docs/openapi.v1.json` (protegido) queda para el Sprint 3. Falta la nueva firma del líder.
+- A evitar: dejar la spec describiendo `writeToProviders` o «solo documentación» cuando el código usa el sink propio; fusionar #89 con «Rebase and merge» (las huellas de EXC-004 llevan el SHA `de1c61a`).
