@@ -671,7 +671,7 @@
         "tags": [
           "Colonias"
         ],
-        "summary": "Colonia del punto o «fuera de cobertura» (200 en ambos casos). Las coordenadas se convierten en colonia y se descartan: no se\r\nguardan, no se registran, no se cachean y no vuelven en la respuesta. El 422 lo da `ValidationFilter` antes de esta acción.",
+        "summary": "Colonia del punto o «fuera de cobertura» (200 en ambos casos). Las coordenadas se convierten en colonia y se descartan: no se\nguardan, no se registran, no se cachean y no vuelven en la respuesta. El 422 lo da `ValidationFilter` antes de esta acción.",
         "parameters": [
           {
             "name": "lat",
@@ -763,7 +763,7 @@
         "tags": [
           "Oficios"
         ],
-        "summary": "Oficios activos como arreglo sin paginar: excepción documentada a la constitución §11 (catálogo acotado, D9).\r\n`[AllowAnonymous]` explícito para que siga público aunque se agregue una política de autorización global (D3).",
+        "summary": "Oficios activos como arreglo sin paginar: excepción documentada a la constitución §11 (catálogo acotado, D9).\n`[AllowAnonymous]` explícito para que siga público aunque se agregue una política de autorización global (D3).",
         "parameters": [
           {
             "name": "version",
@@ -858,14 +858,9 @@
             "format": "int64"
           }
         },
-        "description": "Petición de subida: uso previsto, tipo y tamaño declarados. La forma la valida `CreateUploadRequestValidator`\r\n(422 con campos); tipo o tamaño no permitidos los rechaza el servicio (422)."
+        "description": "Petición de subida: uso previsto, tipo y tamaño declarados. La forma la valida `CreateUploadRequestValidator`\n(422 con campos); tipo o tamaño no permitidos los rechaza el servicio (422)."
       },
       "FirebaseExchangeRequest": {
-        "required": [
-          "firebaseIdToken",
-          "deviceId",
-          "aceptaAviso"
-        ],
         "type": "object",
         "properties": {
           "firebaseIdToken": {
@@ -887,7 +882,7 @@
             ]
           }
         },
-        "description": "Petición del canje. Los campos son anulables a propósito: si falta alguno, el validador (422 con `errors`) lo reporta en su campo\r\nen lugar del 400 automático de MVC. El celular y el `uid` no se aceptan: salen del token verificado."
+        "description": "Petición del canje. Los campos son anulables a propósito y no se declaran requeridos en el esquema: si falta alguno, el validador responde 422 con `errors` en su campo, en lugar del 400 automático de MVC. El celular y el `uid` no se aceptan: salen del token verificado."
       },
       "MeResponse": {
         "required": [
