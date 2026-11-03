@@ -158,6 +158,6 @@ Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 **Preguntas abiertas:** ninguna. D11 (punto de entrada) y D16 (Sprint 3) las confirmó el líder el 2026-11-03.
 
 ## Aprobación
-- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-02
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-03
 - [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
