@@ -4,7 +4,7 @@
 > **Repositorio:** knock-backend · **Otra parte en:** — · **Rama:** `docs/KNOCK-40-fake-demo-seeds-spec` (spec) → PR a `sprint-02`; la implementación va en su propia rama tras la aprobación (la ficha cita `chore/KNOCK-40-semillas-ficticias`)
 > **Ficha:** `docs/backlog/TT-BD-03.md` (generada del adjunto `TT-BD-03_SemillasFicticiasClientesTecnicos_Knock.docx`; el `.docx` no está disponible, solo esta ficha). La ficha es anterior a ADR-002: pide `deploy/seeds/ficticios.sql` y depende de TT-BD-02; el plan de adaptación la cambia a «semillas en JSON para MongoDB».
 > **Depende de:** TT-BD-06 (KNOCK-156, PR #73, ya fusionado en `sprint-02`): `db/seeds/catalog/*.json` con `_id` fijos y el patrón del cargador idempotente (`Modules/Catalog/Data/CatalogSeeder`) · **HU-001 (KNOCK-43): la implementación, no solo la spec** — modelo de `usuarios` en la base `identity` y el cifrado y hash del celular viven en el PR #75 (`Modules/Identity/Services/PhoneProtector`, llaves en `Identity:PhoneProtection`), **aún sin fusionar**; sin ese código el cargador no puede cifrar el celular (decisión D3) · TT-API-12: `UserIdDerivation.Derive(uid)` para el `sub` (decisión D4) · TT-BD-07 (KNOCK-157): compose local con el contenedor `documentdb-local`.
-> **Calendario:** el cargador se implementa cuando se fusione #75 (HU-001). Si #75 no se fusiona antes del 30-oct-2026, la tarea pasa al siguiente sprint; lo decide el equipo. **Actualización 2026-11-03 (D16):** #75 no se fusionó antes del 30-oct-2026; la implementación pasa al Sprint 3 si el líder lo confirma.
+> **Calendario:** el cargador se implementa cuando se fusione #75 (HU-001). Si #75 no se fusiona antes del 30-oct-2026, la tarea pasa al siguiente sprint; lo decide el equipo. **Actualización 2026-11-03 (D16):** #75 no se fusionó antes del 30-oct-2026; la implementación pasa al Sprint 3. **Resuelto (líder, 2026-11-03).**
 > **Fuentes:** ficha `docs/backlog/TT-BD-03.md` (pasos 1–4, V1–V2) · `docs/PLAN_ADAPTACION.md` §D · ADR-001 (regla 1) · ADR-002 (regla 2) · constitución 2.2.x (principios 3, 5 y 10; §5; §6 «Biométricos», «CURP solo como HMAC; dirección y celular cifrados», «No se usan datos personales reales») · spec HU-001 §5 · spec TT-API-12 · spec TT-BD-06 §3 y §5 · `db/seeds/README.md` y `db/seeds/catalog/*.json` de #73 · respuestas del líder (2026-10-28 y 2026-11-02) y revisión de pares de Erick en #85 (2026-11-03), §8 «Decisiones»
 > **Skills:** story-workflow, spec-first-writing, database-scripts, security-core, testing-strategy-backend, reuse-before-create
 > **Estado:** Aprobada
@@ -12,7 +12,7 @@
 ## 1. Objetivo
 Que el entorno local y las demos tengan **clientes creíbles e inventados**, cargados desde un JSON versionado en `db/seeds/demo/` con el mismo formato que `db/seeds/catalog/*.json` (arreglo de documentos, `_id` fijos como `{"$oid": "…"}`, campos en camelCase), con un cargador repetible dentro de la API que no duplica, cifra el celular como HU-001, se niega a correr donde no toca y no contiene ningún dato de una persona real. Técnicos y solicitudes quedan **fuera de alcance** hasta que existan las specs de HU-017 y HU-024 (decisión D1).
 
-**Terminada cuando:** no hay Staging (se despliega desde `main`, decisión D2), así que se cumple **en el contenedor local `documentdb-local`** (compose de TT-BD-07, o el contenedor a mano de §8, fila «Smoke local»): el JSON de clientes existe y pasa sus pruebas; el cargador, ejecutado al arrancar la API con `Seed:Demo = true` fuera de `Production` (punto de entrada propuesto en D11, pendiente de confirmar por el líder) dos veces sobre una base `identity` vacía en `documentdb-local`, deja exactamente 10 documentos con `demo: true` y los mismos `_id` tras cada corrida; ningún celular queda en claro; y el PR trae la salida de los comandos de conteo (`countDocuments({ demo: true })` tras cada corrida), sin cadenas de conexión ni credenciales.
+**Terminada cuando:** no hay Staging (se despliega desde `main`, decisión D2), así que se cumple **en el contenedor local `documentdb-local`** (compose de TT-BD-07, o el contenedor a mano de §8, fila «Smoke local»): el JSON de clientes existe y pasa sus pruebas; el cargador, ejecutado al arrancar la API con `Seed:Demo = true` fuera de `Production` (punto de entrada de D11, resuelto por el líder el 2026-11-03) dos veces sobre una base `identity` vacía en `documentdb-local`, deja exactamente 10 documentos con `demo: true` y los mismos `_id` tras cada corrida; ningún celular queda en claro; y el PR trae la salida de los comandos de conteo (`countDocuments({ demo: true })` tras cada corrida), sin cadenas de conexión ni credenciales.
 
 **Qué pide la ficha y qué cambia con MongoDB:**
 
@@ -77,7 +77,7 @@ Que el entorno local y las demos tengan **clientes creíbles e inventados**, car
 
 | Clave | Valor | Nota |
 |---|---|---|
-| `Seed:Demo` | `true` solo donde se quiera cargar | Con ella y fuera de `Production`, el cargador corre al arrancar la API (D11, pendiente de confirmar). Sin ella, o en `Production`, el cargador no escribe (TC-TT-BD-03-07). |
+| `Seed:Demo` | `true` solo donde se quiera cargar | Con ella y fuera de `Production`, el cargador corre al arrancar la API (D11, resuelto por el líder el 2026-11-03). Sin ella, o en `Production`, el cargador no escribe (TC-TT-BD-03-07). |
 | Llave de cifrado y de HMAC del celular | secreto | La misma de HU-001 en ese entorno (user-secrets en local); nunca en el JSON ni en el repositorio. |
 
 ## 5. Modelo de datos
@@ -148,14 +148,14 @@ Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 
 **Decisiones de la revisión de pares (Erick, #85) y del líder (2026-11-03):**
 - **D10 — Repetibilidad con cifrado aleatorio (bloqueante, caso 05; propuesta del líder).** `PhoneProtector.Protect` (#75) usa un nonce aleatorio, así que `celularCifrado` cambia en cada cifrado. La prueba del caso 05 compara `celularHash` (HMAC determinista) y comprueba que `celularCifrado` se descifra al celular original. Si el documento ya existe, la comparación de contenido para subir `version` excluye `celularCifrado`. El caso 06 anota que para descifrar se necesita el dato asociado `usuarios|celular|<_id>`.
-- **D11 — Punto de entrada del cargador (bloqueante, casos 07 y 09 y «Terminada cuando»). Propuesta, pendiente de confirmar por el líder.** El cargador se ejecuta al arrancar la API solo si `Seed:Demo = true` y el entorno no es `Production`; la guarda del caso 07 lo prueba. No hay precedente que copiar: hoy `CatalogSeeder` solo se registra en el contenedor (`CatalogModuleExtensions`) y solo lo invocan las pruebas.
+- **D11 — Punto de entrada del cargador (bloqueante, casos 07 y 09 y «Terminada cuando»). Resuelto (líder, 2026-11-03).** El cargador se ejecuta al arrancar la API solo si `Seed:Demo = true` y el entorno no es `Production`, y solo contra `documentdb-local` (nunca Azure); la guarda del caso 07 lo prueba. No hay precedente que copiar: hoy `CatalogSeeder` solo se registra en el contenedor (`CatalogModuleExtensions`) y solo lo invocan las pruebas.
 - **D12 — Upsert por `_id` y choque de índices únicos.** El cargador hace upsert por `_id` fijo, a diferencia de `CatalogSeeder`, que lo hace por clave natural. Si un documento choca con el índice único de `celularHash` (o de `sub`) de `IdentityStore` bajo otro `_id`, el cargador falla con un error claro, sin el celular ni su hash, y sin escribir nada parcial: la comprobación se hace antes de la primera escritura. Lo prueba el caso nuevo TC-TT-BD-03-11.
 - **D13 — Puerto del contenedor manual.** El `docker run` de §8 y del plan publica solo en `127.0.0.1` (`-p 127.0.0.1:10260:10260`), como TT-BD-07 exige en el compose.
 - **D14 — Referencias al contenedor manual.** El comando está en §8, fila «Smoke local», no en §7 («Pantallas»). Se corrigieron el caso 09, §3, `plan.md` y `task.md` (T4).
 - **D15 — Estado.** `plan.md` y `checklists/gates.md` dicen Aprobada, igual que esta spec.
-- **D16 — Calendario.** #75 no se fusionó antes del 30-oct-2026; la implementación pasa al Sprint 3 si el líder lo confirma. La fecha original no se cambia.
+- **D16 — Calendario. Resuelto (líder, 2026-11-03).** #75 no se fusionó antes del 30-oct-2026; la implementación pasa al Sprint 3. La fecha original de Jira no se cambia en esta spec.
 
-**Preguntas abiertas:** la confirmación del líder de D11 (punto de entrada) y de D16 (Sprint 3).
+**Preguntas abiertas:** ninguna. D11 (punto de entrada) y D16 (Sprint 3) las confirmó el líder el 2026-11-03.
 
 ## Aprobación
 - [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-02

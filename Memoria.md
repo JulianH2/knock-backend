@@ -502,3 +502,7 @@
 - Decisión (D12): el upsert es por `_id`. Si choca con el índice único de `celularHash` o `sub`, se falla antes de escribir; queda probado con el caso nuevo TC-TT-BD-03-11. D13: el `docker run` manual publica solo en `127.0.0.1`.
 - Pendiente del líder: D11 (cargador al arrancar la API con `Seed:Demo = true` fuera de `Production`; hoy `CatalogSeeder` solo lo invocan las pruebas) y D16 (Sprint 3, porque #75 no se fusionó antes del 30-oct). La spec estaba Aprobada; estos cambios alteran lo aprobado y piden otra revisión.
 - A evitar: comparar campos cifrados con nonce aleatorio para decidir si algo cambió; remitir a una sección de la spec sin comprobar su número.
+
+## 2026-11-03 — TT-BD-03 (KNOCK-40): D11 y D16 resueltas por el líder
+- Decisión (líder): D11, el cargador de demostración corre al arrancar la API solo con `Seed:Demo = true` y fuera de `Production`, y solo contra `documentdb-local`; D16, la implementación pasa al Sprint 3 sin cambiar la fecha original de Jira. La spec ya no tiene preguntas abiertas. El bloque de aprobación no se tocó: el líder vuelve a firmar a mano. Los cambios los aplicó el líder en la rama de Alexis, que estaba sin tokens.
+- A evitar: ejecutar el cargador sin las dos guardas; tocar el bloque de aprobación sin la firma del líder.
