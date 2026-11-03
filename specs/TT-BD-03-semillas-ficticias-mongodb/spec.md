@@ -7,7 +7,7 @@
 > **Calendario:** el cargador se implementa cuando se fusione #75 (HU-001). Si #75 no se fusiona antes del 30-oct-2026, la tarea pasa al siguiente sprint; lo decide el equipo.
 > **Fuentes:** ficha `docs/backlog/TT-BD-03.md` (pasos 1–4, V1–V2) · `docs/PLAN_ADAPTACION.md` §D · ADR-001 (regla 1) · ADR-002 (regla 2) · constitución 2.2.x (principios 3, 5 y 10; §5; §6 «Biométricos», «CURP solo como HMAC; dirección y celular cifrados», «No se usan datos personales reales») · spec HU-001 §5 · spec TT-API-12 · spec TT-BD-06 §3 y §5 · `db/seeds/README.md` y `db/seeds/catalog/*.json` de #73 · respuestas del líder (2026-10-28 y 2026-11-02, §8 «Decisiones»)
 > **Skills:** story-workflow, spec-first-writing, database-scripts, security-core, testing-strategy-backend, reuse-before-create
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Que el entorno local y las demos tengan **clientes creíbles e inventados**, cargados desde un JSON versionado en `db/seeds/demo/` con el mismo formato que `db/seeds/catalog/*.json` (arreglo de documentos, `_id` fijos como `{"$oid": "…"}`, campos en camelCase), con un cargador repetible dentro de la API que no duplica, cifra el celular como HU-001, se niega a correr donde no toca y no contiene ningún dato de una persona real. Técnicos y solicitudes quedan **fuera de alcance** hasta que existan las specs de HU-017 y HU-024 (decisión D1).
@@ -148,6 +148,6 @@ Cobertura mínima 60 % líneas / 50 % ramas; no se bajan umbrales.
 **Preguntas abiertas:** ninguna.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ____________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-02
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
