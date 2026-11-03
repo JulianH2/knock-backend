@@ -27,7 +27,6 @@ dotnet test tests/UnitTest -c Release --no-build            # incluye Architectu
 dotnet test tests/IntegrationTest -c Release --no-build     # requiere Docker
 dotnet test tests/SecurityTest tests/DatabaseTest tests/ContractTest -c Release --no-build
 dotnet run --project src/Knock.Api
-dotnet ef migrations add <Nombre> --project src/Knock.Api --context <Modulo>DbContext
 # Calidad y contrato
 python scripts/export_openapi.py             # regenera docs/openapi.v1.json
 dotnet tool run dotnet-stryker -- --config-file stryker-config.json --since:sprint-XX
@@ -47,7 +46,7 @@ semgrep scan --config .semgrep/semgrep.yaml --error
 ## 4. Límites — no hacer
 - **Nunca** agregues atribución a IA en commits o PR: ni trailers `Co-Authored-By` de agentes (Claude, Copilot, Codex, Gemini, Cursor, opencode o `noreply@anthropic.com`), ni líneas «Generated with…». El uso de IA se declara solo en la sección «Uso de IA» de la plantilla del PR. Un `Co-Authored-By` de una persona del equipo (trabajo en parejas) sí se permite. El hook `commit-msg` y el CI rechazan lo primero.
 - No leer ni escribir colecciones, Domain o Services de otro servicio o módulo (usa el contrato del servicio, `I<Modulo>Api` o eventos).
-- No `try/catch` ni `DbContext` en controllers. No SQL interpolado. No estado de negocio en memoria del proceso.
+- No `try/catch` ni acceso a la base (`IMongoCollection`) en controllers. No SQL interpolado ni filtros de MongoDB armados como JSON con datos del usuario. No estado de negocio en memoria del proceso.
 - No editar scripts de índices o semillas ya fusionados, fixtures de contrato a mano ni `docs/openapi.v1.json` a mano.
 - No desactivar pruebas, reglas o escáneres; no bajar umbrales; no suprimir sin `EXC-NNN`.
 - No agregar paquetes sin evaluación; no tocar archivos protegidos (`.github/`, `scripts/`, configuración de analizadores, constitución).
@@ -64,7 +63,7 @@ semgrep scan --config .semgrep/semgrep.yaml --error
 - `security-reviewer` LIBERA, `traceability-clerk` sin drift, informe de `story-workflow` en el PR, `Memoria.md` al día.
 
 ## 6. Convenciones técnicas
-- Controllers delgados (`[ApiVersion("1.0")]`, `api/v{version:apiVersion}/<recurso>`), servicios con la lógica, dominio con estados, `<Modulo>DbContext` con `HasDefaultSchema`.
+- Controllers delgados (`[ApiVersion("1.0")]`, `api/v{version:apiVersion}/<recurso>`), servicios con la lógica, dominio con estados, `<Modulo>Store` (único punto con `IMongoCollection`) con su base lógica `Mongo:Databases:<Modulo>`.
 - Eventos en pasado vía outbox; plazos (15 min, 24 h, 48 h, 7 d) como mensajes programados.
 - Geo con `geography(...,4326)` + GiST; colonia por `ST_Contains` sobre la tabla propia.
 - SignalR: hub por módulo, autorización por JWT, grupos por conversación.
@@ -110,11 +109,11 @@ Fuente en `.agents/agents/` (`scripts/sync_agents.py` los traduce para cada herr
 | `ai-features` | Reglas para las funciones de IA de Knock (asistente Knock, resumen del chat, bitácora, borrador de cotización con Azure OpenAI y ML.NET para «Recomendadas» y rango de precio). Úsala en el módulo Assistant y en Reputation (ML). | `.agents/skills/ai-features/SKILL.md` |
 | `api-contract-openapi` | Mantiene el contrato REST de Knock (OpenAPI 3.1, docs/endpoints.md, ProblemDetails, versionado) y regenera el cliente Dart. Úsala cuando agregues o cambies un endpoint. | `.agents/skills/api-contract-openapi/SKILL.md` |
 | `auth-firebase-jwt` | Inicio de sesión de Knock con Firebase Phone Auth en la app y JWT propios en el backend (refresh rotativo, detección de reuso, blacklist en Redis). Úsala en el módulo Identity y al proteger endpoints. | `.agents/skills/auth-firebase-jwt/SKILL.md` |
-| `database-scripts` | Modelo de datos, migraciones EF Core, semillas, catálogo SEPOMEX con polígonos PostGIS, respaldos y pruebas de base de datos de knock-backend. Úsala en tareas con capa [BD] (TT-BD-01..04, HU con tablas nuevas) y al escribir SQL. | `.agents/skills/database-scripts/SKILL.md` |
+| `database-scripts` | Modelo de datos en MongoDB, índices, semillas JSON, catálogo SEPOMEX con polígonos GeoJSON, respaldos y pruebas de base de datos de knock-backend. Úsala en tareas con capa [BD] (TT-BD-*, HU con colecciones nuevas) y al escribir consultas o semillas. | `.agents/skills/database-scripts/SKILL.md` |
 | `devsecops-audit` | Auditoría integral de calidad, pruebas, seguridad y DevSecOps de un repositorio de Knock por fases (inventario, propuesta priorizada, implementación incremental, verificación, informe). Úsala cuando pidan auditar el repositorio o revisar que los controles existen y funcionan. | `.agents/skills/devsecops-audit/SKILL.md` |
-| `events-outbox` | Eventos, saga y plazos programados en Knock con MassTransit y outbox transaccional de EF Core (oleadas a 15 min, vencimiento a 48 h, gracia de 7 días, borrados programados). Úsala cuando una HU tenga pasos asíncronos o plazos. | `.agents/skills/events-outbox/SKILL.md` |
-| `foundation-backend` | Estructura base de knock-backend (solución .NET 10, módulos vacíos, pipeline de seguridad fijo, health, docker-compose con PostGIS, Redis y Azurite, CI). Úsala en TT-API-01, TT-API-03, TT-BD-01, TT-QA-01 y cuando toques Program.cs, Hosting/ o la configuración base. | `.agents/skills/foundation-backend/SKILL.md` |
-| `postgis-geo` | Búsqueda geográfica en Knock con PostgreSQL + PostGIS y EF Core (técnicos cercanos, radio de atención, colonia desde la tabla propia SEPOMEX). Úsala en Catalog, Requests (oleadas) y en el mapa. | `.agents/skills/postgis-geo/SKILL.md` |
+| `events-outbox` | Eventos, saga y plazos programados en Knock con outbox transaccional sobre MongoDB y mensajes programados (MassTransit 8 o Wolverine, se fija en TT-API-04) (oleadas a 15 min, vencimiento a 48 h, gracia de 7 días, borrados programados). Úsala cuando una HU tenga pasos asíncronos o plazos. | `.agents/skills/events-outbox/SKILL.md` |
+| `foundation-backend` | Estructura base de knock-backend (solución .NET 10, módulos vacíos, pipeline de seguridad fijo, health, docker-compose con documentdb-local, Redis y Azurite, CI). Úsala en TT-API-01, TT-API-03, TT-BD-01, TT-QA-01 y cuando toques Program.cs, Hosting/ o la configuración base. | `.agents/skills/foundation-backend/SKILL.md` |
+| `postgis-geo` | Búsqueda geográfica en Knock con MongoDB (Azure DocumentDB) e índices 2dsphere (técnicos cercanos, radio de atención, colonia de un punto). El nombre de la skill es histórico (antes PostgreSQL + PostGIS). Úsala en Catalog, Requests (oleadas) y en el mapa. | `.agents/skills/postgis-geo/SKILL.md` |
 | `realtime-signalr` | Chat y avisos en tiempo real de Knock con SignalR (+ Redis backplane) y FCM cuando el destinatario no está conectado. Úsala en el módulo Messaging y para avisos en vivo. | `.agents/skills/realtime-signalr/SKILL.md` |
 | `reuse-before-create` | Obliga a buscar en el mapa de código de Knock antes de crear una clase, función, servicio, widget, componente o archivo nuevo, para reutilizar o extender lo existente y evitar duplicados. Úsala siempre que vayas a crear algo nuevo. | `.agents/skills/reuse-before-create/SKILL.md` |
 | `security-core` | Matriz de seguridad y privacidad de Knock basada en OWASP Top 10 y OWASP API Security Top 10 (autenticación, autorización por recurso, entradas, datos sensibles y biométricos, archivos, sesiones, límites, secretos, cadena de suministro). Úsala al construir endpoints o pantallas y al revisar antes del PR. | `.agents/skills/security-core/SKILL.md` |
@@ -122,7 +121,7 @@ Fuente en `.agents/agents/` (`scripts/sync_agents.py` los traduce para cada herr
 | `story-workflow` | Flujo obligatorio de Knock para implementar cualquier historia, tarea técnica, bug, refactor o cambio de arquitectura - leer, analizar amenazas, planear pruebas por criterio, implementar, verificar de verdad e informar con honestidad. Úsala siempre antes de cambiar código. | `.agents/skills/story-workflow/SKILL.md` |
 | `testing-strategy-backend` | Estrategia de pruebas de knock-backend - unitarias, arquitectura, integración con Testcontainers, seguridad negativa, base de datos, contrato, aceptación por caso TC, mutación con Stryker, fuzzing con RESTler, carga con k6, smoke y caos. Úsala al planear y escribir pruebas. | `.agents/skills/testing-strategy-backend/SKILL.md` |
 | `traceability` | Verifica la trazabilidad spec ↔ código ↔ prueba de un issue de Knock (casos TC-<ID>-KK, endpoints, eventos, alcance) y reporta drift sin editar. Úsala antes de cada PR. | `.agents/skills/traceability/SKILL.md` |
-| `vertical-slice-api` | Cómo construir una rebanada de backend en un módulo de Knock (migración, dominio, servicio, controller, DTOs, validadores, eventos y pruebas) respetando las fronteras del monolito modular. Úsala en cada historia o tarea con capa [Back]. | `.agents/skills/vertical-slice-api/SKILL.md` |
+| `vertical-slice-api` | Cómo construir una rebanada de backend en un módulo de Knock (colecciones e índices, dominio, servicio, controller, DTOs, validadores, eventos y pruebas) respetando las fronteras del monolito modular. Úsala en cada historia o tarea con capa [Back]. | `.agents/skills/vertical-slice-api/SKILL.md` |
 
 | Agente | Para qué | Archivo |
 |---|---|---|
