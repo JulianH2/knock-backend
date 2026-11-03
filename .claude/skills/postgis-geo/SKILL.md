@@ -1,25 +1,30 @@
 ---
 name: postgis-geo
-description: Búsqueda geográfica en Knock con PostgreSQL + PostGIS y EF Core (técnicos cercanos, radio de atención, colonia desde la tabla propia SEPOMEX). Úsala en Catalog, Requests (oleadas) y en el mapa.
+description: Búsqueda geográfica en Knock con MongoDB (Azure DocumentDB) e índices 2dsphere (técnicos cercanos, radio de atención, colonia de un punto). El nombre de la skill es histórico (antes PostgreSQL + PostGIS). Úsala en Catalog, Requests (oleadas) y en el mapa.
 ---
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/postgis-geo/SKILL.md. No editar a mano. -->
 # postgis-geo
 
+> El nombre se conserva por compatibilidad con los adaptadores; ya no se usa PostgreSQL ni PostGIS (ADR-002).
+
 ## Modelo
-- Puntos: `geography(Point,4326)` mapeado con NetTopologySuite (`Point` con SRID 4326; X = longitud, Y = latitud).
-- Colonias: `catalog.neighborhoods (id, name, postal_code, municipality, boundary geography(MultiPolygon,4326))` cargada desde el catálogo SEPOMEX.
-- Técnico: `base_location` (taller o centro de atención) + `service_radius_km`.
-- Índices GiST en toda columna geográfica.
+- Puntos y polígonos en GeoJSON (`[longitud, latitud]`, WGS84) con el modelo del driver oficial (`MongoDB.Driver.GeoJsonObjectModel`); sin NetTopologySuite.
+- Colonias: colección `colonias` (`_id`, `nombre`, `nombreBusqueda`, `cp`, `municipio`, `geom` polígono, `centro` punto, `aproximado`), cargada desde SEPOMEX por la semilla versionada `db/seeds/catalog/colonias.json`. La referencia es `CatalogStore`.
+- Técnico: ubicación base (taller o centro de atención) y radio de atención en km, tal como lo defina la spec de la HU.
+- Índice `2dsphere` en todo campo geográfico, creado con `EnsureIndexesAsync` del módulo (repetirlo con la misma definición no cambia nada).
 
 ## Consultas
-- Cercanos: `ST_DWithin(t.base_location, @point, @radioMetros)` ordenado por `ST_Distance`. En EF: `t.BaseLocation.IsWithinDistance(point, metros)`.
-- ¿Llega a mi colonia?: `ST_DWithin(t.base_location, n.boundary, t.service_radius_km * 1000)`.
-- Colonia de un punto: `ST_Contains(n.boundary::geometry, @point::geometry)`.
+- Colonia de un punto: `$geoIntersects` sobre `geom`, con desempate fijo (menor `nombreBusqueda`, luego menor `_id`); si no hay polígono, `$near` sobre `centro` con un máximo en metros.
+- Cercanos: `$near` con `$maxDistance` en metros sobre un campo con índice `2dsphere`.
+- Filtros siempre tipados del driver (`Builders<BsonDocument>.Filter`); ninguna coordenada ni operador se arma como JSON con datos del usuario. Cada consulta lleva `maxTimeMS`.
+- «¿Llega a mi colonia?» (distancia de un técnico a un polígono) se define en la spec de la HU y se prueba antes con `documentdb-local` y contra el clúster real.
 
 ## Privacidad
 - **Nunca** se guardan coordenadas exactas del cliente: se resuelve la colonia y se descarta el punto.
+- La colonia por punto no se cachea: la clave llevaría coordenadas.
 - Al cliente se le muestra la ubicación del técnico con precisión reducida si atiende a domicilio (solo zona).
 
 ## Verificación
-- Pruebas de integración con Testcontainers `postgis/postgis` y datos de 3–4 colonias reales de Pachuca.
-- `EXPLAIN` de la consulta de cercanos usa el índice GiST (documentar en `Memoria.md`).
+- Pruebas de integración con Testcontainers y `documentdb-local` (`DocumentDbFixture`) y datos de 3–4 colonias reales de Tula.
+- Una prueba de humo contra DocumentDB real, porque `documentdb-local` no reproduce todo (ADR-002, P9).
+- El plan de ejecución (`explain`) de la consulta de cercanos usa el índice `2dsphere`; documéntalo en `Memoria.md` y, si el motor no lo permite, anótalo.
