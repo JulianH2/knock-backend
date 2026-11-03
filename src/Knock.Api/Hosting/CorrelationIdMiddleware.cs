@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Serilog.Context;
 
 namespace Knock.Api.Hosting;
@@ -52,6 +53,8 @@ internal sealed class CorrelationIdMiddleware(RequestDelegate next)
         var id = incoming.Count == 1 && CorrelationId.IsValid(incoming[0]) ? incoming[0]! : CorrelationId.Create();
 
         context.Items[CorrelationId.ItemKey] = id;
+        // Enlaza el id con la traza de la petición (TT-OBS-01): mismo valor que el encabezado de respuesta.
+        Activity.Current?.SetTag(ObservabilityExtensions.CorrelationIdAttribute, id);
         // OnStarting y no un encabezado directo: el manejador de excepciones limpia la respuesta antes de escribir el error.
         context.Response.OnStarting(
             state =>

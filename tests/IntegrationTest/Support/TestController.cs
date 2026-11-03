@@ -58,6 +58,38 @@ public sealed partial class TestController(ILogger<TestController> logger) : Con
         return Ok(new { status = "logged" });
     }
 
+    /// <summary>Un log <c>Information</c> y uno <c>Warning</c> del «servicio» durante la petición (TC-TT-OBS-01-06).</summary>
+    [HttpGet("log-levels")]
+    public IActionResult LogLevels()
+    {
+        LogServiceStep(logger);
+        LogServiceWarning(logger);
+        return Ok(new { status = "logged" });
+    }
+
+    /// <summary>Log de «servicio» con celular, CURP y coordenadas ficticios como propiedades y como par en el texto (TC-TT-OBS-01-09).</summary>
+    [HttpGet("log-sensitive")]
+    public IActionResult LogSensitive()
+    {
+        LogSensitiveLookup(logger, SensitivePhone, SensitiveCurp, SensitiveLatitude, SensitiveLongitude);
+        return Ok(new { status = "logged" });
+    }
+
+    /// <summary>Excepción no controlada cuyo mensaje trae un celular, un JWT y un par de coordenadas ficticios (TC-TT-OBS-01-10).</summary>
+    [HttpGet("boom-sensitive")]
+    public IActionResult BoomSensitive() =>
+        throw new InvalidOperationException(string.Create(
+            System.Globalization.CultureInfo.InvariantCulture,
+            $"lookup failed for {SensitivePhone} with {SensitiveJwt} at {SensitiveLatitude}, {SensitiveLongitude} ({Request.Method})"));
+
+    public const string SensitivePhone = "+52 55 5555 0101";
+    public const string SensitiveCurp = "XEXX010101HNEXXXA4";
+    public const double SensitiveLatitude = 19.4326;
+    public const double SensitiveLongitude = -99.1332;
+
+    /// <summary>JWT sintético (encabezado y cuerpo en base64url, firma inventada).</summary>
+    public const string SensitiveJwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.c3ludGhldGljLXNpZ25hdHVyZQ";
+
     /// <summary>Cuerpo con validador de FluentValidation (el filtro responde 422 antes de ejecutar esto).</summary>
     [HttpPost("validated")]
     public IActionResult Validated([FromBody] ValidatedInput input)
@@ -69,6 +101,12 @@ public sealed partial class TestController(ILogger<TestController> logger) : Con
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Test service step executed")]
     private static partial void LogServiceStep(ILogger logger);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Test service warning raised")]
+    private static partial void LogServiceWarning(ILogger logger);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Lookup for {Phone} with {Curp} at {lat}/{lon}")]
+    private static partial void LogSensitiveLookup(ILogger logger, string phone, string curp, double lat, double lon);
 
     private static void ThrowUnhandled(string method) =>
         throw new InvalidOperationException($"{SecretMessage} ({method})");

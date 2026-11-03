@@ -43,10 +43,17 @@ internal sealed class KnockApiFactory(
     /// <summary>Clave de firma sintética de las pruebas (32 bytes aleatorios por proceso; nunca se escribe en disco).</summary>
     public static readonly byte[] TestSigningKey = RandomNumberGenerator.GetBytes(32);
 
+    /// <summary>Telemetría exportada por este host (exportador en memoria, TT-OBS-01).</summary>
+    public TelemetryCapture Telemetry { get; } = new();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
         builder.UseEnvironment(environment);
+        // AddKnockObservability lee la cadena al registrar servicios, antes que ConfigureAppConfiguration: UseSetting sí llega a tiempo.
+        // Vacía por defecto, así las pruebas no exportan aunque la variable exista en la máquina (TC-TT-OBS-01-02 pone una sintética).
+        var connectionStringKey = Knock.Api.Hosting.ObservabilityExtensions.ConnectionStringKey;
+        builder.UseSetting(connectionStringKey, settings?.GetValueOrDefault(connectionStringKey) ?? string.Empty);
         builder.ConfigureAppConfiguration((_, configuration) =>
         {
             var values = new Dictionary<string, string?>
@@ -83,6 +90,7 @@ internal sealed class KnockApiFactory(
             services.AddControllers().AddApplicationPart(typeof(TestController).Assembly);
             services.AddValidatorsFromAssemblyContaining<ValidatedInputValidator>();
             services.AddSingleton<IStartupFilter>(new RemoteIpStartupFilter());
+            Telemetry.Register(services);
             configureServices?.Invoke(services);
 
             if (failingReadinessCheck)
