@@ -17,6 +17,8 @@
 - No subir secretos, ID de suscripción, tenant ni correos; la evidencia los oculta.
 - Un `apply` crea recursos que consumen crédito: revisar el `plan` y el costo antes de aplicar.
 - Container Apps y Key Vault son recursos con nombre único: el nombre se confirma al crear.
+- Valores no secretos (réplicas, región, etiquetas): van como valores por defecto en `variables.tf`; `*.tfvars` sigue ignorado por `.gitignore` y, si hace falta un archivo de ejemplo, se llama `terraform.tfvars.example` con una excepción explícita (observación de Guillermo en #98).
+- `.terraform.lock.hcl` se versiona en ambas raíces para fijar los proveedores; `subscription_id` y `tenant_id` no van en los archivos, se pasan por `ARM_SUBSCRIPTION_ID` y `ARM_TENANT_ID`.
 
 ## 3. Pruebas por caso
 | Caso | Evidencia | Tipo |
