@@ -23,6 +23,14 @@ public sealed partial class TestController(ILogger<TestController> logger) : Con
     [HttpGet("ping")]
     public IActionResult Ping() => Ok(new { status = "ok" });
 
+    /// <summary>Endpoint que fija su propio <c>Cache-Control</c>: el pipeline de seguridad debe respetarlo y no sumar el suyo.</summary>
+    [HttpGet("cached")]
+    public IActionResult Cached()
+    {
+        Response.Headers.CacheControl = "private, no-cache";
+        return Ok(new { status = "cached" });
+    }
+
     [HttpGet("boom")]
     public IActionResult Boom()
     {

@@ -8,16 +8,18 @@
 | Política | Alcance | Límite (punto de partida) | Ventana | Clave de partición |
 |---|---|---|---|---|
 | Global | Cualquier ruta salvo `/health` y `/health/ready` | 100 peticiones | 1 minuto (fija) | IP del cliente |
+| Propia `/health/ready` | Solo `/health/ready` (TT-API-06) | 60 peticiones | 1 minuto (fija) | IP del cliente |
 | Estricta `/auth` | `/api/v{n}/auth/*` | 10 peticiones | 1 minuto (fija) | IP del cliente |
 
 - Las peticiones a `/auth/*` cuentan en las dos políticas (la estricta y la global).
-- `/health` y `/health/ready` están **exentos del global** porque no hacen trabajo costoso hoy. Si `/health/ready` empieza a consultar la base de datos de forma pesada, la exención se revisa.
+- `/health` (sin comprobaciones) es la **única exención** del límite. `/health/ready` hace un ping a MongoDB por petición anónima, así que desde TT-API-06 (KNOCK-138) tiene su propia política por IP (60 por minuto) y no cuenta en la global.
+- La prueba `PublicEndpointsRateLimitTests` (TC-TT-API-06-16) enumera los endpoints públicos de la API y exige 429 en todos salvo `/health`; un endpoint público nuevo hace fallar la prueba hasta que se documente. Hoy son `/health`, `/health/ready`, `POST /api/v1/auth/firebase`, `GET /api/v1/oficios` y, solo en Development, `/openapi/v1.json` y `/scalar`.
 - Respuesta al superar el límite: `429` `application/problem+json` con `Retry-After` (segundos); el cuerpo es el mismo de los demás errores (`type`, `title`, `status`, `traceId`, `correlationId`) y **no** revela IP, clave de partición, límite ni contador.
-- Los valores se configuran con `RateLimiting:Global:PermitLimit`, `RateLimiting:Global:Window`, `RateLimiting:Auth:PermitLimit` y `RateLimiting:Auth:Window` (`hh:mm:ss`). No hay valores por defecto en código: sin configuración válida la API no arranca.
+- Los valores se configuran con `RateLimiting:Global:PermitLimit`, `RateLimiting:Global:Window`, `RateLimiting:Auth:PermitLimit`, `RateLimiting:Auth:Window`, `RateLimiting:Ready:PermitLimit` y `RateLimiting:Ready:Window` (`hh:mm:ss`). No hay valores por defecto en código: sin configuración válida la API no arranca.
 
 ## IP del cliente
 
-- Sin proxies de confianza configurados se usa la IP de la conexión; `X-Forwarded-For` falso no mueve al cliente de partición. El middleware de ASP.NET Core solo procesa `X-Forwarded-For` (y proto/host si se habilitan); el encabezado `Forwarded` (RFC 7239) se **ignora**.
+- Sin proxies de confianza configurados se usa la IP de la conexión; `X-Forwarded-For` falso no mueve al cliente de partición. El middleware de ASP.NET Core procesa `X-Forwarded-For` y `X-Forwarded-Proto` (este último desde TT-API-06, solo de proxies de confianza; `X-Forwarded-Host` no); el encabezado `Forwarded` (RFC 7239) se **ignora**.
 - Con `ForwardedHeaders:KnownProxies` o `ForwardedHeaders:KnownNetworks` configurados, solo las peticiones que llegan desde esas direcciones sustituyen la IP por la de `X-Forwarded-For`. El repositorio no trae valores de producción: una persona los define al desplegar. Mal configurado deja evadir el límite o hace que todos compartan la IP del proxy.
 - IPv4 mapeada en IPv6 se normaliza a IPv4 y las direcciones IPv6 se agrupan por prefijo /64.
 
