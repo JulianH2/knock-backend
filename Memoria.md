@@ -513,6 +513,27 @@
 - Decisión (líder): Gitleaks no detectaba una cadena de MongoDB con usuario y contraseña (`mongodb://<usuario>:<contraseña>@<host>`) ni con las reglas por defecto ni con `.gitleaks.toml` (comprobado con la imagen oficial sobre una muestra con dos cadenas reales y cuatro marcadores). Se agrega la regla `knock-mongodb-connection-string`, que detecta las dos cadenas y no marca `localhost` sin credenciales, `<usuario>:<contrasena>` ni `${VARIABLE}`. Es endurecer, no bajar ningún control. El único hallazgo en el árbol de `sprint-02` es una muestra sintética de `scripts/ci/test_ai_review.py` (línea 169), registrada como EXC-005 con una excepción acotada a ese archivo dentro de la regla.
 - A evitar: guardar una cadena de conexión con contraseña en el repositorio aunque sea de prueba (construirla en tiempo de ejecución); ampliar la excepción de la regla a otros archivos.
 
+## 2026-10-27 — TT-BD-03 (KNOCK-40): spec en Borrador de semillas ficticias para MongoDB
+- Hecho: `specs/TT-BD-03-semillas-ficticias-mongodb/` en Borrador; 10 casos (8 con prueba, 2 por comando). Formato de `db/seeds/catalog/*.json` (#73); JSON en `db/seeds/demo/<base>/`.
+- Hallazgo: el `.docx` de la ficha no está, pero sí su versión generada `docs/backlog/TT-BD-03.md` (20 técnicos, 10 clientes, script repetible, Bogus sugerido); es anterior a ADR-002.
+- Hallazgo: los modelos de perfil, técnico y solicitud (HU-002, HU-017, HU-024) no tienen spec; los 4 números de prueba de Firebase son `+1 650 555 01xx` y HU-001 solo acepta `+52`; los usuarios sembrados no tienen `uid` de Firebase para derivar el `sub`. Todo va en las preguntas P1–P9.
+- A evitar: guardar el celular de demostración en claro (constitución §6: celular cifrado); reutilizar un `_id` del catálogo; cargar demostración en `Production`.
+
+## 2026-11-02 — TT-BD-03 (KNOCK-40): carpeta del cargador decidida
+- Decisión (líder, D9, P10 opción a): el cargador vive en `Modules/Identity/Data/` y escribe con un método nuevo de `IdentityStore` (upsert por `_id` fijo), cifrando con `PhoneProtector`.
+- Porqué: sigue el precedente de `CatalogSeeder` con `CatalogStore` y no toca TC-HU-001-23.
+- Pendiente: coordinar el método con Guillermo y agregarlo cuando #75 esté fusionado.
+- A evitar: copiar el `UpsertAsync` de `CatalogSeeder`, que recibe `IMongoCollection`; en Identity ese tipo solo lo tiene `IdentityStore`.
+
+## 2026-11-03 — TT-BD-03 (KNOCK-40): revisión de pares de Erick en #85
+- Decisión (D10, propuesta del líder): como `PhoneProtector` usa un nonce aleatorio, la repetibilidad se compara por `celularHash` y no por `celularCifrado`; `version` no cuenta `celularCifrado`. Para descifrar hace falta el dato asociado `usuarios|celular|<_id>`.
+- Decisión (D12): el upsert es por `_id`. Si choca con el índice único de `celularHash` o `sub`, se falla antes de escribir; queda probado con el caso nuevo TC-TT-BD-03-11. D13: el `docker run` manual publica solo en `127.0.0.1`.
+- Pendiente del líder: D11 (cargador al arrancar la API con `Seed:Demo = true` fuera de `Production`; hoy `CatalogSeeder` solo lo invocan las pruebas) y D16 (Sprint 3, porque #75 no se fusionó antes del 30-oct). La spec estaba Aprobada; estos cambios alteran lo aprobado y piden otra revisión.
+- A evitar: comparar campos cifrados con nonce aleatorio para decidir si algo cambió; remitir a una sección de la spec sin comprobar su número.
+
+## 2026-11-03 — TT-BD-03 (KNOCK-40): D11 y D16 resueltas por el líder
+- Decisión (líder): D11, el cargador de demostración corre al arrancar la API solo con `Seed:Demo = true` y fuera de `Production`, y solo contra `documentdb-local`; D16, la implementación pasa al Sprint 3 sin cambiar la fecha original de Jira. La spec ya no tiene preguntas abiertas. El bloque de aprobación no se tocó: el líder vuelve a firmar a mano. Los cambios los aplicó el líder en la rama de Alexis, que estaba sin tokens.
+- A evitar: ejecutar el cargador sin las dos guardas; tocar el bloque de aprobación sin la firma del líder.
 ## 2026-11-03 — TT-AZ-02 (KNOCK-34): spec en Borrador de la infraestructura con Terraform
 - Decisión propuesta: dos raíces de Terraform, como fija la constitución: `deploy/persistent/` con el clúster gratuito de DocumentDB (el destroy principal no lo toca) y `deploy/` con el entorno de Container Apps (una aplicación por servicio y el gateway, solo el gateway con ingreso externo), Redis como contenedor propio sin persistencia, Key Vault por roles con identidades administradas y Blob Storage privado. Réplicas por variable (1 fuera de la ventana; 2 fijas del 25-nov al 5-dic). Depende de TT-AZ-05 (estado remoto). No se opera Azure desde un agente.
 - Decisiones del líder (2026-11-03, spec §8): un comando por raíz sin script que los encadene; imágenes en GitHub Container Registry (sin Azure Container Registry); imagen pública de ejemplo como marcador hasta TT-CD-01; Container Apps y DocumentDB en `westus`; las cuatro aplicaciones desde ya con el marcador; Key Vault con borrado temporal y protección contra purga, y un sufijo aleatorio en el nombre para poder recrearlo tras un destroy; solo Log Analytics aquí (Application Insights sigue manual en TT-OBS-01); 1 réplica fuera de la ventana de evaluación y 2 fijas dentro de ella (RP-36 y RP-03 de `requerimientos.md`), con una bandera para repetirlo en un remedial.
