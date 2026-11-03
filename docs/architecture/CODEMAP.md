@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-03T05:04:54Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-03T05:32:54Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -111,7 +111,7 @@
 - `src/Knock.Api/Modules/Identity/Data/IdentityDataExtensions.cs` — class `IdentityDataExtensions`
   - `AddIdentityData()`:10
 - `src/Knock.Api/Modules/Identity/Data/IdentityStore.cs` — class `IdentityStore`
-  - `EnsureIndexesAsync()`:74, `FindBySubAsync()`:99, `FindByPhoneHashAsync()`:104, `CreateAccountAsync()`:113, `AddRefreshTokenAsync()`:151, `IsDuplicateKey()`:157
+  - `EnsureIndexesAsync()`:74, `FindBySubAsync()`:99, `FindByPhoneHashAsync()`:104, `CreateAccountAsync()`:113, `AddRefreshTokenAsync()`:154, `IsDuplicateKey()`:160
 
 **domain**
 

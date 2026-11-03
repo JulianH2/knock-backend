@@ -142,10 +142,13 @@ internal sealed class IdentityStore(
             {
                 // Otro canje está creando la misma cuenta y todavía no confirma. documentdb-local responde 112 sin la etiqueta de error
                 // transitorio, así que el driver no reintenta solo; al confirmarse el otro, el reintento recibe la clave duplicada.
-                await Task.Delay(TimeSpan.FromMilliseconds(50 * attempt), cancellationToken);
+                await Task.Delay(WriteConflictBackoff(attempt), cancellationToken);
             }
         }
     }
+
+    /// <summary>Espera técnica y corta entre reintentos de un conflicto de escritura; no es un plazo de negocio.</summary>
+    private static TimeSpan WriteConflictBackoff(int attempt) => TimeSpan.FromMilliseconds(50 * attempt);
 
     /// <summary>Guarda la huella de una sesión de una cuenta que ya existe (un canje de cuenta existente solo inserta esto).</summary>
     public Task AddRefreshTokenAsync(RefreshTokenRecord refresh, CancellationToken cancellationToken)
