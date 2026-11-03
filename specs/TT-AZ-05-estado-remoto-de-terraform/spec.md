@@ -55,12 +55,12 @@ Que Terraform guarde su estado en una cuenta de almacenamiento de Azure con bloq
 ## 8. Pruebas, gates y límites
 **Plan de pruebas:** No aplican las pruebas unitarias, de integración, contrato, mutación, rendimiento ni de UI: es una tarea de configuración de infraestructura sin código de producto. Cada caso se verifica con la evidencia indicada, que se adjunta en el PR. Checkov corre sobre los `.tf` en el CI (TT-CI-01).
 **Gates:** `AGENTS.md §5` en lo que aplique a una tarea sin código: `sdd_lint.py`, `sync_agents.py --check`, `codemap.py --check` y `check_exceptions.py` en OK, `gitleaks` limpio, `Memoria.md` al día y «Uso de IA» completo en el PR.
-**Límites y dudas abiertas** (recomendación entre paréntesis; las decide el Tech Lead):
-1. **Nombres.** La cuenta de almacenamiento necesita un nombre único en todo Azure (3 a 24 letras minúsculas y números). (Propuesta: grupo de recursos `rg-knock-tfstate` y cuenta `stknocktfstate` más un sufijo corto; el nombre definitivo se confirma al crearla.)
-2. **Grupo de recursos aparte.** (Recomendación: la cuenta vive en `rg-knock-tfstate`, no en `rg-knock-dev`, para que `terraform destroy` no se lleve el estado.)
-3. **Región.** Debe ser una de las cinco que permite la política de la suscripción (ADR-006). (Propuesta: la misma del grupo de recursos actual, North Central US.)
-4. **Autenticación.** (Recomendación: Entra ID con `use_azuread_auth = true`, rol «Storage Blob Data Contributor» para el Tech Lead y llaves compartidas desactivadas; el pipeline lo agrega TT-CD-01.)
-5. **Cuántos estados.** (Propuesta: un blob por entorno, hoy solo `dev` (`knock-dev.tfstate`), con los módulos por servicio dentro del mismo estado; TT-AZ-02 puede dividirlo.)
+**Límites y decisiones** (propuestas confirmadas por el Tech Lead el 2026-11-03):
+1. **Nombres.** La cuenta de almacenamiento necesita un nombre único en todo Azure (3 a 24 letras minúsculas y números). **Resuelto (líder, 2026-11-03):** grupo de recursos `rg-knock-tfstate` y cuenta `stknocktfstate` más un sufijo corto; el nombre definitivo se confirma al crearla.
+2. **Grupo de recursos aparte.** **Resuelto (líder, 2026-11-03):** la cuenta vive en `rg-knock-tfstate`, no en `rg-knock-dev`, para que `terraform destroy` no se lleve el estado.
+3. **Región.** Debe ser una de las cinco que permite la política de la suscripción (ADR-006). **Resuelto (líder, 2026-11-03):** la misma del grupo de recursos actual, North Central US.
+4. **Autenticación.** **Resuelto (líder, 2026-11-03):** Entra ID con `use_azuread_auth = true`, rol «Storage Blob Data Contributor» para el Tech Lead y llaves compartidas desactivadas; el pipeline lo agrega TT-CD-01.
+5. **Cuántos estados.** **Resuelto (líder, 2026-11-03):** un blob por entorno, hoy solo `dev` (`knock-dev.tfstate`), con los módulos por servicio dentro del mismo estado; TT-AZ-02 puede dividirlo.
 6. **Costo.** Almacenamiento LRS estándar con un archivo pequeño; se confirma con tarifas citadas al ejecutar el arranque. Cuenta contra el crédito de estudiante, no es gratuito.
 7. Un agente no opera Azure: el Tech Lead ejecuta los comandos y comparte la evidencia sin identificadores.
 
