@@ -34,6 +34,8 @@ No se incluyen `Permissions-Policy`, `X-XSS-Protection` ni `Cross-Origin-*`: no 
 - El preflight (`OPTIONS` con `Origin` permitido y `Access-Control-Request-Method`) se responde 204 en el propio middleware, antes del limitador y sin enrutar: no pide sesión y una ruta que solo acepta `POST` no da 405. Un método o encabezado fuera de las listas no se concede.
 - Los encabezados CORS de la respuesta se fijan en `OnStarting`, así que el panel también puede leer el `ProblemDetails` de un 401, 422, 429 o 500.
 - **Riesgo aceptado:** el preflight no cuenta para el límite (el orden de la constitución §4 pone CORS antes del limitador) y es una respuesta barata. El gateway podrá limitarlo.
+- **Encabezados nuevos del panel.** El preflight concede todo o nada: si el panel agrega un encabezado que no está en la lista (por ejemplo de trazas, como `traceparent`, `tracestate`, `sentry-trace` o `baggage`), el preflight responde 204 sin `Access-Control-Allow-Origin` y **fallan todas** las llamadas, no solo esa. Un encabezado nuevo del panel exige actualizar `AllowedHeaders` en `CorsMiddleware` en el mismo PR que lo agrega; hoy no se amplía la lista porque el panel no los envía (revisión de pares de Erick, #94).
+- **Origen del panel en Development.** `appsettings.Development.json` trae `http://localhost:4200` (el puerto por defecto de `ng serve`) para que el panel local llame a la API sin configurar nada; en Production la lista queda vacía y el origen real se inyecta por variable de entorno.
 - Está escrito a mano y no con `UseCors` por esas dos razones (preflight sin enrutar y encabezados que sobreviven al manejador de excepciones).
 
 ## Configuración
@@ -49,7 +51,7 @@ Sin valores por defecto en código; una configuración inválida impide el arran
 | `Security:Cors:PreflightMaxAge` | `00:10:00` | Debe ser > 0 si hay orígenes. |
 | `RateLimiting:Ready:PermitLimit` y `RateLimiting:Ready:Window` | `60` por `00:01:00` | Política propia de `/health/ready`. |
 
-Los valores reales los inyecta quien despliega por variables de entorno, por ejemplo `Security__Cors__AllowedOrigins__0=<origen del panel>`, `Security__Hsts__MaxAge` y `Security__Https__RedirectPort`. El origen del panel, las redes del ingress (`ForwardedHeaders__KnownNetworks__0`) y `allowInsecure=false` se fijan en TT-AZ-02; no se infieren aquí. `appsettings.Development.json` no trae orígenes de CORS.
+Los valores reales los inyecta quien despliega por variables de entorno, por ejemplo `Security__Cors__AllowedOrigins__0=<origen del panel>`, `Security__Hsts__MaxAge` y `Security__Https__RedirectPort`. El origen del panel, las redes del ingress (`ForwardedHeaders__KnownNetworks__0`) y `allowInsecure=false` se fijan en TT-AZ-02; no se infieren aquí. `appsettings.Development.json` solo trae el origen local del panel (`http://localhost:4200`); `appsettings.json` trae la lista vacía.
 
 ## Reparto entre servicio y gateway (no implementado aquí)
 

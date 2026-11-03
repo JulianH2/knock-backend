@@ -52,7 +52,8 @@ public class CorsPolicyTests
     {
         using var configured = new KnockApiFactory(settings: SecurityHttp.WithCors(SecurityHttp.PanelOrigin));
         using var configuredClient = configured.CreateClient();
-        using var off = new KnockApiFactory();
+        // Production: allí la lista de orígenes del repositorio está vacía (en Development solo trae el del panel local).
+        using var off = new KnockApiFactory(environment: "Production");
         using var offClient = off.CreateClient();
 
         foreach (var origin in _lookalikes)

@@ -35,7 +35,7 @@ public class SecurityConfigurationTests
     [Fact]
     public async Task EmptySecuritySection_StartsWithCorsOff_TC_TT_API_06_14()
     {
-        using var factory = new KnockApiFactory(settings: new Dictionary<string, string?> { ["Security:Cors:AllowedOrigins"] = string.Empty });
+        using var factory = new KnockApiFactory(environment: "Production", settings: new Dictionary<string, string?> { ["Security:Cors:AllowedOrigins"] = string.Empty });
         using var client = factory.CreateClient();
         var origin = new Dictionary<string, string> { ["Origin"] = SecurityHttp.PanelOrigin };
 

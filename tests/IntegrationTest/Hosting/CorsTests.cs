@@ -66,6 +66,9 @@ public class CorsTests
             {
                 response.StatusCode.Should().Be(expected, layer);
                 SecurityHttp.HeaderValues(response, "Access-Control-Allow-Origin").Should().ContainSingle().Which.Should().Be(SecurityHttp.PanelOrigin, $"{layer}: el panel debe poder leer el error");
+                // Sin exponer X-Correlation-Id el navegador no deja leer el código de soporte del error, y el encabezado debe venir en la respuesta.
+                SecurityHttp.HeaderValues(response, "Access-Control-Expose-Headers").Should().ContainSingle(layer).Which.Split(',', StringSplitOptions.TrimEntries).Should().Contain("X-Correlation-Id", layer);
+                SecurityHttp.HeaderValues(response, "X-Correlation-Id").Should().ContainSingle(layer);
             }
         }
         finally
