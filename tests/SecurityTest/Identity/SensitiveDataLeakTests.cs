@@ -11,7 +11,7 @@ namespace Knock.SecurityTest.Identity;
 
 public class SensitiveDataLeakTests
 {
-    private const string _testPhone = "+15555550104";
+    private const string _testPhone = "+525555550104";
 
     [Fact]
     public async Task ExchangeAndRejection_DoNotLeakSensitiveData_TC_TT_API_02_13()
@@ -26,11 +26,11 @@ public class SensitiveDataLeakTests
 
         var logs = await ConsoleCapture.RunAsync(async () =>
         {
-            using var factory = new KnockApiFactory();
+            using var factory = await IdentityTestDatabase.CreateFactoryAsync();
             using var client = factory.CreateClient();
 
             using var ok = await AuthHttp.ExchangeAsync(client, idToken);
-            ok.StatusCode.Should().Be(HttpStatusCode.OK);
+            ok.StatusCode.Should().Be(HttpStatusCode.Created);
             successBody = await ok.Content.ReadAsStringAsync();
             using var okAgain = await AuthHttp.ExchangeAsync(client, idToken);
             (accessToken, refreshToken) = await AuthHttp.ReadSessionAsync(okAgain);
@@ -72,7 +72,7 @@ public class SensitiveDataLeakTests
 
         var logs = await ConsoleCapture.RunAsync(async () =>
         {
-            using var factory = new KnockApiFactory();
+            using var factory = await IdentityTestDatabase.CreateFactoryAsync();
             using var client = factory.CreateClient();
 
             // Un canje correcto y uno rechazado (ID token cortado), y luego /me con la sesión emitida.

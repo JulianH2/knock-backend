@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-10-28T20:40:09Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-10-28T23:13:32Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -9,8 +9,8 @@
 |---|---|---|---|---|
 | `Assistant` | -, services | 3 | 3 | 1 |
 | `Catalog` | -, data, domain, services | 11 | 11 | 23 |
-| `Identity` | -, controllers, data, domain, dtos, services | 18 | 32 | 26 |
-| `Knock.Api` | -, common, hosting | 19 | 31 | 40 |
+| `Identity` | -, controllers, data, domain, dtos, services, validators | 20 | 36 | 28 |
+| `Knock.Api` | -, common, hosting | 20 | 32 | 42 |
 | `Media` | -, controllers, data, domain, dtos, services, validators | 18 | 35 | 48 |
 | `Messaging` | -, services | 3 | 3 | 1 |
 | `Notifications` | -, services | 3 | 3 | 1 |
@@ -72,21 +72,22 @@
 
 - `src/Knock.Api/Modules/Identity/IIdentityApi.cs` — interface `IIdentityApi`
 - `src/Knock.Api/Modules/Identity/IdentityModuleExtensions.cs` — class `IdentityModuleExtensions`
-  - `AddIdentityModule()`:10
+  - `AddIdentityModule()`:11
 
 **controllers**
 
 - `src/Knock.Api/Modules/Identity/Controllers/V1/AuthController.cs` — class `AuthController`
-  - `ExchangeFirebaseToken()`:24
+  - `ExchangeFirebaseToken()`:30
 - `src/Knock.Api/Modules/Identity/Controllers/V1/MeController.cs` — class `MeController`
   - `Get()`:18
 
 **data**
 
+- `src/Knock.Api/Modules/Identity/Data/IIdentityStore.cs` — interface `IIdentityStore`
 - `src/Knock.Api/Modules/Identity/Data/IdentityDataExtensions.cs` — class `IdentityDataExtensions`
   - `AddIdentityData()`:10
 - `src/Knock.Api/Modules/Identity/Data/IdentityStore.cs` — class `IdentityStore`
-  - `EnsureIndexesAsync()`:69, `FindBySubAsync()`:94, `FindByPhoneHashAsync()`:99, `CreateAccountAsync()`:108, `AddRefreshTokenAsync()`:135, `IsDuplicateKey()`:141
+  - `EnsureIndexesAsync()`:74, `FindBySubAsync()`:99, `FindByPhoneHashAsync()`:104, `CreateAccountAsync()`:113, `AddRefreshTokenAsync()`:151, `IsDuplicateKey()`:157
 
 **domain**
 
@@ -102,10 +103,11 @@
 **services**
 
 - `src/Knock.Api/Modules/Identity/Services/FirebaseIdTokenVerifier.cs` — class `FirebaseIdTokenVerifier`
-  - `VerifyAsync()`:16, `Dispose()`:36
-- `src/Knock.Api/Modules/Identity/Services/FirebaseSessionService.cs` — class `FirebaseSessionService`
-  - `FirebaseSessionService()`:4, `ExchangeAsync()`:10
+  - `VerifyAsync()`:17, `Dispose()`:37
+- `src/Knock.Api/Modules/Identity/Services/FirebaseSessionService.cs` — record `ExchangeRequest`, record `ExchangeResult`, class `FirebaseSessionService`
+  - `FirebaseSessionService()`:19, `ExchangeAsync()`:32
 - `src/Knock.Api/Modules/Identity/Services/IFirebaseIdTokenVerifier.cs` — record `FirebaseIdentity`, interface `IFirebaseIdTokenVerifier`
+  - `FirebaseIdentity()`:7, `ToString()`:9
 - `src/Knock.Api/Modules/Identity/Services/IdentityApi.cs` — class `IdentityApi`
 - `src/Knock.Api/Modules/Identity/Services/PhoneProtectionOptions.cs` — class `PhoneProtectionOptions`, class `PhoneProtectionKeys`, class `PhoneProtectionOptionsValidator`
   - `TryCreate()`:56, `Validate()`:138
@@ -118,6 +120,10 @@
 - `src/Knock.Api/Modules/Identity/Services/UserIdDerivation.cs` — class `UserIdDerivation`
   - `Derive()`:18
 
+**validators**
+
+- `src/Knock.Api/Modules/Identity/Validators/FirebaseExchangeRequestValidator.cs` — class `FirebaseExchangeRequestValidator`
+
 ### Knock.Api
 
 **-**
@@ -127,7 +133,7 @@
 **common**
 
 - `src/Knock.Api/Common/Errors/DomainException.cs` — enum `DomainErrorKind`, class `DomainException`, class `DomainErrors`
-  - `ToStatusCode()`:46
+  - `ToStatusCode()`:56
 - `src/Knock.Api/Common/Security/JwtSettings.cs` — record `JwtSettings`
 - `src/Knock.Api/Common/Security/JwtSettingsFactory.cs` — class `JwtSettingsFactory`
   - `Create()`:14
@@ -136,6 +142,8 @@
 
 - `src/Knock.Api/Hosting/ApiVersioningExtensions.cs` — class `ApiVersioningExtensions`
   - `AddKnockApiVersioning()`:7
+- `src/Knock.Api/Hosting/AuthNoStoreMiddleware.cs` — class `AuthNoStoreMiddleware`
+  - `AuthNoStoreMiddleware()`:7, `InvokeAsync()`:12
 - `src/Knock.Api/Hosting/AuthenticationExtensions.cs` — class `AuthenticationExtensions`, class `InternalControllerFeatureProvider`, class `AuthenticationStartupCheck`
   - `AddKnockAuthentication()`:14, `AddInternalControllers()`:55, `IsController()`:73, `StartAsync()`:90, `StopAsync()`:108
 - `src/Knock.Api/Hosting/CorrelationIdMiddleware.cs` — class `CorrelationId`, class `CorrelationIdMiddleware`
@@ -161,7 +169,7 @@
 - `src/Knock.Api/Hosting/RateLimitingExtensions.cs` — class `RateLimitPolicySettings`, class `RateLimitSettings`, class `RateLimitingExtensions`
   - `AddKnockRateLimiting()`:40, `ClientKey()`:102
 - `src/Knock.Api/Hosting/RequestBodyLimitMiddleware.cs` — class `ProblemResponses`, class `RequestBodyLimitMiddleware`
-  - `WriteAsync()`:9, `RequestBodyLimitMiddleware()`:30, `InvokeAsync()`:32
+  - `WriteAsync()`:10, `RequestBodyLimitMiddleware()`:33, `InvokeAsync()`:35
 - `src/Knock.Api/Hosting/ValidationExtensions.cs` — class `ValidationExtensions`, class `ValidationFilter`
   - `AddKnockValidation()`:11, `OnActionExecutionAsync()`:27, `ToCamelCasePath()`:63
 

@@ -11,6 +11,7 @@
 | Estricta `/auth` | `/api/v{n}/auth/*` | 10 peticiones | 1 minuto (fija) | IP del cliente |
 
 - Las peticiones a `/auth/*` cuentan en las dos políticas (la estricta y la global).
+- `POST /api/v1/auth/firebase` (HU-001, CA9): el límite es **por IP** (10 por minuto) y no por celular. Es una desviación documentada de la spec: el celular solo se conoce después de verificar el ID token con Firebase, y el limitador corre antes. Las respuestas de `/auth/*` llevan `Cache-Control: no-store`.
 - `/health` y `/health/ready` están **exentos del global** porque no hacen trabajo costoso hoy. Si `/health/ready` empieza a consultar la base de datos de forma pesada, la exención se revisa.
 - Respuesta al superar el límite: `429` `application/problem+json` con `Retry-After` (segundos); el cuerpo es el mismo de los demás errores (`type`, `title`, `status`, `traceId`, `correlationId`) y **no** revela IP, clave de partición, límite ni contador.
 - Los valores se configuran con `RateLimiting:Global:PermitLimit`, `RateLimiting:Global:Window`, `RateLimiting:Auth:PermitLimit` y `RateLimiting:Auth:Window` (`hh:mm:ss`). No hay valores por defecto en código: sin configuración válida la API no arranca.

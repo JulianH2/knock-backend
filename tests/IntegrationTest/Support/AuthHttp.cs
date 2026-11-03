@@ -10,10 +10,11 @@ internal static class AuthHttp
     public static readonly Uri ExchangeUri = new("/api/v1/auth/firebase", UriKind.Relative);
     public static readonly Uri MeUri = new("/api/v1/me", UriKind.Relative);
 
-    public static Task<HttpResponseMessage> ExchangeAsync(HttpClient client, string firebaseIdToken)
+    /// <summary>Canje válido en su forma: con <c>deviceId</c> (UUID) y <c>aceptaAviso: true</c>.</summary>
+    public static Task<HttpResponseMessage> ExchangeAsync(HttpClient client, string firebaseIdToken, string? deviceId = null)
     {
         ArgumentNullException.ThrowIfNull(client);
-        return client.PostAsJsonAsync(ExchangeUri, new { firebaseIdToken });
+        return client.PostAsJsonAsync(ExchangeUri, new { firebaseIdToken, deviceId = deviceId ?? Guid.NewGuid().ToString("D"), aceptaAviso = true });
     }
 
     public static async Task<HttpResponseMessage> MeAsync(HttpClient client, string? accessToken)

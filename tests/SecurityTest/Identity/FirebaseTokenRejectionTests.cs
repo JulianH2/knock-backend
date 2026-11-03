@@ -8,7 +8,7 @@ namespace Knock.SecurityTest.Identity;
 
 public class FirebaseTokenRejectionTests
 {
-    private const string _testPhone = "+15555550103";
+    private const string _testPhone = "+525555550103";
 
     private sealed record Rejection(HttpStatusCode Status, string? MediaType, string? Type, string? Title, string? Detail, string Raw);
 
@@ -86,11 +86,11 @@ public class FirebaseTokenRejectionTests
         await FirebaseEmulator.EnsureAvailableAsync();
         var now = DateTimeOffset.UtcNow;
         var token = FirebaseEmulator.ForgeUnsignedIdToken("uid-prueba-0006", _testPhone, FirebaseEmulator.ProjectId, now.AddMinutes(-1), now.AddMinutes(59));
-        using var factory = new KnockApiFactory();
+        using var factory = await IdentityTestDatabase.CreateFactoryAsync();
         using var client = factory.CreateClient();
 
         using var response = await AuthHttp.ExchangeAsync(client, token);
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 }

@@ -15,7 +15,7 @@ namespace Knock.Api.Modules.Identity.Data;
 internal sealed class IdentityStore(
     [FromKeyedServices(IdentityDataExtensions.ModuleKey)] IMongoDatabase database,
     IMongoClient client,
-    IOptions<KnockMongoOptions> mongoOptions)
+    IOptions<KnockMongoOptions> mongoOptions) : IIdentityStore
 {
     public const string UsersCollection = "usuarios";
     public const string ConsentsCollection = "consentimientos";
@@ -43,6 +43,11 @@ internal sealed class IdentityStore(
     public const string FamilyIdField = "familiaId";
     public const string FingerprintField = "huella";
     public const string ExpiresAtField = "venceEn";
+
+    /// <summary>Código de «write conflict» de MongoDB y documentdb-local para escrituras concurrentes en transacciones.</summary>
+    internal const int WriteConflictCode = 112;
+
+    private const int _maxWriteConflictAttempts = 6;
 
     private static readonly FilterDefinitionBuilder<BsonDocument> _filter = Builders<BsonDocument>.Filter;
 
@@ -110,24 +115,35 @@ internal sealed class IdentityStore(
         ArgumentNullException.ThrowIfNull(account);
         var userId = ObjectId.Parse(account.Id);
         var createdAt = new BsonDateTime(account.CreatedAt);
-        try
+        var attempt = 0;
+        while (true)
         {
-            using var session = await client.StartSessionAsync(cancellationToken: cancellationToken);
-            await session.WithTransactionAsync(
-                async (transaction, token) =>
-                {
-                    await Users.InsertOneAsync(transaction, UserDocument(account, userId, createdAt), cancellationToken: token);
-                    await Consents.InsertManyAsync(transaction, ConsentDocuments(account, userId, createdAt), cancellationToken: token);
-                    await Audit.InsertOneAsync(transaction, AuditDocument(account, userId, createdAt), cancellationToken: token);
-                    await RefreshTokens.InsertOneAsync(transaction, RefreshDocument(account.Refresh), cancellationToken: token);
-                    return true;
-                },
-                cancellationToken: cancellationToken);
-            return AccountCreation.Created;
-        }
-        catch (Exception exception) when (IsDuplicateKey(exception))
-        {
-            return AccountCreation.AlreadyExists;
+            attempt++;
+            try
+            {
+                using var session = await client.StartSessionAsync(cancellationToken: cancellationToken);
+                await session.WithTransactionAsync(
+                    async (transaction, token) =>
+                    {
+                        await Users.InsertOneAsync(transaction, UserDocument(account, userId, createdAt), cancellationToken: token);
+                        await Consents.InsertManyAsync(transaction, ConsentDocuments(account, userId, createdAt), cancellationToken: token);
+                        await Audit.InsertOneAsync(transaction, AuditDocument(account, userId, createdAt), cancellationToken: token);
+                        await RefreshTokens.InsertOneAsync(transaction, RefreshDocument(account.Refresh), cancellationToken: token);
+                        return true;
+                    },
+                    cancellationToken: cancellationToken);
+                return AccountCreation.Created;
+            }
+            catch (Exception exception) when (IsDuplicateKey(exception))
+            {
+                return AccountCreation.AlreadyExists;
+            }
+            catch (MongoCommandException exception) when (exception.Code == WriteConflictCode && attempt < _maxWriteConflictAttempts)
+            {
+                // Otro canje está creando la misma cuenta y todavía no confirma. documentdb-local responde 112 sin la etiqueta de error
+                // transitorio, así que el driver no reintenta solo; al confirmarse el otro, el reintento recibe la clave duplicada.
+                await Task.Delay(TimeSpan.FromMilliseconds(50 * attempt), cancellationToken);
+            }
         }
     }
 

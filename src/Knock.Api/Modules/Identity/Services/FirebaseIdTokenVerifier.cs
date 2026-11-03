@@ -1,12 +1,13 @@
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2;
+using Knock.Api.Modules.Identity.Domain;
 
 namespace Knock.Api.Modules.Identity.Services;
 
 /// <summary>
 /// Verifica el ID token con el Firebase Admin SDK (<c>VerifyIdTokenAsync</c>): firma, vencimiento, emisor y proyecto.
-/// El <c>uid</c> sale solo del token y se exige <c>phone_number</c>. Con la variable del emulador (solo Development) el SDK no comprueba la firma.
+/// El <c>uid</c> y el celular salen solo del token y se exige <c>phone_number</c> válido (+52). Con la variable del emulador (solo Development) el SDK no comprueba la firma.
 /// La verificación usa llaves públicas de Google: no necesita cuenta de servicio.
 /// </summary>
 internal sealed class FirebaseIdTokenVerifier(IConfiguration configuration) : IFirebaseIdTokenVerifier, IDisposable
@@ -18,8 +19,8 @@ internal sealed class FirebaseIdTokenVerifier(IConfiguration configuration) : IF
         try
         {
             var token = await FirebaseAuth.GetAuth(_app.Value).VerifyIdTokenAsync(idToken, cancellationToken);
-            return token.Claims.TryGetValue("phone_number", out var phone) && phone is string { Length: > 0 }
-                ? new FirebaseIdentity(token.Uid)
+            return token.Claims.TryGetValue("phone_number", out var phone) && phone is string number && PhoneNumberPolicy.IsValid(number)
+                ? new FirebaseIdentity(token.Uid, number)
                 : null;
         }
         catch (FirebaseAuthException ex) when (ex.AuthErrorCode != AuthErrorCode.CertificateFetchFailed)

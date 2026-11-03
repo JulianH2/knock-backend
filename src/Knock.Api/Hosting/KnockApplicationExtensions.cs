@@ -28,6 +28,7 @@ internal static class KnockApplicationExtensions
     {
         app.UseForwardedHeaders();
         app.UseMiddleware<CorrelationIdMiddleware>();
+        app.UseMiddleware<AuthNoStoreMiddleware>();
         app.UseExceptionHandler();
         app.UseSerilogRequestLogging(LoggingExtensions.ConfigureRequestLogging);
         app.UseRateLimiter();
