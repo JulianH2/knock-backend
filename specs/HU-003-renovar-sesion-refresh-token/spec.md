@@ -5,7 +5,7 @@
 > **Depende de:** **HU-001 (KNOCK-43)**: crea `refresh_tokens`, la huella y el JWT. **Su código está en la rama `feature/KNOCK-43-phone-login-code`; el PR #75 se cerró sin fusionar y hay que reabrirlo y fusionarlo antes de implementar esta spec** · TT-API-03 (KNOCK-37, ProblemDetails, 422, `X-Correlation-Id` y límite por IP; fusionado) · TT-BD-06 (KNOCK-156, cliente de Mongo `AddKnockMongo`; fusionado)
 > **Fuentes:** `docs/backlog/HU-003.md` (CA1 a CA6) · spec HU-001 (§4 contrato del canje, §5 `refresh_tokens`, decisiones 3 y 9) · constitución 2.2.x (principios 2, 3, 13, 15; §3 «Acceso»; §6; §12) · ADR-001 (regla 3) · ADR-002 (regla 4) · `docs/DECISION_TECNICA.md` §8 · código de la rama de HU-001 (`RefreshTokenFingerprint`, `SessionTokenIssuer`, `IdentityStore`)
 > **Skills:** story-workflow, spec-first-writing, auth-firebase-jwt, database-scripts, vertical-slice-api, security-core, api-contract-openapi, testing-strategy-backend, reuse-before-create
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Que la sesión siga viva sin pedir otro código SMS: la app cambia, en segundo plano, su refresh token (30 días) por un par nuevo, y **cada uso entrega un refresh nuevo y deja inservible el anterior** (rotación). Si alguien presenta un refresh que ya fue reemplazado, se **revoca toda su familia** y hay que entrar de nuevo. Este repositorio entrega `POST /api/v1/auth/refresh`, la rotación atómica y la detección de reuso; el interceptor de la app es de knock-frontend.
@@ -128,6 +128,6 @@ Datos personales tocados: ninguno nuevo (solo huellas y metadatos de sesión). R
 7. **Dependencia.** HU-001 no está en `sprint-02`: el PR #75 se cerró sin fusionar. (Hay que reabrirlo, actualizarlo con `sprint-02`, unir `AuthNoStoreMiddleware` con `SecurityHeadersMiddleware` y fusionarlo antes de escribir código de esta historia.)
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-03
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
