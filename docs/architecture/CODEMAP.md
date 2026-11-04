@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-03T20:03:04Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-04T00:52:48Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -9,8 +9,8 @@
 |---|---|---|---|---|
 | `Assistant` | -, services | 3 | 3 | 1 |
 | `Catalog` | -, controllers, data, domain, dtos, services, validators | 21 | 23 | 30 |
-| `Identity` | -, controllers, dtos, services | 11 | 15 | 10 |
-| `Knock.Api` | -, common, hosting | 25 | 51 | 65 |
+| `Identity` | -, controllers, data, domain, dtos, services, validators | 28 | 53 | 46 |
+| `Knock.Api` | -, common, hosting | 27 | 54 | 69 |
 | `Media` | -, controllers, data, domain, dtos, services, validators | 18 | 35 | 48 |
 | `Messaging` | -, services | 3 | 3 | 1 |
 | `Notifications` | -, services | 3 | 3 | 1 |
@@ -96,31 +96,71 @@
 
 - `src/Knock.Api/Modules/Identity/IIdentityApi.cs` — interface `IIdentityApi`
 - `src/Knock.Api/Modules/Identity/IdentityModuleExtensions.cs` — class `IdentityModuleExtensions`
-  - `AddIdentityModule()`:9
+  - `AddIdentityModule()`:11
 
 **controllers**
 
 - `src/Knock.Api/Modules/Identity/Controllers/V1/AuthController.cs` — class `AuthController`
-  - `ExchangeFirebaseToken()`:24
+  - `ExchangeFirebaseToken()`:30
+- `src/Knock.Api/Modules/Identity/Controllers/V1/LogoutController.cs` — class `LogoutController`
+  - `Logout()`:23
 - `src/Knock.Api/Modules/Identity/Controllers/V1/MeController.cs` — class `MeController`
   - `Get()`:18
+- `src/Knock.Api/Modules/Identity/Controllers/V1/RefreshController.cs` — class `RefreshController`
+  - `RefreshSession()`:25
+
+**data**
+
+- `src/Knock.Api/Modules/Identity/Data/IIdentityStore.cs` — interface `IIdentityStore`
+- `src/Knock.Api/Modules/Identity/Data/IRefreshSessionStore.cs` — interface `IRefreshSessionStore`
+- `src/Knock.Api/Modules/Identity/Data/IdentityDataExtensions.cs` — class `IdentityDataExtensions`
+  - `AddIdentityData()`:10
+- `src/Knock.Api/Modules/Identity/Data/IdentityStore.cs` — class `IdentityStore`
+  - `EnsureIndexesAsync()`:84, `FindBySubAsync()`:110, `FindByPhoneHashAsync()`:115, `CreateAccountAsync()`:124, `AddRefreshTokenAsync()`:165, `FindByIdAsync()`:172, `RotateAsync()`:181, `RevokeFamilyAsync()`:205, `FindByFingerprintAsync()`:211, `IsDuplicateKey()`:284
+
+**domain**
+
+- `src/Knock.Api/Modules/Identity/Domain/IdentityDomain.cs` — class `UserState`, class `ConsentDocuments`, class `AuditEvents`, record `UserAccount`, record `RefreshTokenRecord`, record `NewAccount`, class `RevocationReasons`, record `StoredRefresh`, enum `RotationStatus`, record `RefreshRotation`, enum `AccountCreation`
+  - `RefreshTokenRecord()`:44, `RefreshRotation()`:89, `Rotated()`:97
+- `src/Knock.Api/Modules/Identity/Domain/PhoneNumberPolicy.cs` — class `PhoneNumberPolicy`
+  - `IsValid()`:12
 
 **dtos**
 
-- `src/Knock.Api/Modules/Identity/Dtos/SessionDtos.cs` — record `FirebaseExchangeRequest`, record `SessionResponse`, record `MeResponse`
+- `src/Knock.Api/Modules/Identity/Dtos/SessionDtos.cs` — record `FirebaseExchangeRequest`, record `SessionResponse`, record `RefreshSessionRequest`, record `LogoutRequest`, record `MeResponse`
 
 **services**
 
 - `src/Knock.Api/Modules/Identity/Services/FirebaseIdTokenVerifier.cs` — class `FirebaseIdTokenVerifier`
-  - `VerifyAsync()`:16, `Dispose()`:36
-- `src/Knock.Api/Modules/Identity/Services/FirebaseSessionService.cs` — class `FirebaseSessionService`
-  - `FirebaseSessionService()`:4, `ExchangeAsync()`:10
+  - `VerifyAsync()`:17, `Dispose()`:37
+- `src/Knock.Api/Modules/Identity/Services/FirebaseSessionService.cs` — record `ExchangeRequest`, record `ExchangeResult`, class `FirebaseSessionService`
+  - `FirebaseSessionService()`:19, `ExchangeAsync()`:32
 - `src/Knock.Api/Modules/Identity/Services/IFirebaseIdTokenVerifier.cs` — record `FirebaseIdentity`, interface `IFirebaseIdTokenVerifier`
+  - `FirebaseIdentity()`:7, `ToString()`:9
 - `src/Knock.Api/Modules/Identity/Services/IdentityApi.cs` — class `IdentityApi`
+- `src/Knock.Api/Modules/Identity/Services/LogoutService.cs` — record `AccessTokenClaims`, class `LogoutService`
+  - `AccessTokenClaims()`:10, `From()`:13, `LogoutService()`:35, `LogoutAsync()`:41
+- `src/Knock.Api/Modules/Identity/Services/PhoneProtectionOptions.cs` — class `PhoneProtectionOptions`, class `PhoneProtectionKeys`, class `PhoneProtectionOptionsValidator`
+  - `TryCreate()`:56, `Validate()`:138
+- `src/Knock.Api/Modules/Identity/Services/PhoneProtector.cs` — record `ProtectedPhone`, record `PhoneHash`, class `PhoneProtector`
+  - `PhoneProtector()`:19, `Protect()`:29, `Hash()`:53, `AssociatedData()`:60
+- `src/Knock.Api/Modules/Identity/Services/RefreshSessionService.cs` — record `RefreshCommand`, record `RefreshResult`, class `RefreshSessionService`
+  - `RefreshSessionService()`:18, `RenewAsync()`:26
+- `src/Knock.Api/Modules/Identity/Services/RefreshTokenFingerprint.cs` — class `RefreshTokenFingerprint`
+  - `Compute()`:15
 - `src/Knock.Api/Modules/Identity/Services/SessionTokenIssuer.cs` — record `IssuedSession`, class `SessionTokenIssuer`
-  - `SessionTokenIssuer()`:12, `Issue()`:18
+  - `SessionTokenIssuer()`:12, `Issue()`:18, `IssueAccessToken()`:21, `NewRefreshToken()`:43
 - `src/Knock.Api/Modules/Identity/Services/UserIdDerivation.cs` — class `UserIdDerivation`
   - `Derive()`:18
+
+**validators**
+
+- `src/Knock.Api/Modules/Identity/Validators/FirebaseExchangeRequestValidator.cs` — class `FirebaseExchangeRequestValidator`
+  - `IsCanonicalUuid()`:26
+- `src/Knock.Api/Modules/Identity/Validators/LogoutRequestValidator.cs` — class `LogoutRequestValidator`
+- `src/Knock.Api/Modules/Identity/Validators/RefreshSessionRequestValidator.cs` — class `RefreshSessionRequestValidator`
+- `src/Knock.Api/Modules/Identity/Validators/RefreshTokenShape.cs` — class `RefreshTokenShape`
+  - `IsValid()`:11
 
 ### Knock.Api
 
@@ -131,7 +171,9 @@
 **common**
 
 - `src/Knock.Api/Common/Errors/DomainException.cs` — enum `DomainErrorKind`, class `DomainException`, class `DomainErrors`
-  - `ToStatusCode()`:46
+  - `ToStatusCode()`:56
+- `src/Knock.Api/Common/Security/IAccessTokenRevocations.cs` — interface `IAccessTokenRevocations`, class `NoAccessTokenRevocations`
+  - `IsRevokedAsync()`:22, `RevokeAsync()`:24
 - `src/Knock.Api/Common/Security/JwtSettings.cs` — record `JwtSettings`
 - `src/Knock.Api/Common/Security/JwtSettingsFactory.cs` — class `JwtSettingsFactory`
   - `Create()`:14
@@ -140,8 +182,10 @@
 
 - `src/Knock.Api/Hosting/ApiVersioningExtensions.cs` — class `ApiVersioningExtensions`
   - `AddKnockApiVersioning()`:7
+- `src/Knock.Api/Hosting/AuthNoStoreMiddleware.cs` — class `AuthNoStoreMiddleware`
+  - `AuthNoStoreMiddleware()`:7, `InvokeAsync()`:12
 - `src/Knock.Api/Hosting/AuthenticationExtensions.cs` — class `AuthenticationExtensions`, class `InternalControllerFeatureProvider`, class `AuthenticationStartupCheck`
-  - `AddKnockAuthentication()`:14, `AddInternalControllers()`:55, `IsController()`:73, `StartAsync()`:90, `StopAsync()`:108
+  - `AddKnockAuthentication()`:15, `AddInternalControllers()`:68, `IsController()`:86, `StartAsync()`:103, `StopAsync()`:121
 - `src/Knock.Api/Hosting/CorrelationIdMiddleware.cs` — class `CorrelationId`, class `CorrelationIdMiddleware`
   - `IsValid()`:14, `Create()`:33, `Current()`:36, `CorrelationIdMiddleware()`:47, `InvokeAsync()`:49
 - `src/Knock.Api/Hosting/CorsMiddleware.cs` — class `CorsMiddleware`
@@ -169,7 +213,7 @@
 - `src/Knock.Api/Hosting/RateLimitingExtensions.cs` — class `RateLimitPolicySettings`, class `RateLimitSettings`, class `RateLimitingExtensions`
   - `AddKnockRateLimiting()`:43, `ClientKey()`:131
 - `src/Knock.Api/Hosting/RequestBodyLimitMiddleware.cs` — class `ProblemResponses`, class `RequestBodyLimitMiddleware`
-  - `WriteAsync()`:9, `RequestBodyLimitMiddleware()`:30, `InvokeAsync()`:32
+  - `WriteAsync()`:10, `RequestBodyLimitMiddleware()`:33, `InvokeAsync()`:35
 - `src/Knock.Api/Hosting/SecurityExtensions.cs` — class `SecurityExtensions`
   - `AddKnockSecurity()`:12
 - `src/Knock.Api/Hosting/SecurityHeadersMiddleware.cs` — class `SecurityHeadersMiddleware`

@@ -19,6 +19,8 @@ public class PublicEndpointsRateLimitTests
         "ANY /health",
         "ANY /health/ready",
         "POST /api/v{version:apiVersion}/auth/firebase",
+        "POST /api/v{version:apiVersion}/auth/refresh",
+        "POST /api/v{version:apiVersion}/auth/logout",
         "GET /api/v{version:apiVersion}/oficios",
         "GET /openapi/{documentName}.json",
         "GET /scalar/{documentName?}",
@@ -55,6 +57,8 @@ public class PublicEndpointsRateLimitTests
         var requests = new (string Name, HttpMethod Method, string Path)[]
         {
             ("auth (estricto)", HttpMethod.Post, "/api/v1/auth/firebase"),
+            ("auth refresh (estricto)", HttpMethod.Post, "/api/v1/auth/refresh"),
+            ("auth logout (estricto)", HttpMethod.Post, "/api/v1/auth/logout"),
             ("ready (propio)", HttpMethod.Get, "/health/ready"),
             ("oficios (global)", HttpMethod.Get, "/api/v1/oficios"),
             ("openapi (global)", HttpMethod.Get, "/openapi/v1.json"),

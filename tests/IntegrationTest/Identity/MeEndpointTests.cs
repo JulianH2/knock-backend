@@ -9,7 +9,7 @@ namespace Knock.IntegrationTest.Identity;
 
 public class MeEndpointTests
 {
-    private const string _testPhone = "+15555550102";
+    private const string _testPhone = "+525555550102";
 
     [Fact]
     public async Task Me_WithoutToken_Returns401_TC_TT_API_02_05()
@@ -27,7 +27,7 @@ public class MeEndpointTests
     public async Task Me_WithIssuedToken_Returns200AndInternalControllerIsDiscovered_TC_TT_API_02_06()
     {
         var (idToken, _) = await FirebaseEmulator.SignInWithPhoneAsync(_testPhone);
-        using var factory = new KnockApiFactory();
+        using var factory = await IdentityTestDatabase.CreateFactoryAsync();
         using var client = factory.CreateClient();
         using var exchange = await AuthHttp.ExchangeAsync(client, idToken);
         var (accessToken, _) = await AuthHttp.ReadSessionAsync(exchange);

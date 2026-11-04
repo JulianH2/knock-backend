@@ -2,6 +2,7 @@ using Knock.Api.Common.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Knock.Api.Hosting;
@@ -17,6 +18,7 @@ internal static class AuthenticationExtensions
             sp.GetRequiredService<IConfiguration>(),
             sp.GetRequiredService<IHostEnvironment>()));
 
+        services.TryAddSingleton<IAccessTokenRevocations, NoAccessTokenRevocations>();
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
         services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
             .Configure<JwtSettings>((options, settings) =>
@@ -38,6 +40,17 @@ internal static class AuthenticationExtensions
                 };
                 options.Events = new JwtBearerEvents
                 {
+                    // Con lista de revocados (opcional, HU-004), un jti revocado se rechaza igual que cualquier otro token inválido.
+                    OnTokenValidated = async context =>
+                    {
+                        var revocations = context.HttpContext.RequestServices.GetRequiredService<IAccessTokenRevocations>();
+                        if (revocations.Enabled
+                            && context.Principal?.FindFirst("jti")?.Value is { } jti
+                            && await revocations.IsRevokedAsync(jti, context.HttpContext.RequestAborted))
+                        {
+                            context.Fail("revoked");
+                        }
+                    },
                     // Mismo 401 para cualquier fallo: sin motivo en el cuerpo ni en WWW-Authenticate.
                     OnChallenge = async context =>
                     {

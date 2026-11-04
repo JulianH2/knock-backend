@@ -12,8 +12,9 @@
 | Estricta `/auth` | `/api/v{n}/auth/*` | 10 peticiones | 1 minuto (fija) | IP del cliente |
 
 - Las peticiones a `/auth/*` cuentan en las dos políticas (la estricta y la global).
+- `POST /api/v1/auth/firebase` (HU-001, CA9): el límite es **por IP** (10 por minuto) y no por celular. Es una desviación documentada de la spec: el celular solo se conoce después de verificar el ID token con Firebase, y el limitador corre antes. Las respuestas de `/auth/*` llevan `Cache-Control: no-store`.
 - `/health` (sin comprobaciones) es la **única exención** del límite. `/health/ready` hace un ping a MongoDB por petición anónima, así que desde TT-API-06 (KNOCK-138) tiene su propia política por IP (60 por minuto) y no cuenta en la global.
-- La prueba `PublicEndpointsRateLimitTests` (TC-TT-API-06-16) enumera los endpoints públicos de la API y exige 429 en todos salvo `/health`; un endpoint público nuevo hace fallar la prueba hasta que se documente. Hoy son `/health`, `/health/ready`, `POST /api/v1/auth/firebase`, `GET /api/v1/oficios` y, solo en Development, `/openapi/v1.json` y `/scalar`.
+- La prueba `PublicEndpointsRateLimitTests` (TC-TT-API-06-16) enumera los endpoints públicos de la API y exige 429 en todos salvo `/health`; un endpoint público nuevo hace fallar la prueba hasta que se documente. Hoy son `/health`, `/health/ready`, `POST /api/v1/auth/firebase`, `POST /api/v1/auth/refresh` y `POST /api/v1/auth/logout` (HU-003 y HU-004; los dos comparten el límite estricto de `/auth/*`), `GET /api/v1/oficios` y, solo en Development, `/openapi/v1.json` y `/scalar`.
 - Respuesta al superar el límite: `429` `application/problem+json` con `Retry-After` (segundos); el cuerpo es el mismo de los demás errores (`type`, `title`, `status`, `traceId`, `correlationId`) y **no** revela IP, clave de partición, límite ni contador.
 - Los valores se configuran con `RateLimiting:Global:PermitLimit`, `RateLimiting:Global:Window`, `RateLimiting:Auth:PermitLimit`, `RateLimiting:Auth:Window`, `RateLimiting:Ready:PermitLimit` y `RateLimiting:Ready:Window` (`hh:mm:ss`). No hay valores por defecto en código: sin configuración válida la API no arranca.
 

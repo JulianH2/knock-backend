@@ -37,7 +37,17 @@ public sealed class DomainException : Exception
         Kind = kind;
     }
 
+    /// <summary>Con <paramref name="code"/> estable (<c>snake_case</c>) que la app distingue de cualquier otro error del mismo estado.</summary>
+    public DomainException(DomainErrorKind kind, string message, string code)
+        : this(kind, message)
+    {
+        Code = code;
+    }
+
     public DomainErrorKind Kind { get; }
+
+    /// <summary>Código estable opcional: solo lo declaran los errores que la app trata distinto (spec HU-001, decisión D4).</summary>
+    public string? Code { get; }
 }
 
 /// <summary>Código HTTP de cada tipo del catálogo de dominio.</summary>
