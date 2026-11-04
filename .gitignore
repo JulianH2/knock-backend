@@ -56,3 +56,18 @@ venv/
 # Configuracion local de agentes (cada persona la suya)
 .claude/settings.local.json
 *-debug.log
+
+# Terraform (TT-AZ-05): el estado vive en Azure, nunca en el repositorio (es público). El archivo de bloqueo de
+# proveedores (.terraform.lock.hcl) SÍ se versiona.
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform/
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+!*.tfvars.example
