@@ -23,6 +23,6 @@ internal sealed class FirebaseExchangeRequestValidator : AbstractValidator<Fireb
             .Must(accepted => accepted == true).WithMessage("Must be true.");
     }
 
-    private static bool IsCanonicalUuid(string? value) =>
+    internal static bool IsCanonicalUuid(string? value) =>
         value is { Length: DeviceIdLength } && Guid.TryParseExact(value, "D", out _);
 }

@@ -15,7 +15,7 @@ namespace Knock.Api.Modules.Identity.Data;
 internal sealed class IdentityStore(
     [FromKeyedServices(IdentityDataExtensions.ModuleKey)] IMongoDatabase database,
     IMongoClient client,
-    IOptions<KnockMongoOptions> mongoOptions) : IIdentityStore
+    IOptions<KnockMongoOptions> mongoOptions) : IIdentityStore, IRefreshSessionStore
 {
     public const string UsersCollection = "usuarios";
     public const string ConsentsCollection = "consentimientos";
@@ -43,6 +43,9 @@ internal sealed class IdentityStore(
     public const string FamilyIdField = "familiaId";
     public const string FingerprintField = "huella";
     public const string ExpiresAtField = "venceEn";
+    public const string ReplacedByField = "reemplazadoPor";
+    public const string RevokedAtField = "revocadoEn";
+    public const string RevocationReasonField = "motivoRevocacion";
 
     /// <summary>Código de «write conflict» de MongoDB y documentdb-local para escrituras concurrentes en transacciones.</summary>
     internal const int WriteConflictCode = 112;
@@ -50,6 +53,13 @@ internal sealed class IdentityStore(
     private const int _maxWriteConflictAttempts = 6;
 
     private static readonly FilterDefinitionBuilder<BsonDocument> _filter = Builders<BsonDocument>.Filter;
+
+    private static readonly ProjectionDefinition<BsonDocument> _refreshProjection = Builders<BsonDocument>.Projection
+        .Include(UserIdField)
+        .Include(FamilyIdField)
+        .Include(DeviceIdField)
+        .Include(ReplacedByField)
+        .Include(RevokedAtField);
 
     private static readonly ProjectionDefinition<BsonDocument> _accountProjection = Builders<BsonDocument>.Projection
         .Include(SubField)
@@ -92,6 +102,7 @@ internal sealed class IdentityStore(
             [
                 new CreateIndexModel<BsonDocument>(keys.Ascending(FingerprintField), new CreateIndexOptions { Unique = true }),
                 new CreateIndexModel<BsonDocument>(keys.Ascending(ExpiresAtField), new CreateIndexOptions { ExpireAfter = TimeSpan.Zero }),
+                new CreateIndexModel<BsonDocument>(keys.Ascending(FamilyIdField)),
             ],
             cancellationToken);
     }
@@ -156,6 +167,119 @@ internal sealed class IdentityStore(
         ArgumentNullException.ThrowIfNull(refresh);
         return RefreshTokens.InsertOneAsync(RefreshDocument(refresh), cancellationToken: cancellationToken);
     }
+
+    /// <summary>Cuenta por <c>_id</c>: la renovación necesita su estado y su <c>sub</c> para emitir el JWT.</summary>
+    public async Task<UserAccount?> FindByIdAsync(string userId, CancellationToken cancellationToken) =>
+        ToAccount(await Users.Find(_filter.Eq(IdField, ObjectId.Parse(userId)), _findOptions).Project(_accountProjection).Limit(1)
+            .FirstOrDefaultAsync(cancellationToken));
+
+    /// <summary>
+    /// Rotación atómica (spec HU-003 §5): en una transacción marca el refresh con esa huella como reemplazado (solo si no lo estaba, no está
+    /// revocado y no venció) e inserta el siguiente de su misma familia; si dos renovaciones llegan a la vez con el mismo refresh gana una y la otra
+    /// ve el documento ya reemplazado (reuso).
+    /// </summary>
+    public async Task<RefreshRotation> RotateAsync(byte[] fingerprint, byte[] nextFingerprint, DateTime now, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(fingerprint);
+        ArgumentNullException.ThrowIfNull(nextFingerprint);
+        var attempt = 0;
+        while (true)
+        {
+            attempt++;
+            try
+            {
+                using var session = await client.StartSessionAsync(cancellationToken: cancellationToken);
+                var parent = await session.WithTransactionAsync(
+                    (transaction, token) => ConsumeAsync(transaction, fingerprint, nextFingerprint, now, token),
+                    cancellationToken: cancellationToken);
+                return parent is null ? await ClassifyMissAsync(fingerprint, now, cancellationToken) : RefreshRotation.Rotated(parent);
+            }
+            catch (MongoCommandException exception) when (exception.Code == WriteConflictCode && attempt < _maxWriteConflictAttempts)
+            {
+                // Otra renovación con el mismo refresh todavía no confirma; al confirmarse, el reintento ve el documento reemplazado (reuso).
+                await Task.Delay(WriteConflictBackoff(attempt), cancellationToken);
+            }
+        }
+    }
+
+    public Task RevokeFamilyAsync(string familyId, string reason, DateTime now, CancellationToken cancellationToken) =>
+        RefreshTokens.UpdateManyAsync(
+            _filter.And(_filter.Eq(FamilyIdField, ObjectId.Parse(familyId)), _filter.Eq(RevokedAtField, BsonNull.Value)),
+            Builders<BsonDocument>.Update.Set(RevokedAtField, new BsonDateTime(now)).Set(RevocationReasonField, reason),
+            cancellationToken: cancellationToken);
+
+    public async Task<StoredRefresh?> FindByFingerprintAsync(byte[] fingerprint, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(fingerprint);
+        var existing = await FindRefreshAsync(fingerprint, cancellationToken);
+        return existing is null ? null : ToStored(existing);
+    }
+
+    private async Task<StoredRefresh?> ConsumeAsync(
+        IClientSessionHandle transaction, byte[] fingerprint, byte[] nextFingerprint, DateTime now, CancellationToken token)
+    {
+        var nextId = ObjectId.GenerateNewId();
+        var nowBson = new BsonDateTime(now);
+        var claimed = await RefreshTokens.FindOneAndUpdateAsync(
+            transaction,
+            _filter.And(
+                _filter.Eq(FingerprintField, new BsonBinaryData(fingerprint)),
+                _filter.Eq(ReplacedByField, BsonNull.Value),
+                _filter.Eq(RevokedAtField, BsonNull.Value),
+                _filter.Gt(ExpiresAtField, nowBson)),
+            Builders<BsonDocument>.Update.Set(ReplacedByField, nextId),
+            new FindOneAndUpdateOptions<BsonDocument> { ReturnDocument = ReturnDocument.Before },
+            token);
+        if (claimed is null)
+        {
+            return null;
+        }
+
+        await RefreshTokens.InsertOneAsync(transaction, NextRefreshDocument(claimed, nextId, nextFingerprint, now), cancellationToken: token);
+        return ToStored(claimed);
+    }
+
+    /// <summary>
+    /// No se pudo consumir: si el refresh existe y ya estaba reemplazado o revocado es un reuso y se revoca su familia; si no existe o solo está
+    /// vencido, no se toca nada.
+    /// </summary>
+    private async Task<RefreshRotation> ClassifyMissAsync(byte[] fingerprint, DateTime now, CancellationToken cancellationToken)
+    {
+        var existing = await FindRefreshAsync(fingerprint, cancellationToken);
+        if (existing is null)
+        {
+            return RefreshRotation.Missing;
+        }
+
+        var consumed = !existing.GetValue(ReplacedByField, BsonNull.Value).IsBsonNull || !existing.GetValue(RevokedAtField, BsonNull.Value).IsBsonNull;
+        if (!consumed)
+        {
+            return RefreshRotation.Missing;
+        }
+
+        await RevokeFamilyAsync(ToStored(existing).FamilyId, RevocationReasons.Reuse, now, cancellationToken);
+        return RefreshRotation.Reused;
+    }
+
+    private Task<BsonDocument?> FindRefreshAsync(byte[] fingerprint, CancellationToken cancellationToken) =>
+        RefreshTokens.Find(_filter.Eq(FingerprintField, new BsonBinaryData(fingerprint)), _findOptions).Project(_refreshProjection).Limit(1)
+            .FirstOrDefaultAsync(cancellationToken)!;
+
+    // reemplazadoPor, revocadoEn y motivoRevocacion no se escriben al insertar: ausente equivale a null en los filtros (los documentos de HU-001 se
+    // leen igual) y solo los escribe quien reemplaza o revoca.
+    private static BsonDocument NextRefreshDocument(BsonDocument parent, ObjectId nextId, byte[] nextFingerprint, DateTime now) => new()
+    {
+        { IdField, nextId },
+        { UserIdField, parent[UserIdField] },
+        { FamilyIdField, parent[FamilyIdField] },
+        { FingerprintField, new BsonBinaryData(nextFingerprint) },
+        { DeviceIdField, parent[DeviceIdField] },
+        { CreatedAtField, new BsonDateTime(now) },
+        { ExpiresAtField, new BsonDateTime(now + RefreshTokenRecord.Lifetime) },
+    };
+
+    private static StoredRefresh ToStored(BsonDocument document) =>
+        new(document[UserIdField].AsObjectId.ToString(), document[FamilyIdField].AsObjectId.ToString(), document[DeviceIdField].AsString);
 
     internal static bool IsDuplicateKey(Exception exception) => exception switch
     {

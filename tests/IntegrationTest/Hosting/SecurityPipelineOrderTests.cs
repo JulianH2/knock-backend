@@ -35,8 +35,12 @@ public class SecurityPipelineOrderTests
             .Select(m => m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value)
             .ToList();
 
-        actual.Take(_constitutionOrder.Length).Should().Equal(_constitutionOrder, "el pipeline sigue el orden fijo de la constitución §4");
-        actual.Skip(_constitutionOrder.Length).Should().StartWith("MapKnockHealth", "los endpoints van después de la autorización");
+        // AuthNoStoreMiddleware (HU-001) no está en la constitución §4: solo fija `Cache-Control` de /auth/* y se escribe al iniciar la respuesta,
+        // así que se comprueba aparte y no altera el orden de las capas de la constitución.
+        var layers = actual.Where(name => name != "AuthNoStoreMiddleware").ToList();
+        layers.Take(_constitutionOrder.Length).Should().Equal(_constitutionOrder, "el pipeline sigue el orden fijo de la constitución §4");
+        layers.Skip(_constitutionOrder.Length).Should().StartWith("MapKnockHealth", "los endpoints van después de la autorización");
+        actual.IndexOf("AuthNoStoreMiddleware").Should().BeInRange(actual.IndexOf("CorrelationIdMiddleware"), actual.IndexOf("UseRateLimiter") - 1, "cubre también el 429 y el 413");
 
         var documented = File.ReadAllLines(Path.Combine(root, "docs", "MIDDLEWARES.md"))
             .Select(line => Regex.Match(line, @"^\d+\.\s+`(\w+)`", RegexOptions.None, _regexTimeout))

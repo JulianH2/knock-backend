@@ -22,7 +22,7 @@ public sealed class IdentityIndexTests
         (await IndexesAsync(database.Store.Users)).Should().BeEquivalentTo("_id:1", "sub:1 unique", "celularHash:1 unique");
         (await IndexesAsync(database.Store.Consents)).Should().BeEquivalentTo("_id:1", "usuarioId:1,documento:1,version:1 unique");
         (await IndexesAsync(database.Store.Audit)).Should().BeEquivalentTo("_id:1", "usuarioId:1,ocurridoEn:-1");
-        (await IndexesAsync(database.Store.RefreshTokens)).Should().BeEquivalentTo("_id:1", "huella:1 unique", "venceEn:1 ttl0");
+        (await IndexesAsync(database.Store.RefreshTokens)).Should().BeEquivalentTo("_id:1", "huella:1 unique", "venceEn:1 ttl0", "familiaId:1");
     }
 
     [Fact]

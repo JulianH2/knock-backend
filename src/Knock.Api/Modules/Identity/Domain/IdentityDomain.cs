@@ -62,6 +62,41 @@ internal sealed record NewAccount(
     DateTime CreatedAt,
     RefreshTokenRecord Refresh);
 
+/// <summary>Motivos por los que se revoca una familia de sesión (spec HU-003 §5 y HU-004).</summary>
+internal static class RevocationReasons
+{
+    public const string Reuse = "reuso";
+    public const string Device = "dispositivo";
+    public const string Suspension = "suspension";
+    public const string Logout = "logout";
+}
+
+/// <summary>Sesión guardada que se consumió o se localizó: solo lo que HU-003 y HU-004 necesitan, nunca la huella ni el token.</summary>
+/// <param name="UserId"><c>_id</c> (ObjectId en hexadecimal) del usuario dueño de la sesión.</param>
+/// <param name="FamilyId">Familia de sesión (ObjectId en hexadecimal).</param>
+/// <param name="DeviceId">UUID del dispositivo con el que se abrió la familia.</param>
+internal sealed record StoredRefresh(string UserId, string FamilyId, string DeviceId);
+
+/// <summary>Qué pasó al intentar consumir un refresh token (spec HU-003 §5).</summary>
+internal enum RotationStatus
+{
+    Rotated,
+    Reused,
+    Missing,
+}
+
+/// <summary>Resultado de la rotación atómica: <see cref="StoredRefresh"/> del refresh consumido solo cuando se rotó.</summary>
+internal sealed record RefreshRotation(RotationStatus Status, StoredRefresh? Parent = null)
+{
+    /// <summary>El refresh ya estaba reemplazado o revocado: su familia queda revocada.</summary>
+    public static RefreshRotation Reused { get; } = new(RotationStatus.Reused);
+
+    /// <summary>El refresh no existe o está vencido: no se toca nada.</summary>
+    public static RefreshRotation Missing { get; } = new(RotationStatus.Missing);
+
+    public static RefreshRotation Rotated(StoredRefresh parent) => new(RotationStatus.Rotated, parent);
+}
+
 /// <summary>Resultado del alta: si ya existía el <c>sub</c> o el celular, un índice único lo rechazó y no se guardó nada.</summary>
 internal enum AccountCreation
 {

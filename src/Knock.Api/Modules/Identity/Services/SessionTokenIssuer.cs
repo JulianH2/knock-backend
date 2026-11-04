@@ -15,7 +15,10 @@ internal sealed class SessionTokenIssuer(JwtSettings settings, TimeProvider time
 
     private const int _refreshTokenBytes = 32;
 
-    public IssuedSession Issue(Guid userId)
+    public IssuedSession Issue(Guid userId) => new(IssueAccessToken(userId), NewRefreshToken());
+
+    /// <summary>JWT de acceso nuevo (<c>jti</c> propio) para una cuenta; la renovación lo emite aparte de su refresh token.</summary>
+    public string IssueAccessToken(Guid userId)
     {
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var descriptor = new SecurityTokenDescriptor
@@ -33,8 +36,9 @@ internal sealed class SessionTokenIssuer(JwtSettings settings, TimeProvider time
             SigningCredentials = new SigningCredentials(settings.SigningKey, SecurityAlgorithms.HmacSha256),
         };
 
-        var accessToken = new JsonWebTokenHandler().CreateToken(descriptor);
-        var refreshToken = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(_refreshTokenBytes));
-        return new IssuedSession(accessToken, refreshToken);
+        return new JsonWebTokenHandler().CreateToken(descriptor);
     }
+
+    /// <summary>Refresh token nuevo: 32 bytes aleatorios en Base64Url.</summary>
+    public static string NewRefreshToken() => Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(_refreshTokenBytes));
 }
