@@ -5,7 +5,7 @@
 > **Depende de:** **HU-003 (KNOCK-45)**: `refresh_tokens` con `familiaId`, `revocadoEn` y `motivoRevocacion`, e índice por `familiaId`; y por tanto **HU-001 (KNOCK-43)**, cuyo PR #75 se cerró sin fusionar y debe reabrirse y fusionarse antes · TT-API-03 (ProblemDetails, 422, límite por IP) · opcional: Redis (TT-AZ-02) para la lista de `jti` revocados
 > **Fuentes:** `docs/backlog/HU-004.md` (CA1 a CA5) · spec HU-001 (decisión 9: HU-001 no revoca tokens) y spec HU-003 · constitución 2.2.x (principio 13 «Logout real»; §3 «Acceso»; §12 «Redis» y su riesgo aceptado) · ADR-002 (regla 4: la lista de revocación) · `docs/DECISION_TECNICA.md` §8
 > **Skills:** story-workflow, spec-first-writing, auth-firebase-jwt, database-scripts, vertical-slice-api, security-core, api-contract-openapi, testing-strategy-backend, reuse-before-create
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Que cerrar sesión **cancele la sesión en el servidor**, no solo en el teléfono: `POST /api/v1/auth/logout` revoca de forma permanente la **familia del refresh token** del dispositivo (MongoDB) y, si hay Redis configurado, también el `jti` del access token vigente. Este repositorio entrega el endpoint y la revocación; la confirmación, la limpieza local y la cola de revocación sin conexión son de knock-frontend.
@@ -113,6 +113,6 @@ Datos personales tocados: ninguno nuevo.
 6. **Dependencia.** HU-001 no está en `sprint-02` (el PR #75 se cerró sin fusionar) y HU-003 está en Borrador. (Hay que fusionar HU-001 y HU-003 antes de escribir código de esta historia.)
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-03
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
