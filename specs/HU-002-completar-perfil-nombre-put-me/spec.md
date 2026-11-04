@@ -5,7 +5,7 @@
 > **Depende de:** **HU-001 (KNOCK-43)**: crea `usuarios` (con `perfilCompleto` en `false`), el JWT y `GET /me`. **Su código está en la rama `feature/KNOCK-43-phone-login-code`; el PR #75 se cerró sin fusionar y debe reabrirse y fusionarse antes de implementar** · TT-API-03 (ProblemDetails, 422, límite) · TT-BD-06 (cliente de Mongo)
 > **Fuentes:** `docs/backlog/HU-002.md` (CA1 a CA7) · spec HU-001 (§4 `GET /me`, §5 `usuarios`, decisión sobre `perfilCompleto`) · constitución 2.2.x (principios 3, 10, 11, 15; §5; §6) · ADR-002 (regla 1) · skills `security-core` y `api-contract-openapi`
 > **Skills:** story-workflow, spec-first-writing, auth-firebase-jwt, database-scripts, vertical-slice-api, security-core, api-contract-openapi, testing-strategy-backend, reuse-before-create
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Que quien acaba de crear su cuenta pueda **poner su nombre** y quedar con el perfil completo, para que el resto de la app sepa con quién trata. Esta spec es la **versión mínima para el demo**: solo el nombre. La **foto** (CA3 a CA5 de la ficha) y la **zona** (HU-009) quedan fuera y se agregan después sin romper el contrato. Este repositorio entrega `PUT /api/v1/me`, el campo `nombre` en `usuarios` y la ampliación de `GET /api/v1/me`; la pantalla es de knock-frontend.
@@ -117,6 +117,6 @@ Datos personales tocados: **el nombre** (dato personal visible a otras personas)
 6. **Dependencia.** HU-001 no está en `sprint-02` (el PR #75 se cerró sin fusionar). (Hay que fusionarlo antes de escribir código de esta historia.)
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-03
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
