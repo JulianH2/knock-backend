@@ -2,7 +2,10 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using AwesomeAssertions;
+using Knock.Api.Modules.Identity.Data;
+using Knock.Api.Modules.Identity.Domain;
 using Knock.IntegrationTest.Support;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
@@ -12,6 +15,16 @@ namespace Knock.SecurityTest.Identity;
 public class SessionJwtValidationTests
 {
     private static readonly SymmetricSecurityKey _ownKey = new(KnockApiFactory.TestSigningKey);
+
+    /// <summary>Almacén que conoce cualquier cuenta: <c>GET /me</c> lee el perfil (HU-002) y esta prueba solo comprueba que la sesión se acepta.</summary>
+    private sealed class AnyAccountStore : IProfileStore
+    {
+        public Task<UserProfile?> FindProfileAsync(string sub, CancellationToken cancellationToken) =>
+            Task.FromResult<UserProfile?>(new UserProfile(sub, UserState.Active, null, false));
+
+        public Task<UserProfile?> SaveNameAsync(string sub, string name, CancellationToken cancellationToken) =>
+            Task.FromResult<UserProfile?>(new UserProfile(sub, UserState.Active, name, true));
+    }
 
     private static string Jwt(
         SymmetricSecurityKey? key = null,
@@ -72,7 +85,7 @@ public class SessionJwtValidationTests
     public async Task ValidJwt_Control_IsAccepted_TC_TT_API_02_08()
     {
         // Control: demuestra que las variantes inválidas fallan por su defecto y no por un armado erróneo de la prueba.
-        using var factory = new KnockApiFactory();
+        using var factory = new KnockApiFactory(configureServices: services => services.AddSingleton<IProfileStore>(new AnyAccountStore()));
         using var client = factory.CreateClient();
 
         using var response = await AuthHttp.MeAsync(client, Jwt());

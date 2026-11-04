@@ -7,7 +7,8 @@ namespace Knock.IntegrationTest;
 
 public class RateLimitTests
 {
-    private const string _me = "/api/v1/me";
+    // Ruta del host de pruebas sin base de datos: GET /me ya consulta el perfil (HU-002) y esta prueba solo mide el límite por IP.
+    private const string _me = "/api/v1/test/ping";
 
     [Fact]
     public async Task PerIpLimitDoesNotDistinguishByUser_TC_TT_API_03_05()

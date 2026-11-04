@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Knock.Api.Hosting;
 
 /// <summary>Respuestas ProblemDetails (RFC 9457) escritas desde middleware o eventos de autenticación.</summary>
 internal static class ProblemResponses
 {
-    public static async Task WriteAsync(HttpContext context, int statusCode, string title)
+    public static async Task WriteAsync(HttpContext context, int statusCode, string title, string? code = null)
     {
         context.Response.StatusCode = statusCode;
         if (statusCode == StatusCodes.Status401Unauthorized)
@@ -15,11 +16,13 @@ internal static class ProblemResponses
         }
 
         var problems = context.RequestServices.GetRequiredService<IProblemDetailsService>();
-        await problems.WriteAsync(new ProblemDetailsContext
+        var problem = new ProblemDetails { Status = statusCode, Title = title };
+        if (code is not null)
         {
-            HttpContext = context,
-            ProblemDetails = { Status = statusCode, Title = title },
-        });
+            problem.Extensions["code"] = code;
+        }
+
+        await problems.WriteAsync(new ProblemDetailsContext { HttpContext = context, ProblemDetails = problem });
     }
 }
 

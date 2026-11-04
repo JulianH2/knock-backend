@@ -43,6 +43,11 @@ internal sealed class KnockApiFactory(
     /// <summary>Clave de firma sintética de las pruebas (32 bytes aleatorios por proceso; nunca se escribe en disco).</summary>
     public static readonly byte[] TestSigningKey = RandomNumberGenerator.GetBytes(32);
 
+    /// <summary>Llaves sintéticas de protección del celular (32 bytes aleatorios por proceso, distintas entre sí; nunca se escriben en disco).</summary>
+    public static readonly byte[] TestPhoneEncryptionKey = RandomNumberGenerator.GetBytes(32);
+
+    public static readonly byte[] TestPhoneHmacKey = RandomNumberGenerator.GetBytes(32);
+
     /// <summary>Telemetría exportada por este host (exportador en memoria, TT-OBS-01).</summary>
     public TelemetryCapture Telemetry { get; } = new();
 
@@ -65,6 +70,10 @@ internal sealed class KnockApiFactory(
                 ["RateLimiting:Auth:PermitLimit"] = _highLimit,
                 ["RateLimiting:Ready:PermitLimit"] = _highLimit,
                 ["ConnectionStrings:KnockMongo"] = UnreachableMongoConnectionString,
+                ["Identity:PhoneProtection:EncryptionKeys:1"] = Convert.ToBase64String(TestPhoneEncryptionKey),
+                ["Identity:PhoneProtection:HmacKeys:1"] = Convert.ToBase64String(TestPhoneHmacKey),
+                ["Identity:PhoneProtection:EncryptionKeyVersion"] = "1",
+                ["Identity:PhoneProtection:HmacKeyVersion"] = "1",
             };
             if (withSigningKey)
             {
