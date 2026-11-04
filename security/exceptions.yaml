@@ -54,3 +54,28 @@ excepciones:
     creada: 2026-10-15
     vence: 2027-01-13
     plan: revisar con cada cambio de la imagen base y retirar las claves aceptadas que ya no aparezcan.
+  - id: EXC-004
+    herramienta: gitleaks
+    regla: jwt, generic-api-key
+    alcance: huellas en .gitleaksignore (commit de1c61af882345e0a8b75cf1afbce7213e245b22 del PR #89; tests/IntegrationTest/Support/TestController.cs, tests/SecurityTest/Observability/TraceContextInjectionTests.cs, tests/IntegrationTest/Observability/OutgoingHttpTelemetryTests.cs, tests/SecurityTest/Observability/SpanPrivacyTests.cs)
+    justificacion: >-
+      Falso positivo. Los cuatro hallazgos son valores sintéticos de prueba (un token JWT ficticio, un token de baggage y un token secreto de ejemplo) que las pruebas de privacidad y de propagación de trazas
+      usan para comprobar que no salen en spans ni en registros; no son credenciales de ningún servicio y no hay nada que rotar. El texto ya se corrigió en el commit 27e5d4f de la misma rama,
+      pero Gitleaks revisa todos los commits del PR y el repositorio no permite squash, así que el commit original sigue en la historia. Las huellas llevan el SHA `de1c61a`: el PR #89 debe fusionarse con **merge commit** y no con «Rebase and merge», que reescribe los SHA y haría que el Gitleaks del push a `sprint-02` volviera a marcar los cuatro hallazgos. Solo se aceptan esas cuatro huellas exactas:
+      la regla sigue activa para cualquier otro archivo, línea o commit. Evidencia: salida de Gitleaks en el CI del PR #89.
+    responsable: José Julián Hernández Hernández
+    creada: 2026-11-03
+    vence: 2027-01-31
+    plan: fusionar el PR #89 con merge commit, comprobar el CI del push a `sprint-02` justo después y retirar la excepción y el archivo .gitleaksignore cuando el commit ya no entre en ningún análisis, o antes de que venza.
+  - id: EXC-005
+    herramienta: gitleaks
+    regla: knock-mongodb-connection-string
+    alcance: scripts/ci/test_ai_review.py (solo ese archivo, en la regla; no es una lista blanca global)
+    justificacion: >-
+      Falso positivo. La línea 169 de la prueba de enmascarado de secretos del script de pre-revisión contiene una cadena de MongoDB inventada
+      para comprobar que el script oculta ese formato; no es una credencial de ningún servicio. La regla nueva sigue activa para cualquier otro archivo.
+      Evidencia: análisis de Gitleaks con la regla nueva sobre el árbol de `sprint-02` (un solo hallazgo, ese archivo).
+    responsable: José Julián Hernández Hernández
+    creada: 2026-11-03
+    vence: 2027-01-31
+    plan: sustituir la muestra por una construida en tiempo de ejecución (como se hizo en el PR #89) y retirar la excepción antes de vencer.

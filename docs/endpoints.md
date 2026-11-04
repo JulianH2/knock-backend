@@ -2,6 +2,7 @@
 
 > AGENTS.md §5. Una fila por operación HTTP de negocio, con su spec. El contrato completo se genera del código (`GET /openapi/v1.json`, solo en Development); la exportación a `docs/openapi.v1.json` llega con TT-CI-02.
 > Límites de peticiones: `docs/rate-limit-matrix.md` (la política global aplica a todas las filas salvo que se diga otra cosa).
+> Rastreo (todas las filas): cada respuesta lleva el encabezado `X-Correlation-Id` y cada error ProblemDetails, los campos `correlationId` (mismo valor) y `traceId` (W3C, `<trace-id>` de 32 hex). Formatos y respuestas en la §4 de la spec TT-OBS-01 y en `docs/MIDDLEWARES.md`.
 
 | Método y ruta | Módulo | Auth | Respuesta | Caché | Spec | Notas |
 |---|---|---|---|---|---|---|

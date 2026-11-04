@@ -25,6 +25,9 @@ internal sealed class RateLimitSettings
     public RateLimitPolicySettings Global { get; set; } = new();
 
     public RateLimitPolicySettings Auth { get; set; } = new();
+
+    /// <summary>Política propia de <c>/health/ready</c> (hace un ping a MongoDB por petición anónima, así que no puede quedar sin límite).</summary>
+    public RateLimitPolicySettings Ready { get; set; } = new();
 }
 
 internal static class RateLimitingExtensions
@@ -34,33 +37,33 @@ internal static class RateLimitingExtensions
     private const string _unknownClient = "unknown";
 
     /// <summary>
-    /// Límite por IP con el limitador del framework: política global (cualquier ruta salvo <c>/health</c> y <c>/health/ready</c>) y política estricta
-    /// para <c>/api/v{n}/auth/*</c>. Vive en memoria del proceso (con varias réplicas el límite efectivo se multiplica). Responde 429 en ProblemDetails.
+    /// Límite por IP con el limitador del framework: política global (cualquier ruta salvo <c>/health</c> y <c>/health/ready</c>), política estricta
+    /// para <c>/api/v{n}/auth/*</c> y política propia para <c>/health/ready</c>; <c>/health</c> es la única exención. Vive en memoria del proceso (con varias réplicas el límite efectivo se multiplica). Responde 429 en ProblemDetails.
     /// </summary>
     public static IServiceCollection AddKnockRateLimiting(this IServiceCollection services)
     {
         services.AddOptions<RateLimitSettings>()
             .BindConfiguration(RateLimitSettings.SectionName)
-            .Validate(s => s.Global.IsValid && s.Auth.IsValid, "RateLimiting:Global and RateLimiting:Auth need a PermitLimit > 0 and a Window > 0.")
+            .Validate(
+                s => s.Global.IsValid && s.Auth.IsValid && s.Ready.IsValid,
+                "RateLimiting:Global, RateLimiting:Auth and RateLimiting:Ready need a PermitLimit > 0 and a Window > 0.")
             .ValidateOnStart();
         services.AddRateLimiter(_ => { });
         services.AddOptions<RateLimiterOptions>().Configure<IOptions<RateLimitSettings>>((options, settings) =>
         {
             var global = settings.Value.Global;
             var auth = settings.Value.Auth;
+            var ready = settings.Value.Ready;
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             options.GlobalLimiter = PartitionedRateLimiter.CreateChained(
-                PartitionedRateLimiter.Create<HttpContext, string>(context =>
-                    IsHealthPath(context.Request.Path)
-                        ? RateLimitPartition.GetNoLimiter("health")
-                        : RateLimitPartition.GetFixedWindowLimiter($"global:{ClientKey(context)}", _ => FixedWindow(global))),
+                PartitionedRateLimiter.Create<HttpContext, string>(context => GlobalPartition(context, global, ready)),
                 PartitionedRateLimiter.Create<HttpContext, string>(context =>
                     IsAuthPath(context.Request.Path)
                         ? RateLimitPartition.GetFixedWindowLimiter($"auth:{ClientKey(context)}", _ => FixedWindow(auth))
                         : RateLimitPartition.GetNoLimiter("outside-auth")));
             options.OnRejected = async (context, _) =>
             {
-                var fallback = IsAuthPath(context.HttpContext.Request.Path) ? auth.Window : global.Window;
+                var fallback = WindowOf(context.HttpContext.Request.Path, global, auth, ready);
                 var retryAfter = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var hint) ? hint : fallback;
                 var seconds = Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds));
                 context.HttpContext.Response.Headers.RetryAfter = seconds.ToString(CultureInfo.InvariantCulture);
@@ -71,6 +74,31 @@ internal static class RateLimitingExtensions
         return services;
     }
 
+    /// <summary>Partición del límite general: <c>/health</c> sin límite, <c>/health/ready</c> con el suyo y el resto con el global.</summary>
+    private static RateLimitPartition<string> GlobalPartition(HttpContext context, RateLimitPolicySettings global, RateLimitPolicySettings ready)
+    {
+        var path = context.Request.Path;
+        if (IsHealthPath(path))
+        {
+            return RateLimitPartition.GetNoLimiter("health");
+        }
+
+        return IsReadyPath(path)
+            ? RateLimitPartition.GetFixedWindowLimiter($"ready:{ClientKey(context)}", _ => FixedWindow(ready))
+            : RateLimitPartition.GetFixedWindowLimiter($"global:{ClientKey(context)}", _ => FixedWindow(global));
+    }
+
+    /// <summary>Ventana de la política que aplica a la ruta (respaldo de <c>Retry-After</c> cuando el limitador no da una pista).</summary>
+    private static TimeSpan WindowOf(PathString path, RateLimitPolicySettings global, RateLimitPolicySettings auth, RateLimitPolicySettings ready)
+    {
+        if (IsAuthPath(path))
+        {
+            return auth.Window;
+        }
+
+        return IsReadyPath(path) ? ready.Window : global.Window;
+    }
+
     private static FixedWindowRateLimiterOptions FixedWindow(RateLimitPolicySettings policy) => new()
     {
         PermitLimit = policy.PermitLimit,
@@ -79,8 +107,9 @@ internal static class RateLimitingExtensions
         AutoReplenishment = true,
     };
 
-    private static bool IsHealthPath(PathString path) =>
-        path.Equals(_healthPath, StringComparison.OrdinalIgnoreCase) || path.Equals(_readyPath, StringComparison.OrdinalIgnoreCase);
+    private static bool IsHealthPath(PathString path) => path.Equals(_healthPath, StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsReadyPath(PathString path) => path.Equals(_readyPath, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// <c>/api/v{version}/auth</c> y lo que cuelga de ahí. Toda la comparación ignora mayúsculas porque el router de ASP.NET Core
