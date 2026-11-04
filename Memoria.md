@@ -622,3 +622,8 @@
 - Dependencia: HU-001 (KNOCK-43). Su PR #75 se cerró sin fusionar (rama `feature/KNOCK-43-phone-login-code` conservada); hay que reabrirlo y fusionarlo antes de implementar.
 - Dudas abiertas de la spec (§8): reuso por mala señal, vigencia, vínculo al dispositivo, cuenta suspendida, revocación del access token, esquema de respuesta y la dependencia de HU-001.
 - A evitar: devolver motivos distintos en los 401 (permite enumerar tokens); guardar el refresh en claro; rotar sin transacción (deja el token consumido sin sucesor); implementar antes de aprobar la spec.
+## 2026-11-03 — HU-004 (KNOCK-46): spec en Borrador del cierre de sesión (`POST /api/v1/auth/logout`)
+- Decisión propuesta: el logout revoca de forma permanente la familia del refresh token en MongoDB (idempotente, 204 exista o no el token, solo este dispositivo); el `jti` del access token se guarda en Redis solo si Redis está configurado. Sin Redis, un access token cerrado vale hasta 15 minutos (riesgo aceptado en la constitución §12), documentado y afirmado en una prueba.
+- Dependencias: HU-001 (KNOCK-43; su PR #75 se cerró sin fusionar, rama conservada) y HU-003 (KNOCK-45).
+- Dudas abiertas de la spec (§8): Redis en esta versión (paquete sin evaluar), autenticación del logout, Redis caído, auditoría, alcance por dispositivo y dependencias.
+- A evitar: devolver 404 o un motivo distinto cuando el refresh no existe (permite enumerar); revocar con el access token de otra persona; agregar el paquete de Redis sin evaluarlo; implementar antes de aprobar la spec.
