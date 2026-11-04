@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-04T00:19:17Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-04T00:51:47Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | `Assistant` | -, services | 3 | 3 | 1 |
 | `Catalog` | -, controllers, data, domain, dtos, services, validators | 21 | 23 | 30 |
-| `Identity` | -, controllers, data, domain, dtos, services, validators | 20 | 36 | 28 |
+| `Identity` | -, controllers, data, domain, dtos, services, validators | 27 | 43 | 35 |
 | `Knock.Api` | -, common, hosting | 26 | 52 | 67 |
 | `Media` | -, controllers, data, domain, dtos, services, validators | 18 | 35 | 48 |
 | `Messaging` | -, services | 3 | 3 | 1 |
@@ -17,6 +17,10 @@
 | `Reputation` | -, services | 3 | 3 | 1 |
 | `Requests` | -, services | 3 | 3 | 1 |
 | `Trust` | -, services | 3 | 3 | 1 |
+
+## Tipos con el mismo nombre en varios lugares
+
+- `IdentityStore`: `src/Knock.Api/Modules/Identity/Data/IdentityStore.Profile.cs:8`, `src/Knock.Api/Modules/Identity/Data/IdentityStore.cs:15`
 
 ## Índice por módulo
 
@@ -103,13 +107,16 @@
 - `src/Knock.Api/Modules/Identity/Controllers/V1/AuthController.cs` — class `AuthController`
   - `ExchangeFirebaseToken()`:30
 - `src/Knock.Api/Modules/Identity/Controllers/V1/MeController.cs` — class `MeController`
-  - `Get()`:18
+  - `Get()`:23, `Put()`:46
 
 **data**
 
 - `src/Knock.Api/Modules/Identity/Data/IIdentityStore.cs` — interface `IIdentityStore`
+- `src/Knock.Api/Modules/Identity/Data/IProfileStore.cs` — interface `IProfileStore`
 - `src/Knock.Api/Modules/Identity/Data/IdentityDataExtensions.cs` — class `IdentityDataExtensions`
   - `AddIdentityData()`:10
+- `src/Knock.Api/Modules/Identity/Data/IdentityStore.Profile.cs` — class `IdentityStore`
+  - `FindProfileAsync()`:18, `SaveNameAsync()`:25
 - `src/Knock.Api/Modules/Identity/Data/IdentityStore.cs` — class `IdentityStore`
   - `EnsureIndexesAsync()`:74, `FindBySubAsync()`:99, `FindByPhoneHashAsync()`:104, `CreateAccountAsync()`:113, `AddRefreshTokenAsync()`:154, `IsDuplicateKey()`:160
 
@@ -117,11 +124,15 @@
 
 - `src/Knock.Api/Modules/Identity/Domain/IdentityDomain.cs` — class `UserState`, class `ConsentDocuments`, class `AuditEvents`, record `UserAccount`, record `RefreshTokenRecord`, record `NewAccount`, enum `AccountCreation`
   - `RefreshTokenRecord()`:44
+- `src/Knock.Api/Modules/Identity/Domain/PersonName.cs` — class `PersonName`
+  - `TryNormalize()`:17
 - `src/Knock.Api/Modules/Identity/Domain/PhoneNumberPolicy.cs` — class `PhoneNumberPolicy`
   - `IsValid()`:12
+- `src/Knock.Api/Modules/Identity/Domain/UserProfile.cs` — record `UserProfile`
 
 **dtos**
 
+- `src/Knock.Api/Modules/Identity/Dtos/ProfileRequest.cs` — record `ProfileRequest`
 - `src/Knock.Api/Modules/Identity/Dtos/SessionDtos.cs` — record `FirebaseExchangeRequest`, record `SessionResponse`, record `MeResponse`
 
 **services**
@@ -137,6 +148,8 @@
   - `TryCreate()`:56, `Validate()`:138
 - `src/Knock.Api/Modules/Identity/Services/PhoneProtector.cs` — record `ProtectedPhone`, record `PhoneHash`, class `PhoneProtector`
   - `PhoneProtector()`:19, `Protect()`:29, `Hash()`:53, `AssociatedData()`:60
+- `src/Knock.Api/Modules/Identity/Services/ProfileService.cs` — class `ProfileService`
+  - `ProfileService()`:11, `GetAsync()`:14, `SaveNameAsync()`:21
 - `src/Knock.Api/Modules/Identity/Services/RefreshTokenFingerprint.cs` — class `RefreshTokenFingerprint`
   - `Compute()`:15
 - `src/Knock.Api/Modules/Identity/Services/SessionTokenIssuer.cs` — record `IssuedSession`, class `SessionTokenIssuer`
@@ -147,6 +160,7 @@
 **validators**
 
 - `src/Knock.Api/Modules/Identity/Validators/FirebaseExchangeRequestValidator.cs` — class `FirebaseExchangeRequestValidator`
+- `src/Knock.Api/Modules/Identity/Validators/ProfileRequestValidator.cs` — class `ProfileRequestValidator`
 
 ### Knock.Api
 

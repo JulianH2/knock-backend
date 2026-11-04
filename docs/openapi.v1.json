@@ -664,6 +664,184 @@
             }
           }
         }
+      },
+      "put": {
+        "tags": [
+          "Me"
+        ],
+        "summary": "Completa el nombre de la cuenta del token. La ruta y el cuerpo no llevan ningún id: no hay forma de apuntar a otra cuenta. El\r\n`ValidationFilter` ya garantizó un nombre válido antes de llegar aquí.",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v{version}/colonias/en-punto": {
@@ -671,7 +849,7 @@
         "tags": [
           "Colonias"
         ],
-        "summary": "Colonia del punto o «fuera de cobertura» (200 en ambos casos). Las coordenadas se convierten en colonia y se descartan: no se\nguardan, no se registran, no se cachean y no vuelven en la respuesta. El 422 lo da `ValidationFilter` antes de esta acción.",
+        "summary": "Colonia del punto o «fuera de cobertura» (200 en ambos casos). Las coordenadas se convierten en colonia y se descartan: no se\r\nguardan, no se registran, no se cachean y no vuelven en la respuesta. El 422 lo da `ValidationFilter` antes de esta acción.",
         "parameters": [
           {
             "name": "lat",
@@ -763,7 +941,7 @@
         "tags": [
           "Oficios"
         ],
-        "summary": "Oficios activos como arreglo sin paginar: excepción documentada a la constitución §11 (catálogo acotado, D9).\n`[AllowAnonymous]` explícito para que siga público aunque se agregue una política de autorización global (D3).",
+        "summary": "Oficios activos como arreglo sin paginar: excepción documentada a la constitución §11 (catálogo acotado, D9).\r\n`[AllowAnonymous]` explícito para que siga público aunque se agregue una política de autorización global (D3).",
         "parameters": [
           {
             "name": "version",
@@ -858,7 +1036,7 @@
             "format": "int64"
           }
         },
-        "description": "Petición de subida: uso previsto, tipo y tamaño declarados. La forma la valida `CreateUploadRequestValidator`\n(422 con campos); tipo o tamaño no permitidos los rechaza el servicio (422)."
+        "description": "Petición de subida: uso previsto, tipo y tamaño declarados. La forma la valida `CreateUploadRequestValidator`\r\n(422 con campos); tipo o tamaño no permitidos los rechaza el servicio (422)."
       },
       "FirebaseExchangeRequest": {
         "type": "object",
@@ -892,8 +1070,19 @@
         "properties": {
           "id": {
             "type": "string"
+          },
+          "nombre": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "perfilCompleto": {
+            "type": "boolean",
+            "default": false
           }
-        }
+        },
+        "description": "Perfil de la persona con sesión (HU-002): `Nombre` es `null` mientras no lo haya puesto; `PerfilCompleto` significa «tiene nombre». Los dos\r\ncampos nuevos llevan valor por defecto para que el contrato los declare opcionales (cambio compatible: `id` sigue siendo el único requerido)."
       },
       "NeighborhoodAtPointColoniaResponse": {
         "required": [
@@ -1000,6 +1189,18 @@
             ]
           }
         }
+      },
+      "ProfileRequest": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Cuerpo de `PUT /me`. El campo es anulable a propósito y no se declara requerido en el esquema: si falta, el validador responde 422 con\r\n`errors.nombre` en lugar del 400 automático de MVC. Cualquier otro campo del JSON (`id`, `sub`, `estado`, `perfilCompleto`) no\r\nexiste aquí y se ignora: la identidad sale solo del JWT."
       },
       "ReadLinkResponse": {
         "required": [

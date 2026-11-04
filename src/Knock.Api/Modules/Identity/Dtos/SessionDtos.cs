@@ -6,4 +6,8 @@ internal sealed record FirebaseExchangeRequest(string? FirebaseIdToken = null, s
 /// <summary>Sesión emitida. <c>EsNuevo</c> distingue el 201 (cuenta creada) del 200 (cuenta existente).</summary>
 internal sealed record SessionResponse(string AccessToken, string RefreshToken, bool EsNuevo, bool PerfilCompleto);
 
-internal sealed record MeResponse(string Id);
+/// <summary>
+/// Perfil de la persona con sesión (HU-002): <c>Nombre</c> es <c>null</c> mientras no lo haya puesto; <c>PerfilCompleto</c> significa «tiene nombre». Los dos
+/// campos nuevos llevan valor por defecto para que el contrato los declare opcionales (cambio compatible: <c>id</c> sigue siendo el único requerido).
+/// </summary>
+internal sealed record MeResponse(string Id, string? Nombre = null, bool PerfilCompleto = false);

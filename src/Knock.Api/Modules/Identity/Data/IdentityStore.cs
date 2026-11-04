@@ -12,7 +12,7 @@ namespace Knock.Api.Modules.Identity.Data;
 /// Los filtros son tipados del driver: ninguna entrada se arma como JSON. Ninguna colección se cachea (<c>cache: no</c>): son datos personales y de
 /// sesión. La auditoría es solo de inserción: esta clase no expone ninguna operación que la actualice o la borre.
 /// </summary>
-internal sealed class IdentityStore(
+internal sealed partial class IdentityStore(
     [FromKeyedServices(IdentityDataExtensions.ModuleKey)] IMongoDatabase database,
     IMongoClient client,
     IOptions<KnockMongoOptions> mongoOptions) : IIdentityStore

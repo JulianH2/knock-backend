@@ -19,6 +19,8 @@ public static class IdentityModuleExtensions
         services.AddSingleton(CreatePhoneProtectionKeys);
         services.AddSingleton<PhoneProtector>();
         services.AddSingleton<IIdentityStore>(provider => provider.GetRequiredService<IdentityStore>());
+        services.AddSingleton<IProfileStore>(provider => provider.GetRequiredService<IdentityStore>());
+        services.AddSingleton<ProfileService>();
         services.AddSingleton<SessionTokenIssuer>();
         services.AddSingleton<IFirebaseIdTokenVerifier, FirebaseIdTokenVerifier>();
         services.AddSingleton<FirebaseSessionService>();

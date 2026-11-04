@@ -38,7 +38,7 @@ public class MeEndpointTests
         using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         var sub = new JsonWebTokenHandler().ReadJsonWebToken(accessToken).GetClaim("sub").Value;
         body.RootElement.GetProperty("id").GetString().Should().Be(sub);
-        body.RootElement.EnumerateObject().Should().HaveCount(1, "la respuesta solo trae el campo id");
+        body.RootElement.EnumerateObject().Select(p => p.Name).Should().BeEquivalentTo(["id", "nombre", "perfilCompleto"], "HU-002 amplía la respuesta con el nombre y el estado del perfil");
 
         // El controller que atiende la ruta es internal y aun así se descubrió (ControllerFeatureProvider de Hosting/).
         var controllers = typeof(Program).Assembly.GetTypes()
