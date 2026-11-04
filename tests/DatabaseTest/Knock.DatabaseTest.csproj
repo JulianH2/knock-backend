@@ -21,5 +21,6 @@
   <ItemGroup>
     <Compile Include="../IntegrationTest/Support/DocumentDbFixture.cs" LinkBase="Support" />
     <Compile Include="../IntegrationTest/Support/CatalogTestDatabase.cs" LinkBase="Support" />
+    <Compile Include="../UnitTest/Identity/PhoneProtectionTestKeys.cs" LinkBase="Support" />
   </ItemGroup>
 </Project>

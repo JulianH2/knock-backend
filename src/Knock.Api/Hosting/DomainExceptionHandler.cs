@@ -6,7 +6,7 @@ namespace Knock.Api.Hosting;
 
 /// <summary>
 /// Traduce <see cref="DomainException"/> al código de su catálogo en ProblemDetails (mismo formato que el resto de errores).
-/// Solo escribe el título estándar del código: ni el mensaje ni los datos de la excepción salen (el detalle de Development lo agrega <c>CustomizeProblemDetails</c>).
+/// Solo escribe el título estándar del código y, si la excepción lo declara, su <c>code</c> estable: ni el mensaje ni los datos de la excepción salen (el detalle de Development lo agrega <c>CustomizeProblemDetails</c>).
 /// Cualquier otra excepción sigue su camino y termina en 500.
 /// </summary>
 internal sealed class DomainExceptionHandler : IExceptionHandler
@@ -20,7 +20,7 @@ internal sealed class DomainExceptionHandler : IExceptionHandler
         }
 
         var status = DomainErrors.ToStatusCode(domain.Kind);
-        await ProblemResponses.WriteAsync(httpContext, status, ReasonPhrases.GetReasonPhrase(status));
+        await ProblemResponses.WriteAsync(httpContext, status, ReasonPhrases.GetReasonPhrase(status), domain.Code);
         return true;
     }
 }

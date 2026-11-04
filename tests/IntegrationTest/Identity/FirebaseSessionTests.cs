@@ -11,18 +11,18 @@ namespace Knock.IntegrationTest.Identity;
 public class FirebaseSessionTests
 {
     // Número ficticio de la numeración reservada para ejemplos; solo existe en el emulador.
-    private const string _testPhone = "+15555550101";
+    private const string _testPhone = "+525555550101";
 
     [Fact]
     public async Task ExchangeValidIdToken_Returns200WithSession_TC_TT_API_02_01()
     {
         var (idToken, _) = await FirebaseEmulator.SignInWithPhoneAsync(_testPhone);
-        using var factory = new KnockApiFactory();
+        using var factory = await IdentityTestDatabase.CreateFactoryAsync();
         using var client = factory.CreateClient();
 
         using var response = await AuthHttp.ExchangeAsync(client, idToken);
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.Created, "la primera vez la cuenta se crea (HU-001)");
         var (accessToken, refreshToken) = await AuthHttp.ReadSessionAsync(response);
         accessToken.Should().NotBeNullOrWhiteSpace();
         refreshToken.Should().NotBeNullOrWhiteSpace();
@@ -33,13 +33,13 @@ public class FirebaseSessionTests
     public async Task SameUidTwice_ReturnsSameSub_TC_TT_API_02_09()
     {
         var (idToken, uid) = await FirebaseEmulator.SignInWithPhoneAsync(_testPhone);
-        using var factory = new KnockApiFactory();
+        using var factory = await IdentityTestDatabase.CreateFactoryAsync();
         using var client = factory.CreateClient();
 
         using var first = await AuthHttp.ExchangeAsync(client, idToken);
         using var second = await AuthHttp.ExchangeAsync(client, idToken);
 
-        first.StatusCode.Should().Be(HttpStatusCode.OK);
+        first.StatusCode.Should().Be(HttpStatusCode.Created);
         second.StatusCode.Should().Be(HttpStatusCode.OK);
         var handler = new JsonWebTokenHandler();
         var firstSession = await AuthHttp.ReadSessionAsync(first);
@@ -56,17 +56,17 @@ public class FirebaseSessionTests
     public async Task IssuedSubIsTheUuidV8OfTheUid_TC_TT_API_12_05()
     {
         var (idToken, uid) = await FirebaseEmulator.SignInWithPhoneAsync(_testPhone);
-        using var factory = new KnockApiFactory();
+        using var factory = await IdentityTestDatabase.CreateFactoryAsync();
         using var client = factory.CreateClient();
 
         using var first = await AuthHttp.ExchangeAsync(client, idToken);
         using var second = await AuthHttp.ExchangeAsync(client, idToken);
 
-        first.StatusCode.Should().Be(HttpStatusCode.OK);
+        first.StatusCode.Should().Be(HttpStatusCode.Created);
         using (var body = JsonDocument.Parse(await first.Content.ReadAsStringAsync()))
         {
             body.RootElement.EnumerateObject().Select(p => p.Name).Should().BeEquivalentTo(
-                ["accessToken", "refreshToken"], "el contrato de la respuesta no cambia");
+                ["accessToken", "refreshToken", "esNuevo", "perfilCompleto"], "HU-001 agrega esNuevo y perfilCompleto; nada más");
         }
 
         var firstSession = await AuthHttp.ReadSessionAsync(first);

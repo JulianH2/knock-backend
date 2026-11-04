@@ -32,6 +32,7 @@ internal static class KnockApplicationExtensions
         app.UseForwardedHeaders();
         app.UseMiddleware<CorrelationIdMiddleware>();
         app.UseMiddleware<SecurityHeadersMiddleware>();
+        app.UseMiddleware<AuthNoStoreMiddleware>();
         app.UseExceptionHandler();
         app.UseSerilogRequestLogging(LoggingExtensions.ConfigureRequestLogging);
         var securedTransport = !app.Environment.IsDevelopment();

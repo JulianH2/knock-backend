@@ -69,7 +69,7 @@ public class PipelineOrderTests
         for (var i = 0; i < 3; i++)
         {
             using var response = await TestHttp.SendAsync(
-                client, HttpMethod.Post, "/api/v1/auth/firebase", "203.0.113.41", jsonBody: """{"firebaseIdToken":"synthetic-token"}""");
+                client, HttpMethod.Post, "/api/v1/auth/firebase", "203.0.113.41", jsonBody: """{"firebaseIdToken":"synthetic-token","deviceId":"3f2b8c1e-5a7d-4e9b-8c3a-1d2e3f4a5b6c","aceptaAviso":true}""");
             statuses.Add(response.StatusCode);
         }
 
