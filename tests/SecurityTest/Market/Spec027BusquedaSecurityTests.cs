@@ -13,6 +13,18 @@ namespace Knock.SecurityTest.Market;
 public sealed class Spec027BusquedaSecurityTests
 {
     [Fact]
+    public async Task Sin_Token_O_Con_Token_Vencido_Responde_401_CA_027_16()
+    {
+        using var factory = await SecurityMarketFactory.CreateAsync();
+        using var client = factory.CreateClient();
+        var path = $"/api/v1/busqueda?q=boiler&coloniaId={ObjectId.GenerateNewId()}";
+        using var anonymous = await SecureHttp.SendAsync(client, HttpMethod.Get, path);
+        using var expired = await SecureHttp.SendAsync(client, HttpMethod.Get, path, bearer: TokenForge.Expired());
+        anonymous.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        expired.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
     public async Task Cursor_Invalido_No_Expone_Detalles_CA_027_11()
     {
         using var factory = await SecurityMarketFactory.CreateAsync();

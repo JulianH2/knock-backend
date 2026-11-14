@@ -66,7 +66,10 @@ public sealed class Spec027BusquedaHttpTests
         var cursor = body.GetProperty("nextCursor").GetString();
         cursor.Should().NotBeNullOrEmpty();
         var text = body.GetRawText();
-        text.Should().NotContain("SearchRank").And.NotContain("usuarioId").And.NotContain("ubicacionBase").And.NotContain("radioAtencionKm").And.NotContain("0.012345");
+        text.Should().NotContain("SearchRank").And.NotContain("searchRank").And.NotContain("usuarioId").And.NotContain("ubicacionBase")
+            .And.NotContain("radioAtencionKm").And.NotContain("0.012345").And.NotContain("telefono").And.NotContain("contacto")
+            .And.NotContain("direccion").And.NotContain("coordinates").And.NotContain("5500001234")
+            .And.NotContain("privado@ejemplo.test").And.NotContain("calle ficticia");
         using var second = await client.GetAsync(new Uri($"/api/v1/busqueda?q=boiler&coloniaId={colonia}&cursor={Uri.EscapeDataString(cursor)}", UriKind.Relative));
         second.StatusCode.Should().Be(HttpStatusCode.OK);
         (await second.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("items").GetArrayLength().Should().Be(1);
@@ -88,6 +91,47 @@ public sealed class Spec027BusquedaHttpTests
         body.GetRawText().Should().NotContain("127.0.0.1").And.NotContain("SearchRank");
     }
 
+    [Fact]
+    public async Task Cursor_De_Otra_Consulta_O_Version_Se_Rechaza_CA_027_11()
+    {
+        using var factory = await MarketApiFactory.CreateAsync();
+        var colonia = await SeedAsync(factory, 2);
+        using var client = WaitlistHttp.SignedIn(factory);
+        using var first = await client.GetAsync(new Uri($"/api/v1/busqueda?q=boiler&coloniaId={colonia}&limit=1", UriKind.Relative));
+        first.StatusCode.Should().Be(HttpStatusCode.OK);
+        var cursor = (await first.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("nextCursor").GetString();
+        cursor.Should().NotBeNullOrEmpty();
+        using var other = await client.GetAsync(new Uri($"/api/v1/busqueda?q=fuga&coloniaId={colonia}&cursor={Uri.EscapeDataString(cursor)}", UriKind.Relative));
+        other.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await other.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString().Should().Be("invalid_cursor");
+        await factory.Database.GetCollection<BsonDocument>("catalogo_meta").UpdateOneAsync(
+            Builders<BsonDocument>.Filter.Eq("_id", "sinonimos"), Builders<BsonDocument>.Update.Set("version", 2));
+        using var changed = await client.GetAsync(new Uri($"/api/v1/busqueda?q=boiler&coloniaId={colonia}&cursor={Uri.EscapeDataString(cursor)}", UriKind.Relative));
+        changed.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await changed.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString().Should().Be("invalid_cursor");
+    }
+
+    [Fact]
+    public async Task Registros_De_Busqueda_No_Contienen_Datos_CA_027_18()
+    {
+        using var factory = await MarketApiFactory.CreateAsync();
+        var colonia = await SeedAsync(factory, 1);
+        var subject = Guid.NewGuid().ToString("D");
+        using var client = WaitlistHttp.SignedIn(factory, subject);
+        var terms = new[] { "boiler", "5500001234", "ejemplo@dominio.test", "calle inventada 123" };
+        var logs = await ConsoleCapture.RunAsync(async () =>
+        {
+            foreach (var term in terms)
+            {
+                using var response = await client.GetAsync(new Uri($"/api/v1/busqueda?q={Uri.EscapeDataString(term)}&coloniaId={colonia}", UriKind.Relative));
+                response.StatusCode.Should().Be(HttpStatusCode.OK);
+            }
+        });
+        logs.Should().NotBeNullOrWhiteSpace();
+        foreach (var term in terms) logs.Should().NotContain(term);
+        logs.Should().NotContain("ejemplo dominio test").And.NotContain(colonia.ToString()).And.NotContain(subject);
+    }
+
     private static async Task<ObjectId> SeedAsync(MarketApiFactory factory, int technicians)
     {
         var db = factory.Database;
@@ -107,6 +151,10 @@ public sealed class Spec027BusquedaHttpTests
             var docs = Enumerable.Range(0, technicians).Select(_ => new BsonDocument
             {
                 ["nombrePublico"] = "Negocio ficticio",
+                ["usuarioId"] = Guid.NewGuid().ToString("D"),
+                ["telefono"] = "5500001234",
+                ["contactoPublico"] = "privado@ejemplo.test",
+                ["direccion"] = "calle ficticia",
                 ["palabrasBusqueda"] = new BsonArray { "negocio" },
                 ["oficios"] = new BsonArray { "plo" },
                 ["estado"] = "activo",
