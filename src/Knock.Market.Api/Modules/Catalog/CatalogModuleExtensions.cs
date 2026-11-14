@@ -37,6 +37,7 @@ public static class CatalogModuleExtensions
         }
         services.AddSingleton<CatalogStore>();
         services.AddOptions<SearchCursorOptions>().BindConfiguration(SearchCursorOptions.SectionName).ValidateOnStart();
+        services.AddSingleton<IPostConfigureOptions<SearchCursorOptions>, DevelopmentSearchCursorKey>();
         services.AddSingleton<IValidateOptions<SearchCursorOptions>, SearchCursorOptionsValidator>();
         services.TryAddSingleton<IFiltroDatosPersonales, FiltroDatosPersonalesNoDisponible>();
         services.TryAddSingleton(TimeProvider.System);

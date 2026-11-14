@@ -68,11 +68,15 @@ public sealed class Spec027SearchSafetyTests
         };
         using var host = new HostBuilder().UseEnvironment(environment).ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(values))
             .ConfigureServices((context, services) => services.AddCatalogModule(context.Configuration)).Build();
-        if (configured)
+        if (configured || environment == "Development")
         {
             await host.StartAsync();
             host.Services.GetRequiredService<BusquedaService>().Should().NotBeNull();
             host.Services.GetRequiredService<IFiltroDatosPersonales>().Should().BeOfType<FiltroDatosPersonalesNoDisponible>();
+            var key = host.Services.GetRequiredService<IOptions<SearchCursorOptions>>().Value.Key;
+            Convert.FromBase64String(key!).Length.Should().Be(32);
+            host.Services.GetRequiredService<IOptionsMonitor<SearchCursorOptions>>().CurrentValue.Key.Should().Be(key);
+            if (configured) key.Should().Be(values[SearchCursorOptions.KeyName]);
             await host.StopAsync();
         }
         else

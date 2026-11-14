@@ -1,13 +1,13 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-14T22:11:43Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-14T22:19:27Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
 
 | Módulo | Capas | Archivos | Tipos | Métodos públicos |
 |---|---|---|---|---|
-| `Catalog` | -, controllers, data, domain, dtos, services, validators | 46 | 78 | 98 |
+| `Catalog` | -, controllers, data, domain, dtos, services, validators | 46 | 79 | 99 |
 | `Knock.Contracts` | - | 7 | 11 | 7 |
 | `Knock.Gateway` | -, hosting | 14 | 39 | 47 |
 | `Knock.Identity.Api` | -, common, hosting | 29 | 61 | 84 |
@@ -237,8 +237,8 @@
   - `ExistsAsync()`:8
 - `src/Knock.Market.Api/Modules/Catalog/Services/OficioQueries.cs` — class `OficioQueries`
   - `OficioQueries()`:7, `ListActiveAsync()`:14
-- `src/Knock.Market.Api/Modules/Catalog/Services/SearchSafety.cs` — interface `IFiltroDatosPersonales`, class `FiltroDatosPersonalesNoDisponible`, class `SearchCursorOptions`, class `SearchCursorOptionsValidator`
-  - `CanCount()`:13, `Validate()`:25
+- `src/Knock.Market.Api/Modules/Catalog/Services/SearchSafety.cs` — interface `IFiltroDatosPersonales`, class `FiltroDatosPersonalesNoDisponible`, class `SearchCursorOptions`, class `DevelopmentSearchCursorKey`, class `SearchCursorOptionsValidator`
+  - `CanCount()`:14, `PostConfigure()`:28, `Validate()`:49
 - `src/Knock.Market.Api/Modules/Catalog/Services/WaitlistService.cs` — record `WaitlistEntry`, record `WaitlistResult`, interface `IWaitlistStore`, class `WaitlistService`
   - `WaitlistService()`:14, `JoinAsync()`:16
 - `src/Knock.Market.Api/Modules/Catalog/Services/ZonaService.cs` — class `ZonaService`
