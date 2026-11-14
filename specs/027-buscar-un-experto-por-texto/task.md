@@ -13,7 +13,7 @@
 | T-06 | Política `busqueda` en el gateway (30 por minuto por `sub`) y ruta a Mercado | R-14 · CA-16 | — | T-01 a T-03 | Guillermo | pendiente |
 | T-07 | `BusquedaController`, DTOs y `BusquedaQueryValidator` (parámetros repetidos, `limit`, `q`) | R-01, R-02, R-03 · CA-12 | T-05 | — | Alexis | hecha |
 | T-08 | Pruebas de integración y seguridad negativa de punta a punta; registros sin datos | R-01 a R-16 · CA-01 a CA-18 | T-04, T-06, T-07 | T-09 | Alexis | parcial |
-| T-09 | Prueba de rendimiento con 200 técnicos (sin cobertura) | R-15 · CA-19 | T-04, T-05 | T-08 | Alexis | pendiente |
+| T-09 | Prueba de rendimiento con 200 técnicos (sin cobertura) | R-15 · CA-19 | T-04, T-05 | T-08 | Alexis | parcial |
 | T-10 | Regenerar OpenAPI de Mercado, `docs/endpoints.md`, `docs/rate-limit-matrix.md` y `Memoria.md` | R-01, R-14 | T-07 | T-08, T-09 | Alexis | pendiente |
 
 **Qué bloquea:** T-04 espera el script (T-01); T-07 espera el servicio (T-05); T-08 es la última de código. **Qué va en paralelo:** T-01, T-02, T-03 y T-06 arrancan el mismo día y no se pisan (archivos distintos).
