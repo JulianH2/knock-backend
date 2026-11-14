@@ -1,13 +1,13 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-14T22:19:27Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-14T22:31:15Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
 
 | Módulo | Capas | Archivos | Tipos | Métodos públicos |
 |---|---|---|---|---|
-| `Catalog` | -, controllers, data, domain, dtos, services, validators | 46 | 79 | 99 |
+| `Catalog` | -, controllers, data, domain, dtos, services, validators | 49 | 86 | 104 |
 | `Knock.Contracts` | - | 7 | 11 | 7 |
 | `Knock.Gateway` | -, hosting | 14 | 39 | 47 |
 | `Knock.Identity.Api` | -, common, hosting | 29 | 61 | 84 |
@@ -166,6 +166,8 @@
 
 - `src/Knock.Market.Api/Modules/Catalog/Controllers/SearchProblems.cs` — class `SearchProblems`
   - `WriteAsync()`:9
+- `src/Knock.Market.Api/Modules/Catalog/Controllers/V1/BusquedaController.cs` — class `BusquedaController`
+  - `Get()`:25
 - `src/Knock.Market.Api/Modules/Catalog/Controllers/V1/ColoniaExistsController.cs` — class `ColoniaExistsController`
   - `Exists()`:28
 - `src/Knock.Market.Api/Modules/Catalog/Controllers/V1/ColoniasController.cs` — class `ColoniasController`
@@ -216,6 +218,8 @@
 
 **dtos**
 
+- `src/Knock.Market.Api/Modules/Catalog/Dtos/BusquedaDtos.cs` — record `BusquedaQuery`, record `BusquedaOficio`, record `BusquedaInterpretacion`, record `BusquedaItem`, record `BusquedaResponse`
+  - `BusquedaQuery()`:7, `Get()`:9, `BusquedaResponse()`:18, `From()`:20
 - `src/Knock.Market.Api/Modules/Catalog/Dtos/NeighborhoodAtPointQuery.cs` — class `NeighborhoodAtPointQuery`
 - `src/Knock.Market.Api/Modules/Catalog/Dtos/NeighborhoodAtPointResponse.cs` — record `NeighborhoodAtPointResponse`, record `NeighborhoodAtPointColoniaResponse`
 - `src/Knock.Market.Api/Modules/Catalog/Dtos/NeighborhoodExists.cs` — class `NeighborhoodExistsQuery`, record `NeighborhoodExistsResponse`
@@ -246,6 +250,7 @@
 
 **validators**
 
+- `src/Knock.Market.Api/Modules/Catalog/Validators/BusquedaQueryValidator.cs` — class `BusquedaQueryValidator`
 - `src/Knock.Market.Api/Modules/Catalog/Validators/NeighborhoodAtPointQueryValidator.cs` — class `NeighborhoodAtPointQueryValidator`
   - `Parse()`:31
 - `src/Knock.Market.Api/Modules/Catalog/Validators/NeighborhoodExistsQueryValidator.cs` — class `NeighborhoodExistsQueryValidator`

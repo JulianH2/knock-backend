@@ -6,6 +6,7 @@ using Knock.Market.Api.Modules.Catalog.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Xunit;
@@ -33,6 +34,24 @@ public sealed class Spec027SearchSafetyTests
         validator.Validate(null, new SearchCursorOptions { Key = "no-base64" }).Failed.Should().BeTrue();
         validator.Validate(null, new SearchCursorOptions { Key = Convert.ToBase64String(RandomNumberGenerator.GetBytes(31)) }).Failed.Should().BeTrue();
         validator.Validate(null, new SearchCursorOptions { Key = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)) }).Succeeded.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Clave_Efimera_Es_Estable_Y_Aviso_No_Revela_Valor_R_027_11()
+    {
+        using var host = new HostBuilder().UseEnvironment("Development").Build();
+        var logger = new RecordingLogger<DevelopmentSearchCursorKey>();
+        var post = new DevelopmentSearchCursorKey(host.Services.GetRequiredService<IHostEnvironment>(), logger);
+        var first = new SearchCursorOptions();
+        var second = new SearchCursorOptions();
+        post.PostConfigure(null, first);
+        post.PostConfigure(null, second);
+        first.Key.Should().Be(second.Key).And.NotBeNullOrEmpty();
+        logger.Messages.Should().ContainSingle().Which.Should().NotContain(first.Key);
+        var invalid = new SearchCursorOptions { Key = "invalid" };
+        post.PostConfigure(null, invalid);
+        invalid.Key.Should().Be("invalid");
+        new SearchCursorOptionsValidator().Validate(null, invalid).Failed.Should().BeTrue();
     }
 
     [Fact]
@@ -84,5 +103,14 @@ public sealed class Spec027SearchSafetyTests
             var act = async () => await host.StartAsync();
             (await act.Should().ThrowAsync<OptionsValidationException>()).Which.Failures.Should().Contain(f => f.Contains(SearchCursorOptions.KeyName, StringComparison.Ordinal));
         }
+    }
+
+    private sealed class RecordingLogger<T> : ILogger<T>
+    {
+        public List<string> Messages { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => logLevel == LogLevel.Warning;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+            Messages.Add(formatter(state, exception));
     }
 }
