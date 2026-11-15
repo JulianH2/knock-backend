@@ -22,8 +22,10 @@ internal sealed class BusquedaController(BusquedaService service, IValidator<Bus
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status503ServiceUnavailable)]
-    public async Task<IActionResult> Get(CancellationToken cancellationToken)
+    public async Task<IActionResult> Get([FromQuery] BusquedaQueryParameters parameters, CancellationToken cancellationToken)
     {
+        // The raw collection, not the bound values, preserves repeated parameters for validation.
+        _ = parameters;
         var query = new BusquedaQuery(Request.Query);
         var validation = await validator.ValidateAsync(query, cancellationToken);
         if (!validation.IsValid)

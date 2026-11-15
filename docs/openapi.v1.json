@@ -259,6 +259,54 @@
         ],
         "parameters": [
           {
+            "name": "q",
+            "in": "query",
+            "description": "Obligatorio; texto normalizado de 2 a 80 caracteres.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "coloniaId",
+            "in": "query",
+            "description": "Obligatorio; ObjectId de la colonia activa.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "oficio",
+            "in": "query",
+            "description": "Clave opcional de un oficio activo.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "soloVerificados",
+            "in": "query",
+            "description": "Booleano opcional true o false; por defecto false.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Cursor opaco de la consulta y versión del diccionario.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Entero de 1 a 20; por defecto 20.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "version",
             "in": "path",
             "required": true,

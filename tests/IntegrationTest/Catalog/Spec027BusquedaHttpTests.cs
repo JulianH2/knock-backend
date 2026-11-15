@@ -24,7 +24,7 @@ public sealed class Spec027BusquedaHttpTests
         var queries = new[]
         {
             $"q=a&coloniaId={colonia}", $"q={new string('a', 81)}&coloniaId={colonia}", $"q=!!!&coloniaId={colonia}",
-            $"q=boiler&q=fuga&coloniaId={colonia}", $"q=boiler&coloniaId={colonia}&limit=21", $"q=boiler&coloniaId={colonia}&soloVerificados=otro",
+            $"q=boiler&q=fuga&coloniaId={colonia}", $"q=boiler&coloniaId={colonia}&limit=21", $"q=boiler&coloniaId={colonia}&limit=abc", $"q=boiler&coloniaId={colonia}&soloVerificados=otro",
             $"q=boiler&coloniaId={colonia}&limit=1&limit=2", $"q=boiler&coloniaId={colonia}&cursor=a&cursor=b",
             $"q=boiler&coloniaId={colonia}&oficio=plo&oficio=ele", $"q=boiler&coloniaId={colonia}&soloVerificados=true&soloVerificados=false",
             $"q=boiler&coloniaId={colonia}&coloniaId={colonia}", "q=boiler&coloniaId=mal", $"q=boiler&coloniaId={ObjectId.GenerateNewId()}",

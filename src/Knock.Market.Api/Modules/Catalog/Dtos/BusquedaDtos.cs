@@ -1,12 +1,35 @@
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 using Knock.Market.Api.Modules.Catalog.Domain;
 using Knock.Market.Api.Modules.Catalog.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Knock.Market.Api.Modules.Catalog.Dtos;
 
 internal sealed record BusquedaQuery(IQueryCollection Values)
 {
     public string? Get(string name) => Values.TryGetValue(name, out var values) && values.Count == 1 ? values[0] : null;
+}
+
+internal sealed class BusquedaQueryParameters
+{
+    [FromQuery(Name = "q"), Description("Obligatorio; texto normalizado de 2 a 80 caracteres.")]
+    public string? Q { get; init; }
+
+    [FromQuery(Name = "coloniaId"), Description("Obligatorio; ObjectId de la colonia activa.")]
+    public string? ColoniaId { get; init; }
+
+    [FromQuery(Name = "oficio"), Description("Clave opcional de un oficio activo.")]
+    public string? Oficio { get; init; }
+
+    [FromQuery(Name = "soloVerificados"), Description("Booleano opcional true o false; por defecto false.")]
+    public string? SoloVerificados { get; init; }
+
+    [FromQuery(Name = "cursor"), Description("Cursor opaco de la consulta y versión del diccionario.")]
+    public string? Cursor { get; init; }
+
+    [FromQuery(Name = "limit"), Description("Entero de 1 a 20; por defecto 20.")]
+    public string? Limit { get; init; }
 }
 
 internal sealed record BusquedaOficio(string Clave, string Nombre);
