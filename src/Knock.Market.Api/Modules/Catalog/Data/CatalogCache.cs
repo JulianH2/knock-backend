@@ -8,6 +8,7 @@ namespace Knock.Market.Api.Modules.Catalog.Data;
 
 internal interface ISearchResponseCache
 {
+    Task<long> GetSearchGenerationAsync(CancellationToken cancellationToken);
     Task<string?> GetSearchAsync(byte[] fingerprint, CancellationToken cancellationToken);
     Task SetSearchAsync(byte[] fingerprint, string response, CancellationToken cancellationToken);
 }
@@ -60,6 +61,7 @@ internal interface ICatalogCache
 /// </summary>
 internal sealed partial class RedisCatalogCache(IConnectionMultiplexer redis, IOptions<CatalogCacheOptions> cacheOptions, ILogger<RedisCatalogCache> logger) : ICatalogCache, ISearchResponseCache
 {
+    public const string SearchGenerationKey = "catalog:gen:busqueda";
     public const string OficiosKey = "catalog:oficios";
     public const string NeighborhoodNamesKeyPrefix = "catalog:colonias:cp:";
     public const string ColoniaExistsKeyPrefix = "catalog:colonias:existe:";
@@ -75,6 +77,8 @@ internal sealed partial class RedisCatalogCache(IConnectionMultiplexer redis, IO
     public static string ColoniaExistsGenerationKey(ObjectId id, string postalCode) => ColoniaExistsGenerationKeyPrefix + id + ":" + postalCode;
 
     private readonly TimeSpan _lifetime = cacheOptions.Value.Lifetime;
+
+    public Task<long> GetSearchGenerationAsync(CancellationToken cancellationToken) => GetGenerationAsync(SearchGenerationKey, cancellationToken);
 
     public async Task<string?> GetSearchAsync(byte[] fingerprint, CancellationToken cancellationToken)
     {
@@ -316,6 +320,7 @@ internal sealed partial class RedisCatalogCache(IConnectionMultiplexer redis, IO
 /// </summary>
 internal sealed class DisabledCatalogCache : ICatalogCache, ISearchResponseCache
 {
+    public Task<long> GetSearchGenerationAsync(CancellationToken cancellationToken) => Task.FromResult(-1L);
     public Task<string?> GetSearchAsync(byte[] fingerprint, CancellationToken cancellationToken) => Task.FromResult<string?>(null);
 
     public Task SetSearchAsync(byte[] fingerprint, string response, CancellationToken cancellationToken) => Task.CompletedTask;

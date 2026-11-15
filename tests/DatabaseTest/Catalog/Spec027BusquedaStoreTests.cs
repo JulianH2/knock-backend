@@ -15,6 +15,130 @@ namespace Knock.DatabaseTest.Catalog;
 public sealed class Spec027BusquedaStoreTests
 {
     [Fact]
+    public async Task Redis_No_Disponible_Busca_En_Mongo_CA_027_15()
+    {
+        var password = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(16));
+        await using var database = await CatalogDatabase.CreateAsync(seeded: false, redisConnectionString: $"127.0.0.1:6399,password={password},abortConnect=false,connectTimeout=1000,syncTimeout=1000,asyncTimeout=1000");
+        var colonia = ObjectId.GenerateNewId();
+        await database.Database.GetCollection<BsonDocument>("colonias").InsertOneAsync(new BsonDocument { ["_id"] = colonia, ["activo"] = true });
+        await database.Database.GetCollection<BsonDocument>("catalogo_meta").InsertOneAsync(new BsonDocument { ["_id"] = "sinonimos", ["version"] = 1 });
+        var options = Options.Create(new KnockMongoOptions());
+        var source = new BusquedaSource(database.Database, options, database.Get<CatalogStore>(), new BusquedaStore(database.Database, options));
+        var service = new BusquedaService(source, database.Get<ISearchResponseCache>(), new FiltroDatosPersonalesNoDisponible(), TimeProvider.System, System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+        database.ClearCommands();
+        var result = await service.SearchAsync(new SearchInput("boiler", colonia.ToString(), null, false, 20, null), CancellationToken.None);
+        result.Error.Should().BeNull();
+        result.Response.Should().NotBeNull();
+        database.Commands.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task Entrega_Invalida_Busqueda_Y_Cursor_De_Version_Anterior_CA_027_11()
+    {
+        await using var database = await CatalogDatabase.CreateAsync(seeded: false, useRedisCache: true);
+        var documentDb = await DocumentDbFixture.SharedAsync();
+        var redis = await RedisFixture.SharedAsync();
+        var suffix = Guid.NewGuid().ToString("N");
+        var env = new Dictionary<string, string>
+        {
+            ["KNOCK_DB_MARKET"] = database.DatabaseName,
+            ["KNOCK_DB_IDENTITY"] = "identity_" + suffix,
+            ["KNOCK_DB_MESSAGING"] = "messaging_" + suffix,
+            ["KNOCK_DB_DIR"] = MongoToolsContainer.DbDirectory,
+            ["KNOCK_REDIS_HOST"] = redis.ContainerInternalHost,
+            ["KNOCK_REDIS_PORT"] = RedisFixture.Port.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["KNOCK_REDIS_PASSWORD"] = redis.Password,
+            ["KNOCK_REDIS_DB"] = database.Redis.Database.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        };
+        try
+        {
+            await using var tools = await MongoToolsContainer.StartAsync(documentDb, env);
+            var script = $"{MongoToolsContainer.DbDirectory}/entrega.js";
+            var first = await tools.RunAsync("mongosh", "--nodb", "--quiet", "--file", script);
+            first.ExitCode.Should().Be(0, first.Output);
+            var colonia = ObjectId.GenerateNewId();
+            await database.Database.GetCollection<BsonDocument>("colonias").InsertOneAsync(new BsonDocument { ["_id"] = colonia, ["activo"] = true });
+            var technicians = Enumerable.Range(0, 2).Select(_ => Technician("demo", 0, 10, "activo", false, "ninguno", "plo")).ToArray();
+            foreach (var technician in technicians) technician["coloniaBaseId"] = colonia.ToString();
+            await database.Database.GetCollection<BsonDocument>("tecnicos").InsertManyAsync(technicians);
+            var options = Options.Create(new KnockMongoOptions());
+            var source = new BusquedaSource(database.Database, options, database.Get<CatalogStore>(), new BusquedaStore(database.Database, options));
+            var service = new BusquedaService(source, database.Get<ISearchResponseCache>(), new FiltroDatosPersonalesNoDisponible(), TimeProvider.System, System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+            var input = new SearchInput("boiler", colonia.ToString(), null, false, 1, null);
+            var initial = await service.SearchAsync(input, CancellationToken.None);
+            initial.Error.Should().BeNull();
+            initial.Response!.NextCursor.Should().NotBeNull();
+            database.ClearCommands();
+            (await service.SearchAsync(input, CancellationToken.None)).Response!.NextCursor.Should().Be(initial.Response.NextCursor);
+            database.Commands.Should().BeEmpty("Redis devuelve contexto y respuesta sin consultar MongoDB");
+            var previousVersion = (await database.Database.GetCollection<BsonDocument>("catalogo_meta").Find(new BsonDocument("_id", "sinonimos")).SingleAsync())["version"].AsInt32;
+            await database.Database.GetCollection<BsonDocument>("sinonimos").DeleteOneAsync(new BsonDocument("termino", "boiler"));
+            var second = await tools.RunAsync("mongosh", "--nodb", "--quiet", "--file", script);
+            second.ExitCode.Should().Be(0, second.Output);
+            var newVersion = (await database.Database.GetCollection<BsonDocument>("catalogo_meta").Find(new BsonDocument("_id", "sinonimos")).SingleAsync())["version"].AsInt32;
+            newVersion.Should().BeGreaterThan(previousVersion);
+            database.ClearCommands();
+            (await service.SearchAsync(input, CancellationToken.None)).Error.Should().BeNull();
+            database.Commands.Should().NotBeEmpty();
+            (await service.SearchAsync(input with { Cursor = initial.Response.NextCursor }, CancellationToken.None)).Error.Should().Be("invalid_cursor");
+        }
+        finally
+        {
+            using var client = new MongoClient(documentDb.ConnectionString);
+            await client.DropDatabaseAsync(env["KNOCK_DB_IDENTITY"]);
+            await client.DropDatabaseAsync(env["KNOCK_DB_MESSAGING"]);
+        }
+    }
+
+    [Fact]
+    public async Task Cache_Contexto_Y_Respuesta_Expira_CA_027_15()
+    {
+        await using var database = await CatalogDatabase.CreateAsync(seeded: false);
+        var colonia = ObjectId.GenerateNewId();
+        await database.Database.GetCollection<BsonDocument>("colonias").InsertOneAsync(new BsonDocument { ["_id"] = colonia, ["activo"] = true });
+        await database.Database.GetCollection<BsonDocument>("oficios").InsertOneAsync(new BsonDocument { ["clave"] = "plo", ["nombre"] = "Plomería", ["nombreBusqueda"] = "PLOMERIA", ["modalidad"] = "domicilio", ["activo"] = true });
+        await database.Database.GetCollection<BsonDocument>("sinonimos").InsertOneAsync(new BsonDocument { ["termino"] = "boiler", ["oficioClave"] = "plo", ["version"] = 1 });
+        await database.Database.GetCollection<BsonDocument>("catalogo_meta").InsertOneAsync(new BsonDocument { ["_id"] = "sinonimos", ["version"] = 1 });
+        var options = Options.Create(new KnockMongoOptions());
+        var source = new BusquedaSource(database.Database, options, database.Get<CatalogStore>(), new BusquedaStore(database.Database, options));
+        var clock = new ManualClock();
+        var service = new BusquedaService(source, new TimedSearchCache(clock), new FiltroDatosPersonalesNoDisponible(), clock, System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+        var input = new SearchInput("boiler", colonia.ToString(), null, false, 20, null);
+        database.ClearCommands();
+        (await service.SearchAsync(input, CancellationToken.None)).Error.Should().BeNull();
+        database.Commands.Should().NotBeEmpty();
+        database.ClearCommands();
+        (await service.SearchAsync(input, CancellationToken.None)).Error.Should().BeNull();
+        database.Commands.Should().BeEmpty();
+        clock.Advance(TimeSpan.FromSeconds(31));
+        (await service.SearchAsync(input, CancellationToken.None)).Error.Should().BeNull();
+        database.Commands.Should().NotBeEmpty();
+    }
+
+    private sealed class ManualClock : TimeProvider
+    {
+        private DateTimeOffset _now = DateTimeOffset.UnixEpoch;
+        public override DateTimeOffset GetUtcNow() => _now;
+        public void Advance(TimeSpan duration) => _now += duration;
+    }
+
+    private sealed class TimedSearchCache(TimeProvider clock) : ISearchResponseCache
+    {
+        private readonly Dictionary<string, (string Value, DateTimeOffset Expiry)> _entries = new(StringComparer.Ordinal);
+        public Task<long> GetSearchGenerationAsync(CancellationToken cancellationToken) => Task.FromResult(0L);
+        public Task<string?> GetSearchAsync(byte[] fingerprint, CancellationToken cancellationToken)
+        {
+            var found = _entries.TryGetValue(Convert.ToHexString(fingerprint), out var entry) && entry.Expiry > clock.GetUtcNow();
+            return Task.FromResult(found ? entry.Value : null);
+        }
+        public Task SetSearchAsync(byte[] fingerprint, string response, CancellationToken cancellationToken)
+        {
+            _entries[Convert.ToHexString(fingerprint)] = (response, clock.GetUtcNow().AddSeconds(30));
+            return Task.CompletedTask;
+        }
+    }
+
+    [Fact]
     public async Task Servicio_Pagina_Cien_En_DocumentDb_CA_027_01_CA_027_10()
     {
         await using var database = await CatalogDatabase.CreateAsync(seeded: false);

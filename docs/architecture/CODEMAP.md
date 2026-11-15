@@ -1,13 +1,13 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-14T22:31:15Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-15T01:38:19Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
 
 | Módulo | Capas | Archivos | Tipos | Métodos públicos |
 |---|---|---|---|---|
-| `Catalog` | -, controllers, data, domain, dtos, services, validators | 49 | 86 | 104 |
+| `Catalog` | -, controllers, data, domain, dtos, services, validators | 49 | 86 | 106 |
 | `Knock.Contracts` | - | 7 | 11 | 7 |
 | `Knock.Gateway` | -, hosting | 14 | 39 | 47 |
 | `Knock.Identity.Api` | -, common, hosting | 29 | 61 | 84 |
@@ -187,7 +187,7 @@
 - `src/Knock.Market.Api/Modules/Catalog/Data/BusquedaStorePaging.cs` — record `SearchPageRequest`, record `RankedCandidate`, class `BusquedaStore`
   - `FindPageAsync()`:13
 - `src/Knock.Market.Api/Modules/Catalog/Data/CatalogCache.cs` — interface `ISearchResponseCache`, interface `ICatalogCache`, class `RedisCatalogCache`, class `DisabledCatalogCache`
-  - `NeighborhoodNamesGenerationKey()`:73, `ColoniaExistsGenerationKey()`:75, `GetSearchAsync()`:79, `SetSearchAsync()`:95, `NeighborhoodNamesKey()`:138, `ColoniaExistsKey()`:140, `GetOficiosAsync()`:142, `RemoveOficiosAsync()`:157, `GetOficiosGenerationAsync()`:163, `SetOficiosIfGenerationAsync()`:166, `GetNeighborhoodNamesAsync()`:202, `RemoveNeighborhoodNamesAsync()`:218, `GetNeighborhoodNamesGenerationAsync()`:225, `SetNeighborhoodNamesIfGenerationAsync()`:231, `GetColoniaExistsAsync()`:251, `RemoveColoniaExistsAsync()`:267, `GetColoniaExistsGenerationAsync()`:274, `SetColoniaExistsIfGenerationAsync()`:280, `GetSearchAsync()`:319, `SetSearchAsync()`:321, `GetOficiosAsync()`:323, `RemoveOficiosAsync()`:326, `GetOficiosGenerationAsync()`:328, `SetOficiosIfGenerationAsync()`:330, `GetNeighborhoodNamesAsync()`:333 …
+  - `NeighborhoodNamesGenerationKey()`:75, `ColoniaExistsGenerationKey()`:77, `GetSearchGenerationAsync()`:81, `GetSearchAsync()`:83, `SetSearchAsync()`:99, `NeighborhoodNamesKey()`:142, `ColoniaExistsKey()`:144, `GetOficiosAsync()`:146, `RemoveOficiosAsync()`:161, `GetOficiosGenerationAsync()`:167, `SetOficiosIfGenerationAsync()`:170, `GetNeighborhoodNamesAsync()`:206, `RemoveNeighborhoodNamesAsync()`:222, `GetNeighborhoodNamesGenerationAsync()`:229, `SetNeighborhoodNamesIfGenerationAsync()`:235, `GetColoniaExistsAsync()`:255, `RemoveColoniaExistsAsync()`:271, `GetColoniaExistsGenerationAsync()`:278, `SetColoniaExistsIfGenerationAsync()`:284, `GetSearchGenerationAsync()`:323, `GetSearchAsync()`:324, `SetSearchAsync()`:326, `GetOficiosAsync()`:328, `RemoveOficiosAsync()`:331, `GetOficiosGenerationAsync()`:333 …
 - `src/Knock.Market.Api/Modules/Catalog/Data/CatalogCacheOptions.cs` — class `CatalogCacheOptions`, class `CatalogCacheOptionsValidator`
   - `Validate()`:25
 - `src/Knock.Market.Api/Modules/Catalog/Data/CatalogSeeder.cs` — class `CatalogSeeder`, record `ColoniasSnapshot`

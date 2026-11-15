@@ -25,7 +25,8 @@ internal sealed class BusquedaService(IBusquedaSource source, ISearchResponseCac
     public async Task<SearchServiceResult> SearchAsync(SearchInput input, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(input);
-        var context = await source.GetContextAsync(input.ColoniaId, cancellationToken);
+        var generation = await cache.GetSearchGenerationAsync(cancellationToken);
+        var context = await GetContextAsync(input.ColoniaId, generation, cancellationToken);
         if (context is null) return new(null, "search_unavailable");
         if (!context.ColoniaExists) return new(null, "colonia_not_found");
         var selected = input.Trade is null ? null : context.Trades.FirstOrDefault(t => t.Key == input.Trade);
@@ -36,8 +37,8 @@ internal sealed class BusquedaService(IBusquedaSource source, ISearchResponseCac
         try { state = input.Cursor is null ? null : CursorDeBusqueda.Read(input.Cursor, query, cursorKey); }
         catch (FormatException) { return new(null, "invalid_cursor"); }
         if (input.Limit is < 1 or > 20) return new(null, "invalid_limit");
-        var hash = SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new { query, input.Cursor, input.Limit }));
-        var cached = await cache.GetSearchAsync(hash, cancellationToken);
+        var hash = SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new { query, input.Cursor, input.Limit, generation }));
+        var cached = generation < 0 ? null : await cache.GetSearchAsync(hash, cancellationToken);
         if (cached is not null)
         {
             try
@@ -48,6 +49,25 @@ internal sealed class BusquedaService(IBusquedaSource source, ISearchResponseCac
         }
 
         return await SearchUncachedAsync(input, context, selected, normalized, query, state, hash, cancellationToken);
+    }
+
+    private async Task<SearchContext?> GetContextAsync(string coloniaId, long generation, CancellationToken cancellationToken)
+    {
+        var contextHash = SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new { kind = "context", coloniaId, generation }));
+        SearchContext? context = null;
+        var cachedContext = generation < 0 ? null : await cache.GetSearchAsync(contextHash, cancellationToken);
+        if (cachedContext is not null)
+        {
+            try { context = JsonSerializer.Deserialize<SearchContext>(cachedContext); }
+            catch (JsonException) { /* Treat malformed cache entries as misses. */ }
+        }
+        if (context is null)
+        {
+            context = await source.GetContextAsync(coloniaId, cancellationToken);
+            if (context is not null && generation >= 0)
+                await cache.SetSearchAsync(contextHash, JsonSerializer.Serialize(context), cancellationToken);
+        }
+        return context;
     }
 
     private async Task<SearchServiceResult> SearchUncachedAsync(SearchInput input, SearchContext context, SearchTrade? selected,

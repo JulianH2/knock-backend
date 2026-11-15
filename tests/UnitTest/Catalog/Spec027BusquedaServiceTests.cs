@@ -50,7 +50,7 @@ public sealed class Spec027BusquedaServiceTests
         await service.SearchAsync(input, CancellationToken.None);
         await service.SearchAsync(input, CancellationToken.None);
         source.PageCalls.Should().Be(1);
-        source.ContextCalls.Should().Be(2);
+        source.ContextCalls.Should().Be(1);
     }
 
     [Fact]
@@ -87,6 +87,7 @@ public sealed class Spec027BusquedaServiceTests
     private sealed class FakeCache : ISearchResponseCache
     {
         private readonly Dictionary<string, string> _items = new(StringComparer.Ordinal);
+        public Task<long> GetSearchGenerationAsync(CancellationToken cancellationToken) => Task.FromResult(0L);
         public Task<string?> GetSearchAsync(byte[] fingerprint, CancellationToken cancellationToken) => Task.FromResult(_items.GetValueOrDefault(Convert.ToHexString(fingerprint)));
         public Task SetSearchAsync(byte[] fingerprint, string response, CancellationToken cancellationToken) { _items[Convert.ToHexString(fingerprint)] = response; return Task.CompletedTask; }
     }

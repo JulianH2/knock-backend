@@ -129,7 +129,7 @@ async function deliver() {
     pairKeys.set(`${id}:${d.cp}`, { id, cp: d.cp });
   }
 
-  const invalidate = [['catalog:oficios', 'catalog:gen:oficios']];
+  const invalidate = [['catalog:oficios', 'catalog:gen:oficios'], ['catalog:busqueda', 'catalog:gen:busqueda']];
   for (const cp of postalCodes) {
     invalidate.push([`catalog:colonias:cp:${cp}`, `catalog:gen:colonias:cp:${cp}`]);
   }
@@ -139,7 +139,7 @@ async function deliver() {
 
   // Con KNOCK_REDIS_HOST siempre se invalida, aunque no haya escrituras: reaplicar repara una caché que una corrida anterior dejó vieja.
   // Sin KNOCK_REDIS_HOST solo se exige Redis si esta corrida escribió algo; si no, avisa por si una corrida anterior terminó en 2 o 3.
-  const writes = writtenOficios.length + writtenColonias.length;
+  const writes = writtenOficios.length + writtenColonias.length + missing.length;
   if (!env.KNOCK_REDIS_HOST && writes === 0) {
     print('Sin cambios en MongoDB: no hace falta invalidar Redis. Si una corrida anterior terminó con código 2 o 3, córrelo con KNOCK_REDIS_HOST.');
     print('Entrega de la base lista.');
