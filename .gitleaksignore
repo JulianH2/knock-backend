@@ -9,3 +9,5 @@ de1c61af882345e0a8b75cf1afbce7213e245b22:tests/SecurityTest/Observability/SpanPr
 # EXC-023: cadenas sintéticas de las pruebas de la guarda de host de las semillas de demo (KNOCK-40) en el commit 72c27e4 de la rama feature/KNOCK-40-demo-client-seeds; la excepción vence al fusionar esa rama o el 2026-12-04.
 72c27e461e54a21c103df1253d1daff22949a54a:tests/DatabaseTest/Demo/DemoSeedGuardTests.cs:knock-mongodb-connection-string:17
 72c27e461e54a21c103df1253d1daff22949a54a:tests/DatabaseTest/Demo/DemoSeedGuardTests.cs:knock-mongodb-connection-string:40
+# EXC-024: cadena sintética de la prueba de la guarda del cargador de técnicos demo (KNOCK-246) en el commit ee6477c de la rama feature/KNOCK-246-demo-requests-quotes; la excepción vence el 2026-12-04.
+ee6477cfda5c5555f39dc615b6be79ef38139249:tests/DatabaseTest/Demo/DemoTechnicianLoaderTests.cs:knock-mongodb-connection-string:110
