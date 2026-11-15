@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using AwesomeAssertions;
 using Knock.DatabaseTest.Support;
 using Knock.IntegrationTest.Support;
@@ -9,11 +10,73 @@ using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Knock.DatabaseTest.Catalog;
 
-public sealed class Spec027BusquedaStoreTests
+public sealed class Spec027BusquedaStoreTests(ITestOutputHelper output)
 {
+    [Fact]
+    [Trait("Category", "Performance")]
+    public async Task Doscientas_Busquedas_Sin_Cache_CA_027_19()
+    {
+        await using var database = await CatalogDatabase.CreateAsync(seeded: true);
+        await ApplyScriptAsync(database);
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "Knock.slnx"))) root = root.Parent;
+        root.Should().NotBeNull();
+        var json = await File.ReadAllTextAsync(Path.Combine(root.FullName, "db/seeds/catalog/sinonimos.json"));
+        var synonyms = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonArray>(json).Select(x => x.AsBsonDocument).ToArray();
+        await database.Database.GetCollection<BsonDocument>("sinonimos").InsertManyAsync(synonyms);
+        await database.Database.GetCollection<BsonDocument>("catalogo_meta").InsertOneAsync(new BsonDocument { ["_id"] = "sinonimos", ["version"] = 1 });
+        var colonia = ObjectId.GenerateNewId();
+        await database.Database.GetCollection<BsonDocument>("colonias").InsertOneAsync(new BsonDocument
+        {
+            ["_id"] = colonia,
+            ["activo"] = true,
+            ["centro"] = new BsonDocument { ["type"] = "Point", ["coordinates"] = new BsonArray { 0, 0 } },
+        });
+        var technicians = Enumerable.Range(0, 200).Select(i => Technician($"experto{i:D3}", 0.4 + (i * 0.00001), 1, "activo", false, i % 2 == 0 ? "basica" : "ninguno", "plo")).ToArray();
+        foreach (var technician in technicians) technician["coloniaBaseId"] = "colonia-ficticia-distinta";
+        await database.Database.GetCollection<BsonDocument>("tecnicos").InsertManyAsync(technicians);
+        var options = Options.Create(new KnockMongoOptions());
+        var store = new BusquedaStore(database.Database, options);
+        var source = new BusquedaSource(database.Database, options, database.Get<CatalogStore>(), store);
+        var service = new BusquedaService(source, new DisabledCatalogCache(), new FiltroDatosPersonalesNoDisponible(), TimeProvider.System, System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+        var times = new List<double>();
+        for (var i = 0; i < 210; i++)
+        {
+            database.ClearCommands();
+            var watch = Stopwatch.StartNew();
+            var result = await service.SearchAsync(new SearchInput(i % 2 == 0 ? "boiler" : $"experto{i % 100:D3}", colonia.ToString(), null, false, 20, null), CancellationToken.None);
+            watch.Stop();
+            result.Error.Should().BeNull();
+            database.Commands.Should().Contain(command => command.GetValue("aggregate", "") == "tecnicos");
+            if (i >= 10) times.Add(watch.Elapsed.TotalMilliseconds);
+        }
+        var sorted = times.Order().ToArray();
+        output.WriteLine($"N={sorted.Length} p50={sorted[99]:F3} ms p95={sorted[189]:F3} ms p99={sorted[197]:F3} ms");
+        var geo = database.Commands.Where(command => command.GetValue("aggregate", "") == "tecnicos").ToArray();
+        geo.Should().HaveCountGreaterThanOrEqualTo(2);
+        foreach (var command in geo) await ReportExplainAsync(database, command, "geoNear", "ubicacionBase_2dsphere");
+        database.ClearCommands();
+        await store.FindPageAsync(new SearchPageRequest(colonia.ToString(), null, null, ["experto"], null, ["plo"], false), null, 20, CancellationToken.None);
+        var prefix = database.Commands.Where(command => command.GetValue("aggregate", "") == "tecnicos").ToArray();
+        prefix.Should().HaveCount(2);
+        foreach (var command in prefix) await ReportExplainAsync(database, command, "prefijo", "oficios_1_estado_1_oculto_1");
+        sorted[189].Should().BeLessThan(300);
+    }
+
+    private async Task ReportExplainAsync(CatalogDatabase database, BsonDocument command, string name, string expectedIndex)
+    {
+        var excluded = new[] { "lsid", "$db", "$clusterTime", "$readPreference", "txnNumber", "apiVersion" };
+        var clean = new BsonDocument(command.Elements.Where(element => !excluded.Contains(element.Name, StringComparer.Ordinal)));
+        var plan = await database.Database.RunCommandAsync<BsonDocument>(new BsonDocument { ["explain"] = clean, ["verbosity"] = "executionStats" });
+        output.WriteLine($"EXPLAIN {name}: {plan.ToJson()}");
+        var winning = plan["stages"].AsBsonArray[0]["$cursor"]["queryPlanner"]["winningPlan"].ToJson();
+        winning.Should().Contain("IXSCAN").And.Contain(expectedIndex).And.NotContain("COLLSCAN");
+    }
+
     [Fact]
     public async Task Redis_No_Disponible_Busca_En_Mongo_CA_027_15()
     {
