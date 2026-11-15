@@ -58,6 +58,7 @@ El gateway limita con contadores de ventana fija en Redis (`ratelimit:ip:*`, `ra
 | IP | Toda ruta salvo `/health`, antes de autenticar | 100 peticiones | 1 minuto | IP del cliente (IPv6 por /64) |
 | Estricta `/auth` | `/api/v{n}/auth/*`, además de la de IP | 10 peticiones | 1 minuto | IP del cliente |
 | Usuario | Peticiones con sesión, después de autenticar | 120 peticiones | 1 minuto | `sub` del JWT |
+| `busqueda` (**pendiente T-06**, Guillermo) | `GET /api/v1/busqueda`, además de IP y usuario | 30 peticiones | 1 minuto | `sub` del JWT |
 
 - Configuración: `RateLimiting:Ip`, `RateLimiting:Auth` y `RateLimiting:User` (`PermitLimit` y `Window`), sin valores por defecto en código.
 - 429 en `application/problem+json` con `Retry-After` en segundos (mínimo 1); el cuerpo no revela IP, clave ni contador.

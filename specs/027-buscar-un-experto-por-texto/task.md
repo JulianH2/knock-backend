@@ -1,6 +1,6 @@
 # Tareas 027 — Buscar un experto por texto
 
-> **Estado:** T-01 a T-05 y T-07 activadas por una persona; T-05 está parcial y las demás siguen pendientes.
+> **Estado:** T-01 a T-04, T-07 y T-09 hechas; T-05, T-08 y T-10 parciales; T-06 pendiente.
 > **Responsable sugerido de la historia:** Alexis (KNOCK-66). Revisión de par: Guillermo.
 
 | Tarea | Qué se hace | Cubre | Depende de | En paralelo con | Responsable sugerido | Estado |
@@ -14,13 +14,13 @@
 | T-07 | `BusquedaController`, DTOs y `BusquedaQueryValidator` (parámetros repetidos, `limit`, `q`) | R-01, R-02, R-03 · CA-12 | T-05 | — | Alexis | hecha |
 | T-08 | Pruebas de integración y seguridad negativa de punta a punta; registros sin datos | R-01 a R-16 · CA-01 a CA-18 | T-04, T-06, T-07 | T-09 | Alexis | parcial |
 | T-09 | Prueba de rendimiento con 200 técnicos (sin cobertura) | R-15 · CA-19 | T-04, T-05 | T-08 | Alexis | hecha (evidencia local; prefijo como filtro, ver `docs/evidencia/knock-66-busqueda-rendimiento.md`) |
-| T-10 | Regenerar OpenAPI de Mercado, `docs/endpoints.md`, `docs/rate-limit-matrix.md` y `Memoria.md` | R-01, R-14 | T-07 | T-08, T-09 | Alexis | pendiente |
+| T-10 | Regenerar OpenAPI de Mercado, `docs/endpoints.md`, `docs/rate-limit-matrix.md` y `Memoria.md` | R-01, R-14 | T-07 | T-08, T-09 | Alexis | parcial: OpenAPI generado omite los parámetros de consulta |
 
 **Qué bloquea:** T-04 espera el script (T-01); T-07 espera el servicio (T-05); T-08 es la última de código. **Qué va en paralelo:** T-01, T-02, T-03 y T-06 arrancan el mismo día y no se pisan (archivos distintos).
 
 **T-05 parcial:** falta integrar el filtro real de la spec 024 (T-03); el #118 no se fusiona sin él. El servicio usa paginación por clave y el sustituto falla cerrado. El contexto y la respuesta se cachean 30 s con generación compartida invalidada por `entrega.js`; otras vías de escritura deben invalidarla también. Las semillas actuales de colonias no traen `activo` y R-03 lo exige: el servicio las rechaza hasta que una persona concilie el modelo y las semillas. El controller de T-07 conecta el mapeo HTTP; la ruta del gateway y su política `busqueda` por `sub` siguen pendientes de T-06 (Guillermo). Falta verificar la configuración del cursor en el despliegue.
 
-**T-08 parcial:** pruebas HTTP directamente contra Market, sin gateway: T-06 deja pendiente el límite y el flujo completo de CA-16. CA-03 y CA-14 necesitan el filtro real de 024; CA-19 corresponde a T-09. CA-18 comprueba registros con y sin resultado y textos sintéticos; CA-11 cubre cursor de otra consulta y versión. El cursor no está ligado al usuario: R-11 y R-13 definen consulta y resultado no personal; rechazarlo por otro usuario requiere decisión y enmienda, no se da por probado. Las coincidencias de `--trace` por nombre no demuestran cobertura integral ni ejecución.
+**T-08 parcial:** pruebas HTTP directamente contra Market, sin gateway: T-06 deja pendiente el límite y el flujo completo de CA-16. CA-03 y CA-14 necesitan el filtro real de 024; CA-19 se verificó localmente en T-09. CA-18 comprueba registros con y sin resultado y textos sintéticos; CA-11 cubre cursor de otra consulta y versión. El cursor no está ligado al usuario: R-11 y R-13 definen consulta y resultado no personal; rechazarlo por otro usuario requiere decisión y enmienda, no se da por probado. Las coincidencias de `--trace` por nombre no demuestran cobertura integral ni ejecución.
 
 ## Definición de terminado
 - Los criterios de aceptación de `spec.md` están cubiertos por pruebas en verde.

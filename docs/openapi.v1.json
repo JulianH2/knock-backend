@@ -252,6 +252,145 @@
         }
       }
     },
+    "/api/v{version}/busqueda": {
+      "get": {
+        "tags": [
+          "Busqueda"
+        ],
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusquedaResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusquedaResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusquedaResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v{version}/colonias/existe": {
       "get": {
         "tags": [
@@ -746,6 +885,154 @@
   },
   "components": {
     "schemas": {
+      "BusquedaInterpretacion": {
+        "required": [
+          "estado",
+          "oficioDetectado",
+          "oficiosSugeridos"
+        ],
+        "type": "object",
+        "properties": {
+          "estado": {
+            "type": "string"
+          },
+          "oficioDetectado": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BusquedaOficio"
+              }
+            ]
+          },
+          "oficiosSugeridos": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/BusquedaOficio"
+            }
+          }
+        }
+      },
+      "BusquedaItem": {
+        "required": [
+          "id",
+          "nombre",
+          "oficios",
+          "calificacion",
+          "totalResenas",
+          "verificado",
+          "nivelVerificacion",
+          "coloniaBase",
+          "distanciaKm",
+          "atiendeTuColonia",
+          "fotoUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "oficios": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BusquedaOficio"
+            }
+          },
+          "calificacion": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "totalResenas": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "verificado": {
+            "type": "boolean"
+          },
+          "nivelVerificacion": {
+            "type": "string"
+          },
+          "coloniaBase": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "distanciaKm": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "atiendeTuColonia": {
+            "type": "boolean"
+          },
+          "fotoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "BusquedaOficio": {
+        "required": [
+          "clave",
+          "nombre"
+        ],
+        "type": "object",
+        "properties": {
+          "clave": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          }
+        }
+      },
+      "BusquedaResponse": {
+        "required": [
+          "interpretacion",
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "interpretacion": {
+            "$ref": "#/components/schemas/BusquedaInterpretacion"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BusquedaItem"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "NeighborhoodAtPointColoniaResponse": {
         "required": [
           "id",
@@ -1163,6 +1450,9 @@
     }
   },
   "tags": [
+    {
+      "name": "Busqueda"
+    },
     {
       "name": "ColoniaExists"
     },
