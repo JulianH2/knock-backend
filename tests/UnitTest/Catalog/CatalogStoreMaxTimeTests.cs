@@ -27,6 +27,8 @@ public sealed class CatalogStoreMaxTimeTests
             store.NearestCenterQuery(position, 2000),
             store.NamesByPostalCodeQuery("42803"),
             store.ColoniaExistsQuery(ObjectId.GenerateNewId(), "42803"),
+            store.ActiveOficioQuery("plomeria"),
+            store.ColoniaByIdQuery(ObjectId.GenerateNewId()),
         };
 
         queries.Should().OnlyContain(query => query.Options.MaxTime == TimeSpan.FromSeconds(3), "cada consulta lleva maxTimeMS");

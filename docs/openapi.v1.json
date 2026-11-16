@@ -252,6 +252,321 @@
         }
       }
     },
+    "/api/v{version}/solicitudes": {
+      "post": {
+        "tags": [
+          "Solicitudes"
+        ],
+        "summary": "Crea la solicitud en estado `enviada` y con `venceEn` a 48 h.",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRequestBody"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRequestBody"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Solicitudes"
+        ],
+        "summary": "Solicitudes del `sub` del token, de la más reciente a la más antigua, con paginación por cursor.",
+        "parameters": [
+          {
+            "name": "Cursor",
+            "in": "query",
+            "description": "Opaque cursor returned as nextCursor by the previous page.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "Page size, 1 to 50. Defaults to 20.",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Estado",
+            "in": "query",
+            "description": "Optional filter by state: enviada, cotizando, cita_confirmada, terminada, calificada, cancelada or vencida.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestPage"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestPage"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/solicitudes/{id}": {
+      "get": {
+        "tags": [
+          "Solicitudes"
+        ],
+        "summary": "Detalle: vista del cliente dueño, o vista acotada del técnico elegible o que ya cotizó. Cualquier otra persona recibe 404.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v{version}/busqueda": {
       "get": {
         "tags": [
@@ -1081,6 +1396,73 @@
           }
         }
       },
+      "CreateRequestBody": {
+        "required": [
+          "oficioClave",
+          "descripcion",
+          "fotos",
+          "dia",
+          "franja",
+          "coloniaId",
+          "direccion"
+        ],
+        "type": "object",
+        "properties": {
+          "oficioClave": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Clave de un oficio activo del catálogo. La modalidad (domicilio o taller) la dicta el oficio."
+          },
+          "descripcion": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "De 8 a 500 caracteres; pasa por moderación antes de guardarse."
+          },
+          "fotos": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "De 1 a 5 identificadores de archivo (24 hexadecimales), sin repetidos, de archivos ya confirmados del mismo usuario."
+          },
+          "dia": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Fecha `YYYY-MM-DD` en la zona America/Mexico_City, de hoy a hoy + 5 días."
+          },
+          "franja": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Una de `manana`, `tarde` o `noche`."
+          },
+          "coloniaId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Identificador (24 hexadecimales) de una colonia del catálogo."
+          },
+          "direccion": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "De 8 a 200 caracteres; obligatoria en modalidad domicilio y no admitida en taller. Se guarda cifrada."
+          }
+        },
+        "description": "Cuerpo de `POST /solicitudes` (spec 020, R-01). El 422 lo da `CreateRequestBodyValidator`; nunca repite el valor recibido."
+      },
       "NeighborhoodAtPointColoniaResponse": {
         "required": [
           "id",
@@ -1351,6 +1733,219 @@
           }
         }
       },
+      "RequestNeighborhood": {
+        "required": [
+          "id",
+          "nombre",
+          "cp"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "cp": {
+            "type": "string"
+          }
+        },
+        "description": "Colonia de la solicitud: identificador, nombre y código postal."
+      },
+      "RequestPage": {
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RequestSummary"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Página de solicitudes propias; `NextCursor` es `null` en la última página."
+      },
+      "RequestPhoto": {
+        "required": [
+          "id",
+          "url",
+          "venceEn"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "venceEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Foto privada de la solicitud: el enlace de lectura vence a los 5 minutos y la app lo vuelve a pedir con el detalle."
+      },
+      "RequestResponse": {
+        "required": [
+          "id",
+          "estado",
+          "modalidad",
+          "oficio",
+          "colonia",
+          "descripcion",
+          "fotos",
+          "dia",
+          "franja",
+          "direccion",
+          "totalCotizaciones",
+          "venceEn",
+          "creadoEn"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "modalidad": {
+            "type": "string"
+          },
+          "oficio": {
+            "$ref": "#/components/schemas/RequestTrade"
+          },
+          "colonia": {
+            "$ref": "#/components/schemas/RequestNeighborhood"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "fotos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RequestPhoto"
+            }
+          },
+          "dia": {
+            "type": "string"
+          },
+          "franja": {
+            "type": "string"
+          },
+          "direccion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "totalCotizaciones": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "venceEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Solicitud (spec 020, §5). `Direccion` y `TotalCotizaciones` solo salen en la vista del cliente dueño; la vista del técnico no trae\nnunca la dirección, el nombre ni el teléfono del cliente."
+      },
+      "RequestSummary": {
+        "required": [
+          "id",
+          "estado",
+          "oficioNombre",
+          "coloniaNombre",
+          "dia",
+          "franja",
+          "totalFotos",
+          "totalCotizaciones",
+          "venceEn",
+          "creadoEn"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "oficioNombre": {
+            "type": "string"
+          },
+          "coloniaNombre": {
+            "type": "string"
+          },
+          "dia": {
+            "type": "string"
+          },
+          "franja": {
+            "type": "string"
+          },
+          "totalFotos": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCotizaciones": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "venceEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Fila de `GET /solicitudes`: sin descripción, dirección ni enlaces de fotos."
+      },
+      "RequestTrade": {
+        "required": [
+          "clave",
+          "nombre"
+        ],
+        "type": "object",
+        "properties": {
+          "clave": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          }
+        },
+        "description": "Oficio de la solicitud: clave del catálogo y nombre."
+      },
       "ValidationProblemDetails": {
         "type": "object",
         "properties": {
@@ -1515,6 +2110,9 @@
     },
     {
       "name": "Oficios"
+    },
+    {
+      "name": "Solicitudes"
     },
     {
       "name": "Zonas"

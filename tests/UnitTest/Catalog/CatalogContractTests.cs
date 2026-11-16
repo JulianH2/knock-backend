@@ -9,7 +9,7 @@ namespace Knock.UnitTest.Catalog;
 public class CatalogContractTests
 {
     [Fact]
-    public void CatalogApiHasExactlyTheFourListedMembers_TC_TT_BD_06_17()
+    public void CatalogApiHasExactlyTheSixListedMembers_TC_TT_BD_06_17()
     {
         var members = typeof(ICatalogApi).GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .Where(member => member is not MethodInfo { IsSpecialName: true })
@@ -19,7 +19,10 @@ public class CatalogContractTests
             "ModuleName : String",
             "FindNeighborhoodAtAsync(Double, Double, CancellationToken) : Task<Nullable<String>>",
             "FindNeighborhoodsByPostalCodeAsync(String, CancellationToken) : Task<IReadOnlyList<String>>",
-            "NeighborhoodExistsAsync(String, String, CancellationToken) : Task<Boolean>");
+            "NeighborhoodExistsAsync(String, String, CancellationToken) : Task<Boolean>",
+            // Spec 020 (KNOCK-59): lectura por clave de oficio y por id de colonia; devuelven tuplas para no sumar tipos públicos.
+            "FindActiveTradeAsync(String, CancellationToken) : Task<Nullable<Nullable<ValueTuple`2>>>",
+            "FindNeighborhoodAsync(String, CancellationToken) : Task<Nullable<Nullable<ValueTuple`2>>>");
         typeof(NeighborhoodLocator).IsPublic.Should().BeFalse("la consulta interna no es contrato entre módulos");
         typeof(ICatalogApi).GetMethods().Should().NotContain(method => method.ReturnType.ToString().Contains("Colonia", StringComparison.Ordinal));
     }

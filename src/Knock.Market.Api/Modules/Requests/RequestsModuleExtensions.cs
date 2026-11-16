@@ -1,8 +1,11 @@
+using Knock.Contracts.Moderation;
+using Knock.Market.Api.Common.Crypto;
 using Knock.Market.Api.Hosting;
 using Knock.Market.Api.Modules.Requests.Data;
 using Knock.Market.Api.Modules.Requests.Domain;
 using Knock.Market.Api.Modules.Requests.Services;
 using Knock.Market.Api.Modules.Requests.Validators;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Knock.Market.Api.Modules.Requests;
 
@@ -24,7 +27,18 @@ public static class RequestsModuleExtensions
         services.AddScoped<INoteModerator, UnavailableNoteModerator>();
         services.AddScoped<IQuoteWriter, QuoteStore>();
         services.AddScoped<QuoteService>();
+        services.AddOptions<FieldEncryptionOptions>().BindConfiguration(FieldEncryptionOptions.SectionName);
+        services.AddSingleton<FieldCipher>();
+        services.AddScoped<IOutbox, MongoOutbox>();
+        services.AddScoped<RequestsStore>();
+        // Fotos y moderación: hasta que lleguen los servicios reales (spec 013, OI-2) fallan cerrado; las pruebas los sustituyen por dobles.
+        services.TryAddScoped<IRequestPhotos, UnavailableRequestPhotos>();
+        services.TryAddSingleton<IContentModerator, UnavailableContentModerator>();
+        services.AddScoped<SolicitudService>();
         services.AddScoped<IRequestsApi, RequestsApi>();
+        services.AddScoped<DemoTechnicianStore>();
+        services.AddScoped<DemoTechnicianSeeder>();
+        services.AddHostedService<DemoTechnicianStartup>();
         return services;
     }
 }

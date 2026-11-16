@@ -79,7 +79,8 @@ internal sealed class QuoteService(ITechnicianDirectory technicians, IQuoteReque
         return await writer.SaveAsync(solicitudId, technician.Id, sub, request.Trade, body, clock.GetUtcNow(), cancellationToken);
     }
 
-    private static bool Covers(Technician technician, QuoteRequestSnapshot request)
+    /// <summary>Cobertura del técnico (colonia base o radio de atención). Internal para que el detalle de solicitudes aplique la misma elegibilidad base (spec 020, R-23).</summary>
+    internal static bool Covers(Technician technician, QuoteRequestSnapshot request)
     {
         if (request.Latitude is null || request.Longitude is null)
             return technician.ColoniaBaseId == request.ColoniaId;

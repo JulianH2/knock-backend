@@ -45,3 +45,10 @@
 ## Verificación
 - Cada criterio de aceptación de `spec.md` se comprueba con la prueba de la tabla 4.1 (`python scripts/sdd_lint.py --trace 020`).
 - `dotnet build Knock.slnx -c Release`, `dotnet test Knock.slnx -c Release`, `dotnet format Knock.slnx --verify-no-changes` y `python scripts/export_openapi.py`; se actualiza `Memoria.md`.
+
+## Decisiones del líder del 2026-11-12 (KNOCK-59, rama `feature/KNOCK-59-requests-service`)
+- **Fotos y moderación:** el servicio de solicitudes trabaja contra `IMediaApi` e `IContentModerator` (interfaces propias del módulo `Requests`, con dobles de prueba), sin esperar el #33. **CA-15 y CA-18 con el servicio real se cierran cuando llegue OI-2 del #33.**
+- **Buzón de salida (`outbox`):** no existe en `src`; la spec 003 solo define la colección. Se hace una versión mínima en Mercado detrás de `IOutbox` (escritura en la misma transacción, `_id` determinista). El despachador y el transporte los cubre la spec 037. Sin él no se cierra CA-01.
+- **Elegibilidad del técnico (R-23):** detrás de una interfaz con un doble hasta que exista la colección `tecnicos` (spec 027). **CA-13 y CA-23 no se cierran hasta entonces.**
+- **`ICatalogApi`:** se amplía solo de lectura con `FindActiveTradeAsync` (oficio activo por clave) y `FindNeighborhoodAsync` (colonia por id), sin cambiar lo que ya expone. Devuelven tuplas porque la regla de arquitectura limita cada módulo a dos tipos públicos. El catálogo de colonias no tiene indicador de «activa»: R-02 se cumple comprobando que existe.
+
