@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Events;
+using StackExchange.Redis;
 
 namespace Knock.DatabaseTest.Support;
 
@@ -24,20 +25,36 @@ internal sealed class CatalogDatabase : IAsyncDisposable
     private readonly ConcurrentQueue<BsonDocument> _commands = new();
     private readonly ServiceProvider _services;
 
-    private CatalogDatabase(string connectionString)
+    private static int _redisDatabaseCounter;
+
+    private CatalogDatabase(string connectionString, string? redisConnectionString, int? catalogLifetimeSeconds = null)
     {
         DatabaseName = "market_test_" + Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(6));
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["ConnectionStrings:KnockMongo"] = connectionString,
-                ["Mongo:MaxPoolSize"] = "5",
-                ["Mongo:Databases:Catalog"] = DatabaseName,
-            })
-            .Build();
+        var values = new Dictionary<string, string?>
+        {
+            ["ConnectionStrings:KnockMongo"] = connectionString,
+            ["Mongo:MaxPoolSize"] = "5",
+            ["Mongo:Databases:Catalog"] = DatabaseName,
+        };
+        if (catalogLifetimeSeconds is not null)
+        {
+            values["Cache:CatalogLifetimeSeconds"] = catalogLifetimeSeconds.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+        if (redisConnectionString is not null)
+        {
+            values["ConnectionStrings:KnockRedis"] = redisConnectionString;
+        }
+
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(values).Build();
         var services = new ServiceCollection()
+            .AddLogging()
             .AddSingleton<IConfiguration>(configuration)
-            .AddCatalogModule();
+            .AddCatalogModule(configuration);
+        if (redisConnectionString is null)
+        {
+            // Las pruebas que no prueban la caché usan el doble (siempre falla): las lecturas van a MongoDB como antes.
+            services.Replace(ServiceDescriptor.Singleton<ICatalogCache>(new FakeCatalogCache()));
+        }
         services.Replace(ServiceDescriptor.Singleton<IMongoClient>(provider =>
         {
             var settings = MongoExtensions.CreateSettings(provider.GetRequiredService<IOptions<KnockMongoOptions>>().Value);
@@ -60,11 +77,33 @@ internal sealed class CatalogDatabase : IAsyncDisposable
     /// <summary>Comandos enviados a la base de esta instancia, en orden.</summary>
     public IReadOnlyList<BsonDocument> Commands => [.. _commands];
 
+    public IConnectionMultiplexer Multiplexer => _services.GetRequiredService<IConnectionMultiplexer>();
+
+    public IDatabase Redis => Multiplexer.GetDatabase();
+
     /// <param name="seeded">Aplica <c>oficios.json</c> y <c>colonias.json</c> con el cargador del módulo.</param>
-    public static async Task<CatalogDatabase> CreateAsync(bool seeded)
+    /// <param name="useRedisCache">Usa Redis real (spec 010) en lugar del doble; la instancia limpia la base Redis al crearse.</param>
+    /// <param name="redisConnectionString">Cadena de Redis explícita (p. ej. rota, para probar el fallo); manda sobre <paramref name="useRedisCache"/>.</param>
+    /// <param name="catalogLifetimeSeconds">Vida de la caché del catálogo en segundos (<c>Cache:CatalogLifetimeSeconds</c>); por defecto, la de <c>CatalogCacheOptions</c>.</param>
+    public static async Task<CatalogDatabase> CreateAsync(bool seeded, bool useRedisCache = false, string? redisConnectionString = null, int? catalogLifetimeSeconds = null)
     {
         var container = await DocumentDbFixture.SharedAsync();
-        var database = new CatalogDatabase(container.ConnectionString);
+        var redis = redisConnectionString;
+        if (redis is null && useRedisCache)
+        {
+            var index = (Interlocked.Increment(ref _redisDatabaseCounter) % 15) + 1;
+            redis = (await RedisFixture.SharedAsync()).ConnectionString
+                .Replace("defaultDatabase=0", $"defaultDatabase={index}", StringComparison.Ordinal) + ",allowAdmin=true";
+        }
+        var database = new CatalogDatabase(container.ConnectionString, redis, catalogLifetimeSeconds);
+        if (useRedisCache && redisConnectionString is null)
+        {
+            // Las claves del catálogo son fijas y no llevan la base en el nombre: cada instancia usa su propia base lógica de Redis
+            // (1 a 15) y la limpia al crearse; FLUSHDB exige modo admin, que solo se activa en esta cadena de pruebas.
+            var multiplexer = database.Multiplexer;
+            await multiplexer.GetServer(multiplexer.GetEndPoints()[0]).FlushDatabaseAsync();
+        }
+
         if (seeded)
         {
             await CatalogTestDatabase.SeedAsync(database.Services);

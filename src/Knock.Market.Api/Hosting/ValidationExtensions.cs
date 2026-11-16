@@ -1,5 +1,6 @@
 using FluentValidation;
 using FluentValidation.Results;
+using Knock.Market.Api.Common.Errors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -55,6 +56,7 @@ internal sealed class ValidationFilter : IAsyncActionFilter
             Status = StatusCodes.Status422UnprocessableEntity,
             Title = "One or more validation errors occurred.",
         };
+        problem.Extensions["code"] = ErrorCodes.ValidationFailedCode;
         problem.Extensions["errors"] = errors.ToDictionary(e => e.Key, e => e.Value.ToArray(), StringComparer.Ordinal);
         await problems.WriteAsync(new ProblemDetailsContext { HttpContext = context.HttpContext, ProblemDetails = problem });
         context.Result = new EmptyResult();

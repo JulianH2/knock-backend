@@ -5,26 +5,18 @@ using Xunit;
 
 namespace Knock.UnitTest.Requests;
 
-public class Spec020QuotePricingTests
+public class Spec020TopeTests
 {
     private static readonly QuotePricingOptions _options = new();
 
-    [Fact]
-    public void FixedPriceOf1000HasCapOf1100AndRequiresApproval_CA_020_11()
+    [Theory]
+    [InlineData("ele", 1000, 1100, true)]
+    [InlineData("plo", 50, 55, false)]
+    public void Calcula_Tope_CA_020_11(string oficio, int price, int expected, bool approval)
     {
-        var cap = QuotePricing.Calculate(PriceType.Fijo, "ele", 1000, null, null, _options);
-
-        cap.Tope.Should().Be(1100);
-        cap.RequiereAprobacion.Should().BeTrue();
-    }
-
-    [Fact]
-    public void FixedPriceOf50HasCapOf55AndDoesNotRequireApproval_CA_020_11()
-    {
-        var cap = QuotePricing.Calculate(PriceType.Fijo, "plo", 50, null, null, _options);
-
-        cap.Tope.Should().Be(55);
-        cap.RequiereAprobacion.Should().BeFalse();
+        var cap = QuotePricing.Calculate(PriceType.Fijo, oficio, price, null, null, _options);
+        cap.Tope.Should().Be(expected);
+        cap.RequiereAprobacion.Should().Be(approval);
     }
 
     [Fact]
@@ -104,6 +96,8 @@ public class Spec020QuotePricingTests
     [InlineData(600, 500)]
     [InlineData(0, 500)]
     [InlineData(500, 200_001)]
+    [InlineData(-1, 500)]
+    [InlineData(1, 0)]
     public void RangeRequiresMinBelowMaxBothInsideTheBounds_R_13(int min, int max)
     {
         var act = () => QuotePricing.Calculate(PriceType.Rango, "ele", null, min, max, _options);

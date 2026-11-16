@@ -6,3 +6,8 @@ de1c61af882345e0a8b75cf1afbce7213e245b22:tests/IntegrationTest/Observability/Out
 de1c61af882345e0a8b75cf1afbce7213e245b22:tests/SecurityTest/Observability/SpanPrivacyTests.cs:jwt:42
 # EXC-019: cadena sintética del Mongo local (credenciales del compose) en el commit 0b7a866 de la rama de KNOCK-205; el texto se quita en un commit posterior y la excepción vence al fusionar.
 0b7a8668d4656e79e4c713c677793c931d12c1a7:tests/perf/README.md:knock-mongodb-connection-string:23
+# EXC-023: cadenas sintéticas de las pruebas de la guarda de host de las semillas de demo (KNOCK-40) en el commit 72c27e4 de la rama feature/KNOCK-40-demo-client-seeds; la excepción vence al fusionar esa rama o el 2026-12-04.
+72c27e461e54a21c103df1253d1daff22949a54a:tests/DatabaseTest/Demo/DemoSeedGuardTests.cs:knock-mongodb-connection-string:17
+72c27e461e54a21c103df1253d1daff22949a54a:tests/DatabaseTest/Demo/DemoSeedGuardTests.cs:knock-mongodb-connection-string:40
+# EXC-024: cadena sintética de la prueba de la guarda del cargador de técnicos demo (KNOCK-246) en el commit ee6477c de la rama feature/KNOCK-246-demo-requests-quotes; la excepción vence el 2026-12-04.
+ee6477cfda5c5555f39dc615b6be79ef38139249:tests/DatabaseTest/Demo/DemoTechnicianLoaderTests.cs:knock-mongodb-connection-string:110

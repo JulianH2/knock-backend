@@ -22,6 +22,7 @@ public sealed class GatewayRoutingTests : IAsyncLifetime, IDisposable
     private readonly Dictionary<string, WebApplication> _services = [];
     private readonly Dictionary<string, string> _addresses = [];
     private readonly List<string?> _correlationSeen = [];
+    private readonly List<(string Path, string Method, string? Authorization)> _requestsSeen = [];
     private GatewayTestHost? _host;
     private HttpClient? _client;
 
@@ -38,6 +39,7 @@ public sealed class GatewayRoutingTests : IAsyncLifetime, IDisposable
                 (HttpContext context) =>
                 {
                     _correlationSeen.Add(context.Request.Headers[CorrelationId.HeaderName]);
+                    _requestsSeen.Add((context.Request.Path.Value!, context.Request.Method, context.Request.Headers.Authorization.ToString()));
                     context.Response.Headers["X-Servicio"] = serviceName;
                     return Results.Ok(new { servicio = serviceName });
                 });
@@ -48,6 +50,33 @@ public sealed class GatewayRoutingTests : IAsyncLifetime, IDisposable
 
         _host = GatewayTestHost.Start(_addresses);
         _client = _host.Client;
+    }
+
+    [Theory]
+    [InlineData("/api/v1/zonas/lista-espera")]
+    [InlineData("/api/v1/solicitudes/507f1f77bcf86cd799439011/cotizaciones")]
+    public async Task ProtectedPost_IsForwardedUnchangedToMarket_CA_020_16(string path)
+    {
+        using var response = await _client!.PostAsync(new Uri(path, UriKind.Relative), content: null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Headers.GetValues("X-Servicio").Should().ContainSingle().Which.Should().Be("mercado");
+        var forwarded = _requestsSeen.Should().ContainSingle().Which;
+        forwarded.Path.Should().Be(path);
+        forwarded.Method.Should().Be("POST");
+        forwarded.Authorization.Should().Be(_client.DefaultRequestHeaders.Authorization!.ToString());
+    }
+
+    [Theory]
+    [InlineData("/api/v1/zonas/lista-espera")]
+    [InlineData("/api/v1/solicitudes/507f1f77bcf86cd799439011/cotizaciones")]
+    public async Task ProtectedPost_WithoutToken_IsNotForwarded_CA_020_16(string path)
+    {
+        _client!.DefaultRequestHeaders.Authorization = null;
+        using var response = await _client.PostAsync(new Uri(path, UriKind.Relative), content: null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        _requestsSeen.Should().BeEmpty();
     }
 
     public async Task DisposeAsync()
@@ -75,6 +104,7 @@ public sealed class GatewayRoutingTests : IAsyncLifetime, IDisposable
     [InlineData("/api/v1/me/sesiones", "identidad")]
     [InlineData("/api/v1/oficios", "mercado")]
     [InlineData("/api/v1/colonias/en-punto", "mercado")]
+    [InlineData("/api/v1/zonas/cp/42800", "mercado")]
     [InlineData("/api/v1/mensajes/1", "mensajeria")]
     [InlineData("/api/v1/notificaciones", "mensajeria")]
     public async Task Request_IsRoutedToTheRightService_CA_02(string path, string expectedService)

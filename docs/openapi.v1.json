@@ -5,6 +5,568 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/v{version}/solicitudes/{id}/cotizaciones": {
+      "post": {
+        "tags": [
+          "Cotizaciones"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/solicitudes": {
+      "post": {
+        "tags": [
+          "Solicitudes"
+        ],
+        "summary": "Crea la solicitud en estado `enviada` y con `venceEn` a 48 h.",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRequestBody"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRequestBody"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Solicitudes"
+        ],
+        "summary": "Solicitudes del `sub` del token, de la más reciente a la más antigua, con paginación por cursor.",
+        "parameters": [
+          {
+            "name": "Cursor",
+            "in": "query",
+            "description": "Opaque cursor returned as nextCursor by the previous page.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "Page size, 1 to 50. Defaults to 20.",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Estado",
+            "in": "query",
+            "description": "Optional filter by state: enviada, cotizando, cita_confirmada, terminada, calificada, cancelada or vencida.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestPage"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestPage"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/solicitudes/{id}": {
+      "get": {
+        "tags": [
+          "Solicitudes"
+        ],
+        "summary": "Detalle: vista del cliente dueño, o vista acotada del técnico elegible o que ya cotizó. Cualquier otra persona recibe 404.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v{version}/colonias/existe": {
       "get": {
         "tags": [
@@ -177,13 +739,179 @@
         }
       }
     },
+    "/api/v{version}/zonas/lista-espera": {
+      "post": {
+        "tags": [
+          "ListaEspera"
+        ],
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WaitlistRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WaitlistRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WaitlistRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaitlistResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaitlistResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaitlistResponse"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaitlistResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaitlistResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaitlistResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v{version}/oficios": {
       "get": {
         "tags": [
           "Oficios"
         ],
-        "summary": "Oficios activos como arreglo sin paginar: excepción documentada a la constitución §11 (catálogo acotado, D9).\n`[AllowAnonymous]` explícito para que siga público aunque se agregue una política de autorización global (D3).",
+        "summary": "Oficios activos como arreglo sin paginar: excepción documentada a la constitución §11 (catálogo acotado, D9).\n`[AllowAnonymous]` explícito para que siga público aunque se agregue una política de autorización global (D3).\nResponde con `ETag` débil, `Cache-Control: public, max-age=0, must-revalidate` y `Vary: Accept-Encoding` (la respuesta comprimida es otra variante);\ncon `If-None-Match` vigente responde 304 sin cuerpo.",
         "parameters": [
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "version",
             "in": "path",
@@ -206,6 +934,126 @@
                 }
               }
             }
+          },
+          "304": {
+            "description": "Not Modified"
+          }
+        }
+      }
+    },
+    "/api/v{version}/zonas/cp/{cp}": {
+      "get": {
+        "tags": [
+          "Zonas"
+        ],
+        "parameters": [
+          {
+            "name": "cp",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZonaResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZonaResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZonaResponse"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       }
@@ -213,6 +1061,73 @@
   },
   "components": {
     "schemas": {
+      "CreateRequestBody": {
+        "required": [
+          "oficioClave",
+          "descripcion",
+          "fotos",
+          "dia",
+          "franja",
+          "coloniaId",
+          "direccion"
+        ],
+        "type": "object",
+        "properties": {
+          "oficioClave": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Clave de un oficio activo del catálogo. La modalidad (domicilio o taller) la dicta el oficio."
+          },
+          "descripcion": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "De 8 a 500 caracteres; pasa por moderación antes de guardarse."
+          },
+          "fotos": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "De 1 a 5 identificadores de archivo (24 hexadecimales), sin repetidos, de archivos ya confirmados del mismo usuario."
+          },
+          "dia": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Fecha `YYYY-MM-DD` en la zona America/Mexico_City, de hoy a hoy + 5 días."
+          },
+          "franja": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Una de `manana`, `tarde` o `noche`."
+          },
+          "coloniaId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Identificador (24 hexadecimales) de una colonia del catálogo."
+          },
+          "direccion": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "De 8 a 200 caracteres; obligatoria en modalidad domicilio y no admitida en taller. Se guarda cifrada."
+          }
+        },
+        "description": "Cuerpo de `POST /solicitudes` (spec 020, R-01). El 422 lo da `CreateRequestBodyValidator`; nunca repite el valor recibido."
+      },
       "NeighborhoodAtPointColoniaResponse": {
         "required": [
           "id",
@@ -329,6 +1244,516 @@
             ]
           }
         }
+      },
+      "QuoteRequest": {
+        "required": [
+          "tipoPrecio",
+          "precio",
+          "precioMin",
+          "precioMax",
+          "dia",
+          "hora",
+          "nota"
+        ],
+        "type": "object",
+        "properties": {
+          "tipoPrecio": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "precio": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "precioMin": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "precioMax": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "dia": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "hora": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nota": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "QuoteResponse": {
+        "required": [
+          "id",
+          "solicitudId",
+          "estado",
+          "tipoPrecio",
+          "precio",
+          "precioMin",
+          "precioMax",
+          "tope",
+          "requiereAprobacion",
+          "dia",
+          "hora",
+          "nota",
+          "creadoEn"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "solicitudId": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "tipoPrecio": {
+            "type": "string"
+          },
+          "precio": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "precioMin": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "precioMax": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "tope": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "requiereAprobacion": {
+            "type": "boolean"
+          },
+          "dia": {
+            "type": "string",
+            "format": "date"
+          },
+          "hora": {
+            "type": "string"
+          },
+          "nota": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "RequestNeighborhood": {
+        "required": [
+          "id",
+          "nombre",
+          "cp"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "cp": {
+            "type": "string"
+          }
+        },
+        "description": "Colonia de la solicitud: identificador, nombre y código postal."
+      },
+      "RequestPage": {
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RequestSummary"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Página de solicitudes propias; `NextCursor` es `null` en la última página."
+      },
+      "RequestPhoto": {
+        "required": [
+          "id",
+          "url",
+          "venceEn"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "venceEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Foto privada de la solicitud: el enlace de lectura vence a los 5 minutos y la app lo vuelve a pedir con el detalle."
+      },
+      "RequestResponse": {
+        "required": [
+          "id",
+          "estado",
+          "modalidad",
+          "oficio",
+          "colonia",
+          "descripcion",
+          "fotos",
+          "dia",
+          "franja",
+          "direccion",
+          "totalCotizaciones",
+          "venceEn",
+          "creadoEn"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "modalidad": {
+            "type": "string"
+          },
+          "oficio": {
+            "$ref": "#/components/schemas/RequestTrade"
+          },
+          "colonia": {
+            "$ref": "#/components/schemas/RequestNeighborhood"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "fotos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RequestPhoto"
+            }
+          },
+          "dia": {
+            "type": "string"
+          },
+          "franja": {
+            "type": "string"
+          },
+          "direccion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "totalCotizaciones": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "venceEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Solicitud (spec 020, §5). `Direccion` y `TotalCotizaciones` solo salen en la vista del cliente dueño; la vista del técnico no trae\nnunca la dirección, el nombre ni el teléfono del cliente."
+      },
+      "RequestSummary": {
+        "required": [
+          "id",
+          "estado",
+          "oficioNombre",
+          "coloniaNombre",
+          "dia",
+          "franja",
+          "totalFotos",
+          "totalCotizaciones",
+          "venceEn",
+          "creadoEn"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "oficioNombre": {
+            "type": "string"
+          },
+          "coloniaNombre": {
+            "type": "string"
+          },
+          "dia": {
+            "type": "string"
+          },
+          "franja": {
+            "type": "string"
+          },
+          "totalFotos": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCotizaciones": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "venceEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Fila de `GET /solicitudes`: sin descripción, dirección ni enlaces de fotos."
+      },
+      "RequestTrade": {
+        "required": [
+          "clave",
+          "nombre"
+        ],
+        "type": "object",
+        "properties": {
+          "clave": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          }
+        },
+        "description": "Oficio de la solicitud: clave del catálogo y nombre."
+      },
+      "ValidationProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "WaitlistRequest": {
+        "required": [
+          "cp",
+          "municipio"
+        ],
+        "type": "object",
+        "properties": {
+          "cp": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "municipio": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "WaitlistResponse": {
+        "required": [
+          "id",
+          "cp",
+          "municipio",
+          "creadoEn",
+          "yaRegistrado"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cp": {
+            "type": "string"
+          },
+          "municipio": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "yaRegistrado": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ZonaColoniaResponse": {
+        "required": [
+          "id",
+          "nombre",
+          "cp",
+          "municipio"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "cp": {
+            "type": "string"
+          },
+          "municipio": {
+            "type": "string"
+          }
+        }
+      },
+      "ZonaResponse": {
+        "required": [
+          "enCobertura",
+          "ciudadPiloto",
+          "colonias"
+        ],
+        "type": "object",
+        "properties": {
+          "enCobertura": {
+            "type": "boolean"
+          },
+          "ciudadPiloto": {
+            "type": "string"
+          },
+          "colonias": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ZonaColoniaResponse"
+            }
+          }
+        }
       }
     }
   },
@@ -340,7 +1765,19 @@
       "name": "Colonias"
     },
     {
+      "name": "Cotizaciones"
+    },
+    {
+      "name": "ListaEspera"
+    },
+    {
       "name": "Oficios"
+    },
+    {
+      "name": "Solicitudes"
+    },
+    {
+      "name": "Zonas"
     }
   ]
 }

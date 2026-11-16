@@ -75,11 +75,11 @@ locals {
     market = {
       external = false
       env      = local.forwarded
-      # Market no usa Redis todavía (el cliente solo se registra cuando un módulo lo pide, spec 010): sin ese secreto.
-      secret_env = {
+      # Market usa Redis para la caché del catálogo (spec 010, R-01/R-02): el módulo Catalog registra el cliente al arrancar.
+      secret_env = merge(local.redis_secret, {
         ConnectionStrings__KnockMongo = "mongo-market"
         Jwt__SigningKey               = "jwt-signing-key"
-      }
+      })
     }
   }
 }

@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using Knock.Market.Api.Common.Errors;
 using Knock.Market.Api.Modules.Requests.Domain;
 using Xunit;
 
@@ -12,6 +13,29 @@ public class Spec020RequestStateTests
         var created = new DateTimeOffset(2026, 11, 11, 10, 0, 0, TimeSpan.Zero);
 
         RequestRules.ExpiresAt(created).Should().Be(created.AddHours(48));
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(48)]
+    [InlineData(168)]
+    public void ExpiryIsComputedFromTheReceivedCreationInstantAndConfiguredHours_R_01(int hours)
+    {
+        var created = new DateTimeOffset(2026, 11, 12, 10, 0, 0, TimeSpan.Zero);
+
+        RequestRules.ExpiresAt(created, hours).Should().Be(created.AddHours(hours));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(169)]
+    public void ExpiryRejectsHoursOutsideConfiguredRange_R_01(int hours)
+    {
+        var created = new DateTimeOffset(2026, 11, 12, 10, 0, 0, TimeSpan.Zero);
+
+        var act = () => RequestRules.ExpiresAt(created, hours);
+
+        act.Should().Throw<ArgumentOutOfRangeException>();
     }
 
     [Theory]
@@ -32,6 +56,19 @@ public class Spec020RequestStateTests
     {
         RequestRules.AfterFirstQuote(RequestState.Enviada).Should().Be(RequestState.Cotizando);
         RequestRules.AfterFirstQuote(RequestState.Cotizando).Should().Be(RequestState.Cotizando);
+    }
+
+    [Theory]
+    [InlineData("CitaConfirmada")]
+    [InlineData("Terminada")]
+    [InlineData("Calificada")]
+    [InlineData("Cancelada")]
+    [InlineData("Vencida")]
+    public void FirstQuoteOnAClosedRequestIsRejected_R_16(string stateName)
+    {
+        var act = () => RequestRules.AfterFirstQuote(Enum.Parse<RequestState>(stateName));
+
+        act.Should().Throw<DomainException>().Which.Kind.Should().Be(DomainErrorKind.Conflict);
     }
 
     [Theory]

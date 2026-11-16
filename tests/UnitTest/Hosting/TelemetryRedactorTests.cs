@@ -39,6 +39,7 @@ public class TelemetryRedactorTests
     [InlineData("access_token: a-secret-2", "a-secret-2")]
     [InlineData("{\"refresh_token\":\"r-secret-2\"}", "r-secret-2")]
     [InlineData("contacto persona.ficticia@ejemplo.com fin", "persona.ficticia@ejemplo.com")]
+    [InlineData("contacto persona@ejemplo.test fin", "persona@ejemplo.test")]
     [InlineData("email=persona.ficticia@ejemplo.com", "persona.ficticia@ejemplo.com")]
     [InlineData("correo: persona.ficticia@ejemplo.com", "persona.ficticia@ejemplo.com")]
     [InlineData("password=p-secret-1", "p-secret-1")]

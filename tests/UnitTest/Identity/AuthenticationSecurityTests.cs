@@ -242,7 +242,7 @@ public class AuthenticationSecurityTests
     {
         RedisSesionCancelada.Key("665f1b2c3d4e5f6071829304").Should().Be("sesion-cancelada:665f1b2c3d4e5f6071829304");
         RedisProfileCache.Key("0f8e7d6c-5b4a-8392-a1b0-c9d8e7f6a5b4").Should().Be("perfil:0f8e7d6c-5b4a-8392-a1b0-c9d8e7f6a5b4");
-        RedisProfileCache.Lifetime.Should().Be(TimeSpan.FromSeconds(60));
+        new ProfileCacheOptions().Lifetime.Should().Be(TimeSpan.FromSeconds(60));
         LogoutService.MaxCancellation.Should().Be(TimeSpan.FromMinutes(15));
         RefreshController.MaxBodyBytes.Should().Be(1024);
         AuthController.MaxBodyBytes.Should().Be(8192);

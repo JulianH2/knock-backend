@@ -14,8 +14,7 @@ internal sealed class ProfileOptions
 }
 
 /// <summary>
-/// Reglas de los campos del perfil (spec 017, R-05). Es una clase propia y no un <c>AbstractValidator</c> a propósito: el filtro de validación del
-/// servicio responde 422 y esta spec pide 400 para los campos inválidos (CA-06). Ningún mensaje repite el valor enviado.
+/// Reglas y normalización de los campos del perfil (spec 017, R-05). Ningún mensaje repite el valor enviado.
 /// </summary>
 internal sealed partial class ProfileRules(IOptions<ProfileOptions> options)
 {

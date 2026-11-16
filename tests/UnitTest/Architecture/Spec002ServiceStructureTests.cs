@@ -41,6 +41,14 @@ public class Spec002ServiceStructureTests
     }
 
     [Fact]
+    public void WaitlistController_DoesNotTouchMongoOrRedis_CA_023_10()
+    {
+        var controllers = Types.InAssembly(ModuleCatalog.ApiAssembly).That().HaveName("ListaEsperaController");
+        controllers.GetTypes().Should().ContainSingle();
+        controllers.ShouldNot().HaveDependencyOnAny("MongoDB.Driver", "StackExchange.Redis").GetResult().IsSuccessful.Should().BeTrue();
+    }
+
+    [Fact]
     public void TheRuleCanFail_ForAControllerThatUsesAMongoCollection_CA_002_02()
     {
         var (controllers, failing) = ControllersTouchingMongo(typeof(Spec002ServiceStructureTests).Assembly);

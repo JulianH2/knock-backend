@@ -1,0 +1,272 @@
+[
+  {
+    "_id": {
+      "$oid": "de0000000000000000000001"
+    },
+    "uid": "demo-cliente-01",
+    "celular": "+520000000001",
+    "nombre": "Demo Dragón de Cartón",
+    "estado": "activa",
+    "perfilCompleto": true,
+    "creadoEn": "2026-11-14T00:00:00Z",
+    "version": 1,
+    "demo": true,
+    "consentimientos": [
+      {
+        "documento": "aviso_privacidad",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      },
+      {
+        "documento": "terminos",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "de0000000000000000000002"
+    },
+    "uid": "demo-cliente-02",
+    "celular": "+520000000002",
+    "nombre": "Demo Robot de Papel",
+    "estado": "activa",
+    "perfilCompleto": true,
+    "creadoEn": "2026-11-14T00:00:00Z",
+    "version": 1,
+    "demo": true,
+    "consentimientos": [
+      {
+        "documento": "aviso_privacidad",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      },
+      {
+        "documento": "terminos",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "de0000000000000000000003"
+    },
+    "uid": "demo-cliente-03",
+    "celular": "+520000000003",
+    "nombre": "Demo Nube de Mazapán",
+    "estado": "activa",
+    "perfilCompleto": true,
+    "creadoEn": "2026-11-14T00:00:00Z",
+    "version": 1,
+    "demo": true,
+    "consentimientos": [
+      {
+        "documento": "aviso_privacidad",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      },
+      {
+        "documento": "terminos",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "de0000000000000000000004"
+    },
+    "uid": "demo-cliente-04",
+    "celular": "+520000000004",
+    "nombre": "Demo Cometa de Trapo",
+    "estado": "activa",
+    "perfilCompleto": true,
+    "creadoEn": "2026-11-14T00:00:00Z",
+    "version": 1,
+    "demo": true,
+    "consentimientos": [
+      {
+        "documento": "aviso_privacidad",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      },
+      {
+        "documento": "terminos",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "de0000000000000000000005"
+    },
+    "uid": "demo-cliente-05",
+    "celular": "+520000000005",
+    "nombre": "Demo Monstruo de Tiza",
+    "estado": "activa",
+    "perfilCompleto": true,
+    "creadoEn": "2026-11-14T00:00:00Z",
+    "version": 1,
+    "demo": true,
+    "consentimientos": [
+      {
+        "documento": "aviso_privacidad",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      },
+      {
+        "documento": "terminos",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "de0000000000000000000006"
+    },
+    "uid": "demo-cliente-06",
+    "celular": "+520000000006",
+    "nombre": "Demo Pingüino de Fieltro",
+    "estado": "activa",
+    "perfilCompleto": true,
+    "creadoEn": "2026-11-14T00:00:00Z",
+    "version": 1,
+    "demo": true,
+    "consentimientos": [
+      {
+        "documento": "aviso_privacidad",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      },
+      {
+        "documento": "terminos",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "de0000000000000000000007"
+    },
+    "uid": "demo-cliente-07",
+    "celular": "+520000000007",
+    "nombre": "Demo Planeta de Juguete",
+    "estado": "activa",
+    "perfilCompleto": true,
+    "creadoEn": "2026-11-14T00:00:00Z",
+    "version": 1,
+    "demo": true,
+    "consentimientos": [
+      {
+        "documento": "aviso_privacidad",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      },
+      {
+        "documento": "terminos",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "de0000000000000000000008"
+    },
+    "uid": "demo-cliente-08",
+    "celular": "+520000000008",
+    "nombre": "Demo Pulpo de Felpa",
+    "estado": "activa",
+    "perfilCompleto": true,
+    "creadoEn": "2026-11-14T00:00:00Z",
+    "version": 1,
+    "demo": true,
+    "consentimientos": [
+      {
+        "documento": "aviso_privacidad",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      },
+      {
+        "documento": "terminos",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "de0000000000000000000009"
+    },
+    "uid": "demo-cliente-09",
+    "celular": "+520000000009",
+    "nombre": "Demo Castillo de Galleta",
+    "estado": "activa",
+    "perfilCompleto": true,
+    "creadoEn": "2026-11-14T00:00:00Z",
+    "version": 1,
+    "demo": true,
+    "consentimientos": [
+      {
+        "documento": "aviso_privacidad",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      },
+      {
+        "documento": "terminos",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "de000000000000000000000a"
+    },
+    "uid": "demo-cliente-10",
+    "celular": "+520000000010",
+    "nombre": "Demo Unicornio de Plastilina",
+    "estado": "activa",
+    "perfilCompleto": true,
+    "creadoEn": "2026-11-14T00:00:00Z",
+    "version": 1,
+    "demo": true,
+    "consentimientos": [
+      {
+        "documento": "aviso_privacidad",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      },
+      {
+        "documento": "terminos",
+        "version": "1.0",
+        "aceptadoEn": "2026-11-14T00:00:00Z",
+        "deviceId": "demo-sin-dispositivo"
+      }
+    ]
+  }
+]

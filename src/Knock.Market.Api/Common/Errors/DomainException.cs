@@ -37,7 +37,17 @@ public sealed class DomainException : Exception
         Kind = kind;
     }
 
+    /// <summary>Error de dominio con un <c>code</c> estable que la app lee en el ProblemDetails (spec 002, R-08), por ejemplo <c>invalid_cursor</c>.</summary>
+    public DomainException(DomainErrorKind kind, string message, string code)
+        : this(kind, message)
+    {
+        Code = code;
+    }
+
     public DomainErrorKind Kind { get; }
+
+    /// <summary>Código estable opcional; nunca lleva datos de la persona ni del recurso.</summary>
+    public string? Code { get; }
 }
 
 /// <summary>Código HTTP de cada tipo del catálogo de dominio.</summary>

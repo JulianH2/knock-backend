@@ -28,7 +28,7 @@ Que una persona que se registra indique su zona con su ubicación o con su códi
 - El campo `piloto` de la colonia: en el catálogo significa «tiene polígono», no «está en cobertura»; no se expone ni se usa como filtro.
 
 ## 3. Requisitos
-- **R-01:** `GET /api/v1/zonas/cp/{cp}` exige JWT y recibe `cp` de exactamente cinco dígitos ASCII. El valor se enlaza a un objeto de ruta con su validador registrado, nunca a un `string` suelto. Un código mal formado (no numérico, de 4 o 6 dígitos, vacío o con intento de inyección como `{"$ne":1}`, `.*` o `42800%00`) responde 422 en ProblemDetails con `errors.cp`, sin repetir el valor enviado, y no consulta el catálogo.
+- **R-01:** `GET /api/v1/zonas/cp/{cp}` exige JWT y recibe `cp` de exactamente cinco dígitos ASCII. El valor se enlaza a un objeto de ruta con su validador registrado, nunca a un `string` suelto. Un código mal formado (no numérico, de 4 o 6 dígitos, vacío o con intento de inyección como `{"$ne":1}` o `.*`) responde 422 en ProblemDetails con `errors.cp`, sin repetir el valor enviado, y no consulta el catálogo. El byte nulo codificado (`42800%00`) lo rechaza el servidor (Kestrel) con 400 sin cuerpo antes de llegar a la aplicación; un `\0` literal o `%2500` sí llega al validador y responde 422.
 - **R-02:** La respuesta correcta es `{ enCobertura, ciudadPiloto, colonias: [{ id, nombre, cp, municipio }] }`. Un código con al menos una colonia en el catálogo responde `enCobertura: true` y sus colonias ordenadas por `nombreBusqueda`; uno sin colonias responde `enCobertura: false` y `colonias: []`. En ambos casos `ciudadPiloto` viene de configuración (`Catalogo:CiudadPiloto`, «Tula de Allende»), nunca de datos de la persona ni del cliente.
 - **R-03:** La cobertura se decide por la presencia del código postal en el catálogo, no por el campo `piloto`: las colonias sin polígono (`piloto: false`) son visibles por código postal y nunca por punto. La respuesta no incluye `geom`, `centro`, `nombreBusqueda`, `version`, `piloto` ni ningún campo interno.
 - **R-04:** La consulta por código postal usa el índice `{ cp: 1 }` de `colonias` y una caché de 24 h con la clave `colonias:cp:{cp}`; un código sin colonias se cachea 5 minutos para no golpear la base con códigos inventados. La consulta no lleva coordenadas y por eso su clave de caché no contiene datos de la persona.
@@ -49,7 +49,7 @@ Que una persona que se registra indique su zona con su ubicación o con su códi
 ## 4. Criterios de aceptación
 - **CA-01:** Dado un código postal de la ciudad piloto presente en el catálogo, cuando la persona lo consulta, entonces responde 200 con `enCobertura: true` y solo las colonias de ese código, con `id`, `nombre`, `cp` y `municipio`.
 - **CA-02:** Dado un código postal sin colonias en el catálogo, cuando lo consulta, entonces responde 200 con `enCobertura: false`, `colonias: []` y el nombre de la ciudad piloto.
-- **CA-03:** Dado un código mal formado (no numérico, de 4 o 6 dígitos, vacío o con intento de inyección), cuando lo consulta, entonces responde 422 con `errors.cp`, no repite el valor y no consulta el catálogo.
+- **CA-03:** Dado un código mal formado (no numérico, de 4 o 6 dígitos, vacío o con intento de inyección), cuando lo consulta, entonces responde 422 con `errors.cp`, no repite el valor y no consulta el catálogo. El `%00` codificado queda fuera: el servidor lo rechaza con 400 antes de la aplicación.
 - **CA-04:** Dada una consulta válida, cuando se inspeccionan la respuesta, la caché y los registros, entonces no aparecen coordenadas ni campos internos de la colonia (`geom`, `centro`, `piloto`, `nombreBusqueda`, `version`).
 - **CA-05:** Dada una consulta fuera de cobertura, cuando la persona confirma «Avísame cuando lleguen», entonces responde 201 y hay un documento en `listas_espera` con su `sub`, el código postal y, si lo envió, el municipio.
 - **CA-06:** Dado el mismo `sub` con el mismo código postal, cuando repite la lista de espera, entonces responde 200 con el registro existente y `yaRegistrado: true`, y sigue habiendo un solo documento.
@@ -70,7 +70,7 @@ Que una persona que se registra indique su zona con su ubicación o con su códi
 |---|---|
 | CA-01 | `Spec023ZonaTests.CodigoPiloto_Lista_Sus_Colonias_CA_023_01` |
 | CA-02 | `Spec023ZonaTests.Codigo_Fuera_De_Cobertura_CA_023_02` |
-| CA-03 | `Spec023ValidacionTests.Codigo_Mal_Formado_CA_023_03` |
+| CA-03 | `Spec023ValidacionTests.Codigo_Mal_Formado_CA_023_03` y `Spec023ZonaTests.Rechaza_Byte_Nulo_En_El_Servidor_CA_023_03` |
 | CA-04 | `Spec023PrivacidadTests.Sin_Coordenadas_Ni_Campos_Internos_CA_023_04` |
 | CA-05 | `Spec023ListaEsperaTests.Registra_Lista_De_Espera_CA_023_05` |
 | CA-06 | `Spec023ListaEsperaTests.Idempotente_Por_Persona_Y_Codigo_CA_023_06` |
@@ -183,7 +183,7 @@ El script `db/` de esta spec crea la colección y sus índices de forma idempote
 - La misma persona vuelve a apuntarse: la app le agradece otra vez sin duplicar.
 
 **Negativos**
-- Código de cuatro dígitos, con letras o con `%00`.
+- Código de cuatro dígitos, con letras o con `%00` (este último espera 400 del servidor, no 422).
 - Municipio con `<script>` o con salto de línea.
 - Cuerpo con `usuarioId` de otra persona.
 - Sexto registro en una hora.

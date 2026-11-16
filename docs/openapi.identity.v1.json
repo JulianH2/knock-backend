@@ -102,6 +102,7 @@
         "tags": [
           "Me"
         ],
+        "summary": "Actualiza el perfil. Los campos inválidos responden 422 con errores por campo; una colonia inexistente responde 422 con su código.",
         "parameters": [
           {
             "name": "version",

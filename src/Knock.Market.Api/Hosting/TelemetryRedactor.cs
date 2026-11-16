@@ -1,9 +1,13 @@
 using System.Collections.Frozen;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using OpenTelemetry;
 using OpenTelemetry.Logs;
+using Serilog.Events;
+using Serilog.Formatting;
 
 namespace Knock.Market.Api.Hosting;
 
@@ -330,6 +334,69 @@ internal sealed class LogRedactionProcessor : BaseProcessor<LogRecord>
         if (data.Attributes is { Count: > 0 } attributes)
         {
             data.Attributes = [.. attributes.Select(a => new KeyValuePair<string, object?>(a.Key, TelemetryRedactor.RedactAttribute(a.Key, a.Value)))];
+        }
+    }
+}
+
+/// <summary>
+/// Formato de consola con la misma redacción que <see cref="LogRedactionProcessor"/> (spec 011): el formateador interno escribe el
+/// evento en JSON y cada valor pasa por <see cref="TelemetryRedactor"/> antes de salir. El mensaje (<c>@m</c>, <c>@mt</c>) y la excepción
+/// (<c>@x</c>) se redactan como texto; las propiedades, como atributos (una clave conocida se reemplaza entera, también dentro de objetos).
+/// Los demás campos de control (<c>@t</c>, <c>@l</c>, <c>@i</c>, <c>@tr</c>, <c>@sp</c>) no llevan datos del usuario y no se tocan.
+/// El resultado se vuelve a serializar, así que sigue siendo JSON válido aunque se reemplace un número (<c>"lat":19.4326</c>).
+/// </summary>
+internal sealed class RedactingJsonFormatter(ITextFormatter inner) : ITextFormatter
+{
+    private static readonly FrozenSet<string> _textFields = new[] { "@m", "@mt", "@x" }.ToFrozenSet(StringComparer.Ordinal);
+
+    public void Format(LogEvent logEvent, TextWriter output)
+    {
+        ArgumentNullException.ThrowIfNull(output);
+        using var buffer = new StringWriter(CultureInfo.InvariantCulture);
+        inner.Format(logEvent, buffer);
+        if (JsonNode.Parse(buffer.ToString()) is not JsonObject source)
+        {
+            output.WriteLine(TelemetryRedactor.Redact(buffer.ToString().TrimEnd()));
+            return;
+        }
+
+        var redacted = new JsonObject();
+        foreach (var (key, value) in source)
+        {
+            redacted[key] = key is ['@', ..] && !_textFields.Contains(key) ? value?.DeepClone() : RedactNode(key, value);
+        }
+
+        output.WriteLine(redacted.ToJsonString());
+    }
+
+    private static JsonNode? RedactNode(string key, JsonNode? node)
+    {
+        if (node is null)
+        {
+            return null;
+        }
+
+        if (TelemetryRedactor.IsSensitiveKey(key))
+        {
+            return JsonValue.Create(TelemetryRedactor.Placeholder);
+        }
+
+        switch (node)
+        {
+            case JsonObject structure:
+                var redacted = new JsonObject();
+                foreach (var (name, value) in structure)
+                {
+                    redacted[name] = RedactNode(name, value);
+                }
+
+                return redacted;
+            case JsonArray items:
+                return new JsonArray([.. items.Select(item => RedactNode(string.Empty, item))]);
+            case JsonValue value when value.TryGetValue(out string? text):
+                return JsonValue.Create(TelemetryRedactor.Redact(text));
+            default:
+                return node.DeepClone();
         }
     }
 }

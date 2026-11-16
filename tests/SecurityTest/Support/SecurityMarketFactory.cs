@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using StackExchange.Redis;
 
 namespace Knock.SecurityTest.Support;
 
@@ -54,6 +55,8 @@ internal sealed class SecurityMarketFactory(IReadOnlyDictionary<string, string?>
 {
     private const string _highLimit = "1000000";
 
+    private static int _redisDatabaseCounter;
+
     public RecordingNeighborhoodLocator Locator { get; } = new();
 
     public IMongoDatabase Database => Services.GetRequiredService<IMongoClient>().GetDatabase(settings["Mongo:Databases:Catalog"]!);
@@ -62,11 +65,21 @@ internal sealed class SecurityMarketFactory(IReadOnlyDictionary<string, string?>
 
     public static async Task<SecurityMarketFactory> CreateAsync(IReadOnlyDictionary<string, string?>? overrides = null, string environment = "Production")
     {
-        var mongo = await DocumentDbFixture.SharedAsync();
         SecurityHostConfiguration.ClearFirebaseEmulatorHost();
+        var mongo = await DocumentDbFixture.SharedAsync();
+        var redis = await RedisTestFixture.SharedAsync();
+        // Las claves del catálogo son fijas: cada fábrica usa su propia base lógica de Redis (la 1 a la 15, en ciclo) y la limpia al
+        // crearse; sin esto, dos fábricas del mismo contenedor compartían la base 0 y una prueba veía la caché de otra (KNOCK-205).
+        var index = (Interlocked.Increment(ref _redisDatabaseCounter) % 15) + 1;
+        var redisConnectionString = redis.ConnectionString + $",defaultDatabase={index},allowAdmin=true";
+        await using (var multiplexer = await ConnectionMultiplexer.ConnectAsync(redisConnectionString))
+        {
+            await multiplexer.GetServer(multiplexer.GetEndPoints()[0]).FlushDatabaseAsync();
+        }
         var values = new Dictionary<string, string?>
         {
             ["ConnectionStrings:KnockMongo"] = mongo.ConnectionString,
+            ["ConnectionStrings:KnockRedis"] = redisConnectionString,
             ["Mongo:Databases:Catalog"] = "market_sec_" + Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(6)),
         };
         foreach (var (key, value) in overrides ?? new Dictionary<string, string?>())
