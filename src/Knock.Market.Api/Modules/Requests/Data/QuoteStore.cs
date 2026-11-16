@@ -81,7 +81,7 @@ internal sealed class QuoteStore(
     private BsonDocument CreateQuote(ObjectId id, ObjectId requestId, ObjectId technicianId, string sub, string trade, QuoteValidationInput body, DateTimeOffset now)
     {
         var type = body.TipoPrecio switch { "fijo" => PriceType.Fijo, "rango" => PriceType.Rango, "visita" => PriceType.Visita, _ => throw new InvalidOperationException("Invalid quote type.") };
-        int? Amount(decimal? value) => value.HasValue ? decimal.ToInt32(value.Value) : null;
+        static int? Amount(decimal? value) => value.HasValue ? decimal.ToInt32(value.Value) : null;
         var cap = QuotePricing.Calculate(type, trade, Amount(body.Precio), Amount(body.PrecioMin), Amount(body.PrecioMax), pricing.Value);
         return new BsonDocument
         {
