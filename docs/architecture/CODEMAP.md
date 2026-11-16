@@ -1,12 +1,13 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-16T06:07:45Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-16T16:24:11Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
 
 | Módulo | Capas | Archivos | Tipos | Métodos públicos |
 |---|---|---|---|---|
+| `Assistant` | data | 2 | 6 | 5 |
 | `Catalog` | -, controllers, data, domain, dtos, services, validators | 37 | 50 | 80 |
 | `Knock.Contracts` | - | 7 | 11 | 7 |
 | `Knock.Gateway` | -, hosting | 14 | 39 | 48 |
@@ -152,6 +153,15 @@
 - `ValidationFilter`: `src/Knock.Identity.Api/Hosting/ValidationExtensions.cs:25`, `src/Knock.Market.Api/Hosting/ValidationExtensions.cs:24`
 
 ## Índice por módulo
+
+### Assistant
+
+**data**
+
+- `src/Knock.Market.Api/Modules/Assistant/Data/ConsumoIaStore.cs` — enum `ConsumptionResult`, record `ConsumptionReservation`, record `ReservationResult`, class `ConsumoIaStore`
+  - `ConsumoIaStore()`:12, `ReserveAsync()`:39, `AdjustAsync()`:63
+- `src/Knock.Market.Api/Modules/Assistant/Data/UsoIaStore.cs` — record `UsageRecord`, class `UsoIaStore`
+  - `UsoIaStore()`:8, `SaveAsync()`:10
 
 ### Catalog
 
