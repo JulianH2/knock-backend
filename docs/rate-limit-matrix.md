@@ -43,6 +43,10 @@
 
 `POST /api/v1/solicitudes` tiene además una política por `sub` del JWT de **10 solicitudes por hora**, ventana fija, por proceso (`RateLimitingExtensions.CreateRequestPolicy`); la respuesta 429 incluye `Retry-After`. Como las demás políticas de Mercado vive en la memoria de cada réplica, así que con dos réplicas el límite efectivo se duplica. El cuerpo se limita a 8 KB (413 antes de llegar al servicio). Los límites de cotizar (3 por minuto por técnico) los define el controller de cotizaciones (KNOCK-74).
 
+## Comparar y elegir cotización en Mercado (spec 021, KNOCK-82)
+
+`GET /api/v1/solicitudes/{id}/cotizaciones` tiene una política por `sub` del JWT de **60 listados por minuto** y `POST /api/v1/solicitudes/{id}/elegir` de **10 elecciones por minuto**, ambas de ventana fija y por proceso (`RateLimitingExtensions.CompareQuotesPolicy` y `ChooseQuotePolicy`); la respuesta 429 incluye `Retry-After`. Como las demás políticas de Mercado viven en la memoria de cada réplica, con dos réplicas el límite efectivo se duplica. El cuerpo de la elección se limita a 8 KB (413). El control real contra una segunda cita no es el límite sino el índice único de `visitas` por `solicitudId` y la transacción.
+
 ## Lista de espera en Mercado (spec 023, KNOCK-47)
 
 `GET /api/v1/zonas/cp/{cp}` requiere sesión y usa los límites globales del gateway por IP y usuario y el límite por IP de Mercado; no tiene política específica adicional.

@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using Knock.Contracts.Moderation;
 using Knock.IntegrationTest.Support;
+using MarketApi::Knock.Market.Api.Modules.Requests.Data;
 using MarketApi::Knock.Market.Api.Modules.Requests.Dtos;
 using MarketApi::Knock.Market.Api.Modules.Requests.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,19 @@ internal sealed class FakePhotos : IRequestPhotos
 
     public Task<IReadOnlyList<RequestPhoto>> ReadLinksAsync(IReadOnlyList<string> photoIds, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<RequestPhoto>>([.. photoIds.Select(id => new RequestPhoto(id, "https://files.test/" + id + "?sig=ficticia", DateTimeOffset.UtcNow.AddMinutes(5)))]);
+}
+
+/// <summary>Interruptor de la caída simulada del buzón de salida: mientras <see cref="Fail"/> sea verdadero, escribir en el buzón falla (spec 021, CA-17).</summary>
+internal sealed class OutboxFailureSwitch
+{
+    public bool Fail { get; set; }
+}
+
+/// <summary>Buzón de salida que falla mientras el interruptor esté activo y, si no, escribe de verdad.</summary>
+internal sealed class FlakyOutbox(IOutbox inner, OutboxFailureSwitch control) : IOutbox
+{
+    public Task AddAsync(IClientSessionHandle session, OutboxMessage message, CancellationToken cancellationToken) =>
+        control.Fail ? throw new TimeoutException("Simulated database failure.") : inner.AddAsync(session, message, cancellationToken);
 }
 
 /// <summary>Moderador de mentira: permite, rechaza o no responde según se configure.</summary>
@@ -48,9 +62,10 @@ internal sealed class Spec020Host : IAsyncDisposable
 
     private readonly MarketApiFactory _factory;
 
-    private Spec020Host(MarketApiFactory factory, FakePhotos photos, FakeModerator moderator)
+    private Spec020Host(MarketApiFactory factory, FakePhotos photos, FakeModerator moderator, OutboxFailureSwitch outboxFailure)
     {
         _factory = factory;
+        OutboxFailure = outboxFailure;
         Photos = photos;
         Moderator = moderator;
         Client = factory.CreateClient();
@@ -62,16 +77,19 @@ internal sealed class Spec020Host : IAsyncDisposable
 
     public FakeModerator Moderator { get; }
 
+    public OutboxFailureSwitch OutboxFailure { get; }
+
     public IMongoDatabase Database => _factory.Database;
 
     public string ClientSub { get; } = Guid.NewGuid().ToString("D");
 
     public ObjectId ColoniaId { get; private set; }
 
-    public static async Task<Spec020Host> StartAsync(IReadOnlyDictionary<string, string?>? overrides = null)
+    public static async Task<Spec020Host> StartAsync(IReadOnlyDictionary<string, string?>? overrides = null, Action<IServiceCollection>? configure = null)
     {
         var photos = new FakePhotos();
         var moderator = new FakeModerator();
+        var outboxFailure = new OutboxFailureSwitch();
         var settings = new Dictionary<string, string?>
         {
             ["Security:FieldEncryption:ActiveVersion"] = "1",
@@ -86,8 +104,10 @@ internal sealed class Spec020Host : IAsyncDisposable
         {
             services.AddSingleton<IRequestPhotos>(photos);
             services.AddSingleton<IContentModerator>(moderator);
+            services.AddScoped<IOutbox>(sp => new FlakyOutbox(new MongoOutbox(sp.GetRequiredKeyedService<IMongoDatabase>("Requests")), outboxFailure));
+            configure?.Invoke(services);
         });
-        var host = new Spec020Host(factory, photos, moderator);
+        var host = new Spec020Host(factory, photos, moderator, outboxFailure);
         await host.SeedTradeAsync(Plumbing, "Plomería", "domicilio", active: true);
         await host.SeedTradeAsync(Workshop, "Mecánica", "taller", active: true);
         host.ColoniaId = await host.SeedColoniaAsync("Centro", "42800");
