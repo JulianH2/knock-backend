@@ -20,6 +20,7 @@ internal static class LoggingExtensions
     {
         services.AddSerilog((provider, logger) => logger
             .ReadFrom.Configuration(configuration)
+            .Filter.ByExcluding(IsQueryBearingBelowWarning)
             .Enrich.FromLogContext()
             .Enrich.With<ScopeRequestPathEnricher>()
             .WriteTo.Console(new RedactingJsonFormatter(new RenderedCompactJsonFormatter()))
@@ -44,6 +45,32 @@ internal static class LoggingExtensions
     }
 
     public const string UnmatchedRoute = "(unmatched)";
+
+    /// <summary>
+    /// Fuentes que escriben la dirección completa, con su consulta, en eventos por debajo de <c>Warning</c> (spec 035, R-01): los eventos «Request starting» y
+    /// «Request finished» de ASP.NET Core, el registro HTTP, los clientes HTTP y el reenvío de YARP. La petición la registra solo <c>UseSerilogRequestLogging</c>,
+    /// con la plantilla de la ruta.
+    /// </summary>
+    private static readonly string[] _queryBearingSources =
+    [
+        "Microsoft.AspNetCore.Hosting.Diagnostics",
+        "Microsoft.AspNetCore.HttpLogging",
+        "System.Net.Http.HttpClient",
+        "Yarp.ReverseProxy.Forwarder",
+    ];
+
+    /// <summary>
+    /// Verdadero para un evento de esas fuentes (o de sus subcategorías) con nivel menor a <c>Warning</c>. El filtro va en código, después de leer la configuración:
+    /// ningún nivel de <c>appsettings</c> ni variable de entorno vuelve a habilitar esos eventos. Los de <c>Warning</c> o más pasan por la redacción del formateador.
+    /// </summary>
+    internal static bool IsQueryBearingBelowWarning(LogEvent logEvent)
+    {
+        ArgumentNullException.ThrowIfNull(logEvent);
+        return logEvent.Level < LogEventLevel.Warning
+            && logEvent.Properties.TryGetValue("SourceContext", out var source)
+            && source is ScalarValue { Value: string name }
+            && _queryBearingSources.Any(prefix => name.StartsWith(prefix, StringComparison.Ordinal));
+    }
 
     /// <summary>
     /// Plantilla de la ruta con los literales y la versión de la API (<c>/api/v1/x/{id}</c>); los demás parámetros quedan como <c>{nombre}</c>.

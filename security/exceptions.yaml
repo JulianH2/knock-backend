@@ -292,3 +292,16 @@ excepciones:
     creada: 2026-11-14
     vence: 2026-12-04
     plan: en el siguiente commit de la rama de KNOCK-246 la cadena se construye sin el formato completo de conexión (con MongoUrlBuilder); la huella se queda mientras el commit exista en el historial y la excepción se renueva si vence antes de que deje de analizarse.
+  - id: EXC-025
+    herramienta: jscpd, codemap
+    regla: código duplicado (jscpd:ignore y línea base de clones de docs/architecture/clones-baseline.json)
+    alcance: src/Knock.Identity.Api/Hosting/SharedRateLimiter.cs, src/Knock.Market.Api/Hosting/SharedRateLimiter.cs, src/Knock.Identity.Api/Hosting/RedisRequestCounter.cs, src/Knock.Market.Api/Hosting/RedisRequestCounter.cs, src/Knock.Gateway/Hosting/RateLimitingExtensions.cs, src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs y src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs (7 archivos con su nombre exacto, entre «// jscpd:ignore-start -- EXC-025» y su cierre); no se amplía más allá de 7 (la siguiente copia obliga a hacer la biblioteca compartida)
+    justificacion: >-
+      KNOCK-247 (spec 006, R-05): el contador del límite de peticiones de Identidad y Mercado pasa a Redis para que el límite sea compartido entre copias, con el mismo contador que ya usa el gateway
+      y con respaldo en memoria por copia si Redis falla. Aún no existe la biblioteca técnica compartida (KNOCK-251) y un servicio no referencia a otro, así que se copian las clases del gateway
+      cambiando solo el espacio de nombres. EXC-007, EXC-008 y EXC-021 no las amparan. Las copias se prueban por separado (límite compartido por IP y por sub, 429 con ProblemDetails, caída y recuperación
+      de Redis). Decisión del líder del 2026-11-14 en KNOCK-247: el contador va a la biblioteca compartida de KNOCK-251 y, si esta tarjeta llega antes, se acepta una copia temporal con excepción ligada a ella.
+    responsable: Ángel Alexis Blas Castillo
+    creada: 2026-11-15
+    vence: 2027-02-13
+    plan: mover el contador y el limitador a la biblioteca técnica compartida de KNOCK-251, quitar los marcadores y las huellas de la línea base de clones y retirar esta excepción antes de vencer.

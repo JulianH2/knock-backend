@@ -34,6 +34,9 @@ internal sealed class RateLimitSettings
 internal static class RateLimitingExtensions
 {
     public const string WaitlistPolicy = "waitlist";
+
+    /// <summary>Crear solicitudes: 10 por hora por persona (spec 020, §5), además del límite general.</summary>
+    public const string CreateRequestPolicy = "solicitudes-crear";
     public const string QuotePolicy = "quotes";
     private const string _healthPath = "/health";
     private const string _readyPath = "/health/ready";
@@ -58,12 +61,9 @@ internal static class RateLimitingExtensions
             var auth = settings.Value.Auth;
             var ready = settings.Value.Ready;
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-            options.AddPolicy(WaitlistPolicy, context => context.User.FindFirst("sub")?.Value is { Length: > 0 } subject
-                ? RateLimitPartition.GetFixedWindowLimiter(subject, _ => FixedWindow(new RateLimitPolicySettings { PermitLimit = 5, Window = TimeSpan.FromHours(1) }))
-                : RateLimitPartition.GetNoLimiter(_unknownClient));
-            options.AddPolicy(QuotePolicy, context => context.User.FindFirst("sub")?.Value is { Length: > 0 } subject
-                ? RateLimitPartition.GetFixedWindowLimiter(subject, _ => FixedWindow(new RateLimitPolicySettings { PermitLimit = 3, Window = TimeSpan.FromMinutes(1) }))
-                : RateLimitPartition.GetNoLimiter(_unknownClient));
+            options.AddPolicy(WaitlistPolicy, SubjectPolicy(5, TimeSpan.FromHours(1)));
+            options.AddPolicy(CreateRequestPolicy, SubjectPolicy(10, TimeSpan.FromHours(1)));
+            options.AddPolicy(QuotePolicy, SubjectPolicy(3, TimeSpan.FromMinutes(1)));
             options.GlobalLimiter = PartitionedRateLimiter.CreateChained(
                 PartitionedRateLimiter.Create<HttpContext, string>(context => GlobalPartition(context, global, ready)),
                 PartitionedRateLimiter.Create<HttpContext, string>(context =>
@@ -82,6 +82,12 @@ internal static class RateLimitingExtensions
         });
         return services;
     }
+
+    /// <summary>Política por <c>sub</c> del token; sin <c>sub</c> no limita (la autenticación ya respondió).</summary>
+    private static Func<HttpContext, RateLimitPartition<string>> SubjectPolicy(int permitLimit, TimeSpan window) =>
+        context => context.User.FindFirst("sub")?.Value is { Length: > 0 } subject
+            ? RateLimitPartition.GetFixedWindowLimiter(subject, _ => FixedWindow(new RateLimitPolicySettings { PermitLimit = permitLimit, Window = window }))
+            : RateLimitPartition.GetNoLimiter(_unknownClient);
 
     /// <summary>Partición del límite general: <c>/health</c> sin límite, <c>/health/ready</c> con el suyo y el resto con el global.</summary>
     private static RateLimitPartition<string> GlobalPartition(HttpContext context, RateLimitPolicySettings global, RateLimitPolicySettings ready)

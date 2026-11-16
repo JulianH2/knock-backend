@@ -1,6 +1,9 @@
 extern alias identity;
 using System.Reflection;
 using AwesomeAssertions;
+using Knock.Market.Api.Modules.Requests;
+using Knock.Market.Api.Modules.Requests.Data;
+using Knock.Market.Api.Modules.Requests.Services;
 using Microsoft.Extensions.DependencyInjection;
 using NetArchTest.Rules;
 using Xunit;
@@ -12,6 +15,29 @@ namespace Knock.UnitTest.Architecture;
 
 public sealed class DemoSeedBoundaryTests
 {
+    [Theory]
+    [InlineData(false, "Development", false)]
+    [InlineData(true, "Production", false)]
+    [InlineData(true, "production", false)]
+    [InlineData(true, "Development", true)]
+    public void MarketDemoStartup_OnlyRunsWhenEnabledOutsideProduction(bool enabled, string environment, bool expected)
+    {
+        DemoTechnicianStartup.ShouldRun(enabled, environment).Should().Be(expected);
+    }
+
+    [Fact]
+    public void MarketDemoBoundary_UsesRequestsDataOnly()
+    {
+        var assembly = typeof(DemoTechnicianSeeder).Assembly;
+        Types.InAssembly(assembly).That().HaveName(nameof(DemoTechnicianSeeder))
+            .ShouldNot().HaveDependencyOnAny("MongoDB.Driver", "Knock.Identity.Api", "Knock.Messaging.Api")
+            .GetResult().IsSuccessful.Should().BeTrue();
+        typeof(DemoTechnicianSeeder).GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .SelectMany(x => x.GetParameters()).Select(x => x.ParameterType).Should().Contain(typeof(DemoTechnicianStore));
+        var database = typeof(DemoTechnicianStore).GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .SelectMany(x => x.GetParameters()).Single(x => x.ParameterType.FullName == "MongoDB.Driver.IMongoDatabase");
+        database.GetCustomAttribute<FromKeyedServicesAttribute>()!.Key.Should().Be(RequestsModuleExtensions.ModuleKey);
+    }
     [Fact]
     public void IdentityBoundary_CA_038_08()
     {
