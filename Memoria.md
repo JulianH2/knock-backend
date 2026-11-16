@@ -35,7 +35,7 @@
 - **Estado:** `tests/perf/spec006-two-replicas.js` creado (carga constante `constant-arrival-rate` contra el gateway: `GET /health/ready` y `GET /api/v1/oficios`; `BASE_URL` por variable de entorno; `TOKEN` opcional por variable; umbrales `http_req_failed < 1 %` y `p95 < 500 ms`; check sin `5xx`; escenario de caída de una copia manual documentado en la cabecera) y `tests/perf/spec006-two-replicas.md` (local y Azure, con marcadores `<usuario>`/`<contraseña>`/`<token>`; sin credenciales). Fila de Rendimiento en `specs/006-*/task.md` marcada hecha (T-05). Sin commit (pendiente codemap), en `feature/KNOCK-201-scaling-and-health` (PR #61).
 - **Falta de reutilización:** no había k6 de la spec 010 en el repo: no existe `tests/perf/` y `tests/PerformanceTest` es una biblioteca .NET vacía. El script se creó desde cero; cuando TT-010/T-07 cree su k6, se extrae lo común a un helper compartido.
 - **No ejecutado:** `k6` no está instalado en esta máquina (`k6: command not found`) y no hay servicios levantados en local (sin respuesta en `http://localhost:8080`); no se inventa ningún número. La primera pasada corta (`--vus 2 --duration 20s`) y el escenario de caída quedan para la primera corrida con k6 instalado y 2 réplicas reales.
-- **Local:** `deploy/docker-compose.local.yml` solo levanta infraestructura (`postgres`, `documentdb`, `redis`), no los servicios .NET; las 2 réplicas en local se levantan a mano con puertos distintos y dos `Destinations` en YARP (ver `tests/perf/spec006-two-replicas.md`).
+- **Local:** `deploy/docker-compose.local.yml` solo levanta infraestructura (`documentdb` y `redis`), no los servicios .NET; las 2 réplicas en local se levantan a mano con puertos distintos y dos `Destinations` en YARP (ver `tests/perf/spec006-two-replicas.md`).
 - **A evitar:** dar la carga por probada sin la salida real de k6; usar `RATE`/`DURATION`/`PRE_VUS`/`MAX_VUS` si la primera pasada muestra saturación del rate limiter del gateway (100/min por IP) antes que del servicio.
 
 ## 2026-11-09 — Spec 006: escalabilidad, balanceo y salud (KNOCK-201)
@@ -718,6 +718,10 @@
 - **Cómo se usa:** quien implementa KNOCK-247 envuelve esas copias con `// jscpd:ignore-start -- EXC-025` y su cierre, y corre `python scripts/codemap.py --update-baseline` en su PR para que la línea base de `docs/architecture/clones-baseline.json` quede revisada. No se amplía a más archivos.
 - **A evitar:** copiar el contador a un servicio más sin ampliar la excepción; dejar la excepción vencer sin la biblioteca. Si Redis cae, el límite efectivo se multiplica por el número de copias hasta que vuelva; por eso la T-03 de la spec 006 queda parcial.
 
+## 2026-11-16 — TT-BD-07 (KNOCK-157): el compose local ya no levanta PostgreSQL
+- **Estado:** `deploy/docker-compose.local.yml` queda con `documentdb` y `redis`; se quitan el servicio `postgres`, su volumen y `POSTGRES_*` de `.env.example` y del README de semillas. Antes, `up` exigía `POSTGRES_PASSWORD` aunque nada la usa.
+- **Pendiente:** las reglas de `.agents/` y `AGENTS.md` (db-builder, `database.md`, `tests-backend.md`, `knock.json`) ya se corrigieron en este PR con autorización del Tech Lead. Lo pendiente real es `.github/workflows/ci-pr.yml`, que conserva `sqlfluff` y textos de PostGIS y requiere al líder.
+- **A evitar:** dejar variables obligatorias de servicios que ya no existen.
 ## 2026-11-16 — KNOCK-43 (HU-001): estado real de las tareas de la spec 015
 - **Estado:** el login por celular ya estaba implementado y fusionado con KNOCK-210 y KNOCK-231; `specs/015/task.md` seguía en «pendiente». Se marcan T-01 a T-10 como hechas con la ruta de sus pruebas. Sin cambios de código.
 - **Pendiente:** la firma real de Google (CA-04, «otra firma») solo se prueba con el emulador; las transacciones de MongoDB falla todo canje si el clúster real no las admite.
