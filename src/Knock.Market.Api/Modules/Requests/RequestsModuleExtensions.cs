@@ -39,6 +39,10 @@ public static class RequestsModuleExtensions
         services.AddScoped<ChoiceStore>();
         services.AddScoped<QuoteComparisonService>();
         services.AddScoped<ChooseQuoteService>();
+        services.AddScoped<VisitStore>();
+        services.AddScoped<VisitService>();
+        services.AddScoped<ArrivalService>();
+        services.AddScoped<TrustNoticeService>();
         services.AddScoped<IRequestsApi, RequestsApi>();
         services.AddScoped<DemoTechnicianStore>();
         services.AddScoped<DemoTechnicianSeeder>();

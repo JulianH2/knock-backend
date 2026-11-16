@@ -132,6 +132,9 @@ internal sealed class MarketApiFactory(IReadOnlyDictionary<string, string?> sett
             Index("clienteId_1_dia_1", new BsonDocument { ["clienteId"] = 1, ["dia"] = 1 }),
             Index("tecnicoUsuarioId_1_dia_1", new BsonDocument { ["tecnicoUsuarioId"] = 1, ["dia"] = 1 }),
             Index("estado_1_dia_1", new BsonDocument { ["estado"] = 1, ["dia"] = 1 }),
+            // Spec 022 (db/024-visitas-llegada.js).
+            Index("estado_1_codigoVenceEn_1", new BsonDocument { ["estado"] = 1, ["codigoVenceEn"] = 1 }),
+            Index("tecnicoUsuarioId_1_estado_1_dia_1", new BsonDocument { ["tecnicoUsuarioId"] = 1, ["estado"] = 1, ["dia"] = 1 }),
         ]);
     }
 
