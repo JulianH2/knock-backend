@@ -55,7 +55,7 @@ Que cada solicitud llegue a pocos técnicos adecuados y no a todos: una primera 
 - **CA-04:** Dado un técnico que descartó la solicitud, otro oculto, otro suspendido, otro con `disponibleHasta` vencido y el propio cliente registrado como técnico, cuando se arma una oleada, entonces ninguno la recibe.
 - **CA-05:** Dadas dos réplicas del ejecutor sobre la misma base, cuando vence la revisión, entonces la oleada siguiente se reparte una sola vez y no hay envíos repetidos.
 - **CA-06:** Dada una solicitud con 5 cotizaciones activas, cuando llega una sexta, entonces responde 409 `quote_quota_full`; y dadas dos cotizaciones simultáneas con 4 activas, cuando terminan, entonces una responde 201 y la otra 409.
-- **CA-07:** Dados 10 técnicos sin ningún nuevo y sin ninguno cercano distinto de los mejor ordenados, cuando se reparte, entonces se completan 5 con `relleno` y nunca más de 5.
+- **CA-07:** Dados 10 técnicos elegibles sin ningún nuevo, cuando se reparte, entonces hay 3 `mejor_ordenado`, 1 `cercano` y 1 `relleno`, y nunca más de 5.
 - **CA-08:** Dados los mismos técnicos, cuando se calcula la selección dos veces, entonces el resultado es idéntico; y con 200 elegibles tarda menos de 200 ms.
 - **CA-09:** Dada una solicitud cancelada o vencida antes de la revisión, cuando corre `RevisarOleada` o `RepartirOleada`, entonces no hay envíos nuevos ni eventos.
 - **CA-10:** Dadas 3 oleadas sin cotizaciones suficientes, cuando corre la tercera revisión, entonces no se programa una cuarta; y si ninguna oleada encontró técnicos, entonces hay un `SolicitudSinTecnicos`.
