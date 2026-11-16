@@ -74,6 +74,22 @@ internal sealed class ChoiceStore(
         return documents.ToDictionary(d => d["_id"].AsObjectId, ToTechnician);
     }
 
+    /// <summary>
+    /// El técnico de una elección que ya se confirmó, o <see langword="null"/> si la lectura falla. Después del commit nada puede convertir en error una elección que ya existe:
+    /// si falla esta lectura, la respuesta sale sin los datos del técnico y la app los pide con la visita (spec 022).
+    /// </summary>
+    public async Task<TechnicianPublic?> TryFindTechnicianAsync(ObjectId id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return (await FindTechniciansAsync([id], cancellationToken)).GetValueOrDefault(id);
+        }
+        catch (Exception exception) when (exception is MongoException or TimeoutException)
+        {
+            return null;
+        }
+    }
+
     /// <summary>Identificadores de visita de las solicitudes dadas; las que no tienen cita no salen (R-22).</summary>
     public async Task<IReadOnlyDictionary<ObjectId, ObjectId>> FindVisitIdsAsync(IReadOnlyCollection<ObjectId> requestIds, CancellationToken cancellationToken)
     {

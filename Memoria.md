@@ -729,3 +729,8 @@
 ## 2026-11-16 — Pruebas de CA-23 y de propiedad de fotos de la spec 020 (KNOCK-59)
 - **Qué se agregó:** `Spec020ElegibilidadTests.Base_Con_Y_Sin_Oleadas_CA_020_23` (técnico elegible, de otro oficio, de otra zona, suspendido y oculto piden detalle y cotizan, con `Oleadas:Habilitado` en true y false) y `Spec020FotosTests` (foto de otra persona o mezclada responde 422 `photo_invalid` sin guardar; la dueña sí la usa y otra persona no). `FakePhotos` ahora puede llevar dueños por foto. La traza 020 queda completa.
 - **Límite:** `Oleadas:Habilitado` aún no existe en el código (spec 028); la prueba fija el resultado actual para que no cambie al llegar las oleadas. La propiedad real de archivos depende de `IMediaApi` (spec 013, OI-2); aquí se prueba que el servicio la consulta con el `sub` del token. Sin código de producción ni dependencias nuevas.
+
+## 2026-11-16 — KNOCK-82: ajustes de la revisión del líder (semillas con contacto y fallos posteriores al commit)
+- **Estado:** el cargador de técnicos demo acepta un cuarto técnico (`demo-tecnico-04`) con `contactoPublico.telefono = 5500000001` (solo el rango de demostración 55000000NN) y la semilla lo trae; con él la demo muestra contacto al elegir. Una elección ya confirmada nunca devuelve error: si después del commit falla leer al técnico o descifrar la dirección, la respuesta sale 200 sin esos datos (repetir daría 409) y la app los pide con la visita.
+- **Pendiente:** no pude correr en mi Docker las pruebas del cargador de técnicos (su guarda exige un host local de MongoDB); la validación del cuarto técnico queda verificada por la prueba de archivo y por la lectura del código, y la corrida real es la de CI.
+- **A evitar:** devolver un 500 o un 503 después de que la transacción ya confirmó.
