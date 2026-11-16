@@ -197,7 +197,7 @@ internal sealed class VisitStore(
             }
             catch (MongoException exception) when (IsWriteConflict(exception))
             {
-                await Task.Delay(TimeSpan.FromMilliseconds(10 * attempt), cancellationToken);
+                await Task.Delay(10 * attempt, cancellationToken);
             }
         }
 
