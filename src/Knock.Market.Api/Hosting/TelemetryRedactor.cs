@@ -50,7 +50,8 @@ internal static partial class TelemetryRedactor
 
         try
         {
-            var result = value.Contains("eyJ", StringComparison.Ordinal) ? Jwt().Replace(value, Placeholder) : value;
+            var result = value.Contains('?', StringComparison.Ordinal) ? UrlQuery().Replace(value, "${target}?" + Placeholder) : value;
+            result = result.Contains("eyJ", StringComparison.Ordinal) ? Jwt().Replace(result, Placeholder) : result;
             result = result.Contains("bearer", StringComparison.OrdinalIgnoreCase) ? Bearer().Replace(result, Placeholder) : result;
             result = result.AsSpan().ContainsAny('=', ':') ? KeyValue().Replace(result, "${key}${separator}" + Placeholder) : result;
             result = result.Contains('@', StringComparison.Ordinal) ? Email().Replace(result, Placeholder) : result;
@@ -130,6 +131,14 @@ internal static partial class TelemetryRedactor
 
     [GeneratedRegex(@"\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*", _options, _timeoutMilliseconds)]
     private static partial Regex Jwt();
+
+    /// <summary>
+    /// Spec 035 R-04: la consulta de una dirección (<c>http://</c>, <c>https://</c>) o de una ruta que empieza por <c>/</c> se reemplaza
+    /// por <c>?[redacted]</c> y se conserva lo anterior al <c>?</c>. Un <c>?</c> de una frase («¿pasó?») o pegado a una palabra no se toca,
+    /// y la consulta termina en un espacio, una comilla o el <c>#</c>. Sin cuantificadores anidados.
+    /// </summary>
+    [GeneratedRegex(@"(?<target>https?://[^\s?#""'<>]+|(?<![\w/.:])/[^\s?#""'<>]*)\?[^\s#""'<>]+", _options | RegexOptions.IgnoreCase, _timeoutMilliseconds)]
+    private static partial Regex UrlQuery();
 
     [GeneratedRegex(@"\bbearer\s+[A-Za-z0-9._~+/=-]+", _options | RegexOptions.IgnoreCase, _timeoutMilliseconds)]
     private static partial Regex Bearer();

@@ -82,3 +82,5 @@ Versionar y publicar a producción con un PR, igual que en ITACR.
 ## 11. Referencias
 
 - Flujo de ramas de ITACR.
+
+> Nota 2026-11-14 (KNOCK-181, TT-GES-09): lo anterior es histórico frente a la constitución 1.1.0 del repositorio. release-please, la etiqueta `vX.Y.Z` y los tres componentes (api, app y panel) quedan reemplazados por el versionado por puntos: la versión se calcula al desplegar con los puntos de cada PR (`puntos-<componente>-N`), la etiqueta es una por componente y los componentes son 5, con la landing (ver `docs/VERSIONAMIENTO.md`).
