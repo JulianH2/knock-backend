@@ -54,6 +54,7 @@ internal sealed class VisitStore(
 {
     private const string _stateField = "estado";
     private const string _updatedField = "actualizadoEn";
+    private const int _maxConflictAttempts = 5;
 
     private static readonly string[] _openStates = [VisitRules.Confirmed, VisitRules.InProgress];
 
@@ -74,8 +75,7 @@ internal sealed class VisitStore(
     public async Task<bool> MarkArrivedAsync(VisitRecord visit, DateTime nowUtc, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(visit);
-        using var session = await database.Client.StartSessionAsync(cancellationToken: cancellationToken);
-        return await session.WithTransactionAsync(async (transaction, token) =>
+        return await InTransactionAsync(async (transaction, token) =>
         {
             var changed = await Visits.UpdateOneAsync(
                 transaction,
@@ -89,7 +89,7 @@ internal sealed class VisitStore(
 
             await outbox.AddAsync(transaction, OutboxMessage.Create("VisitaEnCurso", visit.Id.ToString(), Identifiers(visit), nowUtc), token);
             return true;
-        }, cancellationToken: cancellationToken);
+        }, false, cancellationToken);
     }
 
     /// <summary>
@@ -99,8 +99,7 @@ internal sealed class VisitStore(
     public async Task<FailedAttempt> RegisterFailedAttemptAsync(VisitRecord visit, DateTime nowUtc, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(visit);
-        using var session = await database.Client.StartSessionAsync(cancellationToken: cancellationToken);
-        return await session.WithTransactionAsync(async (transaction, token) =>
+        return await InTransactionAsync(async (transaction, token) =>
         {
             var after = await Visits.FindOneAndUpdateAsync(
                 transaction,
@@ -123,7 +122,7 @@ internal sealed class VisitStore(
             await outbox.AddAsync(transaction, OutboxMessage.Create("VisitaBloqueada", visit.Id.ToString(), Identifiers(visit), nowUtc), token);
             await outbox.AddAsync(transaction, ClosedEvent(visit, VisitCloseReason.Blocked, nowUtc), token);
             return new FailedAttempt(true, attempts, true);
-        }, cancellationToken: cancellationToken);
+        }, new FailedAttempt(false, visit.Attempts, visit.Locked), cancellationToken);
     }
 
     /// <summary>
@@ -134,8 +133,7 @@ internal sealed class VisitStore(
     public async Task<bool> CloseAsync(VisitRecord visit, VisitCloseReason reason, DateTime nowUtc, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(visit);
-        using var session = await database.Client.StartSessionAsync(cancellationToken: cancellationToken);
-        return await session.WithTransactionAsync(async (transaction, token) =>
+        return await InTransactionAsync(async (transaction, token) =>
         {
             var filter = Builders<BsonDocument>.Filter;
             var update = Builders<BsonDocument>.Update;
@@ -154,7 +152,7 @@ internal sealed class VisitStore(
 
             await outbox.AddAsync(transaction, ClosedEvent(visit, reason, nowUtc), token);
             return true;
-        }, cancellationToken: cancellationToken);
+        }, false, cancellationToken);
     }
 
     /// <summary>
@@ -164,8 +162,7 @@ internal sealed class VisitStore(
     public async Task<bool> CountNoticeAsync(VisitRecord visit, DateTime nowUtc, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(visit);
-        using var session = await database.Client.StartSessionAsync(cancellationToken: cancellationToken);
-        return await session.WithTransactionAsync(async (transaction, token) =>
+        return await InTransactionAsync(async (transaction, token) =>
         {
             var filter = Builders<BsonDocument>.Filter;
             var after = await Visits.FindOneAndUpdateAsync(
@@ -181,8 +178,36 @@ internal sealed class VisitStore(
 
             await outbox.AddAsync(transaction, OutboxMessage.Create("AvisoConfianzaPreparado", $"{visit.Id}:{after["avisosEnviados"].ToInt32()}", Identifiers(visit), nowUtc), token);
             return true;
-        }, cancellationToken: cancellationToken);
+        }, false, cancellationToken);
     }
+
+    /// <summary>
+    /// Corre la transacción y reintenta los conflictos de escritura entre peticiones simultáneas (código 112 o la etiqueta <c>TransientTransactionError</c>) hasta cinco veces con una espera
+    /// corta. Si el conflicto no se resuelve, devuelve <paramref name="conflictResult"/> (la petición «no se aplicó») y el llamador explica la visita con su estado actual: un conflicto
+    /// nunca sale como 500.
+    /// </summary>
+    private async Task<T> InTransactionAsync<T>(Func<IClientSessionHandle, CancellationToken, Task<T>> body, T conflictResult, CancellationToken cancellationToken)
+    {
+        for (var attempt = 1; attempt <= _maxConflictAttempts; attempt++)
+        {
+            using var session = await database.Client.StartSessionAsync(cancellationToken: cancellationToken);
+            try
+            {
+                return await session.WithTransactionAsync(body, cancellationToken: cancellationToken);
+            }
+            catch (MongoException exception) when (IsWriteConflict(exception))
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(10 * attempt), cancellationToken);
+            }
+        }
+
+        return conflictResult;
+    }
+
+    private static bool IsWriteConflict(MongoException exception) =>
+        exception.HasErrorLabel("TransientTransactionError")
+        || exception is MongoCommandException { Code: 112 }
+        || exception is MongoWriteException { WriteError.Code: 112 };
 
     private static FilterDefinition<BsonDocument> OpenToAttempts(ObjectId id)
     {

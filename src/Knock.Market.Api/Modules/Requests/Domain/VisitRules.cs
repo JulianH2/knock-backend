@@ -62,6 +62,12 @@ internal static class VisitRules
         && nowUtc >= WindowStart(visit.Dia)
         && nowUtc <= expires;
 
+    /// <summary>
+    /// Verdadero si el técnico puede ver la dirección del cliente: solo con la visita <c>confirmada</c> o <c>en_curso</c> y no bloqueada (R-05, decisión del líder del 2026-11-16).
+    /// En cualquier otro estado, o con la visita bloqueada, la dirección sale ausente.
+    /// </summary>
+    public static bool TechnicianMaySeeAddress(VisitState visit) => CanNotify(visit.Estado) && !visit.Bloqueada;
+
     /// <summary>Verdadero si se puede preparar el aviso de confianza: solo <c>confirmada</c> o <c>en_curso</c> (R-13).</summary>
     public static bool CanNotify(string estado) => estado is Confirmed or InProgress;
 

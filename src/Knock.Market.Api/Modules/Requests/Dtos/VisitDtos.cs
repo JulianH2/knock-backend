@@ -9,7 +9,7 @@ internal sealed record VisitTechnician(string Nombre, string? FotoUrl, bool Veri
 internal sealed record VisitCustomer(string Colonia);
 
 /// <summary>Lugar de la visita: <c>domicilio</c> o <c>taller</c>, con su dirección.</summary>
-internal sealed record VisitPlace(string Tipo, string? Direccion);
+internal sealed record VisitPlace(string Tipo, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Direccion);
 
 /// <summary>
 /// Vista de la visita (spec 022, R-02 y R-05). <c>Rol</c> es <c>cliente</c> o <c>tecnico</c> y decide qué campos vienen: <c>Tecnico</c>, <c>Codigo</c>,

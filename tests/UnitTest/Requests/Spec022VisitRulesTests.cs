@@ -86,6 +86,17 @@ public sealed class Spec022VisitRulesTests
     [InlineData("no_presentado", false)]
     public void CanNotify_OnlyForConfirmedOrInProgress_R_13(string estado, bool expected) => VisitRules.CanNotify(estado).Should().Be(expected);
 
+    [Theory]
+    [InlineData("confirmada", false, true)]
+    [InlineData("en_curso", false, true)]
+    [InlineData("confirmada", true, false)]
+    [InlineData("en_curso", true, false)]
+    [InlineData("terminada", false, false)]
+    [InlineData("cancelada", false, false)]
+    [InlineData("no_presentado", false, false)]
+    public void TechnicianMaySeeAddress_OnlyWithAnOpenUnlockedVisit_R_05(string estado, bool locked, bool expected) =>
+        VisitRules.TechnicianMaySeeAddress(Visit(estado, locked: locked)).Should().Be(expected);
+
     [Fact]
     public void SafetyRule_UsesTheFixedText_R_04() =>
         VisitRules.SafetyRule("Demo Uno").Should().Be("Pídele a Demo Uno que te diga este código en la puerta. Si no lo sabe, no abras.");

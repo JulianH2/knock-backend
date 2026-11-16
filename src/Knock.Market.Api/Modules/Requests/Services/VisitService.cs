@@ -95,7 +95,8 @@ internal sealed class VisitService(VisitStore visits, RequestsStore requests, Ch
         VisitPlace place;
         if (visit.Modality == VisitRules.Domicile)
         {
-            place = new VisitPlace(visit.Modality, await ClientAddressAsync(visit, cancellationToken));
+            // La dirección del cliente solo se revela al técnico con la visita vigente y sin bloqueo (spec 022, R-05).
+            place = new VisitPlace(visit.Modality, VisitRules.TechnicianMaySeeAddress(visit.State) ? await ClientAddressAsync(visit, cancellationToken) : null);
         }
         else
         {

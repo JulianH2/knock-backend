@@ -90,6 +90,32 @@ public sealed class Spec022VistaTests
         asTechnician.GetProperty("cliente").EnumerateObject().Select(p => p.Name).Should().Equal("colonia");
     }
 
+    [Theory]
+    [InlineData("terminada", false)]
+    [InlineData("cancelada", false)]
+    [InlineData("no_presentado", false)]
+    [InlineData("confirmada", true)]
+    [InlineData("confirmada", false)]
+    [InlineData("en_curso", false)]
+    public async Task Tecnico_Solo_Ve_La_Direccion_Con_Visita_Vigente_Y_Sin_Bloqueo_CA_022_17(string estado, bool locked)
+    {
+        await using var host = await Spec020Host.StartAsync();
+        var visit = await host.ConfirmedVisitAsync();
+        await host.SetVisitAsync(visit.VisitId, MongoDB.Driver.Builders<BsonDocument>.Update.Combine(MongoDB.Driver.Builders<BsonDocument>.Update.Set("estado", estado), MongoDB.Driver.Builders<BsonDocument>.Update.Set("bloqueada", locked)));
+
+        using var response = await host.VisitAsync(visit.VisitId, visit.Technician.Sub);
+
+        var raw = await response.Content.ReadAsStringAsync();
+        var json = JsonElement.Parse(raw);
+        json.GetProperty("cliente").GetProperty("colonia").GetString().Should().Be("Centro", "la colonia sí se ve");
+        var mayLook = (estado is "confirmada" or "en_curso") && !locked;
+        json.GetProperty("lugar").TryGetProperty("direccion", out _).Should().Be(mayLook);
+        if (!mayLook)
+        {
+            raw.Should().NotContain("Calle Ficticia");
+        }
+    }
+
     [Fact]
     public async Task Codigo_Cifrado_CA_022_03()
     {
