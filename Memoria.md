@@ -720,7 +720,7 @@
 
 ## 2026-11-16 — TT-BD-07 (KNOCK-157): el compose local ya no levanta PostgreSQL
 - **Estado:** `deploy/docker-compose.local.yml` queda con `documentdb` y `redis`; se quitan el servicio `postgres`, su volumen y `POSTGRES_*` de `.env.example` y del README de semillas. Antes, `up` exigía `POSTGRES_PASSWORD` aunque nada la usa.
-- **Pendiente:** las reglas de `.agents/` y `AGENTS.md` aún nombran PostgreSQL/PostGIS y migraciones EF (db-builder, `database.md`, `tests-backend.md`, `knock.json`), y `.github/workflows/ci-pr.yml` conserva `sqlfluff` y textos de PostGIS: son de `.agents/` y `.github/` y requieren al líder.
+- **Pendiente:** las reglas de `.agents/` y `AGENTS.md` (db-builder, `database.md`, `tests-backend.md`, `knock.json`) ya se corrigieron en este PR con autorización del Tech Lead. Lo pendiente real es `.github/workflows/ci-pr.yml`, que conserva `sqlfluff` y textos de PostGIS y requiere al líder.
 - **A evitar:** dejar variables obligatorias de servicios que ya no existen.
 ## 2026-11-16 — Pruebas de CA-23 y de propiedad de fotos de la spec 020 (KNOCK-59)
 - **Qué se agregó:** `Spec020ElegibilidadTests.Base_Con_Y_Sin_Oleadas_CA_020_23` (técnico elegible, de otro oficio, de otra zona, suspendido y oculto piden detalle y cotizan, con `Oleadas:Habilitado` en true y false) y `Spec020FotosTests` (foto de otra persona o mezclada responde 422 `photo_invalid` sin guardar; la dueña sí la usa y otra persona no). `FakePhotos` ahora puede llevar dueños por foto. La traza 020 queda completa.
