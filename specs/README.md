@@ -41,7 +41,7 @@ Cada carpeta tiene `spec.md`, `plan.md` y `task.md`. Estados: Borrador → Aprob
 | 033 | Panel interno con permisos y doble factor (backend) | Borrador | [`033-panel-interno-con-permisos-y-doble-factor`](033-panel-interno-con-permisos-y-doble-factor/spec.md) |
 | 034 | Escalado a dos réplicas y contrato vivo | Borrador | [`034-escalado-a-dos-replicas-y-contrato-vivo`](034-escalado-a-dos-replicas-y-contrato-vivo/spec.md) |
 | 035 | Redacción de registros con parámetros de consulta y encabezados reenviados | Borrador | [`035-redaccion-de-registros-y-encabezados-reenviados`](035-redaccion-de-registros-y-encabezados-reenviados/spec.md) |
-| 036 | Resumen de trabajo del técnico (`GET /api/v1/tecnicos/me/trabajo`) | Borrador | [`036-resumen-de-trabajo-del-tecnico`](036-resumen-de-trabajo-del-tecnico/spec.md) |
+| 036 | Resumen de trabajo del técnico (`GET /api/v1/tecnicos/me/trabajo`) | Aprobada | [`036-resumen-de-trabajo-del-tecnico`](036-resumen-de-trabajo-del-tecnico/spec.md) |
 | 037 | Registro de dispositivos y despachador de avisos push | Borrador | [`037-registro-de-dispositivos-y-despachador-de-avisos`](037-registro-de-dispositivos-y-despachador-de-avisos/spec.md) |
 | BUG-002 | Falta Strict-Transport-Security en el gateway (KNOCK-239) | Implementada | [`BUG-002-falta-strict-transport-security-en-el-gateway`](BUG-002-falta-strict-transport-security-en-el-gateway/spec.md) |
 | BUG-003 | El gateway y Mensajería exponen `Server: Kestrel` (KNOCK-240) | Implementada | [`BUG-003-el-gateway-expone-el-encabezado-server`](BUG-003-el-gateway-expone-el-encabezado-server/spec.md) |
