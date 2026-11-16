@@ -8,6 +8,7 @@
 //   KNOCK_DURATION  Duración de la ronda caliente (la fría tarda el 20 % de ella). Defecto: 1m
 //   KNOCK_RUN_LABEL Etiqueta de la corrida (p. ej. ttl-86400) para comparar vigencias.
 //   KNOCK_P95_MS    Umbral p95 en milisegundos. Defecto: 500
+//   KNOCK_MODE      Opcional: 200 sin condicional o 304 con ETag de setup; una ronda.
 // Requiere un entorno local aislado: nunca correr contra producción ni servicios compartidos.
 
 import http from 'k6/http';
@@ -19,6 +20,13 @@ const VUS = Number(__ENV.KNOCK_VUS || '5');
 const DURATION = __ENV.KNOCK_DURATION || '1m';
 const RUN_LABEL = __ENV.KNOCK_RUN_LABEL || 'sin-etiqueta';
 const P95_MS = Number(__ENV.KNOCK_P95_MS || '500');
+const MODE = __ENV.KNOCK_MODE || '';
+if (MODE && MODE !== '200' && MODE !== '304') {
+    throw new Error('KNOCK_MODE debe ser 200 o 304');
+}
+if (MODE && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(BASE_URL)) {
+    throw new Error('KNOCK_MODE solo admite Market local por HTTP');
+}
 
 // La 304 es una respuesta válida del flujo ETag, no un error.
 const ERROR_RATE = new Rate('error_rate');
@@ -26,11 +34,15 @@ const COLD_MS = new Trend('cache_cold_duration_ms');
 const WARM_MS = new Trend('cache_warm_duration_ms');
 const OK_200 = new Counter('etag_200');
 const NOT_MODIFIED_304 = new Counter('etag_304');
+const OTHER_STATUS = new Counter('otros_estados');
 const COMPRESSED = new Counter('compressed_br_or_gzip');
 const BYTES_SAVED = new Trend('compressed_body_bytes');
 
 export const options = {
-    scenarios: {
+    summaryTrendStats: ['count', 'p(50)', 'p(95)', 'p(99)'],
+    scenarios: MODE ? {
+        measurement: { executor: 'constant-vus', vus: VUS, duration: DURATION, exec: 'measurement' },
+    } : {
         // Ronda fría (arranca primero, dura la quinta parte): primer acceso a la caché.
         cold: {
             executor: 'constant-vus',
@@ -49,7 +61,12 @@ export const options = {
             tags: { stage: 'caliente' },
         },
     },
-    thresholds: {
+    thresholds: MODE ? {
+        http_req_failed: ['rate<0.01'],
+        error_rate: ['rate<0.01'],
+        checks: ['rate==1'],
+        'http_req_duration{scenario:measurement}': [`p(95)<${P95_MS}`],
+    } : {
         http_req_failed: ['rate<0.01'],
         error_rate: ['rate<0.01'],
         [`http_req_duration{scenario:warm}`]: [`p(95)<${P95_MS}`],
@@ -59,6 +76,18 @@ export const options = {
 
 let etag = null;
 
+export function setup() {
+    if (!MODE) return null;
+    const response = http.get(`${BASE_URL}/api/v1/oficios`, { tags: { phase: 'setup' } });
+    const currentEtag = response.headers.ETag || response.headers.Etag;
+    if (response.status !== 200 || !currentEtag) throw new Error('No se obtuvo una ETag vigente');
+    return { etag: currentEtag };
+}
+
+export function measurement(data) {
+    oficios('medicion', data.etag);
+}
+
 export function cold() {
     oficios('fria');
 }
@@ -67,10 +96,10 @@ export function warm() {
     oficios('caliente');
 }
 
-function oficios(stage) {
+function oficios(stage, setupEtag) {
     const headers = { 'Accept-Encoding': 'gzip, deflate, br' };
-    if (etag) {
-        headers['If-None-Match'] = etag;
+    if (MODE === '304' || (!MODE && etag)) {
+        headers['If-None-Match'] = MODE ? setupEtag : etag;
     }
 
     const res = http.get(`${BASE_URL}/api/v1/oficios`, { headers, tags: { runlabel: RUN_LABEL } });
@@ -78,6 +107,7 @@ function oficios(stage) {
     check(res, {
         'status 200 o 304 válido': (r) => r.status === 200 || r.status === 304,
         'nunca 4xx ni 5xx': (r) => !(r.status >= 400 && r.status < 600),
+        'estado esperado del modo': (r) => !MODE || r.status === Number(MODE),
     });
 
     if (res.status === 200) {
@@ -92,9 +122,11 @@ function oficios(stage) {
     } else if (res.status === 304) {
         NOT_MODIFIED_304.add(1);
         // Sin cuerpo ni compresión: la ETag se confirma sin gastar ancho de banda.
+    } else {
+        OTHER_STATUS.add(1, { status: String(res.status) });
     }
 
-    (stage === 'fria' ? COLD_MS : WARM_MS).add(res.timings.duration);
-    ERROR_RATE.add(res.status !== 200 && res.status !== 304);
+    if (!MODE) (stage === 'fria' ? COLD_MS : WARM_MS).add(res.timings.duration);
+    ERROR_RATE.add(MODE ? res.status !== Number(MODE) : res.status !== 200 && res.status !== 304);
     sleep(0.1);
 }
