@@ -41,6 +41,36 @@ Variables: `KNOCK_BASE_URL` (defecto `http://localhost:5234`), `KNOCK_VUS` (5),
 `KNOCK_DURATION` (1m; la ronda fría dura 20 s y la caliente arranca a los 30 s),
 `KNOCK_RUN_LABEL` (etiqueta para comparar corridas), `KNOCK_P95_MS` (500).
 
+Para medir un estado por separado, añade `KNOCK_MODE=200` o `KNOCK_MODE=304`.
+Cada modo corre una sola ronda de `KNOCK_DURATION` con `KNOCK_VUS`: 200 nunca
+envía `If-None-Match`; 304 obtiene la ETag en `setup()` y la envía en cada
+petición. `setup()` también calienta la caché y no forma parte de las estadísticas
+`http_req_duration{scenario:measurement}`. Esa línea muestra conteo y percentiles;
+`etag_200`, `etag_304` y `otros_estados`, cuando aparecen, cuentan las respuestas
+medidas. El chequeo del estado esperado debe pasar al 100 %. Estos modos aceptan
+únicamente `http://localhost` o `http://127.0.0.1` con puerto opcional.
+
+**Limitación de la ronda fría:** el TTL mínimo es 60 s, de modo que no fuerza un
+fallo por petición. Tampoco basta borrar la clave en un ciclo paralelo: otra
+petición puede volver a poblarla antes de la siguiente lectura. La ronda `cold`
+histórica solo mide un primer acceso seguido de lecturas posiblemente calientes;
+no demuestra la condición fría por petición con usuarios concurrentes.
+
+## Comparación secuencial fría/caliente (KNOCK-269)
+
+Con Market y el Redis de `deploy/docker-compose.local.yml` aislados y sin otros
+clientes, ejecuta `tests/perf/cache-oficios-p95.sh`. Se pueden pasar
+`COMPOSE_PROJECT_NAME`, `COMPOSE_ENV_FILES` y `KNOCK_BASE_URL` para seleccionar el
+proyecto local. El script borra `catalog:oficios` antes de cada petición fría;
+no borra su generación. Verifica ausencia y repoblación de la clave, estado y
+ETag. Hace 100 peticiones secuenciales por combinación y solo mide el tiempo
+HTTP, no los comandos Redis. En caliente comprueba que la clave permanezca.
+La repoblación indica la lectura de MongoDB según la ruta de `CatalogStore`,
+no es una captura independiente de sus consultas. Requiere Docker local por
+socket Unix, Redis publicado solo en loopback y URL HTTP local. La evidencia de
+la corrida está en `docs/evidencia/knock-269-cache-p95.md`; no compara carga de
+5 usuarios virtuales ni establece capacidad del sistema.
+
 ## Comparar vigencias (R-04)
 
 1. Ajusta `Cache:CatalogLifetimeSeconds` (`.NET` en `src/Knock.Market.Api/appsettings.json`

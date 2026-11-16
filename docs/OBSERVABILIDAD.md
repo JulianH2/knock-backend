@@ -32,6 +32,22 @@ El exportador trae por defecto un muestreo de 5 trazas por segundo. El código l
 
 **Contexto de traza:** la API ignora el `traceparent`, el `tracestate` y el `baggage` que llegan en la petición y siempre inicia una traza nueva (decisión P9, hasta que exista el gateway). Las llamadas salientes sí propagan `traceparent`.
 
+## Registros de consola sin la consulta de la petición (spec 035, KNOCK-186)
+
+Aunque alguien baje el nivel de `Microsoft.AspNetCore` a `Information` o `Verbose`, los registros de consola y de OpenTelemetry de nivel `Information` o menor de estas fuentes no dejan salir la consulta de una petición (coordenadas, texto de búsqueda, códigos postales, tokens). Los de `Warning` o más siguen pudiendo llevarla hasta que se haga la regla de redacción de consultas (T-03). En los cuatro proyectos (gateway, Identidad, Mensajería y Mercado), `LoggingExtensions.AddKnockLogging` agrega, justo después de leer la configuración, un filtro de Serilog (`IsQueryBearingBelowWarning`) que **descarta los eventos por debajo de `Warning`** de estas fuentes y sus subcategorías:
+
+| Fuente | Qué escribía |
+|---|---|
+| `Microsoft.AspNetCore.Hosting.Diagnostics` | «Request starting» y «Request finished» con la dirección completa y su consulta |
+| `Microsoft.AspNetCore.HttpLogging` | el registro HTTP, si alguien lo activara |
+| `System.Net.Http.HttpClient*` | «Sending HTTP request» y «Received HTTP response» con la dirección completa |
+| `Yarp.ReverseProxy.Forwarder*` | el reenvío del gateway |
+
+- **El filtro está en código:** ningún ajuste de `appsettings` ni variable de entorno vuelve a habilitar esos eventos. Los de `Warning` o más no se descartan y pasan por la redacción del formateador (`RedactingJsonFormatter` con `TelemetryRedactor`), que todavía no redacta `q` ni `cp` (T-03).
+- **La petición se registra una sola vez**, con `UseSerilogRequestLogging`: método, plantilla de la ruta (`/api/v1/x/{id}`), código, duración y los identificadores de correlación; nunca la ruta con valores, la consulta, el host ni los encabezados.
+- **Pruebas:** `SecurityTest/Logging/Spec035RegistrosTests` arranca Mercado, Identidad y Mensajería con todos los niveles en `Verbose` y falla si algún registro lleva un valor o un nombre de la consulta de prueba (también con una llamada saliente); `IntegrationTest/Gateway/Spec035GatewayRegistrosTests` lo hace con el gateway real y un reenvío; `UnitTest/Hosting/Spec035QueryBearingSourcesTests` fija el comportamiento del filtro en las cuatro copias.
+- **Fuera de esta tarea:** la regla de redacción de consultas en `TelemetryRedactor` (R-04, T-03), la regla de Semgrep contra `UseHttpLogging` y la prueba de trazas (T-04) y las redes de confianza de `ForwardedHeaders` (KNOCK-180).
+
 ## `traceId` y `correlationId`
 
 | Campo del error | Formato | En Application Insights |
