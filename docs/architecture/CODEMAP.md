@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-16T06:07:45Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-16T16:12:04Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -14,7 +14,7 @@
 | `Knock.Market.Api` | -, common, hosting | 29 | 62 | 86 |
 | `Knock.Messaging.Api` | -, hosting | 14 | 37 | 46 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
-| `Requests` | -, controllers, data, domain, dtos, services, validators | 28 | 60 | 52 |
+| `Requests` | -, controllers, data, domain, dtos, services, validators | 29 | 61 | 53 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 25 | 46 | 53 |
 | `Usuarios` | -, controllers, data, domain, dtos, services | 13 | 25 | 34 |
 
@@ -535,6 +535,8 @@
 
 **domain**
 
+- `src/Knock.Market.Api/Modules/Requests/Domain/OleadasOptions.cs` — class `OleadasOptions`
+  - `IsValid()`:17
 - `src/Knock.Market.Api/Modules/Requests/Domain/QuotePricing.cs` — record `QuotePricingOptions`, record struct `QuoteCap`, class `QuotePricing`
   - `Calculate()`:37
 - `src/Knock.Market.Api/Modules/Requests/Domain/RequestCursor.cs` — class `RequestCursor`

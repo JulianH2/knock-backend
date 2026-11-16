@@ -18,6 +18,10 @@ public static class RequestsModuleExtensions
     public static IServiceCollection AddRequestsModule(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        services.AddOptions<OleadasOptions>()
+            .BindConfiguration(OleadasOptions.SectionName)
+            .Validate(options => options.IsValid(), "Oleadas values must be positive and MejorOrdenados + 2 must not exceed TamanoOleada.")
+            .ValidateOnStart();
         services.AddOptions<QuotePricingOptions>().BindConfiguration(QuotePricingOptions.SectionName);
         services.AddKnockMongoDatabase(ModuleKey);
         services.AddSingleton(TimeProvider.System);
