@@ -1,5 +1,10 @@
 # Memoria — knock-backend
 
+## 2026-11-16 — KNOCK-66: verificación tras merge de sprint-04
+- **Resultado:** build Release con warnings como errores sin avisos; OpenAPI de Market regenerado sin cambios. Se corrigieron las filas de solicitudes en `docs/endpoints.md` y se aclaró que el gateway aún no enruta búsqueda ni solicitudes generales; la ruta de cotizaciones sí existe. El límite de búsqueda de 30/min sigue propuesto, no implementado. `PublicEndpointsRateLimitTests` no se encontró en esta rama.
+- **Pruebas:** Spec027: 46 unitarias, 5 integración y 3 seguridad aprobadas; en una ejecución paralela la prueba de rendimiento de base falló con p95 953 ms y la ejecución agotó el tiempo. Después DatabaseTest completo pasó 160/160, incluida esa prueba. ContractTest 7/7, UnitTest 1187/1187 y SecurityTest 320/320. Formato y codemap correctos.
+- **Pendiente:** no inferir que el fallo de rendimiento queda resuelto por una corrida posterior verde; filtro real de la 024, ruta/límite de búsqueda y clave de cursor en Azure siguen pendientes según la spec 027.
+
 ## 2026-11-14 — KNOCK-246: correcciones de CI del contenedor y pruebas demo
 - **Cambios:** el Dockerfile de Market copia únicamente `tecnicos.json` antes de publicar, siguiendo el patrón de Identity; el csproj ya lo incluía. La prueba de guarda construye la URI con credenciales sintéticas mediante `MongoUrlBuilder`, sin excepciones nuevas.
 - **Verificación:** `docker build -f src/Knock.Market.Api/Dockerfile .` pasó tras actualizar la imagen SDK local; en `/app/db` solo está la semilla de técnicos y no se hallaron archivos con nombres habituales de credenciales. Pruebas Demo: 10 unitarias y 51 de base aprobadas; formato correcto. La traza 020 mantiene 13 criterios pendientes de otras tareas.
