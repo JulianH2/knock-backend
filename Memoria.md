@@ -12,6 +12,12 @@
 
 > Registro del proyecto: estado, decisiones con su fecha y su porqué, y errores a evitar. Los agentes la leen al empezar y agregan una entrada al terminar cada cambio. Sin datos sensibles.
 
+## 2026-11-13 — Specs de los endpoints que ninguna spec cubría (borradores)
+- **Decisión:** se redactan en un solo cambio 15 specs de backend (039 a 053) y 15 de frontend (029 a 043) para 90 endpoints del Excel `Knock_Endpoints_CRUD.xlsx` que las specs 001 a 038 no cubren; salen en Borrador y sin tareas activas.
+- **Porqué:** las specs numeradas cubren cerca del 30 % de los 130 endpoints del Excel; el resto se especifica de una vez para poder aprobarlas y repartirlas.
+- **Cómo:** una spec por grupo de colecciones, armada con las rutas, roles, reglas de campos, paginación, caché y respuestas de cada hoja; los códigos de negocio en inglés, los plazos y las dudas de cada grupo quedan en su §15 (backend) y §13 (frontend) para confirmarse al aprobar.
+- **Cierre integral (2026-11-13):** se resolvieron las 83 decisiones de la segunda revisión: se corrigieron las contradicciones con las specs 001 a 038 y el Excel (verificación opcional y disponibilidad con `disponibleHasta` en 046, cambio de número con Firebase en 039, contactos de confianza solo en la app en 042, gravedad de los reportes en 053 y otras), se eliminaron los límites sin respaldo y no queda ninguna duda abierta. El registro está en `_herramientas/REGISTRO_DE_CORRECCIONES_039_054.md`.
+
 ## 2026-11-14 — Estado real de las tareas de las specs 007, 010 y 011 (KNOCK-202, KNOCK-205, KNOCK-206)
 - **Estado:** las tablas `task.md` de las specs 007 (6 de 6 tareas), 010 (5 de 7; T-05 cerrada por alcance y T-07, la prueba de carga con k6, sigue pendiente) y 011 (5 de 5) pasan a «hecha» con la evidencia de sus PR. Se verificó que existen los workflows, `dependabot.yml`, la caché Redis con `ETag` y compresión, el middleware de correlación, el redactor de registros y `docs/OBSERVABILIDAD.md`.
 - **Porqué:** las PR ya estaban fusionadas pero las tablas seguían en «pendiente», así que el avance real se medía mal.
@@ -713,6 +719,12 @@
 - **Decisión (Tech Lead):** se acepta la huella en `.gitleaksignore` con la EXC-024 en `security/exceptions.yaml` (vence 2026-12-04), igual que EXC-019 y EXC-023. No se reescribe el historial ni se toca la regla.
 - **A evitar:** escribir en pruebas una cadena de conexión completa con usuario y clave aunque sea inventada; constrúyela con `MongoUrlBuilder` o sin ese formato. Las huellas se quedan mientras el commit exista en el historial: retirarlas al fusionar rompería Gitleaks en todos los PR.
 
+## 2026-11-14 — Documentos alineados con la constitución 1.1.0 y hosting de la landing (KNOCK-181, TT-GES-09)
+- **Decisión (Tech Lead):** la versión de referencia es la constitución 1.1.0 del repositorio (`constitution.md`, estado borrador). La «2.2.0 aprobada» de la tarjeta no existe aquí: 2.2.x es la numeración del repositorio anterior (`docs/migracion/constitution_origen.md`, 2.2.1 borrador). No se fusionan constituciones ni se sube la versión.
+- **Qué cambió:** notas fechadas (el texto antiguo se conserva) en `docs/VERSIONAMIENTO.md` (versionado por puntos, primera versión 1.0.0, 5 componentes; lo de 0.1.0, SemVer por commit y release-please queda histórico), `docs/DECISION_TECNICA.md` (PostgreSQL, release-please y `api-v` históricos), las fichas TT-CD-01 y TT-CD-03 y ADR-002 (la cita «2.2.x» pasa a «constitución 1.1.0 del repositorio»). ADR-006 no cita «2.2.x»; no se cambió.
+- **Hosting de la landing:** va en Railway, en un espacio que el líder del proyecto ya tenía contratado; es una aportación personal y no descuenta del crédito de Azure for Students (ADR-006 punto 7, TT-WEB-01). No se registra ningún monto porque no hay un costo documentado.
+- **Pendiente:** (1) agentes y reglas con EF Core y PostGIS: `.agents/agents/db-builder.md` y `.agents/rules/tests-backend.md` (y sus copias generadas); (2) `.github/workflows/ci-pr.yml` (nombres con «PostgreSQL» y el job que usa `deploy/docker-compose.ci.yml`, que no existe en `sprint-04`) y `.github/dependabot.yml` (grupo `Npgsql*`); (3) `deploy/docker-compose.local.yml`, si procede; (4) la matriz que traduce puntos a MAYOR, MENOR y PARCHE; (5) ADR-006 cita «constitución §12», que la 1.1.0 no tiene (llega hasta la §11). Todo lo protegido espera el visto bueno del Tech Lead.
+- **A evitar:** citar una versión de constitución que no está en este repositorio.
 ## 2026-11-15 — Excepción temporal por las copias del contador de Redis del límite de peticiones (EXC-025, KNOCK-247)
 - **Decisión (Tech Lead):** se registra la EXC-025 para siete archivos de Gateway, Identidad y Mercado (`SharedRateLimiter`, `RedisRequestCounter` y `RateLimitingExtensions`), ligada a KNOCK-251 (biblioteca compartida) y con vencimiento el 2027-02-13. La spec 006 R-05 pide el contador en Redis y aún no existe la biblioteca para compartirlo.
 - **Cómo se usa:** quien implementa KNOCK-247 envuelve esas copias con `// jscpd:ignore-start -- EXC-025` y su cierre, y corre `python scripts/codemap.py --update-baseline` en su PR para que la línea base de `docs/architecture/clones-baseline.json` quede revisada. No se amplía a más archivos.
@@ -731,3 +743,7 @@
 ## 2026-11-16 — Pruebas de CA-23 y de propiedad de fotos de la spec 020 (KNOCK-59)
 - **Qué se agregó:** `Spec020ElegibilidadTests.Base_Con_Y_Sin_Oleadas_CA_020_23` (técnico elegible, de otro oficio, de otra zona, suspendido y oculto piden detalle y cotizan, con `Oleadas:Habilitado` en true y false) y `Spec020FotosTests` (foto de otra persona o mezclada responde 422 `photo_invalid` sin guardar; la dueña sí la usa y otra persona no). `FakePhotos` ahora puede llevar dueños por foto. La traza 020 queda completa.
 - **Límite:** `Oleadas:Habilitado` aún no existe en el código (spec 028); la prueba fija el resultado actual para que no cambie al llegar las oleadas. La propiedad real de archivos depende de `IMediaApi` (spec 013, OI-2); aquí se prueba que el servicio la consulta con el `sub` del token. Sin código de producción ni dependencias nuevas.
+## 2026-11-16 — Redacción de la consulta de URL como primer paso de `Redact` (KNOCK-186, spec 035, T-03)
+- **Decisión:** la consulta de la URL se redacta como primer paso de `Redact`, sin depender del nivel de log.
+- **Por qué:** ningún nivel de log debe dejar salir lat/lon ni datos de la consulta.
+- **A evitar:** bajar el override de `Microsoft.AspNetCore.Hosting.Diagnostics`, o dejar sin probar una consulta con espacios literales.
