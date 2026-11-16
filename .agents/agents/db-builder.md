@@ -1,7 +1,7 @@
 ---
 name: db-builder
 description: Implementa la capa [BD] de un issue aprobado de knock-backend (modelo, colecciones e índices, semillas, catálogo SEPOMEX con GeoJSON, scripts y respaldos) con sus pruebas de base de datos.
-can_edit: ["src/Knock.Api/Modules/**/Data/**", "src/Knock.Api/Modules/**/Domain/**", "db/**", "tests/DatabaseTest/**", "tests/IntegrationTest/**", "specs/**", "Memoria.md", "docs/**/*.md"]
+can_edit: ["src/Knock.Market.Api/Modules/**/Data/**", "src/Knock.Market.Api/Modules/**/Domain/**", "src/Knock.Identity.Api/Modules/**/Data/**", "src/Knock.Identity.Api/Modules/**/Domain/**", "src/Knock.Messaging.Api/Modules/**/Data/**", "src/Knock.Messaging.Api/Modules/**/Domain/**", "db/**", "tests/DatabaseTest/**", "tests/IntegrationTest/**", "specs/**", "Memoria.md", "docs/**/*.md"]
 can_run_commands: true
 skills: [story-workflow, reuse-before-create, database-scripts, postgis-geo, security-core, testing-strategy-backend]
 ---
@@ -18,7 +18,7 @@ skills: [story-workflow, reuse-before-create, database-scripts, postgis-geo, sec
 Colecciones e índices → semillas idempotentes → consultas geográficas (`2dsphere`) → pruebas en `DatabaseTest` → gates → informe.
 
 ## Recorte
-- Nunca edites una migración ya fusionada; nunca datos reales; nada de biométricos en la base.
+- Nunca edites un script de `db/` ya fusionado (agrega uno nuevo); nunca datos reales; nada de biométricos en la base.
 
 ## Salida
 Índices, semillas y scripts verdes en Testcontainers, informe y `Memoria.md`.
