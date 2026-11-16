@@ -19,7 +19,7 @@ Los dos JSON los generó una sola vez `db/scripts/generate_catalog_seeds.py` des
 
 Para cargar en local, desde la raíz del repositorio:
 
-1. Configura de forma privada las credenciales requeridas por `deploy/docker-compose.local.yml` (`KNOCK_MONGO_PASSWORD`, `KNOCK_REDIS_PASSWORD` y `POSTGRES_PASSWORD`; Compose interpola las variables del archivo completo). Levanta los servicios necesarios: `docker compose -f deploy/docker-compose.local.yml up -d documentdb redis`.
+1. Configura de forma privada las credenciales requeridas por `deploy/docker-compose.local.yml` (`KNOCK_MONGO_PASSWORD` y `KNOCK_REDIS_PASSWORD`). Levanta los servicios necesarios: `docker compose -f deploy/docker-compose.local.yml up -d documentdb redis`.
 2. Configura de forma privada las opciones de Identity, incluidas `ConnectionStrings__KnockMongo` (con `<cadena-local>` hacia `localhost`, `127.0.0.1` o `documentdb-local`), `ConnectionStrings__KnockRedis`, `Jwt__SigningKey` y las llaves y versiones `Identity__PhoneProtection__*`. Consulta la configuración del proyecto; no incluyas valores de secretos en el repositorio ni en evidencia.
 3. En un entorno que **no** sea Production, ejecuta `ASPNETCORE_ENVIRONMENT=Development Seed__Demo=true dotnet run --project src/Knock.Identity.Api`. La carga ocurre al iniciar. Se pueden repetir los arranques; no crea cuentas Firebase.
 
