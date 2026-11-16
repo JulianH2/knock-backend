@@ -3,7 +3,7 @@
 # Sin credenciales ni valores reales: la configuración llega por variables de entorno en tiempo de ejecución.
 
 # ---- Compilación ----
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 WORKDIR /src
 COPY global.json Directory.Build.props .editorconfig ./
 COPY src/Knock.Api/Knock.Api.csproj src/Knock.Api/packages.lock.json src/Knock.Api/
