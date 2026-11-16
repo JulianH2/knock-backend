@@ -12,6 +12,12 @@
 
 > Registro del proyecto: estado, decisiones con su fecha y su porqué, y errores a evitar. Los agentes la leen al empezar y agregan una entrada al terminar cada cambio. Sin datos sensibles.
 
+## 2026-11-13 — Specs de los endpoints que ninguna spec cubría (borradores)
+- **Decisión:** se redactan en un solo cambio 15 specs de backend (039 a 053) y 15 de frontend (029 a 043) para 90 endpoints del Excel `Knock_Endpoints_CRUD.xlsx` que las specs 001 a 038 no cubren; salen en Borrador y sin tareas activas.
+- **Porqué:** las specs numeradas cubren cerca del 30 % de los 130 endpoints del Excel; el resto se especifica de una vez para poder aprobarlas y repartirlas.
+- **Cómo:** una spec por grupo de colecciones, armada con las rutas, roles, reglas de campos, paginación, caché y respuestas de cada hoja; los códigos de negocio en inglés, los plazos y las dudas de cada grupo quedan en su §15 (backend) y §13 (frontend) para confirmarse al aprobar.
+- **Cierre integral (2026-11-13):** se resolvieron las 83 decisiones de la segunda revisión: se corrigieron las contradicciones con las specs 001 a 038 y el Excel (verificación opcional y disponibilidad con `disponibleHasta` en 046, cambio de número con Firebase en 039, contactos de confianza solo en la app en 042, gravedad de los reportes en 053 y otras), se eliminaron los límites sin respaldo y no queda ninguna duda abierta. El registro está en `_herramientas/REGISTRO_DE_CORRECCIONES_039_054.md`.
+
 ## 2026-11-14 — Estado real de las tareas de las specs 007, 010 y 011 (KNOCK-202, KNOCK-205, KNOCK-206)
 - **Estado:** las tablas `task.md` de las specs 007 (6 de 6 tareas), 010 (5 de 7; T-05 cerrada por alcance y T-07, la prueba de carga con k6, sigue pendiente) y 011 (5 de 5) pasan a «hecha» con la evidencia de sus PR. Se verificó que existen los workflows, `dependabot.yml`, la caché Redis con `ETag` y compresión, el middleware de correlación, el redactor de registros y `docs/OBSERVABILIDAD.md`.
 - **Porqué:** las PR ya estaban fusionadas pero las tablas seguían en «pendiente», así que el avance real se medía mal.

@@ -43,6 +43,22 @@ Cada carpeta tiene `spec.md`, `plan.md` y `task.md`. Estados: Borrador → Aprob
 | 035 | Redacción de registros con parámetros de consulta y encabezados reenviados | Borrador | [`035-redaccion-de-registros-y-encabezados-reenviados`](035-redaccion-de-registros-y-encabezados-reenviados/spec.md) |
 | 036 | Resumen de trabajo del técnico (`GET /api/v1/tecnicos/me/trabajo`) | Borrador | [`036-resumen-de-trabajo-del-tecnico`](036-resumen-de-trabajo-del-tecnico/spec.md) |
 | 037 | Registro de dispositivos y despachador de avisos push | Borrador | [`037-registro-de-dispositivos-y-despachador-de-avisos`](037-registro-de-dispositivos-y-despachador-de-avisos/spec.md) |
+| 039 | Cuenta y datos personales: cambio de número, recuperación de acceso, exportación, consentimien… | Aprobada | [`039-cuenta-y-datos-personales`](039-cuenta-y-datos-personales/spec.md) |
+| 040 | Direcciones del cliente | Aprobada | [`040-direcciones-del-cliente`](040-direcciones-del-cliente/spec.md) |
+| 041 | Mi casa y mi auto | Aprobada | [`041-mi-casa-y-mi-auto`](041-mi-casa-y-mi-auto/spec.md) |
+| 042 | Técnicos de confianza | Aprobada | [`042-tecnicos-de-confianza`](042-tecnicos-de-confianza/spec.md) |
+| 043 | Bloqueos entre personas y reportes con apelación | Aprobada | [`043-bloqueos-y-reportes`](043-bloqueos-y-reportes/spec.md) |
+| 044 | Avisos dentro de la app y preferencias de avisos | Aprobada | [`044-avisos-dentro-de-la-app`](044-avisos-dentro-de-la-app/spec.md) |
+| 045 | Catálogo de oficios, oficios pedidos y lista de espera (consulta interna) | Aprobada | [`045-catalogos-y-lista-de-espera`](045-catalogos-y-lista-de-espera/spec.md) |
+| 046 | Técnico: perfil, horarios, disponibilidad, mapa y explorar | Aprobada | [`046-tecnico-perfil-horarios-y-exploracion`](046-tecnico-perfil-horarios-y-exploracion/spec.md) |
+| 047 | Servicios y precios de cada técnico | Aprobada | [`047-servicios-del-tecnico`](047-servicios-del-tecnico/spec.md) |
+| 048 | Solicitudes y cotizaciones: ampliar, archivos, referencia de mercado y cotizaciones del técnico | Aprobada | [`048-solicitudes-y-cotizaciones-complementos`](048-solicitudes-y-cotizaciones-complementos/spec.md) |
+| 049 | Cotización final tras la visita y ajustes de precio | Aprobada | [`049-cotizacion-final-y-ajustes-de-precio`](049-cotizacion-final-y-ajustes-de-precio/spec.md) |
+| 050 | Visita: agenda, reprogramación, cancelación, cliente ausente, cierre y permiso de fotos | Aprobada | [`050-visita-agenda-y-cierre`](050-visita-agenda-y-cierre/spec.md) |
+| 051 | Opiniones y reputación del técnico | Aprobada | [`051-opiniones-y-reputacion`](051-opiniones-y-reputacion/spec.md) |
+| 052 | Asistente de IA: resumen de chat, borrador de cotización, rango de precio y bitácora | Aprobada | [`052-asistente-de-ia`](052-asistente-de-ia/spec.md) |
+| 053 | Panel de revisión: verificaciones de identidad y reportes | Aprobada | [`053-panel-de-revision`](053-panel-de-revision/spec.md) |
+| 054 | Bandeja de salida y tareas programadas (INT-01) | Aprobada | [`054-bandeja-de-salida-y-tareas-programadas`](054-bandeja-de-salida-y-tareas-programadas/spec.md) |
 | BUG-002 | Falta Strict-Transport-Security en el gateway (KNOCK-239) | Implementada | [`BUG-002-falta-strict-transport-security-en-el-gateway`](BUG-002-falta-strict-transport-security-en-el-gateway/spec.md) |
 | BUG-003 | El gateway y Mensajería exponen `Server: Kestrel` (KNOCK-240) | Implementada | [`BUG-003-el-gateway-expone-el-encabezado-server`](BUG-003-el-gateway-expone-el-encabezado-server/spec.md) |
 | BUG-004 | Mensajería sin JWT, encabezados ni límite propios (KNOCK-241) | Implementada | [`BUG-004-mensajeria-sin-jwt-encabezados-ni-limite`](BUG-004-mensajeria-sin-jwt-encabezados-ni-limite/spec.md) |
