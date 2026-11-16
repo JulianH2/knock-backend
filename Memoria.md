@@ -718,6 +718,9 @@
 - **Cómo se usa:** quien implementa KNOCK-247 envuelve esas copias con `// jscpd:ignore-start -- EXC-025` y su cierre, y corre `python scripts/codemap.py --update-baseline` en su PR para que la línea base de `docs/architecture/clones-baseline.json` quede revisada. No se amplía a más archivos.
 - **A evitar:** copiar el contador a un servicio más sin ampliar la excepción; dejar la excepción vencer sin la biblioteca. Si Redis cae, el límite efectivo se multiplica por el número de copias hasta que vuelva; por eso la T-03 de la spec 006 queda parcial.
 
+## 2026-11-16 — KNOCK-43 (HU-001): estado real de las tareas de la spec 015
+- **Estado:** el login por celular ya estaba implementado y fusionado con KNOCK-210 y KNOCK-231; `specs/015/task.md` seguía en «pendiente». Se marcan T-01 a T-10 como hechas con la ruta de sus pruebas. Sin cambios de código.
+- **Pendiente:** la firma real de Google (CA-04, «otra firma») solo se prueba con el emulador; las transacciones de MongoDB falla todo canje si el clúster real no las admite.
 ## 2026-11-16 — Pruebas de CA-23 y de propiedad de fotos de la spec 020 (KNOCK-59)
 - **Qué se agregó:** `Spec020ElegibilidadTests.Base_Con_Y_Sin_Oleadas_CA_020_23` (técnico elegible, de otro oficio, de otra zona, suspendido y oculto piden detalle y cotizan, con `Oleadas:Habilitado` en true y false) y `Spec020FotosTests` (foto de otra persona o mezclada responde 422 `photo_invalid` sin guardar; la dueña sí la usa y otra persona no). `FakePhotos` ahora puede llevar dueños por foto. La traza 020 queda completa.
 - **Límite:** `Oleadas:Habilitado` aún no existe en el código (spec 028); la prueba fija el resultado actual para que no cambie al llegar las oleadas. La propiedad real de archivos depende de `IMediaApi` (spec 013, OI-2); aquí se prueba que el servicio la consulta con el `sub` del token. Sin código de producción ni dependencias nuevas.
