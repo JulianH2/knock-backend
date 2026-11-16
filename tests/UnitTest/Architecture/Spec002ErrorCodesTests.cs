@@ -20,6 +20,12 @@ public partial class Spec002ErrorCodesTests
                 .Where(field => field is { IsLiteral: true, IsInitOnly: false } && field.FieldType == typeof(string) && field.Name.EndsWith("Code", StringComparison.Ordinal))
                 .Select(field => (Owner: $"{type.FullName}.{field.Name}", Value: (string)field.GetRawConstantValue()!)))];
 
+    /// <summary>
+    /// Códigos que dos servicios devuelven con el mismo significado: <c>colonia_not_found</c> lo da Identidad al guardar la colonia del perfil (spec 017) y Mercado al crear una
+    /// solicitud (spec 020, §5). La app lee un solo nombre para el mismo error; cualquier otro repetido sigue prohibido.
+    /// </summary>
+    private static readonly string[] _sharedAcrossServices = ["colonia_not_found"];
+
     [GeneratedRegex("^[a-z]+(_[a-z]+)*$", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 200)]
     private static partial Regex SnakeCase();
 
@@ -30,7 +36,19 @@ public partial class Spec002ErrorCodesTests
 
         codes.Should().NotBeEmpty("si no se encuentra ninguna constante la regla pasaría en vacío");
         codes.Where(code => !SnakeCase().IsMatch(code.Value)).Select(code => code.Owner).Should().BeEmpty();
-        codes.GroupBy(code => code.Value).Where(group => group.Count() > 1).Select(group => group.Key).Should().BeEmpty();
+        codes.GroupBy(code => code.Value).Where(group => group.Count() > 1).Select(group => group.Key).Except(_sharedAcrossServices).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ASharedCodeMeansTheSameInEveryService_AndIsNeverDeclaredTwiceInOneService_CA_002_07()
+    {
+        foreach (var shared in _sharedAcrossServices)
+        {
+            var owners = Codes().Where(code => code.Value == shared).Select(code => code.Owner).ToList();
+
+            owners.Should().HaveCount(2, "un código compartido está declarado una vez en cada servicio que lo usa");
+            owners.Select(owner => owner.Split('.')[1]).Distinct().Should().HaveCount(2, "y esas dos declaraciones son de servicios distintos");
+        }
     }
 
     [Fact]
