@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-16T06:07:45Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-16T17:34:30Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -16,6 +16,7 @@
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
 | `Requests` | -, controllers, data, domain, dtos, services, validators | 28 | 60 | 52 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 25 | 46 | 53 |
+| `Tecnicos` | data | 1 | 2 | 2 |
 | `Usuarios` | -, controllers, data, domain, dtos, services | 13 | 25 | 34 |
 
 ## ⚠️ Código duplicado (misma estructura)
@@ -640,6 +641,13 @@
 
 - `src/Knock.Identity.Api/Modules/Sesiones/Validators/FirebaseExchangeRequestValidator.cs` — class `FirebaseExchangeRequestValidator`
 - `src/Knock.Identity.Api/Modules/Sesiones/Validators/RefreshRequestValidator.cs` — class `RefreshRequestValidator`
+
+### Tecnicos
+
+**data**
+
+- `src/Knock.Market.Api/Modules/Tecnicos/Data/TrabajoStore.cs` — record `TrabajoVerification`, class `TrabajoStore`
+  - `TrabajoStore()`:10, `ReadVerificationAsync()`:12
 
 ### Usuarios
 
