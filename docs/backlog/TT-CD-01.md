@@ -87,3 +87,5 @@ Que cada incremento que llega a release quede desplegado y probado en Staging si
 ## 11. Referencias
 
 - Flujo de ramas: release = QA/Staging.
+
+> Nota 2026-11-14 (KNOCK-181, TT-GES-09): lo anterior es histórico frente a la constitución 1.1.0 del repositorio. La base es MongoDB (ADR-002), así que ya no hay migraciones de EF Core y release-please no calcula la versión: ahora se versiona por puntos (`puntos-<componente>-N`) con una etiqueta por componente (ver `docs/VERSIONAMIENTO.md`).
