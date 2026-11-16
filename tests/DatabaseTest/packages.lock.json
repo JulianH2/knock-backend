@@ -195,11 +195,11 @@
       },
       "FirebaseAdmin": {
         "type": "Transitive",
-        "resolved": "3.7.0",
-        "contentHash": "9XRXSMGmEBarZm1ojMDqRUDUvWGKwDiJh52D19TqUDOdNu43ZMnGg5k8Az6A758rZu5rV7qo2sLofH0J+OEcyg==",
+        "resolved": "3.7.1",
+        "contentHash": "1RjzXmZ44JhrQsdLLo3DoRj7h8eACEvAIoGpslYRG94lp3SFojzFPcUhqbeR7+uS69ADlR4hKkGmK+ApoJSRRA==",
         "dependencies": {
-          "Google.Api.Gax.Rest": "4.13.1",
-          "Google.Apis.Auth": "1.73.0"
+          "Google.Api.Gax.Rest": "4.15.2",
+          "Google.Apis.Auth": "1.77.0"
         }
       },
       "FluentValidation": {
@@ -217,8 +217,8 @@
       },
       "Google.Api.Gax": {
         "type": "Transitive",
-        "resolved": "4.13.1",
-        "contentHash": "ujDpZk7O2VqAEIqcSlhH0FKzVpGZWly/qcNjHxpNUrL445Tei9PHnu4V1pwW2WDiMDvo3TpL1Bi4DeU525Afrg==",
+        "resolved": "4.15.2",
+        "contentHash": "KsA52zqUo9M5wfVmUILa2D73r29ga0Zgzw9AUncEGNqrTrkOjE71a0vJDNNHSw7grhef4YfHmHJc8V4aMOSzSw==",
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
           "Newtonsoft.Json": "13.0.4"
@@ -226,35 +226,35 @@
       },
       "Google.Api.Gax.Rest": {
         "type": "Transitive",
-        "resolved": "4.13.1",
-        "contentHash": "wDfFZXKoHC6sy+Yfub/4cLQOb5ozBVPqDOrxCUAeTfku4d96ILqgzulJSdkPHbiT3oWB3hlYTdJgUwNSJjyo+A==",
+        "resolved": "4.15.2",
+        "contentHash": "aKJt5A0Y+5YU8YU2rD8olT/sfWagN6EgocvB6zV56wlNGKmNoq1pHhvuB8Gcbu1mxDH0exdyyR2kmbumBfxaFA==",
         "dependencies": {
-          "Google.Api.Gax": "4.13.1",
-          "Google.Apis.Auth": "1.73.0"
+          "Google.Api.Gax": "4.15.2",
+          "Google.Apis.Auth": "1.77.0"
         }
       },
       "Google.Apis": {
         "type": "Transitive",
-        "resolved": "1.73.0",
-        "contentHash": "TnCjEyV2aCLQ6Zl40OCbEJULDuEkEWc6C/g81KYw5l1PqGo+G7pFZrV+YH8XgUL0JRUanz+IrUp8SsKF4dzkqg==",
+        "resolved": "1.77.0",
+        "contentHash": "zj7MKdZz7lWRM7z2meqh5S9KSf83c1xY8Fa+b1KzYxw9xMugUxcQtwPoxJgFzxKJgLE64dAra0ze++P/Up4k6Q==",
         "dependencies": {
-          "Google.Apis.Core": "1.73.0"
+          "Google.Apis.Core": "1.77.0"
         }
       },
       "Google.Apis.Auth": {
         "type": "Transitive",
-        "resolved": "1.73.0",
-        "contentHash": "wEu12uhnRv3zrPBSqv4E2vPH6lYLtc1RPAnU9MJRCMFlBVwZ7Lnq3NfbYXi6VG7EurkYInTaMpeBZkbM/HrAog==",
+        "resolved": "1.77.0",
+        "contentHash": "lcgXlzM+JkX0nKKc7KBwTdiei2IbV20PuTe3cVQ2zOhq0j4IiS9I4xlRQY4igdCMLlmobthz5xtHiPr/wxl0Ew==",
         "dependencies": {
-          "Google.Apis": "1.73.0",
-          "Google.Apis.Core": "1.73.0",
+          "Google.Apis": "1.77.0",
+          "Google.Apis.Core": "1.77.0",
           "System.Management": "7.0.2"
         }
       },
       "Google.Apis.Core": {
         "type": "Transitive",
-        "resolved": "1.73.0",
-        "contentHash": "vSc7CY4KCP7HE4QTElDx/ExnGLbg9kXb89MS6cdvI+0D4sxvTYb16vGtXmF2jSDMV3iDmykSXdIUPTz8TDS6gg==",
+        "resolved": "1.77.0",
+        "contentHash": "7Yj4dpbOLFbxct6x5AFHQEZ25E8/f+5zqW39Q8f/GZknLyuS+uhnt2DIcKQplBNJTK9WNXompbYLWsPRhO6Nmg==",
         "dependencies": {
           "Newtonsoft.Json": "13.0.4"
         }
@@ -891,7 +891,7 @@
         "dependencies": {
           "Asp.Versioning.Mvc": "[10.2.1, )",
           "Azure.Monitor.OpenTelemetry.Exporter": "[1.10.0, )",
-          "FirebaseAdmin": "[3.7.0, )",
+          "FirebaseAdmin": "[3.7.1, )",
           "FluentValidation": "[12.1.1, )",
           "FluentValidation.DependencyInjectionExtensions": "[12.1.1, )",
           "Knock.Contracts": "[1.0.0, )",
