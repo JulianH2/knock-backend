@@ -1,0 +1,75 @@
+[
+  {
+    "_id": {
+      "$oid": "ec0000000000000000000001"
+    },
+    "solicitudId": {
+      "$oid": "eb0000000000000000000001"
+    },
+    "tecnicoId": {
+      "$oid": "ea0000000000000000000001"
+    },
+    "tecnicoUsuarioId": "cc164cd6-ac70-8170-8370-ec3e873e5d13",
+    "tipoPrecio": "fijo",
+    "precio": 1000,
+    "tope": 1100,
+    "requiereAprobacion": true,
+    "dia": "2026-12-03",
+    "hora": "10:00",
+    "nota": "Cotización ficticia de demostración.",
+    "estado": "enviada",
+    "creadoEn": "2026-12-01T12:00:00Z",
+    "actualizadoEn": "2026-12-01T12:00:00Z",
+    "version": 1,
+    "demo": true
+  },
+  {
+    "_id": {
+      "$oid": "ec0000000000000000000002"
+    },
+    "solicitudId": {
+      "$oid": "eb0000000000000000000001"
+    },
+    "tecnicoId": {
+      "$oid": "ea0000000000000000000002"
+    },
+    "tecnicoUsuarioId": "ae8ebc53-4d54-8e61-9082-2c617568cd0f",
+    "tipoPrecio": "rango",
+    "precioMin": 600,
+    "precioMax": 800,
+    "tope": 960,
+    "requiereAprobacion": true,
+    "dia": "2026-12-03",
+    "hora": "10:00",
+    "nota": "Cotización ficticia de demostración.",
+    "estado": "enviada",
+    "creadoEn": "2026-12-01T12:00:00Z",
+    "actualizadoEn": "2026-12-01T12:00:00Z",
+    "version": 1,
+    "demo": true
+  },
+  {
+    "_id": {
+      "$oid": "ec0000000000000000000003"
+    },
+    "solicitudId": {
+      "$oid": "eb0000000000000000000002"
+    },
+    "tecnicoId": {
+      "$oid": "ea0000000000000000000003"
+    },
+    "tecnicoUsuarioId": "7b484abb-e9e0-8104-a08d-d30ce15e8148",
+    "tipoPrecio": "visita",
+    "precio": 150,
+    "tope": 150,
+    "requiereAprobacion": false,
+    "dia": "2026-12-03",
+    "hora": "10:00",
+    "nota": "Cotización ficticia de demostración.",
+    "estado": "enviada",
+    "creadoEn": "2026-12-01T12:00:00Z",
+    "actualizadoEn": "2026-12-01T12:00:00Z",
+    "version": 1,
+    "demo": true
+  }
+]
