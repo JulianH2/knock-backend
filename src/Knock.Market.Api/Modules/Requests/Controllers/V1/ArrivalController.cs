@@ -1,5 +1,4 @@
 using Asp.Versioning;
-using Knock.Market.Api.Hosting;
 using Knock.Market.Api.Modules.Requests.Domain;
 using Knock.Market.Api.Modules.Requests.Dtos;
 using Knock.Market.Api.Modules.Requests.Services;
@@ -27,7 +26,7 @@ internal sealed class ArrivalController(ArrivalService service) : BusinessRuleCo
     /// </summary>
     [HttpPost]
     [RequestSizeLimit(ArrivalBody.MaxBodyBytes)]
-    [EnableRateLimiting(RateLimitingExtensions.ArrivalPolicy)]
+    [EnableRateLimiting(Hosting.RateLimitingExtensions.ArrivalPolicy)]
     [ProducesResponseType<VisitResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized, ProblemJson)]
