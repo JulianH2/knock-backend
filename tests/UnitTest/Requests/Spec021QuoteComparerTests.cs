@@ -38,6 +38,7 @@ public sealed class Spec021QuoteComparerTests
 
         result.Items.Select(i => i.Quote.Id).Should().Equal(Quote(3).Id, Quote(2).Id, Quote(1).Id);
         result.Items[0].Etiquetas.Should().Contain(QuoteComparer.SoonestTag);
+        result.Items.Count(i => i.Etiquetas.Contains(QuoteComparer.SoonestTag)).Should().Be(1);
     }
 
     [Fact]
@@ -63,6 +64,92 @@ public sealed class Spec021QuoteComparerTests
 
         result.Items.Select(i => i.Quote.Id).Should().Equal(Quote(1).Id, Quote(2).Id, Quote(3).Id);
         QuoteComparer.Compare([.. quotes.Reverse()], order).Items.Select(i => i.Quote.Id).Should().Equal(result.Items.Select(i => i.Quote.Id));
+    }
+
+    private static QuoteToCompare At(int idSeed, DateTime created, string type = "fijo", int cap = 1000, double? rating = null, string level = "ninguno", string day = "2026-11-18", string time = "10:00") =>
+        new(ObjectId.Parse(idSeed.ToString("x24", System.Globalization.CultureInfo.InvariantCulture)), "enviada", type, cap, null, null, cap, false, day, time, null, null, created, "t" + idSeed, "Demo", null, rating, level);
+
+    [Fact]
+    public void Compare_RejectsANullList_R_04() =>
+        FluentActions.Invoking(() => QuoteComparer.Compare(null!, QuoteComparer.Recommended)).Should().Throw<ArgumentNullException>();
+
+    [Fact]
+    public void Compare_RejectsAnUnknownOrder_R_04() =>
+        FluentActions.Invoking(() => QuoteComparer.Compare([Quote(1)], "barato")).Should().Throw<ArgumentOutOfRangeException>();
+
+    [Fact]
+    public void Covers_RejectsAnUnknownPriceType_R_07() =>
+        FluentActions.Invoking(() => QuoteComparer.Covers("otro")).Should().Throw<ArgumentOutOfRangeException>();
+
+    [Fact]
+    public void VerifiedTag_OnlyForVerifiedTechnicians_R_06()
+    {
+        var result = QuoteComparer.Compare([Quote(1, level: "basica"), Quote(2), Quote(3, level: "completa")], QuoteComparer.ByPrice);
+
+        result.Items.Single(i => i.Quote.Id == Quote(1).Id).Etiquetas.Should().Contain(QuoteComparer.VerifiedTag);
+        result.Items.Single(i => i.Quote.Id == Quote(3).Id).Etiquetas.Should().Contain(QuoteComparer.VerifiedTag);
+        result.Items.Single(i => i.Quote.Id == Quote(2).Id).Etiquetas.Should().NotContain(QuoteComparer.VerifiedTag);
+    }
+
+    [Fact]
+    public void BestPriceTie_GoesToTheOldestAndThenToTheLowestId_R_06()
+    {
+        var older = QuoteComparer.Compare([At(5, _t0.AddSeconds(10), cap: 900), At(6, _t0, cap: 900)], QuoteComparer.Recommended);
+        var sameMoment = QuoteComparer.Compare([At(8, _t0, cap: 900), At(7, _t0, cap: 900)], QuoteComparer.Recommended);
+
+        older.Items.Single(i => i.Etiquetas.Contains(QuoteComparer.BestPriceTag)).Quote.Id.Should().Be(At(6, _t0).Id);
+        sameMoment.Items.Single(i => i.Etiquetas.Contains(QuoteComparer.BestPriceTag)).Quote.Id.Should().Be(At(7, _t0).Id);
+    }
+
+    [Fact]
+    public void SoonestTag_IsOnOneQuoteAndTiesGoToTheOldestThenToTheLowestId_R_06()
+    {
+        var older = QuoteComparer.Compare([At(5, _t0.AddSeconds(10)), At(6, _t0), At(9, _t0, time: "18:00")], QuoteComparer.Recommended);
+        var sameMoment = QuoteComparer.Compare([At(8, _t0), At(7, _t0)], QuoteComparer.Recommended);
+
+        older.Items.Count(i => i.Etiquetas.Contains(QuoteComparer.SoonestTag)).Should().Be(1);
+        older.Items.Single(i => i.Etiquetas.Contains(QuoteComparer.SoonestTag)).Quote.Id.Should().Be(At(6, _t0).Id);
+        sameMoment.Items.Single(i => i.Etiquetas.Contains(QuoteComparer.SoonestTag)).Quote.Id.Should().Be(At(7, _t0).Id);
+    }
+
+    [Fact]
+    public void Recommended_CapBreaksTiesBetweenEqualVerifiedAndRated_R_05()
+    {
+        var result = QuoteComparer.Compare(
+            [At(1, _t0, cap: 900, rating: 4, level: "basica"), At(2, _t0.AddSeconds(5), cap: 700, rating: 4, level: "basica")],
+            QuoteComparer.Recommended);
+
+        result.Items.Select(i => i.Quote.Tope).Should().Equal(700, 900);
+    }
+
+    [Fact]
+    public void Recommended_HigherRatingBeatsTheCheaperAndOlderQuote_R_05()
+    {
+        var result = QuoteComparer.Compare(
+            [At(1, _t0, cap: 500, rating: 3.5, level: "basica"), At(2, _t0.AddSeconds(5), cap: 900, rating: 4.8, level: "basica")],
+            QuoteComparer.Recommended);
+
+        result.Items.Select(i => i.Quote.Calificacion).Should().Equal(4.8, 3.5);
+    }
+
+    [Fact]
+    public void Recommended_RatedBeatsUnratedBetweenEquallyVerified_R_05()
+    {
+        var result = QuoteComparer.Compare([At(1, _t0, cap: 500, level: "basica"), At(2, _t0.AddSeconds(5), cap: 900, rating: 1.0, level: "basica")], QuoteComparer.Recommended);
+
+        result.Items.Select(i => i.Quote.Calificacion).Should().Equal(1.0, null);
+    }
+
+    [Theory]
+    [InlineData(QuoteComparer.Recommended)]
+    [InlineData(QuoteComparer.ByPrice)]
+    [InlineData(QuoteComparer.ByRating)]
+    [InlineData(QuoteComparer.Soonest)]
+    public void WhenEverythingTiesIncludingTheCreationMoment_TheLowestIdGoesFirst_R_04(string order)
+    {
+        var result = QuoteComparer.Compare([At(9, _t0), At(3, _t0), At(6, _t0)], order);
+
+        result.Items.Select(i => i.Quote.Id).Should().Equal(At(3, _t0).Id, At(6, _t0).Id, At(9, _t0).Id);
     }
 
     [Fact]
