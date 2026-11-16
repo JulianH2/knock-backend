@@ -30,6 +30,7 @@
     <Compile Include="..\DatabaseTest\Support\DocumentDbFixture.cs" Link="Support\DocumentDbFixture.cs" />
     <Compile Include="..\IntegrationTest\Support\RedisTestFixture.cs" Link="Support\RedisTestFixture.cs" />
     <Compile Include="..\IntegrationTest\Support\ConsoleCapture.cs" Link="Support\ConsoleCapture.cs" />
+    <Compile Include="..\IntegrationTest\Support\QueryLeakDetector.cs" Link="Support\QueryLeakDetector.cs" />
   </ItemGroup>
 
   <ItemGroup>
