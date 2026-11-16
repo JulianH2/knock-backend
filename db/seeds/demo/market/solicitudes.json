@@ -1,0 +1,48 @@
+[
+  {
+    "_id": {
+      "$oid": "eb0000000000000000000001"
+    },
+    "clienteId": "0352179f-b561-81c2-9b4a-83ebb7bd2f64",
+    "oficioClave": "ele",
+    "modalidad": "domicilio",
+    "descripcion": "Problema ficticio para la demostración.",
+    "fotos": [
+      "ed0000000000000000000001"
+    ],
+    "dia": "2026-12-02",
+    "franja": "manana",
+    "coloniaId": "6adfe980511e3d878359ca07",
+    "coloniaNombre": "Centro",
+    "coloniaCp": "42800",
+    "estado": "cotizando",
+    "creadoEn": "2026-12-01T12:00:00Z",
+    "actualizadoEn": "2026-12-01T12:00:00Z",
+    "venceEn": "2026-12-03T12:00:00Z",
+    "version": 1,
+    "demo": true
+  },
+  {
+    "_id": {
+      "$oid": "eb0000000000000000000002"
+    },
+    "clienteId": "2b8a3daa-c673-8151-9681-3d1dac8d86a9",
+    "oficioClave": "mec",
+    "modalidad": "taller",
+    "descripcion": "Problema ficticio para la demostración.",
+    "fotos": [
+      "ed0000000000000000000002"
+    ],
+    "dia": "2026-12-02",
+    "franja": "manana",
+    "coloniaId": "6adfe980511e3d878359ca07",
+    "coloniaNombre": "Centro",
+    "coloniaCp": "42800",
+    "estado": "cotizando",
+    "creadoEn": "2026-12-01T12:00:00Z",
+    "actualizadoEn": "2026-12-01T12:00:00Z",
+    "venceEn": "2026-12-03T12:00:00Z",
+    "version": 1,
+    "demo": true
+  }
+]

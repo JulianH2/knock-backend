@@ -17,7 +17,7 @@
 | T-10 | `CotizacionesController` y límite de 3 por minuto por técnico | R-10, R-19 · CA-16 | T-08, T-09 | T-07 | Alexis | hecha: política por `sub` y réplica; límite compartido pendiente de KNOCK-247 |
 | T-11 | Pruebas de integración, seguridad negativa, concurrencia (cupo de cotizaciones y cotización duplicada) y registros sin datos personales | CA-01 a CA-22 (salvo CA-03 y CA-20, retirados) | T-02, T-07, T-10 | T-12 | Guillermo y Alexis | pendiente |
 | T-12 | Regenerar OpenAPI de Mercado, actualizar `docs/endpoints.md` y `docs/rate-limit-matrix.md` | §5 | T-07, T-10 | T-11, T-13 | Alexis | parcial: contrato y matrices de cotizaciones actualizados; solicitudes dependen de T-07 |
-| T-13 | Semillas de demo (KNOCK-246): solicitudes por modalidad y cotizaciones de técnicos ficticios | §8 (demo) | T-03 | T-04 a T-12 | Alexis | pendiente |
+| T-13 | Semillas de demo (KNOCK-246): solicitudes por modalidad y cotizaciones de técnicos ficticios | §8 (demo) | T-03 | T-04 a T-12 | Alexis | parcial: cargador de técnicos y archivos con pruebas; solicitudes y cotizaciones pendientes de T-05 (fotos con nombre fijo, transacción MongoDB verificada en local y Azure, invalidación Redis al final) |
 | T-14 | Gates (`gate`, Semgrep, dependencias), `Memoria.md` y revisión de par | §12 | T-11, T-12, T-15 | — | Guillermo | pendiente |
 | T-15 | Ajustes que exige la spec 029: `venceEn` sale del plazo configurable `Solicitudes:HorasVencimiento` (1 a 168 horas, 48 por omisión) en lugar de 48 h fijas, y el detalle `GET /api/v1/solicitudes/{id}` agrega `puedeVolverAPedir` | spec 029 R-08 y R-13 · spec 029 CA-14 y CA-10 | T-05, T-06 | T-11 | Alexis | pendiente |
 

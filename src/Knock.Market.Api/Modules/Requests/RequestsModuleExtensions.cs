@@ -25,6 +25,9 @@ public static class RequestsModuleExtensions
         services.AddScoped<IQuoteWriter, QuoteStore>();
         services.AddScoped<QuoteService>();
         services.AddScoped<IRequestsApi, RequestsApi>();
+        services.AddScoped<DemoTechnicianStore>();
+        services.AddScoped<DemoTechnicianSeeder>();
+        services.AddHostedService<DemoTechnicianStartup>();
         return services;
     }
 }
