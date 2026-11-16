@@ -215,11 +215,11 @@ public class MeEndpointTests
     }
 
     [Theory]
-    [InlineData("nombre-corto")]
-    [InlineData("cp")]
-    [InlineData("foto")]
-    [InlineData("sin-nombre")]
-    public async Task InvalidFields_Return400AndChangeNothing_CA_017_06(string broken)
+    [InlineData("nombre-corto", "nombre")]
+    [InlineData("cp", "codigoPostal")]
+    [InlineData("foto", "fotoUrl")]
+    [InlineData("sin-nombre", "nombre")]
+    public async Task InvalidFields_Return422AndChangeNothing_CA_017_06(string broken, string field)
     {
         var (factory, _) = await StartAsync();
         using var _f = factory;
@@ -236,11 +236,29 @@ public class MeEndpointTests
 
         using var response = await SendAsync(client, HttpMethod.Put, token, body);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         var raw = await response.Content.ReadAsStringAsync();
-        JsonElement.Parse(raw).GetProperty("errors").EnumerateObject().Should().NotBeEmpty();
+        JsonElement.Parse(raw).GetProperty("errors").GetProperty(field).GetArrayLength().Should().BeGreaterThan(0);
         raw.Should().NotContain("ejemplo.com");
         (await UserAsync(factory, sub)).ToJson().Should().Be(before.ToJson(), "no cambia nada");
+    }
+
+    [Fact]
+    public async Task MalformedJson_Returns400AndChangesNothing_CA_017_06()
+    {
+        var (factory, _) = await StartAsync();
+        using var _f = factory;
+        using var client = factory.CreateClient();
+        var (token, sub) = await SignInAsync(client);
+        var before = await UserAsync(factory, sub);
+        using var request = new HttpRequestMessage(HttpMethod.Put, _meUri);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Content = new StringContent("{", System.Text.Encoding.UTF8, "application/json");
+
+        using var response = await client.SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await UserAsync(factory, sub)).ToJson().Should().Be(before.ToJson());
     }
 
     [Fact]

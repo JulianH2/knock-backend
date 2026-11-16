@@ -11,6 +11,7 @@ internal static class ModuleCatalog
     public static readonly IReadOnlyList<string> Names =
     [
         "Catalog",
+        "Media",
         "Requests",
     ];
 

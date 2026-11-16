@@ -53,7 +53,7 @@ public sealed class Spec003IndexScriptTests
             await catalog.Get<CatalogStore>().EnsureIndexesAsync(CancellationToken.None);
             var byScript = await CatalogSnapshotAsync(market);
             (await CatalogSnapshotAsync(catalog.Database)).Should().Equal(byScript);
-            await new CatalogStore(market, catalog.Get<IOptions<KnockMongoOptions>>()).EnsureIndexesAsync(CancellationToken.None);
+            await new CatalogStore(market, catalog.Get<IOptions<KnockMongoOptions>>(), catalog.Get<ICatalogCache>()).EnsureIndexesAsync(CancellationToken.None);
             (await CatalogSnapshotAsync(market)).Should().Equal(byScript);
         }
         finally

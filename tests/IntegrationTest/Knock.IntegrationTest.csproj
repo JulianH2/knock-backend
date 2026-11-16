@@ -34,6 +34,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Knock.Gateway\Knock.Gateway.csproj" />
+    <!-- Media (spec 013, OI-2): pruebas de integración de los servicios internos contra Azurite, sin endpoints.
+         Alias: Market.Api y Gateway declaran un Program global; el alias evita la ambigüedad. -->
+    <ProjectReference Include="..\..\src\Knock.Market.Api\Knock.Market.Api.csproj" Aliases="MarketApi" />
   </ItemGroup>
 
 </Project>

@@ -22,7 +22,7 @@ internal sealed class ObservabilityOptions
 {
     public const string SectionName = "Observability";
 
-    public string ServiceName { get; set; } = "knock-api";
+    public string ServiceName { get; set; } = "knock-market";
 
     /// <summary>Fracción de trazas que se envían: 1.0 (100 %) con el tope diario del recurso (decisión P7).</summary>
     public float SamplingRatio { get; set; } = 1.0f;

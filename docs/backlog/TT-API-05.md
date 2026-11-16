@@ -45,7 +45,7 @@ Tener un servicio único para subir y ver fotos de forma privada, que usan el pe
 
 ## 5. Pasos
 
-1. Endpoint POST /api/v1/archivos/subidas que valida tipo (JPG/PNG) y tamaño (≤ 8 MB) y devuelve un enlace SAS de escritura de 5 minutos.
+1. Endpoint POST /api/v1/archivos/subidas que valida tipo (JPEG/PNG/WebP) y tamaño (≤ 5 MB) y devuelve un enlace SAS de escritura de 5 minutos.
 1. Confirmación POST /api/v1/archivos/{id}/confirmar que verifica el archivo, quita EXIF y genera la versión reducida.
 1. Enlaces de lectura de 5 minutos generados solo para quien tiene permiso sobre el recurso.
 1. Azurite en docker-compose para desarrollo y pruebas.

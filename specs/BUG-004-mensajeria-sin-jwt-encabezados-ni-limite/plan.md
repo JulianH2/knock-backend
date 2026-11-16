@@ -1,6 +1,6 @@
 # plan.md — BUG-004 — Mensajería sin JWT, encabezados de seguridad ni límite de peticiones propios
 
-> Spec aprobada el 2026-11-10 (KNOCK-241). Nada implementado todavía: el código y las pruebas de BUG-004 están por hacer.
+> Spec aprobada el 2026-11-10 (KNOCK-241). **Implementada** (PR #82, fusionado; EXC-021 de 6 archivos ligada a KNOCK-251; Terraform en el PR #86). Mensajería corre desplegada (revisión `0000004`, Healthy, con `Jwt__SigningKey` y la conexión a Redis, ingreso interno).
 
 ## 1. Mapeo de archivos
 - **Reutilizar:** `Hosting/AuthenticationExtensions`, `SecurityExtensions`, `RateLimitingExtensions` y `RevokedSessions` de Identidad/Mercado/gateway; `SecurityMarketFactory` y `SecurityHostConfiguration` como molde de pruebas. Antes de crear: `python scripts/codemap.py --query "jwt authentication rate limiting security headers"`.

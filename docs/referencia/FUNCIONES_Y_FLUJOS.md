@@ -283,7 +283,7 @@ flowchart TD
 | Paso | Qué se captura | Reglas |
 |---|---|---|
 | 1. Categoría | Auto / Agua / Luz | Se salta si viene de un servicio popular o del asistente. |
-| 2. Qué pasa | Texto (≥ 8 caracteres, máx. 500) y **fotos (mínimo 1, máximo 5)** | La foto es **obligatoria**: le dice al técnico qué herramientas y piezas llevar. JPG/PNG, hasta 8 MB, se reduce a 900 px. Frases sugeridas por categoría. |
+| 2. Qué pasa | Texto (≥ 8 caracteres, máx. 500) y **fotos (mínimo 1, máximo 5)** | La foto es **obligatoria**: le dice al técnico qué herramientas y piezas llevar. JPEG/PNG/WebP, hasta 5 MB, se reduce a 900 px. Frases sugeridas por categoría. |
 | 3. Cuándo y dónde | Día (hoy + 5 días), horario (mañana / tarde / noche) y **dirección** | La dirección solo se pide si es a domicilio y no hay una guardada; se guarda en la cuenta. El técnico solo ve la **colonia** hasta que se acepte su cotización. |
 
 **Después de enviar** ✅ (simulado): hasta **3 técnicos** de la categoría responden, **primero los que llegan a la colonia del cliente**, con retraso escalonado (≈ 4.5 s, 10 s y 15.5 s). Cada respuesta crea una **cotización** (precio fijo o rango, día/hora, nota), un **mensaje**, un **aviso** y un contador de no leídos.

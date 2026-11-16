@@ -52,14 +52,36 @@ internal sealed class MarketApiFactory(IReadOnlyDictionary<string, string?> sett
             ["Mongo:Databases:Catalog"] = database,
             ["Mongo:Databases:Requests"] = database,
         };
+        var factory = new MarketApiFactory(Merge(values, overrides)) { ExtraServices = configureServices };
+        await EnsureRequestsIndexesAsync(factory.Database);
+        return factory;
+    }
+
+    /// <summary>
+    /// Host sin contenedores: las cadenas de MongoDB y Redis apuntan a un puerto cerrado (el cliente conecta de forma perezosa y la prueba nunca las usa) y
+    /// <paramref name="configureServices"/> sustituye lo que tocaría la base. Sirve para probar el canal HTTP (autenticación, límites, errores y encabezados).
+    /// </summary>
+    public static MarketApiFactory CreateOffline(Action<IServiceCollection> configureServices, IReadOnlyDictionary<string, string?>? overrides = null)
+    {
+        ArgumentNullException.ThrowIfNull(configureServices);
+        var values = new Dictionary<string, string?>
+        {
+            ["ConnectionStrings:KnockMongo"] = "mongodb://127.0.0.1:1/?serverSelectionTimeoutMS=500",
+            ["ConnectionStrings:KnockRedis"] = GatewayTestSupport.DummyRedisConnectionString,
+            ["Mongo:Databases:Catalog"] = "market_offline",
+            ["Mongo:Databases:Requests"] = "market_offline",
+        };
+        return new MarketApiFactory(Merge(values, overrides)) { ExtraServices = configureServices };
+    }
+
+    private static Dictionary<string, string?> Merge(Dictionary<string, string?> values, IReadOnlyDictionary<string, string?>? overrides)
+    {
         foreach (var (key, value) in overrides ?? new Dictionary<string, string?>())
         {
             values[key] = value;
         }
 
-        var factory = new MarketApiFactory(values) { ExtraServices = configureServices };
-        await EnsureRequestsIndexesAsync(factory.Database);
-        return factory;
+        return values;
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

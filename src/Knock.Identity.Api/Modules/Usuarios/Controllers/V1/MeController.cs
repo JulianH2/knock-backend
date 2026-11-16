@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Asp.Versioning;
+using Knock.Identity.Api.Hosting;
 using Knock.Identity.Api.Modules.Usuarios.Domain;
 using Knock.Identity.Api.Modules.Usuarios.Dtos;
 using Knock.Identity.Api.Modules.Usuarios.Services;
@@ -41,6 +42,7 @@ internal sealed class MeController(ProfileService profiles, ProfileRules rules) 
         return Matches(Request.Headers.IfNoneMatch.ToString(), etag) ? StatusCode(StatusCodes.Status304NotModified) : Ok(ToResponse(profile));
     }
 
+    /// <summary>Actualiza el perfil. Los campos inválidos responden 422 con errores por campo; una colonia inexistente responde 422 con su código.</summary>
     [HttpPut]
     [RequestSizeLimit(MaxBodyBytes)]
     [ProducesResponseType<ProfileResponse>(StatusCodes.Status200OK)]
@@ -61,8 +63,7 @@ internal sealed class MeController(ProfileService profiles, ProfileRules rules) 
         var (update, errors) = rules.Validate(request);
         if (update is null)
         {
-            // Spec 017, CA-06: los campos inválidos responden 400 (no el 422 del filtro general) y no cambian nada.
-            return ValidationProblem(new ValidationProblemDetails(errors) { Status = StatusCodes.Status400BadRequest });
+            return await ValidationFilter.WriteErrorsAsync(HttpContext, errors);
         }
 
         var saved = await profiles.UpdateAsync(sub, update, cancellationToken);
@@ -76,6 +77,7 @@ internal sealed class MeController(ProfileService profiles, ProfileRules rules) 
         return $"W/\"{owner}-{profile.Version}\"";
     }
 
+    // jscpd:ignore-start -- EXC-018
     internal static bool Matches(string ifNoneMatch, string etag)
     {
         if (string.IsNullOrWhiteSpace(ifNoneMatch))
@@ -87,6 +89,7 @@ internal sealed class MeController(ProfileService profiles, ProfileRules rules) 
         return ifNoneMatch.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
             .Any(candidate => candidate == "*" || Strip(candidate) == wanted);
     }
+    // jscpd:ignore-end -- EXC-018
 
     private static string Strip(string tag) => tag.StartsWith("W/", StringComparison.Ordinal) ? tag[2..] : tag;
 

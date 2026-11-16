@@ -44,6 +44,12 @@ internal sealed class RedisFixture : IAsyncDisposable
         return fixture;
     }
 
+    /// <summary>IP interna del contenedor en la red de Docker: para otro contenedor (por ejemplo, las herramientas de entrega de CA_010_02).</summary>
+    public string ContainerInternalHost => _container.IpAddress;
+
+    /// <summary>Contraseña de un solo uso de la prueba; solo viaja por variables de entorno en memoria.</summary>
+    public string Password => _password;
+
     /// <summary><c>redis-cli</c> sin credenciales, para probar que el servidor rechaza comandos sin autenticar.</summary>
     public Task<(long ExitCode, string Output)> RunCliAsync(params string[] arguments) =>
         ExecAsync(["redis-cli", .. arguments]);

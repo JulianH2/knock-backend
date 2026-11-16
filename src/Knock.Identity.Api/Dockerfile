@@ -11,6 +11,7 @@ COPY src/Knock.Identity.Api/Knock.Identity.Api.csproj src/Knock.Identity.Api/pac
 RUN dotnet restore src/Knock.Identity.Api/Knock.Identity.Api.csproj --locked-mode
 COPY src/Knock.Contracts/ src/Knock.Contracts/
 COPY src/Knock.Identity.Api/ src/Knock.Identity.Api/
+COPY db/seeds/demo/identity/usuarios.json db/seeds/demo/identity/usuarios.json
 RUN dotnet publish src/Knock.Identity.Api/Knock.Identity.Api.csproj -c Release --no-restore -o /app/publish /p:UseAppHost=false
 
 # ---- Ejecución ----

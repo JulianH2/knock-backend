@@ -11,6 +11,7 @@ COPY src/Knock.Market.Api/Knock.Market.Api.csproj src/Knock.Market.Api/packages.
 RUN dotnet restore src/Knock.Market.Api/Knock.Market.Api.csproj --locked-mode
 COPY src/Knock.Contracts/ src/Knock.Contracts/
 COPY src/Knock.Market.Api/ src/Knock.Market.Api/
+COPY db/seeds/demo/market/tecnicos.json db/seeds/demo/market/tecnicos.json
 RUN dotnet publish src/Knock.Market.Api/Knock.Market.Api.csproj -c Release --no-restore -o /app/publish /p:UseAppHost=false
 
 # ---- Ejecución ----

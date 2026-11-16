@@ -65,8 +65,9 @@ Decisiones tomadas en la revisión del 2026-11-04. Quien aprueba la spec las ace
 
 - **`Idempotency-Key` (decidido): no se implementa en esta etapa.** Ningún endpoint de las specs 015 a 018 lo necesita; se define en la spec del primer endpoint que cree recursos con riesgo de duplicado (por ejemplo, crear una solicitud). El frontend deja de consumirlo (spec 010 del frontend).
 - **Riesgo:** las vigencias iniciales de la caché pueden no ser las óptimas; se ajustan con las pruebas de carga.
+- **Excepción contractual de paginación (T-05 cerrada por alcance, aprobada por el líder):** `GET /api/v1/oficios` conserva su respuesta como arreglo sin paginación, conforme a la decisión D9 (catálogo acotado; excepción documentada a la constitución §11 en `docs/endpoints.md` y en el OpenAPI), y `GET /api/v1/me/sesiones` conserva su listado acotado al máximo de 10 sesiones por cuenta (spec 018, R-02). Esta excepción no introduce cambios incompatibles en v1. R-07 y §5 siguen vigentes para los listados no acotados: todo listado futuro que no esté acotado por su propia spec deberá aplicar `CursorPage<T>` con límite predeterminado 20 y máximo 50, conforme a su especificación. Por lo tanto, **CA-05 se declara no aplicable a los endpoints actuales**: ninguno de los listados v1 vigentes puede superar 50 elementos (el catálogo acotado y el máximo de 10 sesiones), y no se implementó paginación por cursor en los endpoints existentes.
 
 ## Aprobación
-- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-04
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-12
 - [x] Sin conflicto con la constitución
 - **Estados:** Borrador → Aprobada (una persona; habilita el código) → Implementada (tras el merge)

@@ -1,3 +1,4 @@
+using Knock.Market.Api.Common.Errors;
 using Knock.Market.Api.Common.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
@@ -42,7 +43,7 @@ internal static class AuthenticationExtensions
                     OnChallenge = async context =>
                     {
                         context.HandleResponse();
-                        await ProblemResponses.WriteAsync(context.HttpContext, StatusCodes.Status401Unauthorized, "Unauthorized");
+                        await ProblemResponses.WriteAsync(context.HttpContext, StatusCodes.Status401Unauthorized, "Unauthorized", ErrorCodes.UnauthorizedCode);
                     },
                 };
             });

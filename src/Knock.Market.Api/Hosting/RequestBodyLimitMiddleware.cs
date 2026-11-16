@@ -1,12 +1,14 @@
+using Knock.Market.Api.Common.Errors;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Knock.Market.Api.Hosting;
 
-/// <summary>Respuestas ProblemDetails (RFC 9457) escritas desde middleware o eventos de autenticación.</summary>
+/// <summary>Respuestas ProblemDetails (RFC 9457) escritas desde middleware o eventos de autenticación. El <c>code</c> (spec 002, R-08) es opcional: sin él no se agrega el campo.</summary>
 internal static class ProblemResponses
 {
-    public static async Task WriteAsync(HttpContext context, int statusCode, string title)
+    public static async Task WriteAsync(HttpContext context, int statusCode, string title, string? code = null)
     {
         context.Response.StatusCode = statusCode;
         if (statusCode == StatusCodes.Status401Unauthorized)
@@ -15,11 +17,13 @@ internal static class ProblemResponses
         }
 
         var problems = context.RequestServices.GetRequiredService<IProblemDetailsService>();
-        await problems.WriteAsync(new ProblemDetailsContext
+        var problem = new ProblemDetails { Status = statusCode, Title = title };
+        if (code is not null)
         {
-            HttpContext = context,
-            ProblemDetails = { Status = statusCode, Title = title },
-        });
+            problem.Extensions["code"] = code;
+        }
+
+        await problems.WriteAsync(new ProblemDetailsContext { HttpContext = context, ProblemDetails = problem });
     }
 }
 
@@ -41,7 +45,7 @@ internal sealed class RequestBodyLimitMiddleware(RequestDelegate next)
 
         if (context.Request.ContentLength > limit)
         {
-            await ProblemResponses.WriteAsync(context, StatusCodes.Status413PayloadTooLarge, "Request body too large");
+            await ProblemResponses.WriteAsync(context, StatusCodes.Status413PayloadTooLarge, "Request body too large", ErrorCodes.PayloadTooLargeCode);
             return;
         }
 
@@ -57,7 +61,7 @@ internal sealed class RequestBodyLimitMiddleware(RequestDelegate next)
         }
         catch (BadHttpRequestException ex) when (ex.StatusCode == StatusCodes.Status413PayloadTooLarge && !context.Response.HasStarted)
         {
-            await ProblemResponses.WriteAsync(context, StatusCodes.Status413PayloadTooLarge, "Request body too large");
+            await ProblemResponses.WriteAsync(context, StatusCodes.Status413PayloadTooLarge, "Request body too large", ErrorCodes.PayloadTooLargeCode);
         }
     }
 }

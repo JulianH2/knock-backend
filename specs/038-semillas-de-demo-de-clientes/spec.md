@@ -1,6 +1,6 @@
 # Spec 038 — Semillas de demo de clientes
 
-> **Jira:** KNOCK-40 · **Estado:** Borrador · **Repositorio:** knock-backend · **Rector:** `constitution.md`
+> **Jira:** KNOCK-40 · **Estado:** Aprobada · **Repositorio:** knock-backend · **Rector:** `constitution.md`
 > **Servicio:** Identidad y confianza (`Knock.Identity.Api`) · **Origen:** TT-BD-03 · **Capa:** BD
 
 ## 1. Objetivo
@@ -81,6 +81,6 @@ Diez clientes, sin técnicos ni solicitudes; nombres manuales y números fictici
 - **Nombre:** ¿dónde se guarda? **Decidido (Julián, 2026-11-10, sí a la propuesta):** en `usuarios`, como en la spec 017.
 
 ## Aprobación
-- [ ] Revisor — José Julián Hernández Hernández · fecha:
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-14
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador → Aprobada (una persona; habilita el código) → Implementada (tras el merge).

@@ -76,7 +76,17 @@ Desde KNOCK-202 (CA-03 de la spec 007), la imagen de los servicios la manda `ci-
 
 Redis usa el mismo módulo, así que Terraform tampoco actualiza su imagen. Para cambiarla (está fijada por digest y casi nunca cambia), una persona hace una de estas dos cosas:
 - `az containerapp update --name knock-redis --resource-group <grupo> --image <imagen@sha256:digest>`
-- `terraform apply -replace='module.redis.azurerm_container_app.this'` con el nuevo `redis_image` (recrea la app; Redis pierde lo que tenga en memoria).
+- `terraform apply -replace='module.redis.azurerm_container_app.this'` con el nuevo `redis_image`. Recrea la app y Redis pierde todo lo que tiene en memoria: la lista de sesiones revocadas (un token cerrado vuelve a servir hasta que vence), los contadores de límite de peticiones y la caché del catálogo y de perfiles. Hazlo fuera del horario de pruebas y avisa al equipo.
+
+## Permisos de `id-knock-deploy`
+`ci-deploy` entra a Azure por OIDC con la identidad administrada `id-knock-deploy`. Con mínimo privilegio necesita solo:
+
+| Rol | Alcance | Para qué |
+|---|---|---|
+| `AcrPush` | el registro `acrknockdevtn01` | `az acr login` y `docker push` de las imágenes |
+| `Container Apps Contributor` | el grupo de recursos `rg-knock-dev` | `az containerapp show`, `update` y `revision show` de `knock-*` |
+
+No necesita `Contributor` ni `Owner`, ni permisos en la suscripción, en Key Vault ni en la base: las apps leen sus secretos con su propia identidad. Se revisa con `az role assignment list --assignee <principalId de id-knock-deploy> --all -o table`.
 
 ## Paso 3 — eliminar lo desplegado
 `cd deploy/apps && terraform destroy ...` (mismas variables). Deja la infraestructura y la base.

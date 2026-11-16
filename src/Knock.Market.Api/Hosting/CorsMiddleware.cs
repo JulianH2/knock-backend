@@ -14,7 +14,7 @@ internal sealed class CorsMiddleware(RequestDelegate next, IOptions<SecuritySett
 {
     public static readonly string[] AllowedMethods = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 
-    public static readonly string[] AllowedHeaders = ["Authorization", "Content-Type", "X-Correlation-Id", "Idempotency-Key", "If-Match"];
+    public static readonly string[] AllowedHeaders = ["Authorization", "Content-Type", "X-Correlation-Id", "Idempotency-Key", "If-Match", "If-None-Match", "Cache-Control"];
 
     public static readonly string[] ExposedHeaders = ["X-Correlation-Id", "Retry-After", "ETag"];
 

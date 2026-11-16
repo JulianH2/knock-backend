@@ -16,9 +16,9 @@ Cada línea empieza con el nombre exacto de la llamada en `UseKnockApi` (para `U
 6. `UseHsts` — `Strict-Transport-Security` solo fuera de Development y solo si la petición es HTTPS (nunca a `localhost`).
 7. `UseHttpsRedirection` — 308 a HTTPS solo fuera de Development y solo si hay `Security:Https:RedirectPort`.
 8. `CorsMiddleware` — CORS por configuración (`Security:Cors`); responde el preflight 204 antes del limitador y aplica los encabezados en `OnStarting`.
-9. `UseRateLimiter` — límite por IP (global, estricto para `/auth` y propio para `/health/ready`); responde 429 antes de autenticar.
-10. `RequestBodyLimitMiddleware` — aplica `[RequestSizeLimit]` y responde 413.
-11. `UseAuthentication` — JWT propio; 401 uniforme.
+9. `UseAuthentication` — JWT propio; solo identifica a quien llama (no rechaza: el 401 lo produce la autorización). Va antes del limitador para que la política de la lista de espera de Market (spec 023) limite por `sub`. Market también fija aquí `Cache-Control: private, no-store` en `/api/v1/zonas/lista-espera`, antes de que responda cualquier capa.
+10. `UseRateLimiter` — límite por IP (global, estricto para `/auth` y propio para `/health/ready`) y, en Market, por `sub` en la lista de espera; responde 429.
+11. `RequestBodyLimitMiddleware` — aplica `[RequestSizeLimit]` y responde 413.
 12. `UseAuthorization` — políticas y `[Authorize]`.
 13. `MapKnockHealth` — `/health` y `/health/ready`.
 14. `MapKnockOpenApi` — OpenAPI y Scalar (según entorno).
@@ -28,14 +28,14 @@ Cada línea empieza con el nombre exacto de la llamada en `UseKnockApi` (para `U
 
 - **Reenvío de IP y esquema primero (1):** el limitador, los logs, HSTS y la redirección deben ver la IP y el esquema reales. Sin proxies de confianza configurados no se confía en nadie y se usa la conexión.
 - **Correlación antes del manejador de excepciones (2 antes de 4):** el id debe existir cuando se escribe el error y en el log del error.
-- **Encabezados de seguridad antes del manejador y del limitador (3 antes de 4 y de 9):** se fijan en `OnStarting`, así que cubren el 500 (el manejador limpia los encabezados) y el 429 (el limitador responde antes que el resto).
+- **Encabezados de seguridad antes del manejador y del limitador (3 antes de 4 y de 10):** se fijan en `OnStarting`, así que cubren el 500 (el manejador limpia los encabezados) y el 429 (el limitador responde antes que el resto).
 - **Manejador de excepciones antes del registro de peticiones (4 antes de 5):** el manejador captura lo que cruza el registro.
-- **Registro antes del limitador (5 antes de 9):** el 429 también queda registrado.
-- **HSTS y redirección antes de CORS y del limitador (6 y 7 antes de 8 y 9):** la redirección a HTTPS no cuenta para el límite y HSTS ya va en la respuesta; ambos dependen del esquema que dejó el reenvío (1).
-- **CORS antes del limitador (8 antes de 9):** el 429 también lleva los encabezados CORS, para que el panel pueda leerlo, y el preflight (204) se responde sin pasar por el límite ni por la autenticación. Riesgo aceptado: el preflight es una respuesta barata que el limitador no cuenta.
-- **Limitador antes de autenticar (9 antes de 11):** un 429 no consulta Firebase ni emite sesión; el costo de una ráfaga se corta antes del trabajo caro.
-- **Límite de cuerpo antes de leer el cuerpo (10):** el 413 se responde antes de enlazar el cuerpo.
-- **Autenticación antes que autorización (11 antes de 12).**
+- **Registro antes del limitador (5 antes de 10):** el 429 también queda registrado.
+- **HSTS y redirección antes de CORS y del limitador (6 y 7 antes de 8 y 10):** la redirección a HTTPS no cuenta para el límite y HSTS ya va en la respuesta; ambos dependen del esquema que dejó el reenvío (1).
+- **CORS antes del limitador (8 antes de 10):** el 429 también lleva los encabezados CORS, para que el panel pueda leerlo, y el preflight (204) se responde sin pasar por el límite ni por la autenticación. Riesgo aceptado: el preflight es una respuesta barata que el limitador no cuenta.
+- **Autenticación antes del limitador en Market (9 antes de 10):** la política por persona de la lista de espera necesita el `sub`. Validar un JWT HS256 es una comprobación local (sin Firebase ni base de datos) y no cambia el límite global por IP, que sigue cortando la ráfaga; `/health` y las rutas públicas no se ven afectados (sin token no hay nada que validar y un token inválido no rechaza).
+- **Límite de cuerpo antes de leer el cuerpo (11):** el 413 se responde antes de enlazar el cuerpo.
+- **Autenticación antes que autorización (9 antes de 12).**
 
 ## Respuestas que cada capa produce
 
@@ -45,10 +45,10 @@ Todas son `application/problem+json` (salvo el 308 y el 204 de abajo), llevan el
 |---|---|
 | Redirección a HTTPS | 308 con `Location` (solo si hay `Security:Https:RedirectPort`; sin cuerpo) |
 | CORS | 204 al preflight de un origen permitido (sin cuerpo) |
-| Limitador | 429 con `Retry-After` |
-| Límite de cuerpo | 413 |
-| Autenticación | 401 |
-| Filtro de validación (MVC) | 422 con `errors` |
+| Limitador | 429 `rate_limited` con `Retry-After` (Market) |
+| Límite de cuerpo | 413 `payload_too_large` (Market) |
+| Autenticación / autorización | 401 `unauthorized` (Market) |
+| Filtro de validación (MVC) | 422 `validation_failed` con `errors` (Market) |
 | Manejador de excepciones | 400, 403, 404, 409, 422 (dominio) y 500 |
 
 ## Configuración
