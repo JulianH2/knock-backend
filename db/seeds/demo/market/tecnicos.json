@@ -1,0 +1,77 @@
+[
+  {
+    "_id": {
+      "$oid": "ea0000000000000000000001"
+    },
+    "uid": "demo-tecnico-01",
+    "usuarioId": "cc164cd6-ac70-8170-8370-ec3e873e5d13",
+    "nombre": "Demo Tornillo de Cartón",
+    "estado": "activo",
+    "oculto": false,
+    "oficios": [
+      "ele",
+      "mec"
+    ],
+    "coloniaBaseId": "6adfe980511e3d878359ca07",
+    "ubicacionBase": {
+      "type": "Point",
+      "coordinates": [
+        -99.344394146,
+        20.0499735
+      ]
+    },
+    "radioAtencionKm": 5,
+    "version": 1,
+    "demo": true
+  },
+  {
+    "_id": {
+      "$oid": "ea0000000000000000000002"
+    },
+    "uid": "demo-tecnico-02",
+    "usuarioId": "ae8ebc53-4d54-8e61-9082-2c617568cd0f",
+    "nombre": "Demo Llave de Juguete",
+    "estado": "activo",
+    "oculto": false,
+    "oficios": [
+      "ele",
+      "mec"
+    ],
+    "coloniaBaseId": "6adfe980511e3d878359ca07",
+    "ubicacionBase": {
+      "type": "Point",
+      "coordinates": [
+        -99.344394146,
+        20.0499735
+      ]
+    },
+    "radioAtencionKm": 5,
+    "version": 1,
+    "demo": true
+  },
+  {
+    "_id": {
+      "$oid": "ea0000000000000000000003"
+    },
+    "uid": "demo-tecnico-03",
+    "usuarioId": "7b484abb-e9e0-8104-a08d-d30ce15e8148",
+    "nombre": "Demo Motor de Papel",
+    "estado": "activo",
+    "oculto": false,
+    "oficios": [
+      "ele",
+      "mec"
+    ],
+    "coloniaBaseId": "6adfe980511e3d878359ca07",
+    "ubicacionBase": {
+      "type": "Point",
+      "coordinates": [
+        -99.344394146,
+        20.0499735
+      ]
+    },
+    "radioAtencionKm": 5,
+    "version": 1,
+    "demo": true
+  }
+]

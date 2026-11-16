@@ -36,6 +36,9 @@ public static class RequestsModuleExtensions
         services.TryAddSingleton<IContentModerator, UnavailableContentModerator>();
         services.AddScoped<SolicitudService>();
         services.AddScoped<IRequestsApi, RequestsApi>();
+        services.AddScoped<DemoTechnicianStore>();
+        services.AddScoped<DemoTechnicianSeeder>();
+        services.AddHostedService<DemoTechnicianStartup>();
         return services;
     }
 }
