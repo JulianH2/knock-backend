@@ -728,3 +728,7 @@
 ## 2026-11-16 — Pruebas de CA-23 y de propiedad de fotos de la spec 020 (KNOCK-59)
 - **Qué se agregó:** `Spec020ElegibilidadTests.Base_Con_Y_Sin_Oleadas_CA_020_23` (técnico elegible, de otro oficio, de otra zona, suspendido y oculto piden detalle y cotizan, con `Oleadas:Habilitado` en true y false) y `Spec020FotosTests` (foto de otra persona o mezclada responde 422 `photo_invalid` sin guardar; la dueña sí la usa y otra persona no). `FakePhotos` ahora puede llevar dueños por foto. La traza 020 queda completa.
 - **Límite:** `Oleadas:Habilitado` aún no existe en el código (spec 028); la prueba fija el resultado actual para que no cambie al llegar las oleadas. La propiedad real de archivos depende de `IMediaApi` (spec 013, OI-2); aquí se prueba que el servicio la consulta con el `sub` del token. Sin código de producción ni dependencias nuevas.
+
+## 2026-11-16 — KNOCK-34: Market recibe la llave de cifrado de campos
+- **Cambio:** `deploy/apps/main.tf` pasa a Market `Security__FieldEncryption__ActiveVersion=1` (env) y `Security__FieldEncryption__Keys__1` desde el secreto nuevo `field-encryption-key`; `up.sh` y su prueba exigen nueve secretos. El README documenta cómo crearlo sin dejar el valor en historial ni repositorio, y la rotación.
+- **Riesgo:** una sola llave protege la dirección (spec 020) y el código de visita (spec 022); perderla deja ambos ilegibles. Solo Market tiene rol sobre ese secreto. Sin despliegue real: el secreto lo crea una persona a mano antes del `apply`.
