@@ -146,6 +146,27 @@ public sealed class Spec021EleccionTests
     }
 
     [Fact]
+    public async Task Fallo_Al_Armar_La_Respuesta_Tras_El_Commit_No_Devuelve_Error_R_20()
+    {
+        await using var host = await Spec020Host.StartAsync();
+        var (requestId, quotes, _) = await host.QuotedRequestAsync(2);
+        await host.Database.GetCollection<BsonDocument>("solicitudes").UpdateOneAsync(
+            Builders<BsonDocument>.Filter.Eq("_id", requestId),
+            Builders<BsonDocument>.Update.Set("direccionCifrada", "1.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+
+        using var response = await host.ChooseAsync(requestId, quotes[0]);
+        using var repeated = await host.ChooseAsync(requestId, quotes[1]);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "la elección ya está confirmada: un fallo al descifrar la dirección no puede convertirse en 500");
+        var json = await Spec020Host.ReadAsync(response);
+        json.GetProperty("lugar").TryGetProperty("direccion", out var address).Should().BeFalse("la dirección ilegible sale ausente");
+        address.ValueKind.Should().Be(System.Text.Json.JsonValueKind.Undefined);
+        (await host.OneAsync("solicitudes", requestId))["estado"].AsString.Should().Be("cita_confirmada");
+        (await host.CountAsync("visitas")).Should().Be(1);
+        repeated.StatusCode.Should().Be(HttpStatusCode.Conflict, "repetir después de una respuesta degradada sigue dando 409");
+    }
+
+    [Fact]
     public async Task Id_Mal_Formado_Y_Cuerpo_Invalido_CA_021_15_Eleccion()
     {
         await using var host = await Spec020Host.StartAsync();

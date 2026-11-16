@@ -29,7 +29,7 @@ public sealed class DemoTechnicianLoaderTests
             var before = await collection.Find(FilterDefinition<BsonDocument>.Empty).ToListAsync();
             await loader.SeedAsync(_path, CancellationToken.None);
             var after = await collection.Find(FilterDefinition<BsonDocument>.Empty).ToListAsync();
-            Assert.Equal(3, after.Count);
+            Assert.Equal(4, after.Count);
             Assert.Equal(before.OrderBy(x => x["_id"]), after.OrderBy(x => x["_id"]));
             var directory = new MongoTechnicianDirectory(database, options);
             await collection.Indexes.CreateOneAsync(new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Geo2DSphere("ubicacionBase")));

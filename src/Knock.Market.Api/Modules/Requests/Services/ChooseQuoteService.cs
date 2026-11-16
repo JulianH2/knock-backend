@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Knock.Market.Api.Common.Crypto;
 using Knock.Market.Api.Common.Errors;
 using Knock.Market.Api.Modules.Requests.Data;
@@ -35,12 +36,13 @@ internal sealed class ChooseQuoteService(ChoiceStore choices, FieldCipher cipher
             return new ChooseOutcome(result.Status);
         }
 
-        var technicians = await choices.FindTechniciansAsync([visit.TechnicianId], cancellationToken);
-        technicians.TryGetValue(visit.TechnicianId, out var technician);
+        // La elección ya está confirmada: de aquí en adelante ningún fallo puede devolver un error (ni 500 ni 503), porque repetir daría 409. Lo que no se pueda leer o descifrar
+        // sale ausente y la app lo pide con la visita (spec 022).
+        var technician = await choices.TryFindTechnicianAsync(visit.TechnicianId, cancellationToken);
         var address = technician?.WorkshopAddress;
         if (visit.Modality == _domicile)
         {
-            address = visit.EncryptedClientAddress is { } encrypted ? cipher.Decrypt(encrypted, SolicitudService.AddressContext(visit.RequestId)) : null;
+            address = TryDecryptAddress(visit);
         }
 
         return new ChooseOutcome(
@@ -64,5 +66,22 @@ internal sealed class ChooseQuoteService(ChoiceStore choices, FieldCipher cipher
                     technician?.Phone,
                     technician?.WhatsApp),
                 new AppointmentPlace(visit.Modality, address)));
+    }
+
+    private string? TryDecryptAddress(ChosenVisit visit)
+    {
+        if (visit.EncryptedClientAddress is not { } encrypted)
+        {
+            return null;
+        }
+
+        try
+        {
+            return cipher.Decrypt(encrypted, SolicitudService.AddressContext(visit.RequestId));
+        }
+        catch (Exception exception) when (exception is CryptographicException or InvalidOperationException or FormatException)
+        {
+            return null;
+        }
     }
 }

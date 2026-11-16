@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-16T21:02:20Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-16T21:51:25Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -14,7 +14,7 @@
 | `Knock.Market.Api` | -, common, hosting | 29 | 62 | 86 |
 | `Knock.Messaging.Api` | -, hosting | 14 | 37 | 46 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
-| `Requests` | -, controllers, data, domain, dtos, services, validators | 49 | 113 | 99 |
+| `Requests` | -, controllers, data, domain, dtos, services, validators | 49 | 113 | 100 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 25 | 46 | 53 |
 | `Usuarios` | -, controllers, data, domain, dtos, services | 13 | 25 | 34 |
 
@@ -533,7 +533,7 @@
 **data**
 
 - `src/Knock.Market.Api/Modules/Requests/Data/ChoiceStore.cs` — record `ChosenVisit`, record `ChooseResult`, record `TechnicianPublic`, class `ChoiceStore`
-  - `ListQuotesAsync()`:54, `FindTechniciansAsync()`:63, `FindVisitIdsAsync()`:78, `ChooseAsync()`:95
+  - `ListQuotesAsync()`:54, `FindTechniciansAsync()`:63, `TryFindTechnicianAsync()`:81, `FindVisitIdsAsync()`:94, `ChooseAsync()`:111
 - `src/Knock.Market.Api/Modules/Requests/Data/DemoTechnicianGuard.cs` — class `DemoTechnicianGuard`
   - `ValidateAsync()`:9
 - `src/Knock.Market.Api/Modules/Requests/Data/DemoTechnicianStore.cs` — class `DemoTechnicianStore`
@@ -584,9 +584,9 @@
 - `src/Knock.Market.Api/Modules/Requests/Services/ArrivalService.cs` — enum `ArrivalStatus`, record `ArrivalOutcome`, class `ArrivalService`
   - `ArrivalService()`:32, `ArriveAsync()`:34
 - `src/Knock.Market.Api/Modules/Requests/Services/ChooseQuoteService.cs` — record `ChooseOutcome`, class `ChooseQuoteService`
-  - `ChooseQuoteService()`:17, `ChooseAsync()`:25
+  - `ChooseQuoteService()`:18, `ChooseAsync()`:26
 - `src/Knock.Market.Api/Modules/Requests/Services/DemoTechnicianSeeder.cs` — class `DemoTechnicianSeeder`
-  - `DemoTechnicianSeeder()`:7, `SeedAsync()`:11
+  - `DemoTechnicianSeeder()`:7, `SeedAsync()`:13
 - `src/Knock.Market.Api/Modules/Requests/Services/DemoTechnicianStartup.cs` — class `DemoTechnicianStartup`
   - `ShouldRun()`:5, `StartAsync()`:7, `StopAsync()`:17
 - `src/Knock.Market.Api/Modules/Requests/Services/QuoteComparisonService.cs` — class `QuoteComparisonService`

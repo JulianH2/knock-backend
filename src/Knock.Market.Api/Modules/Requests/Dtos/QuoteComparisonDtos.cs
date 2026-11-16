@@ -60,7 +60,7 @@ internal sealed record ChooseQuoteBody(string? CotizacionId)
 internal sealed record ChosenTechnician(string Id, string Nombre, string? FotoUrl, bool Verificado, string NivelVerificacion, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Telefono, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Whatsapp);
 
 /// <summary>Lugar de la cita: tipo (<c>domicilio</c> o <c>taller</c>) y dirección.</summary>
-internal sealed record AppointmentPlace(string Tipo, string? Direccion);
+internal sealed record AppointmentPlace(string Tipo, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Direccion);
 
 /// <summary>Cita confirmada al elegir una cotización (spec 021, §5).</summary>
 internal sealed record Appointment(
