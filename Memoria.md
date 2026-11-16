@@ -683,3 +683,8 @@
 - **Qué pasó:** el commit 72c27e4 de la rama de KNOCK-40 trae en `DemoSeedGuardTests.cs` (líneas 17 y 40) cadenas de conexión de MongoDB inventadas para probar la guarda de host. Gitleaks revisa el historial de todas las ramas, así que desde ese push falló en todos los PR nuevos, incluso en los que solo cambian documentación (#113).
 - **Decisión (Tech Lead):** se aceptan las dos huellas en `.gitleaksignore`, con la EXC-023 en `security/exceptions.yaml` (vence 2026-12-04 o al fusionar la rama), igual que EXC-019. No se reescribe el historial ni se toca la regla.
 - **A evitar:** escribir en pruebas una cadena de conexión completa con usuario y clave aunque sea inventada; constrúyela en el código sin ese formato.
+
+## 2026-11-14 — Gitleaks marca otra vez todos los PR por una cadena sintética de la rama de KNOCK-246 (EXC-024)
+- **Qué pasó:** el commit ee6477c de la rama de KNOCK-246 trae en `DemoTechnicianLoaderTests.cs` (línea 110) una cadena de conexión de MongoDB inventada con usuario y clave. Gitleaks revisa el historial de todas las ramas, así que falló en #103, #116 y en cualquier PR nuevo del backend. Es otra huella distinta de las de la EXC-023.
+- **Decisión (Tech Lead):** se acepta la huella en `.gitleaksignore` con la EXC-024 en `security/exceptions.yaml` (vence 2026-12-04), igual que EXC-019 y EXC-023. No se reescribe el historial ni se toca la regla.
+- **A evitar:** escribir en pruebas una cadena de conexión completa con usuario y clave aunque sea inventada; constrúyela con `MongoUrlBuilder` o sin ese formato. Las huellas se quedan mientras el commit exista en el historial: retirarlas al fusionar rompería Gitleaks en todos los PR.
