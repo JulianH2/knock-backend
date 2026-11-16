@@ -684,6 +684,9 @@
 - **Decisión (Tech Lead):** se aceptan las dos huellas en `.gitleaksignore`, con la EXC-023 en `security/exceptions.yaml` (vence 2026-12-04 o al fusionar la rama), igual que EXC-019. No se reescribe el historial ni se toca la regla.
 - **A evitar:** escribir en pruebas una cadena de conexión completa con usuario y clave aunque sea inventada; constrúyela en el código sin ese formato.
 
+- **2026-11-14 · KNOCK-269 · parcial:** k6 admite modos 200 y 304 locales con ETag de setup y percentiles por escenario; ambos se probaron brevemente contra un servidor simulado, no Market. TTL mínimo de 60 s y borrado paralelo no garantizan fallo Redis por cada petición con 5 usuarios; faltan mecanismo verificable, cuatro corridas y evidencia, por lo que T-07 sigue parcial. `dotnet format` y codemap correctos; `--trace 010` sigue señalando CA-05, cerrada por alcance en T-05.
+
+- **2026-11-14 · KNOCK-269 · T-07:** medición secuencial local con 100 peticiones por combinación; p95 200 fría/caliente 22.976/6.589 ms y 304 fría/caliente 16.938/8.011 ms; evidencia en `docs/evidencia/knock-269-cache-p95.md`. Script nuevo solicitado porque k6 no garantiza borrado sincronizado por petición; la repoblación Redis prueba indirectamente la ruta de MongoDB en aislamiento. k6 queda como referencia de carga, no de fría/caliente.
 ## 2026-11-14 — Gitleaks marca otra vez todos los PR por una cadena sintética de la rama de KNOCK-246 (EXC-024)
 - **Qué pasó:** el commit ee6477c de la rama de KNOCK-246 trae en `DemoTechnicianLoaderTests.cs` (línea 110) una cadena de conexión de MongoDB inventada con usuario y clave. Gitleaks revisa el historial de todas las ramas, así que falló en #103, #116 y en cualquier PR nuevo del backend. Es otra huella distinta de las de la EXC-023.
 - **Decisión (Tech Lead):** se acepta la huella en `.gitleaksignore` con la EXC-024 en `security/exceptions.yaml` (vence 2026-12-04), igual que EXC-019 y EXC-023. No se reescribe el historial ni se toca la regla.
