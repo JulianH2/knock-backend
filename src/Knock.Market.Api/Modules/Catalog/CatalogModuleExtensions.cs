@@ -40,6 +40,7 @@ public static class CatalogModuleExtensions
         services.AddScoped<INeighborhoodCenterCatalog, CatalogApi>();
         services.AddScoped<CatalogSeeder>();
         services.AddScoped<OficioQueries>();
+        services.AddScoped<ZonaService>();
         return services;
     }
 }

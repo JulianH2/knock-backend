@@ -37,6 +37,7 @@ internal static class RateLimitingExtensions
 
     /// <summary>Crear solicitudes: 10 por hora por persona (spec 020, §5), además del límite general.</summary>
     public const string CreateRequestPolicy = "solicitudes-crear";
+    public const string QuotePolicy = "quotes";
     private const string _healthPath = "/health";
     private const string _readyPath = "/health/ready";
     private const string _unknownClient = "unknown";
@@ -65,6 +66,9 @@ internal static class RateLimitingExtensions
                 : RateLimitPartition.GetNoLimiter(_unknownClient));
             options.AddPolicy(CreateRequestPolicy, context => context.User.FindFirst("sub")?.Value is { Length: > 0 } subject
                 ? RateLimitPartition.GetFixedWindowLimiter(subject, _ => FixedWindow(new RateLimitPolicySettings { PermitLimit = 10, Window = TimeSpan.FromHours(1) }))
+                : RateLimitPartition.GetNoLimiter(_unknownClient));
+            options.AddPolicy(QuotePolicy, context => context.User.FindFirst("sub")?.Value is { Length: > 0 } subject
+                ? RateLimitPartition.GetFixedWindowLimiter(subject, _ => FixedWindow(new RateLimitPolicySettings { PermitLimit = 3, Window = TimeSpan.FromMinutes(1) }))
                 : RateLimitPartition.GetNoLimiter(_unknownClient));
             options.GlobalLimiter = PartitionedRateLimiter.CreateChained(
                 PartitionedRateLimiter.Create<HttpContext, string>(context => GlobalPartition(context, global, ready)),

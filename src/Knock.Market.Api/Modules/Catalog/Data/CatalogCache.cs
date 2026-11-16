@@ -24,7 +24,7 @@ internal interface ICatalogCache
     /// <summary>Guarda solo si la generación sigue siendo la capturada (la escritura subió la generación al invalidar). Devuelve false si cambió o Redis no responde.</summary>
     Task<bool> SetOficiosIfGenerationAsync(IReadOnlyList<OficioListing> oficios, long expectedGeneration, CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<string>?> GetNeighborhoodNamesAsync(string postalCode, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Colonia>?> GetNeighborhoodNamesAsync(string postalCode, CancellationToken cancellationToken);
 
     /// <summary>Borra la clave del CP. Si falla, el error sube: una escritura no puede responder dejando datos viejos en la caché.</summary>
     Task RemoveNeighborhoodNamesAsync(string postalCode, CancellationToken cancellationToken);
@@ -33,7 +33,7 @@ internal interface ICatalogCache
     Task<long> GetNeighborhoodNamesGenerationAsync(string postalCode, CancellationToken cancellationToken);
 
     /// <summary>Guarda solo si la generación sigue siendo la capturada; mismas reglas que la de oficios.</summary>
-    Task<bool> SetNeighborhoodNamesIfGenerationAsync(string postalCode, IReadOnlyList<string> names, long expectedGeneration, CancellationToken cancellationToken);
+    Task<bool> SetNeighborhoodNamesIfGenerationAsync(string postalCode, IReadOnlyList<Colonia> names, long expectedGeneration, CancellationToken cancellationToken);
 
     Task<bool?> GetColoniaExistsAsync(ObjectId id, string postalCode, CancellationToken cancellationToken);
 
@@ -155,14 +155,14 @@ internal sealed partial class RedisCatalogCache(IConnectionMultiplexer redis, IO
         }
     }
 
-    public async Task<IReadOnlyList<string>?> GetNeighborhoodNamesAsync(string postalCode, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Colonia>?> GetNeighborhoodNamesAsync(string postalCode, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(postalCode);
         cancellationToken.ThrowIfCancellationRequested();
         try
         {
             var cached = await redis.GetDatabase().StringGetAsync(NeighborhoodNamesKey(postalCode));
-            return cached.IsNullOrEmpty ? null : JsonSerializer.Deserialize<List<string>>(cached.ToString());
+            return cached.IsNullOrEmpty ? null : JsonSerializer.Deserialize<List<Colonia>>(cached.ToString());
         }
         catch (Exception exception) when (exception is RedisException or TimeoutException or JsonException)
         {
@@ -184,7 +184,7 @@ internal sealed partial class RedisCatalogCache(IConnectionMultiplexer redis, IO
         return GetGenerationAsync(NeighborhoodNamesGenerationKey(postalCode), cancellationToken);
     }
 
-    public async Task<bool> SetNeighborhoodNamesIfGenerationAsync(string postalCode, IReadOnlyList<string> names, long expectedGeneration, CancellationToken cancellationToken)
+    public async Task<bool> SetNeighborhoodNamesIfGenerationAsync(string postalCode, IReadOnlyList<Colonia> names, long expectedGeneration, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(postalCode);
         ArgumentNullException.ThrowIfNull(names);
@@ -194,7 +194,7 @@ internal sealed partial class RedisCatalogCache(IConnectionMultiplexer redis, IO
             var result = await redis.GetDatabase().ScriptEvaluateAsync(
                 _setIfGenerationScript,
                 [NeighborhoodNamesKey(postalCode), NeighborhoodNamesGenerationKey(postalCode)],
-                [JsonSerializer.Serialize(names), expectedGeneration.ToString(System.Globalization.CultureInfo.InvariantCulture), ((long)_lifetime.TotalSeconds).ToString(System.Globalization.CultureInfo.InvariantCulture)]);
+                [JsonSerializer.Serialize(names), expectedGeneration.ToString(System.Globalization.CultureInfo.InvariantCulture), (names.Count == 0 ? 300L : (long)_lifetime.TotalSeconds).ToString(System.Globalization.CultureInfo.InvariantCulture)]);
             return result.ToString() == "OK";
         }
         catch (Exception exception) when (exception is RedisException or TimeoutException)
@@ -282,14 +282,14 @@ internal sealed class DisabledCatalogCache : ICatalogCache
     public Task<bool> SetOficiosIfGenerationAsync(IReadOnlyList<OficioListing> oficios, long expectedGeneration, CancellationToken cancellationToken) =>
         Task.FromResult(false);
 
-    public Task<IReadOnlyList<string>?> GetNeighborhoodNamesAsync(string postalCode, CancellationToken cancellationToken) =>
-        Task.FromResult<IReadOnlyList<string>?>(null);
+    public Task<IReadOnlyList<Colonia>?> GetNeighborhoodNamesAsync(string postalCode, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Colonia>?>(null);
 
     public Task RemoveNeighborhoodNamesAsync(string postalCode, CancellationToken cancellationToken) => Task.CompletedTask;
 
     public Task<long> GetNeighborhoodNamesGenerationAsync(string postalCode, CancellationToken cancellationToken) => Task.FromResult(-1L);
 
-    public Task<bool> SetNeighborhoodNamesIfGenerationAsync(string postalCode, IReadOnlyList<string> names, long expectedGeneration, CancellationToken cancellationToken) =>
+    public Task<bool> SetNeighborhoodNamesIfGenerationAsync(string postalCode, IReadOnlyList<Colonia> names, long expectedGeneration, CancellationToken cancellationToken) =>
         Task.FromResult(false);
 
     public Task<bool?> GetColoniaExistsAsync(ObjectId id, string postalCode, CancellationToken cancellationToken) =>

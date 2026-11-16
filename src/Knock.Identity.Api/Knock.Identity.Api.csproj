@@ -30,5 +30,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Knock.Contracts\Knock.Contracts.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\db\seeds\demo\identity\usuarios.json" Link="db\seeds\demo\identity\usuarios.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
 
 </Project>

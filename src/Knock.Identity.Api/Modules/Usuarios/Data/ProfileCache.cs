@@ -16,6 +16,22 @@ internal interface IProfileCache
     Task RemoveAsync(string sub, CancellationToken cancellationToken);
 }
 
+internal static class DemoProfileCache
+{
+    public static async Task<bool> TryRemoveAsync(IProfileCache cache, string sub, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await cache.RemoveAsync(sub, cancellationToken);
+            return true;
+        }
+        catch (Exception exception) when (exception is RedisException or TimeoutException)
+        {
+            return false;
+        }
+    }
+}
+
 /// <summary>Clave <c>perfil:{sub}</c> en Redis con la vida de <see cref="ProfileCacheOptions"/> (spec 010, R-04). Leer y guardar fallan en silencio (se va a MongoDB); borrar no.</summary>
 internal sealed partial class RedisProfileCache(IConnectionMultiplexer redis, IOptions<ProfileCacheOptions> cacheOptions, ILogger<RedisProfileCache> logger) : IProfileCache
 {

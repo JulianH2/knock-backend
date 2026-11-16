@@ -39,7 +39,9 @@ internal sealed class OficiosController(OficioQueries oficios) : ControllerBase
     }
 
     /// <summary>ETag débil a partir del contenido serializado: determinista para el mismo catálogo y distinto ante cualquier cambio.</summary>
-    internal static string ETag(IReadOnlyList<OficioResponse> items)
+    internal static string ETag(IReadOnlyList<OficioResponse> items) => ETagPayload(items);
+
+    internal static string ETagPayload<T>(T items)
     {
         var payload = System.Text.Json.JsonSerializer.Serialize(items, _payloadOptions);
         var hash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));

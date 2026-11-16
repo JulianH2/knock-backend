@@ -16,7 +16,10 @@ public static class UsuariosModuleExtensions
         services.AddOptions<ProfileOptions>().BindConfiguration(ProfileOptions.SectionName);
         services.AddOptions<ProfileCacheOptions>().BindConfiguration(ProfileCacheOptions.SectionName);
         services.AddSingleton<IValidateOptions<ProfileCacheOptions>, ProfileCacheOptionsValidator>();
-        services.AddSingleton<IUsuariosStore, UsuariosStore>();
+        services.AddSingleton<UsuariosStore>();
+        services.AddSingleton<IUsuariosStore>(provider => provider.GetRequiredService<UsuariosStore>());
+        services.AddSingleton<DemoClientSeeder>();
+        services.AddHostedService<DemoSeedStartup>();
         services.AddSingleton<IProfileCache, RedisProfileCache>();
         services.AddHttpContextAccessor();
         services.AddOptions<MarketCatalogOptions>()

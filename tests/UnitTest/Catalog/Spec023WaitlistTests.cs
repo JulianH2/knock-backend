@@ -11,6 +11,24 @@ public sealed class Spec023ValidacionTests
     [Theory]
     [InlineData("")]
     [InlineData("1234")]
+    [InlineData("123456")]
+    [InlineData("１２３４５")]
+    [InlineData(".*")]
+    [InlineData("42800\0")]
+    public void Codigo_Ruta_Mal_Formado_CA_023_03(string cp)
+    {
+        var result = new PostalCodeRouteValidator().Validate(new PostalCodeRoute { Cp = cp });
+        result.Errors.Should().Contain(error => error.PropertyName == "Cp");
+    }
+
+    [Theory]
+    [InlineData("01234")]
+    [InlineData("99999")]
+    public void Codigo_Ruta_Valido_CA_023_03(string cp) =>
+        new PostalCodeRouteValidator().Validate(new PostalCodeRoute { Cp = cp }).IsValid.Should().BeTrue();
+    [Theory]
+    [InlineData("")]
+    [InlineData("1234")]
     [InlineData("１２３４５")]
     [InlineData("123456")]
     [InlineData("12$45")]

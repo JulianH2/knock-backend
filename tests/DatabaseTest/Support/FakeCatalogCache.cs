@@ -15,8 +15,8 @@ internal sealed class FakeCatalogCache : ICatalogCache
 
     public Task RemoveOficiosAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-    public Task<IReadOnlyList<string>?> GetNeighborhoodNamesAsync(string postalCode, CancellationToken cancellationToken) =>
-        Task.FromResult<IReadOnlyList<string>?>(null);
+    public Task<IReadOnlyList<Colonia>?> GetNeighborhoodNamesAsync(string postalCode, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Colonia>?>(null);
 
     public Task RemoveNeighborhoodNamesAsync(string postalCode, CancellationToken cancellationToken) => Task.CompletedTask;
 
@@ -32,7 +32,7 @@ internal sealed class FakeCatalogCache : ICatalogCache
 
     public Task<long> GetNeighborhoodNamesGenerationAsync(string postalCode, CancellationToken cancellationToken) => Task.FromResult(0L);
 
-    public Task<bool> SetNeighborhoodNamesIfGenerationAsync(string postalCode, IReadOnlyList<string> names, long expectedGeneration, CancellationToken cancellationToken) => Task.FromResult(true);
+    public Task<bool> SetNeighborhoodNamesIfGenerationAsync(string postalCode, IReadOnlyList<Colonia> names, long expectedGeneration, CancellationToken cancellationToken) => Task.FromResult(true);
 
     public Task<long> GetColoniaExistsGenerationAsync(ObjectId id, string postalCode, CancellationToken cancellationToken) => Task.FromResult(0L);
 

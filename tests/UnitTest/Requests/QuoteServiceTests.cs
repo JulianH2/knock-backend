@@ -20,6 +20,14 @@ public class QuoteServiceTests
         (await service.SendAsync("sub", "request", _body)).Should().Be(QuoteCheckResult.NotATechnician);
     }
 
+    [Fact]
+    public async Task ExistingButFilteredTechnicianIsNotFound()
+    {
+        var directory = new FakeDirectory(null, true);
+        var service = new QuoteService(directory, new FakeRequests(Request()), new QuoteValidator(Options.Create(new QuotePricingOptions())), new FixedTimeProvider(), new FakeModerator(), new FakeWriter());
+        (await service.SendAsync("sub", "request", _body)).Should().Be(QuoteCheckResult.NotFound);
+    }
+
     [Theory]
     [InlineData("suspendido", false, "plo", true)]
     [InlineData("activo", true, "plo", true)]
@@ -63,6 +71,32 @@ public class QuoteServiceTests
         (await service.SendAsync("sub", "request", _body with { Dia = _day.AddDays(8) })).Should().Be(QuoteCheckResult.Invalid);
     }
 
+    [Fact]
+    public async Task NoteWithUnavailableModeratorFailsClosed()
+    {
+        var moderator = new FakeModerator();
+        var writer = new FakeWriter();
+        var service = Create(Technician(), Request(), moderator, writer);
+        (await service.SendAsync("sub", "request", _body with { Nota = "nota" })).Should().Be(QuoteCheckResult.ModerationUnavailable);
+        moderator.Calls.Should().Be(1);
+        writer.Calls.Should().Be((0));
+    }
+
+    [Fact]
+    public async Task NoNoteDoesNotCallModerator()
+    {
+        var moderator = new FakeModerator();
+        var service = Create(Technician(), Request(), moderator);
+        (await service.SendAsync("sub", "request", _body)).Should().Be(QuoteCheckResult.Created);
+        moderator.Calls.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DefaultModeratorIsUnavailable()
+    {
+        (await new UnavailableNoteModerator().ModerateAsync("note", CancellationToken.None)).Should().Be(NoteModerationResult.Unavailable);
+    }
+
     [Theory]
     [InlineData(19.0, 5, true)]
     [InlineData(19.04, 5, true)]
@@ -76,12 +110,34 @@ public class QuoteServiceTests
 
     private static Technician Technician() => new("sub", "activo", false, ["plo"], "colonia", null, null, 5);
     private static QuoteRequestSnapshot Request() => new("plo", "colonia", RequestState.Enviada, _now.AddHours(1), _day, null, null);
-    private static QuoteService Create(Technician? technician, QuoteRequestSnapshot? request) =>
-        new(new FakeDirectory(technician), new FakeRequests(request), new QuoteValidator(Options.Create(new QuotePricingOptions())), new FixedTimeProvider());
+    private static QuoteService Create(Technician? technician, QuoteRequestSnapshot? request, INoteModerator? moderator = null, IQuoteWriter? writer = null) =>
+        new(new FakeDirectory(technician), new FakeRequests(request), new QuoteValidator(Options.Create(new QuotePricingOptions())), new FixedTimeProvider(), moderator ?? new FakeModerator(), writer ?? new FakeWriter());
 
-    private sealed class FakeDirectory(Technician? technician) : ITechnicianDirectory
+    private sealed class FakeWriter : IQuoteWriter
+    {
+        public int Calls { get; private set; }
+        public Task<QuoteCheckResult> SaveAsync(string requestId, string technicianId, string sub, string trade, QuoteValidationInput body, DateTimeOffset now, CancellationToken cancellationToken)
+        {
+            Calls++;
+            return Task.FromResult(QuoteCheckResult.Created);
+        }
+    }
+
+    private sealed class FakeModerator : INoteModerator
+    {
+        public int Calls { get; private set; }
+        public Task<NoteModerationResult> ModerateAsync(string note, CancellationToken cancellationToken)
+        {
+            Calls++;
+            return Task.FromResult(NoteModerationResult.Unavailable);
+        }
+    }
+
+    private sealed class FakeDirectory(Technician? technician, bool exists = false) : ITechnicianDirectory
     {
         public Task<Technician?> FindBySubAsync(string sub, CancellationToken cancellationToken) => Task.FromResult(technician);
+        public Task<Technician?> FindEligibleAsync(string sub, QuoteRequestSnapshot request, CancellationToken cancellationToken) => Task.FromResult(technician);
+        public Task<bool> ExistsAsync(string sub, CancellationToken cancellationToken) => Task.FromResult(exists || technician is not null);
     }
 
     private sealed class FakeRequests(QuoteRequestSnapshot? request) : IQuoteRequestReader

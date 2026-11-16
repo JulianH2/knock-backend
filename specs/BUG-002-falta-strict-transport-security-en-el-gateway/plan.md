@@ -1,6 +1,6 @@
 # plan.md — BUG-002 — Falta el encabezado Strict-Transport-Security en el gateway
 
-> Spec aprobada el 2026-11-10 (KNOCK-239). Nada implementado todavía: el código y las pruebas de BUG-002 están por hacer.
+> Spec aprobada el 2026-11-10 (KNOCK-239). **Implementada** (PR #85, fusionado) y verificada en el gateway desplegado el 2026-11-13 (TC-BUG-002-05; evidencia en `docs/modelo-de-amenazas.md`, sección «Evidencia de cierre»).
 
 ## 1. Mapeo de archivos
 - **Reutilizar:** `SecurityHeadersMiddleware` del gateway (ya fija los demás encabezados), `Security:Hsts:MaxAge` de la configuración, `SecurityHostConfiguration` y las fábricas de las pruebas de seguridad. Antes de crear: `python scripts/codemap.py --query "hsts security headers gateway"`.

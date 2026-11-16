@@ -114,7 +114,10 @@ internal sealed class CatalogStore(
     public async Task<Colonia?> FindNearestCenterAsync(GeoPosition position, double maxMeters, CancellationToken cancellationToken) =>
         ToColonia(await NearestCenterQuery(position, maxMeters).FirstOrDefaultAsync(cancellationToken));
 
-    public async Task<IReadOnlyList<string>> FindNamesByPostalCodeAsync(string postalCode, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<string>> FindNamesByPostalCodeAsync(string postalCode, CancellationToken cancellationToken) =>
+        (await FindByPostalCodeAsync(postalCode, cancellationToken)).Select(colonia => colonia.Nombre).ToList();
+
+    public async Task<IReadOnlyList<Colonia>> FindByPostalCodeAsync(string postalCode, CancellationToken cancellationToken)
     {
         if (await cache.GetNeighborhoodNamesAsync(postalCode, cancellationToken) is { } cached)
         {
@@ -123,9 +126,9 @@ internal sealed class CatalogStore(
 
         var generation = await cache.GetNeighborhoodNamesGenerationAsync(postalCode, cancellationToken);
         var documents = await NamesByPostalCodeQuery(postalCode).ToListAsync(cancellationToken);
-        var names = documents.Select(document => document[NombreField].AsString).ToList();
-        await cache.SetNeighborhoodNamesIfGenerationAsync(postalCode, names, generation, cancellationToken);
-        return names;
+        var colonias = documents.Select(document => ToColonia(document)!).ToList();
+        await cache.SetNeighborhoodNamesIfGenerationAsync(postalCode, colonias, generation, cancellationToken);
+        return colonias;
     }
 
     /// <summary>Indica si hay alguna colonia con ese <c>nombreBusqueda</c> (nombre ya normalizado con <c>SearchNameNormalizer</c>).</summary>
@@ -204,7 +207,7 @@ internal sealed class CatalogStore(
     internal IFindFluent<BsonDocument, BsonDocument> NamesByPostalCodeQuery(string postalCode) =>
         Colonias
             .Find(_filter.Eq(CpField, postalCode), _findOptions)
-            .Project(Builders<BsonDocument>.Projection.Include(NombreField).Exclude(IdField))
+            .Project(Builders<BsonDocument>.Projection.Include(NombreField).Include(CpField).Include(MunicipioField))
             .Sort(Builders<BsonDocument>.Sort.Ascending(NombreBusquedaField).Ascending(NombreField));
 
     internal IFindFluent<BsonDocument, BsonDocument> ColoniaNameExistsQuery(string normalizedName) =>

@@ -17,6 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Knock.Market.Api\Knock.Market.Api.csproj" />
+    <ProjectReference Include="..\..\src\Knock.Identity.Api\Knock.Identity.Api.csproj" Aliases="identity" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

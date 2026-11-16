@@ -41,17 +41,6 @@ public class ModuleSurfaceTests
             .ToList();
         rootTypes.Should().OnlyContain(t => t.IsPublic, "lo interno vive en subespacios (Domain, Services…), que la regla de frontera vigila");
 
-        if (module == "Media")
-        {
-            publicTypes.Should().HaveCount(1, "Media no tiene consumidor interno real en OI-1: solo se expone la clase AddMediaModule");
-            var only = publicTypes[0];
-            only.IsClass.Should().BeTrue();
-            only.IsAbstract.Should().BeTrue();
-            only.IsSealed.Should().BeTrue("es una clase estática");
-            only.GetMethod("AddMediaModule", BindingFlags.Public | BindingFlags.Static).Should().NotBeNull();
-            return;
-        }
-
         publicTypes.Should().HaveCount(2, "solo se expone la clase AddXxxModule y la interfaz del módulo");
 
         var registration = publicTypes.Single(t => t.IsClass);

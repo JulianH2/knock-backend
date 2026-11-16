@@ -57,6 +57,75 @@ internal sealed class UsuariosStore(
 
     private IMongoCollection<BsonDocument> Users { get; } = database.GetCollection<BsonDocument>(UsersCollection);
 
+    internal Task ValidateDemoAsync(CancellationToken cancellationToken) =>
+        DemoSeedGuard.ValidateAsync(mongoOptions.Value.ConnectionString, Users, cancellationToken);
+
+    internal async Task<string?> DemoConflictAsync(BsonDocument desired, CancellationToken cancellationToken)
+    {
+        var sameIdNonDemo = _filter.And(_filter.Eq("_id", desired["_id"]), _filter.Ne("demo", true));
+        if (await Users.Find(sameIdNonDemo, _findOptions).Limit(1).AnyAsync(cancellationToken))
+        {
+            return "_id";
+        }
+
+        foreach (var field in new[] { "sub", "celularHash" })
+        {
+            var filter = _filter.And(_filter.Ne("_id", desired["_id"]), _filter.Eq(field, desired[field]));
+            if (await Users.Find(filter, _findOptions).Limit(1).AnyAsync(cancellationToken))
+            {
+                return field;
+            }
+        }
+
+        return null;
+    }
+
+    internal async Task<bool> UpsertDemoAsync(BsonDocument desired, CancellationToken cancellationToken)
+    {
+        var id = desired["_id"];
+        var existing = await Users.Find(_filter.Eq("_id", id), _findOptions).FirstOrDefaultAsync(cancellationToken);
+        if (existing is null)
+        {
+            try
+            {
+                await Users.InsertOneAsync(desired, cancellationToken: cancellationToken);
+                return false;
+            }
+            catch (MongoWriteException exception) when (exception.WriteError.Category == ServerErrorCategory.DuplicateKey)
+            {
+                existing = await Users.Find(_filter.Eq("_id", id), _findOptions).FirstOrDefaultAsync(cancellationToken);
+                if (existing is null)
+                {
+                    throw new InvalidOperationException("Demo seed conflict on a unique index.");
+                }
+            }
+        }
+
+        var compared = desired.DeepClone().AsBsonDocument;
+        var previous = existing.DeepClone().AsBsonDocument;
+        foreach (var field in new[] { "celularCifrado", "celularCifradoVersion", "version" })
+        {
+            compared.Remove(field);
+            previous.Remove(field);
+        }
+
+        if (compared.Equals(previous))
+        {
+            return false;
+        }
+
+        desired["version"] = existing["version"].AsInt32 + 1;
+        var result = await Users.ReplaceOneAsync(
+            _filter.And(_filter.Eq("_id", id), _filter.Eq("version", existing["version"])), desired,
+            cancellationToken: cancellationToken);
+        if (result.MatchedCount != 1)
+        {
+            throw new InvalidOperationException("Demo account changed concurrently.");
+        }
+
+        return true;
+    }
+
     public async Task<UserProfile?> FindProfileAsync(string sub, CancellationToken cancellationToken) =>
         ToProfile(await Users.Find(_filter.Eq(SubField, sub), _findOptions).Project(_profileProjection).Limit(1)
             .FirstOrDefaultAsync(cancellationToken));

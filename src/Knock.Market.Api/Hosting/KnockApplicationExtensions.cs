@@ -23,7 +23,7 @@ internal static class KnockApplicationExtensions
             .AddKnockOpenApi()
             .AddKnockHealth()
             .AddKnockMongo()
-            .AddKnockModules(builder.Configuration)
+            .AddKnockModules(builder.Configuration, builder.Environment.IsDevelopment())
             .AddKnockObservability(builder.Configuration, builder.Environment);
         return builder;
     }

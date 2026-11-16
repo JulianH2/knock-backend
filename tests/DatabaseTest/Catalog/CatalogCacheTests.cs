@@ -18,6 +18,44 @@ namespace Knock.DatabaseTest.Catalog;
 [Collection("CatalogCacheSerial")]
 public sealed class CatalogCacheTests
 {
+    [Theory]
+    [InlineData("42800", true)]
+    [InlineData("99999", false)]
+    public async Task Consulta_Repetida_Usa_Cache_CA_023_13(string cp, bool found)
+    {
+        await using var database = await CatalogDatabase.CreateAsync(seeded: true, useRedisCache: true);
+        var store = database.Get<CatalogStore>();
+        database.ClearCommands();
+        var first = await store.FindByPostalCodeAsync(cp, CancellationToken.None);
+        database.FindCommands.Should().HaveCount(1);
+        database.ClearCommands();
+        var second = await store.FindByPostalCodeAsync(cp, CancellationToken.None);
+        database.FindCommands.Should().BeEmpty();
+        second.Should().Equal(first);
+        (first.Count > 0).Should().Be(found);
+        var cached = (await database.Redis.StringGetAsync(RedisCatalogCache.NeighborhoodNamesKey(cp))).ToString();
+        cached.Should().NotContain("geom").And.NotContain("centro").And.NotContain("nombreBusqueda").And.NotContain("piloto").And.NotContain("version");
+        var ttl = await database.Redis.KeyTimeToLiveAsync(RedisCatalogCache.NeighborhoodNamesKey(cp));
+        ttl.Should().NotBeNull();
+        if (found) ttl.Value.Should().BeGreaterThan(TimeSpan.FromHours(23)).And.BeLessThanOrEqualTo(TimeSpan.FromHours(24));
+        else ttl.Value.Should().BeGreaterThan(TimeSpan.FromMinutes(4)).And.BeLessThanOrEqualTo(TimeSpan.FromMinutes(5));
+    }
+
+    [Fact]
+    public async Task Cache_Negativa_Corta_CA_023_14()
+    {
+        await using var database = await CatalogDatabase.CreateAsync(seeded: true, useRedisCache: true);
+        var store = database.Get<CatalogStore>();
+        database.ClearCommands();
+        (await store.FindByPostalCodeAsync("99998", CancellationToken.None)).Should().BeEmpty();
+        database.FindCommands.Should().HaveCount(1);
+        database.ClearCommands();
+        (await store.FindByPostalCodeAsync("99998", CancellationToken.None)).Should().BeEmpty();
+        database.FindCommands.Should().BeEmpty();
+        var ttl = await database.Redis.KeyTimeToLiveAsync(RedisCatalogCache.NeighborhoodNamesKey("99998"));
+        ttl.Should().NotBeNull();
+        ttl.Value.Should().BeGreaterThan(TimeSpan.FromMinutes(4)).And.BeLessThanOrEqualTo(TimeSpan.FromMinutes(5));
+    }
     [Fact]
     public async Task RepeatedOficiosRead_QueriesMongoOnce_CA_010_01()
     {
@@ -446,7 +484,7 @@ public sealed class CatalogCacheTests
         public Task<bool> SetOficiosIfGenerationAsync(IReadOnlyList<OficioListing> oficios, long expectedGeneration, CancellationToken cancellationToken) =>
             inner.SetOficiosIfGenerationAsync(oficios, expectedGeneration, cancellationToken);
 
-        public Task<IReadOnlyList<string>?> GetNeighborhoodNamesAsync(string postalCode, CancellationToken cancellationToken) =>
+        public Task<IReadOnlyList<Colonia>?> GetNeighborhoodNamesAsync(string postalCode, CancellationToken cancellationToken) =>
             inner.GetNeighborhoodNamesAsync(postalCode, cancellationToken);
 
         public Task RemoveNeighborhoodNamesAsync(string postalCode, CancellationToken cancellationToken) =>
@@ -455,7 +493,7 @@ public sealed class CatalogCacheTests
         public Task<long> GetNeighborhoodNamesGenerationAsync(string postalCode, CancellationToken cancellationToken) =>
             inner.GetNeighborhoodNamesGenerationAsync(postalCode, cancellationToken);
 
-        public Task<bool> SetNeighborhoodNamesIfGenerationAsync(string postalCode, IReadOnlyList<string> names, long expectedGeneration, CancellationToken cancellationToken) =>
+        public Task<bool> SetNeighborhoodNamesIfGenerationAsync(string postalCode, IReadOnlyList<Colonia> names, long expectedGeneration, CancellationToken cancellationToken) =>
             inner.SetNeighborhoodNamesIfGenerationAsync(postalCode, names, expectedGeneration, cancellationToken);
 
         public Task<bool?> GetColoniaExistsAsync(ObjectId id, string postalCode, CancellationToken cancellationToken) =>

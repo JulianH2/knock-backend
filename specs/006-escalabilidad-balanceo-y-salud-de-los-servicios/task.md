@@ -1,6 +1,6 @@
 # Tareas 006 — Escalabilidad, balanceo y salud de los servicios
 
-> **Estado:** hechas (T-01 a T-04) en `feature/KNOCK-201-scaling-and-health`, sin commit; pendientes la revisión de par y el PR.
+> **Estado (2026-11-14):** T-01, T-02, T-04 y T-05 hechas (PR #61 fusionado; k6 de KNOCK-88 del 2026-11-14). T-03 queda parcial: el límite de peticiones de Identity y Market en Redis (R-05) se hace en KNOCK-247; los criterios CA-01 a CA-03 están cubiertos por pruebas.
 
 | Tarea | Qué se hace | Cubre | Estado |
 |---|---|---|---|
@@ -8,7 +8,7 @@
 | T-02 | Configurar los encabezados reenviados confiables | R-03 | hecha |
 | T-03 | Implementar el almacén compartido de tokens cancelados y contadores en Redis | R-04, R-05 · CA-02 | **parcial**: falta el límite de peticiones de Identity y Market en Redis (KNOCK-247, ver nota) |
 | T-04 | Probar con dos copias y apagar una | R-01 · CA-01 | hecha |
-| T-05 | Prueba de carga k6 con 2 instancias contra el gateway | R-01 · CA-01 | hecha (KNOCK-88; salida real pendiente de k6) |
+| T-05 | Prueba de carga k6 con 2 instancias contra el gateway | R-01 · CA-01 | hecha (KNOCK-88): k6 del 2026-11-14 contra el despliegue con 2 réplicas, 0 % de fallos y p95 de 158.76 ms; con la caída de una copia de Market, 0 % y 153.07 ms (detalle en KNOCK-88) |
 
 ## Notas
 - **T-01:** `deploy/apps/variables.tf` fija min=max=2 por defecto en los cuatro servicios (R-01); el comentario explica cómo bajar a 1 fuera de la ventana (R-06). Redis queda en 1 (`main.tf`). Las sondas ya estaban: el módulo `deploy/modules/service` usa `/health` y `/health/ready` por defecto y `deploy/apps` no las sobreescribe (R-02). **No verificado con terraform** (no hay terraform en esta máquina): hay que correr `terraform fmt -check` y `terraform validate` (init `-backend=false`) donde exista.

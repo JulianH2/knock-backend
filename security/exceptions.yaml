@@ -266,3 +266,29 @@ excepciones:
     creada: 2026-11-13
     vence: 2026-12-04
     plan: agregar IMediaApi cuando Media tenga consumidor interno (OI-2 u OI-3), quitar la rama `module == "Media"` de la prueba y retirar esta excepción antes de vencer.
+  - id: EXC-023
+    herramienta: gitleaks
+    regla: knock-mongodb-connection-string
+    alcance: las huellas 72c27e461e54a21c103df1253d1daff22949a54a:tests/DatabaseTest/Demo/DemoSeedGuardTests.cs:knock-mongodb-connection-string:17 y :40 en .gitleaksignore (commit de la rama de KNOCK-40; solo esas dos líneas de ese archivo en ese commit)
+    justificacion: >-
+      Falso positivo. Las líneas 17 y 40 de DemoSeedGuardTests son entradas de prueba con cadenas de conexión de MongoDB inventadas, con host remoto y con usuario y clave de ejemplo,
+      para comprobar que la guarda de host de la carga de las semillas de demo (spec 038, R-07 y CA-12) rechaza cualquier host que no sea local; no son credenciales de ningún servicio.
+      El commit queda en el historial y Gitleaks revisa todas las ramas, por lo que marca todos los PR del repositorio. No se reescribe el historial. La regla sigue activa para cualquier otro archivo.
+      Evidencia: hallazgo de Gitleaks del 2026-11-14 en la corrida de ci-pr del PR #113 (regla knock-mongodb-connection-string, ese archivo y esas dos líneas).
+    responsable: Ángel Alexis Blas Castillo
+    creada: 2026-11-14
+    vence: 2026-12-04
+    plan: en el siguiente commit de la rama de KNOCK-40 las cadenas se construyen en la prueba sin el formato completo de conexión; al fusionar esa rama se retiran las dos huellas de .gitleaksignore y esta excepción.
+  - id: EXC-024
+    herramienta: gitleaks
+    regla: knock-mongodb-connection-string
+    alcance: la huella ee6477cfda5c5555f39dc615b6be79ef38139249:tests/DatabaseTest/Demo/DemoTechnicianLoaderTests.cs:knock-mongodb-connection-string:110 en .gitleaksignore (commit de la rama de KNOCK-246; solo esa línea de ese archivo en ese commit)
+    justificacion: >-
+      Falso positivo. La línea 110 de DemoTechnicianLoaderTests es una entrada de prueba con una cadena de conexión de MongoDB inventada, con usuario y clave de ejemplo y host local,
+      para comprobar que la guarda del cargador de técnicos demo (spec 038, R-07) acepta solo hosts locales; no es una credencial de ningún servicio.
+      El commit queda en el historial y Gitleaks revisa todas las ramas, por lo que marca todos los PR del repositorio. No se reescribe el historial. La regla sigue activa para cualquier otro archivo.
+      Evidencia: hallazgo de Gitleaks del 2026-11-14 en la corrida de ci-pr de los PR #103 y #116 (regla knock-mongodb-connection-string, ese archivo y esa línea).
+    responsable: Ángel Alexis Blas Castillo
+    creada: 2026-11-14
+    vence: 2026-12-04
+    plan: en el siguiente commit de la rama de KNOCK-246 la cadena se construye sin el formato completo de conexión (con MongoUrlBuilder); la huella se queda mientras el commit exista en el historial y la excepción se renueva si vence antes de que deje de analizarse.
