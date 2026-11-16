@@ -19,7 +19,18 @@ internal sealed class FakePhotos : IRequestPhotos
 {
     public bool Ready { get; set; } = true;
 
-    public Task<bool> AreReadyForAsync(string ownerId, IReadOnlyList<string> photoIds, CancellationToken cancellationToken) => Task.FromResult(Ready);
+    /// <summary>Dueño de cada foto (archivoId a sub). Si es <see langword="null"/>, solo cuenta <see cref="Ready"/>; si no, una foto es válida únicamente para su dueño.</summary>
+    public Dictionary<string, string>? Owners { get; set; }
+
+    /// <summary>Último <c>ownerId</c> con el que el servicio consultó las fotos: debe ser el <c>sub</c> del token.</summary>
+    public string? LastOwnerId { get; private set; }
+
+    public Task<bool> AreReadyForAsync(string ownerId, IReadOnlyList<string> photoIds, CancellationToken cancellationToken)
+    {
+        LastOwnerId = ownerId;
+        var owned = Owners is null || photoIds.All(id => Owners.TryGetValue(id, out var owner) && string.Equals(owner, ownerId, StringComparison.Ordinal));
+        return Task.FromResult(Ready && owned);
+    }
 
     public Task<IReadOnlyList<RequestPhoto>> ReadLinksAsync(IReadOnlyList<string> photoIds, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<RequestPhoto>>([.. photoIds.Select(id => new RequestPhoto(id, "https://files.test/" + id + "?sig=ficticia", DateTimeOffset.UtcNow.AddMinutes(5)))]);
