@@ -717,3 +717,7 @@
 - **Decisión (Tech Lead):** se registra la EXC-025 para siete archivos de Gateway, Identidad y Mercado (`SharedRateLimiter`, `RedisRequestCounter` y `RateLimitingExtensions`), ligada a KNOCK-251 (biblioteca compartida) y con vencimiento el 2027-02-13. La spec 006 R-05 pide el contador en Redis y aún no existe la biblioteca para compartirlo.
 - **Cómo se usa:** quien implementa KNOCK-247 envuelve esas copias con `// jscpd:ignore-start -- EXC-025` y su cierre, y corre `python scripts/codemap.py --update-baseline` en su PR para que la línea base de `docs/architecture/clones-baseline.json` quede revisada. No se amplía a más archivos.
 - **A evitar:** copiar el contador a un servicio más sin ampliar la excepción; dejar la excepción vencer sin la biblioteca. Si Redis cae, el límite efectivo se multiplica por el número de copias hasta que vuelva; por eso la T-03 de la spec 006 queda parcial.
+
+## 2026-11-16 — KNOCK-43 (HU-001): estado real de las tareas de la spec 015
+- **Estado:** el login por celular ya estaba implementado y fusionado con KNOCK-210 y KNOCK-231; `specs/015/task.md` seguía en «pendiente». Se marcan T-01 a T-10 como hechas con la ruta de sus pruebas. Sin cambios de código.
+- **Pendiente:** la firma real de Google (CA-04, «otra firma») solo se prueba con el emulador; las transacciones de MongoDB falla todo canje si el clúster real no las admite.
