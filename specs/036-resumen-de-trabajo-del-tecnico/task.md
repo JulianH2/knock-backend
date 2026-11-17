@@ -1,6 +1,6 @@
 # Tareas 036 — Resumen de trabajo del técnico
 
-> **Estado:** pendientes. En esta etapa **no se ejecutan**: se activan cuando la spec esté Aprobada y una persona lo indique.
+> **Estado:** spec aprobada; T-03 hecha en su alcance de lectura y las demás tareas pendientes. Una persona activa cada tarea o grupo.
 > «Depende de» = tareas que deben estar fusionadas antes; «Paralelo con» = tareas que se pueden trabajar a la vez.
 
 | Tarea | Qué se hace | Cubre | Depende de | Paralelo con | Responsable sugerido | Estado |
