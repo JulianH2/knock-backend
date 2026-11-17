@@ -6,6 +6,12 @@ namespace Knock.Market.Api.Modules.Requests.Services;
 
 internal sealed class DemoTechnicianSeeder(DemoTechnicianStore store, IConfiguration configuration, IHostEnvironment environment)
 {
+    private const string _contactField = "contactoPublico";
+    private const string _workshopField = "tallerDireccion";
+    private const string _levelField = "nivelVerificacion";
+
+    private static readonly string[] _optionalFields = [_contactField, _workshopField, _levelField];
+
     private static readonly string[] _fields = ["_id", "uid", "usuarioId", "nombre", "estado", "oculto", "oficios", "coloniaBaseId", "ubicacionBase", "radioAtencionKm", "version", "demo"];
 
     public async Task SeedAsync(string path, CancellationToken cancellationToken)
@@ -24,10 +30,15 @@ internal sealed class DemoTechnicianSeeder(DemoTechnicianStore store, IConfigura
         var ids = new HashSet<ObjectId>();
         var users = new HashSet<string>(StringComparer.Ordinal);
         var uids = new HashSet<string>(StringComparer.Ordinal);
-        if (documents.Length != 3) throw new InvalidOperationException("Invalid demo technician seed.");
+        if (documents.Length != 4) throw new InvalidOperationException("Invalid demo technician seed.");
         foreach (var doc in documents)
         {
-            if (doc.ElementCount != _fields.Length || doc.Names.Any(x => !_fields.Contains(x, StringComparer.Ordinal))
+            var optional = _optionalFields.Count(doc.Contains);
+            if (doc.ElementCount != _fields.Length + optional
+                || doc.Names.Any(x => !_optionalFields.Contains(x, StringComparer.Ordinal) && !_fields.Contains(x, StringComparer.Ordinal))
+                || (doc.Contains(_contactField) && !ValidContact(doc[_contactField]))
+                || (doc.Contains(_workshopField) && !ValidWorkshop(doc[_workshopField]))
+                || (doc.Contains(_levelField) && !(doc[_levelField].IsString && doc[_levelField].AsString is "ninguno" or "basica" or "completa"))
                 || !ids.Add(doc["_id"].AsObjectId) || !users.Add(doc["usuarioId"].AsString) || !uids.Add(doc["uid"].AsString)
                 || !Guid.TryParseExact(doc["usuarioId"].AsString, "D", out _)
                 || !doc["uid"].AsString.StartsWith("demo-tecnico-", StringComparison.Ordinal)
@@ -40,6 +51,19 @@ internal sealed class DemoTechnicianSeeder(DemoTechnicianStore store, IConfigura
                 throw new InvalidOperationException("Invalid demo technician seed.");
         }
     }
+
+    /// <summary>Contacto público ficticio (spec 021, R-15): solo un teléfono del rango de demostración 55000000NN, nunca un número real.</summary>
+    private static bool ValidContact(BsonValue value) =>
+        value is BsonDocument { ElementCount: 1 } contact
+        && contact.TryGetValue("telefono", out var phone)
+        && phone.IsString
+        && phone.AsString.Length == 10
+        && phone.AsString.StartsWith("55000000", StringComparison.Ordinal)
+        && phone.AsString.All(char.IsAsciiDigit);
+
+    /// <summary>Dirección ficticia del taller (spec 021, §6): texto de 8 a 200 caracteres que empieza con «Taller Demo».</summary>
+    private static bool ValidWorkshop(BsonValue value) =>
+        value.IsString && value.AsString is { Length: >= 8 and <= 200 } address && address.StartsWith("Taller Demo", StringComparison.Ordinal);
 
     private static bool ValidPoint(BsonDocument point)
     {

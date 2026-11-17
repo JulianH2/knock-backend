@@ -1,5 +1,7 @@
 # Matriz de versionamiento
 
+> **Nota 2026-11-14 (KNOCK-181, TT-GES-09):** la regla vigente es el versionado por puntos de la constitución 1.1.0 del repositorio (principio 11 y sección 9): la primera versión publicada de cada componente es `1.0.0`, hay 5 componentes (servicios, gateway, app, panel y landing) y cada PR declara sus puntos con `puntos-<componente>-N`; al desplegar se suman, se calcula la versión nueva y se crea una etiqueta de Git y una imagen con ese número (cero puntos no cambia la versión). Lo que sigue en este documento (primera versión `0.1.0`, SemVer por tipo de commit y release-please) queda como histórico y no se borra. La constitución no trae una matriz que traduzca los puntos a MAYOR, MENOR y PARCHE: esa matriz la define el equipo y está pendiente.
+
 > **Tarea:** TT-GES-03 (lineamiento 11: matriz de numeración de versiones antes del desarrollo, aplicada en cada despliegue).
 > **Estado:** vigente desde 2026-10-20. Se aplica con release-please (TT-CD-03) y con los pipelines de despliegue (TT-CD-01 y TT-CD-02).
 > **Este esquema reemplaza** las etiquetas `api-vX.Y.Z`, `app-vX.Y.Z` y `panel-vX.Y.Z` de la constitución §9 y la etiqueta `vX.Y.Z` de la ficha de TT-CD-03; ambas se actualizan al esquema nuevo (la constitución, en el PR descrito en `docs/decisiones/README.md`).

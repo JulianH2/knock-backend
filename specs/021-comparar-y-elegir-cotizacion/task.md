@@ -12,7 +12,7 @@
 | T-05 | Listado: `TecnicosStore` (proyección pública) y `CotizacionesController` con validación de `orden` | R-01, R-02, R-04, R-08 · CA-01, CA-03, CA-15, CA-18 | T-02, spec 020 fusionada | T-04 | Alexis (revisa Guillermo) | pendiente |
 | T-06 | `EleccionController` con respuesta de cita, contacto público y lugar | R-14 a R-16, R-21 · CA-09, CA-12 | T-04 | T-07 | Guillermo | pendiente |
 | T-07 | Pruebas de integración, concurrencia (dos elecciones reales), seguridad negativa y registros | CA-01 a CA-18 (salvo CA-16, retirado) · R-19 | T-05, T-06 | T-08 | Guillermo | pendiente |
-| T-08 | OpenAPI, `docs/endpoints.md`, `docs/rate-limit-matrix.md`; semillas con `contactoPublico`, `tallerDireccion` y `nivelVerificacion` | §5 | T-05, T-06 | T-07 | Alexis | pendiente |
+| T-08 | OpenAPI, `docs/endpoints.md`, `docs/rate-limit-matrix.md`; semillas con `contactoPublico`, `tallerDireccion` y `nivelVerificacion` | §5 | T-05, T-06 | T-07 | Alexis | hecha: OpenAPI, `docs/endpoints.md` y `docs/rate-limit-matrix.md` en el PR #138; semillas de demo: el cuarto técnico (`demo-tecnico-04`) trae `contactoPublico`, `nivelVerificacion` y `tallerDireccion`, y el cargador de técnicos los valida |
 | T-09 | Gates, `Memoria.md` y revisión de par | §12 | T-07, T-08 | — | Guillermo | pendiente |
 
 ## Definición de terminado
