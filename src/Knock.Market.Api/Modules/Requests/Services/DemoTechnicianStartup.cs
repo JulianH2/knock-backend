@@ -9,8 +9,9 @@ internal sealed class DemoTechnicianStartup(IServiceProvider services, IConfigur
         if (ShouldRun(configuration.GetValue<bool>("Seed:Demo"), environment.EnvironmentName))
         {
             using var scope = services.CreateScope();
-            var seeder = scope.ServiceProvider.GetRequiredService<DemoTechnicianSeeder>();
-            await seeder.SeedAsync(Path.Combine(AppContext.BaseDirectory, "db", "seeds", "demo", "market", "tecnicos.json"), cancellationToken);
+            var market = Path.Combine(AppContext.BaseDirectory, "db", "seeds", "demo", "market");
+            await scope.ServiceProvider.GetRequiredService<DemoTechnicianSeeder>().SeedAsync(Path.Combine(market, "tecnicos.json"), cancellationToken);
+            await scope.ServiceProvider.GetRequiredService<DemoRequestSeeder>().SeedAsync(Path.Combine(market, "solicitudes.json"), Path.Combine(market, "cotizaciones.json"), cancellationToken);
         }
     }
 

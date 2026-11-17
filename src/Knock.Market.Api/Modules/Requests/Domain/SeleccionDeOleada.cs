@@ -19,7 +19,10 @@ internal static class SeleccionDeOleada
         var excluded = new HashSet<string>(previouslySent, StringComparer.Ordinal);
         var ranked = candidates.Where(x => !excluded.Contains(x.TechnicianId))
             .OrderByDescending(x => x.Rating).ThenByDescending(x => x.CompletedJobs)
-            .ThenBy(x => x.TechnicianId, StringComparer.Ordinal).ToArray();
+            .ThenBy(x => x.TechnicianId, StringComparer.Ordinal)
+            .ThenByDescending(x => x.DistanceKm is >= 0 and < double.PositiveInfinity)
+            .ThenBy(x => x.DistanceKm is >= 0 and < double.PositiveInfinity ? x.DistanceKm : null)
+            .DistinctBy(x => x.TechnicianId, StringComparer.Ordinal).ToArray();
         var selected = new List<WaveSelection>();
         foreach (var candidate in ranked.Take(options.MejorOrdenados))
             Add(candidate, "mejor_ordenado", selected, excluded);
@@ -27,7 +30,7 @@ internal static class SeleccionDeOleada
         var newcomer = ranked.FirstOrDefault(x => !excluded.Contains(x.TechnicianId) && x.CompletedJobs < options.UmbralNuevo);
         if (newcomer is not null) Add(newcomer, "nuevo", selected, excluded);
 
-        var nearest = ranked.Where(x => !excluded.Contains(x.TechnicianId) && x.DistanceKm.HasValue)
+        var nearest = ranked.Where(x => !excluded.Contains(x.TechnicianId) && x.DistanceKm is >= 0 and < double.PositiveInfinity)
             .OrderBy(x => x.DistanceKm).FirstOrDefault();
         if (nearest is not null) Add(nearest, "cercano", selected, excluded);
 

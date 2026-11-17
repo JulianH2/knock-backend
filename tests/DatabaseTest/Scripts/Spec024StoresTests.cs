@@ -52,7 +52,7 @@ public sealed class Spec024StoresTests
         var reservationKey = $"ia:reserva:same:{day:yyyyMMdd}:{reservation.Id:N}";
         (await redis.GetDatabase().StringGetAsync(reservationKey)).ToString().Should().Be("60");
         (await redis.GetDatabase().KeyTimeToLiveAsync(reservationKey)).Should().BeCloseTo(TimeSpan.FromHours(48), TimeSpan.FromSeconds(10));
-        (await first.AdjustAsync(reservation, 25, default)).Should().BeTrue();
+        (await first.AdjustAsync(reservation, 25, default)).Should().Be(AdjustmentResult.Applied);
         var db = redis.GetDatabase();
         var date = day.ToString("yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture);
         ((long)await db.StringGetAsync($"ia:consumo:{date}")).Should().Be(25);
@@ -76,7 +76,7 @@ public sealed class Spec024StoresTests
         reservation.Result.Should().Be(ConsumptionResult.Reserved);
         await fixture.StopAsync();
         (await store.ReserveAsync("user", DateOnly.FromDateTime(DateTime.UtcNow), 1, 20, 200, default)).Result.Should().Be(ConsumptionResult.LimitUnavailable);
-        (await store.AdjustAsync(reservation.Reservation!, 1, default)).Should().BeFalse();
+        (await store.AdjustAsync(reservation.Reservation!, 1, default)).Should().Be(AdjustmentResult.Unavailable);
     }
 
     [Fact]
@@ -89,8 +89,8 @@ public sealed class Spec024StoresTests
         var reservation = await store.ReserveAsync("a", day, 60, 200, 120, default);
         reservation.Result.Should().Be(ConsumptionResult.Reserved);
         (await store.ReserveAsync("a", day, 60, 200, 120, default)).Result.Should().Be(ConsumptionResult.Reserved);
-        (await store.AdjustAsync(reservation.Reservation!, 20, default)).Should().BeTrue();
-        (await store.AdjustAsync(reservation.Reservation!, 20, default)).Should().BeFalse();
+        (await store.AdjustAsync(reservation.Reservation!, 20, default)).Should().Be(AdjustmentResult.Applied);
+        (await store.AdjustAsync(reservation.Reservation!, 20, default)).Should().Be(AdjustmentResult.AlreadyApplied);
         (await store.ReserveAsync("b", day, 41, 200, 120, default)).Result.Should().Be(ConsumptionResult.BudgetExhausted);
     }
 
@@ -107,8 +107,37 @@ public sealed class Spec024StoresTests
         attempts.Select(x => x.Result).Should().BeEquivalentTo(new[] { ConsumptionResult.Reserved, ConsumptionResult.BudgetExhausted });
         var reservation = attempts.Single(x => x.Reservation is not null).Reservation!;
         var adjustments = await Task.WhenAll(first.AdjustAsync(reservation, 20, default), second.AdjustAsync(reservation, 20, default));
-        adjustments.Count(x => x).Should().Be(1);
+        adjustments.Should().BeEquivalentTo(new[] { AdjustmentResult.Applied, AdjustmentResult.AlreadyApplied });
         (await first.ReserveAsync("c", day, 81, 100, 100, default)).Result.Should().Be(ConsumptionResult.BudgetExhausted);
+    }
+
+    [Fact]
+    public async Task ActualAboveReservation_ChargesExcessOnceAndBlocksFurtherReservations_CA_024_07()
+    {
+        await using var fixture = await RedisFixture.StartAsync();
+        using var redis = await ConnectionMultiplexer.ConnectAsync(fixture.ConnectionString);
+        var store = new ConsumoIaStore(redis);
+        var day = new DateOnly(2026, 11, 16);
+        var reservation = (await store.ReserveAsync("excess", day, 60, 100, 100, default)).Reservation!;
+        (await store.AdjustAsync(reservation, 120, default)).Should().Be(AdjustmentResult.Applied);
+        (await store.AdjustAsync(reservation, 120, default)).Should().Be(AdjustmentResult.AlreadyApplied);
+        var db = redis.GetDatabase();
+        ((long)await db.StringGetAsync("ia:consumo:20261116")).Should().Be(120);
+        ((long)await db.StringGetAsync("ia:usuario:excess:20261116")).Should().Be(120);
+        (await store.ReserveAsync("excess", day, 1, 100, 100, default)).Result.Should().Be(ConsumptionResult.BudgetExhausted);
+    }
+
+    [Fact]
+    public async Task MissingOrInconsistentReservation_IsDistinguished_CA_024_07()
+    {
+        await using var fixture = await RedisFixture.StartAsync();
+        using var redis = await ConnectionMultiplexer.ConnectAsync(fixture.ConnectionString);
+        var store = new ConsumoIaStore(redis);
+        var day = new DateOnly(2026, 11, 16);
+        (await store.AdjustAsync(new ConsumptionReservation("missing", day, Guid.NewGuid()), 1, default)).Should().Be(AdjustmentResult.NotFound);
+        var reservation = (await store.ReserveAsync("inconsistent", day, 10, 100, 100, default)).Reservation!;
+        await redis.GetDatabase().KeyDeleteAsync("ia:usuario:inconsistent:20261116");
+        (await store.AdjustAsync(reservation, 1, default)).Should().Be(AdjustmentResult.Unavailable);
     }
 
     [Fact]
