@@ -15,6 +15,51 @@ namespace Knock.DatabaseTest.Scripts;
 public sealed class Spec020RequestsScriptTests
 {
     [Fact]
+    public async Task Transaction_CommitsQuoteAndOutbox_R_20()
+    {
+        var documentDb = await DocumentDbFixture.SharedAsync();
+        var name = "s020_tx_" + Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(6));
+        using var client = new MongoClient(documentDb.ConnectionString);
+        try
+        {
+            var db = client.GetDatabase(name);
+            await db.CreateCollectionAsync("cotizaciones");
+            await db.CreateCollectionAsync("outbox");
+            using var session = await client.StartSessionAsync();
+            session.StartTransaction();
+            await db.GetCollection<BsonDocument>("cotizaciones").InsertOneAsync(session, new BsonDocument("estado", "enviada"));
+            await db.GetCollection<BsonDocument>("outbox").InsertOneAsync(session, new BsonDocument("tipo", "CotizacionEnviada"));
+            await session.CommitTransactionAsync();
+            (await db.GetCollection<BsonDocument>("cotizaciones").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty)).Should().Be(1);
+            (await db.GetCollection<BsonDocument>("outbox").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty)).Should().Be(1);
+        }
+        finally
+        {
+            await client.DropDatabaseAsync(name);
+        }
+    }
+
+    [Fact]
+    public async Task TechnicianIndex_IsCreatedIdempotently_R_23()
+    {
+        var documentDb = await DocumentDbFixture.SharedAsync();
+        var name = "s020_tech_" + Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(6));
+        using var client = new MongoClient(documentDb.ConnectionString);
+        try
+        {
+            await using var tools = await MongoToolsContainer.StartAsync(documentDb, new Dictionary<string, string> { ["KNOCK_DB_MARKET"] = name });
+            var script = $"{MongoToolsContainer.DbDirectory}/021-tecnicos-usuario-index.js";
+            (await tools.RunAsync("mongosh", "--nodb", "--quiet", "--file", script)).ExitCode.Should().Be(0);
+            (await tools.RunAsync("mongosh", "--nodb", "--quiet", "--file", script)).ExitCode.Should().Be(0);
+            (await MongoIndexes.DescribeAsync(client.GetDatabase(name), "tecnicos")).Should().Contain("usuarioId_1 usuarioId:1 - ttl:-");
+        }
+        finally
+        {
+            await client.DropDatabaseAsync(name);
+        }
+    }
+
+    [Fact]
     public async Task RequestsScript_CreatesCollectionsAndIndexes_AndReapplyingKeepsThemAndTheirDocuments_R_17()
     {
         var documentDb = await DocumentDbFixture.SharedAsync();

@@ -111,7 +111,7 @@ public class ProfileSecurityTests
     [InlineData("A")]
     [InlineData("1234")]
     [InlineData("")]
-    public async Task HostileName_Returns400AndChangesNothing_SEC_017_04(string name)
+    public async Task HostileName_Returns422AndChangesNothing_SEC_017_04(string name)
     {
         var hosts = await SecurityHosts.SharedAsync();
         var a = await hosts.Identity.SignInAsync(hosts.IdentityClient);
@@ -119,8 +119,27 @@ public class ProfileSecurityTests
 
         using var response = await PutAsync(hosts, a.AccessToken, new { nombre = name });
 
-        var raw = await SecureHttp.AssertProblemAsync(response, HttpStatusCode.BadRequest);
+        var raw = await SecureHttp.AssertProblemAsync(response, HttpStatusCode.UnprocessableEntity);
         raw.Should().NotContain("DROP TABLE").And.NotContain("<script>").And.NotContain("onerror");
+        (await UserAsync(hosts, a.Sub)).ToJson().Should().Be(before.ToJson());
+    }
+
+    [Theory]
+    [InlineData("nombre", "A")]
+    [InlineData("codigoPostal", "1234")]
+    [InlineData("fotoUrl", "https://evil.example/a.png")]
+    public async Task InvalidProfileField_Returns422WithFieldErrorsAndChangesNothing_CA_017_06(string field, string value)
+    {
+        var hosts = await SecurityHosts.SharedAsync();
+        var a = await hosts.Identity.SignInAsync(hosts.IdentityClient);
+        var before = await UserAsync(hosts, a.Sub);
+        var body = new Dictionary<string, string> { ["nombre"] = "Alicia Aguirre", [field] = value };
+
+        using var response = await PutAsync(hosts, a.AccessToken, body);
+
+        var raw = await SecureHttp.AssertProblemAsync(response, HttpStatusCode.UnprocessableEntity);
+        using var json = System.Text.Json.JsonDocument.Parse(raw);
+        json.RootElement.GetProperty("errors").GetProperty(field).GetArrayLength().Should().BeGreaterThan(0);
         (await UserAsync(hosts, a.Sub)).ToJson().Should().Be(before.ToJson());
     }
 
@@ -144,7 +163,7 @@ public class ProfileSecurityTests
     [InlineData("fotoUrl", "//cdn.knock.test/a.png")]
     [InlineData("fotoUrl", "https://127.0.0.1/a.png")]
     [InlineData("fotoUrl", "https://cdn.knock.tеst/a.png")]
-    public async Task HostileOptionalField_Returns400OrNotFound422AndChangesNothing_SEC_017_05(string field, string value)
+    public async Task HostileOptionalField_Returns422AndChangesNothing_SEC_017_05(string field, string value)
     {
         var hosts = await SecurityHosts.SharedAsync();
         var a = await hosts.Identity.SignInAsync(hosts.IdentityClient);
@@ -153,7 +172,7 @@ public class ProfileSecurityTests
 
         using var response = await PutAsync(hosts, a.AccessToken, body);
 
-        ((int)response.StatusCode).Should().BeOneOf(400, 422);
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         (await response.Content.ReadAsStringAsync()).Should().NotContain("DROP TABLE").And.NotContain("<b>").And.NotContain("stackTrace");
         (await UserAsync(hosts, a.Sub)).ToJson().Should().Be(before.ToJson());
     }
@@ -194,6 +213,19 @@ public class ProfileSecurityTests
 
         ((int)response.StatusCode).Should().BeInRange(400, 499);
         (await response.Content.ReadAsStringAsync()).Should().NotContain("$ne").And.NotContain("stackTrace");
+    }
+
+    [Fact]
+    public async Task MalformedJson_Returns400AndChangesNothing_CA_017_06()
+    {
+        var hosts = await SecurityHosts.SharedAsync();
+        var a = await hosts.Identity.SignInAsync(hosts.IdentityClient);
+        var before = await UserAsync(hosts, a.Sub);
+
+        using var response = await SecureHttp.SendRawJsonAsync(hosts.IdentityClient, HttpMethod.Put, _me, "{", a.AccessToken);
+
+        await SecureHttp.AssertProblemAsync(response, HttpStatusCode.BadRequest);
+        (await UserAsync(hosts, a.Sub)).ToJson().Should().Be(before.ToJson());
     }
 
     [Fact]

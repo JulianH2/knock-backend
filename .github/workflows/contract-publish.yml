@@ -1,0 +1,119 @@
+name: contract-publish
+
+# KNOCK-137 (TT-CI-02): cuando cambia un contrato en develop, junta los de Market e Identidad en un solo
+# contracts/openapi.v1.json, regenera el cliente Dart y abre un PR en Tensei-Devs/knock-frontend (rama contract/api-<sha>, base develop).
+# - Corrida automática: push a develop que toca docs/openapi*.json; es la única que empuja y abre el PR.
+# - Corrida manual (workflow_dispatch, sin entradas por CKV_GHA_7): siempre es de prueba (dry_run): hace todo menos empujar y abrir el PR;
+#   sube el contrato combinado y el parche como artefactos para revisarlos.
+# - El token FRONTEND_CONTRACT_TOKEN (grano fino, solo knock-frontend: Contents y Pull requests) se usa solo en los pasos que leen o escriben
+#   en knock-frontend; nunca se imprime ni va en una URL. Todo lo que viene del evento llega por entorno, nunca dentro del script.
+# - Si la rama contract/api-<sha> ya existe en knock-frontend no se vuelve a empujar (sin force-push).
+# - Acciones fijadas por SHA (scripts/ci/pin_actions.py). El commit del bot usa chore(deps), exento de la clave KNOCK-N (scripts/ci/branch_rules.py).
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - docs/openapi.v1.json
+      - docs/openapi.identity.v1.json
+      - scripts/ci/merge_openapi.py
+      - .github/workflows/contract-publish.yml
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: contract-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publicar el contrato en knock-frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && 'true' || 'false' }}
+      FRONTEND_REPO: Tensei-Devs/knock-frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Probar el script y combinar los contratos
+        run: |
+          python scripts/ci/test_merge_openapi.py
+          python scripts/ci/merge_openapi.py --market docs/openapi.v1.json --identity docs/openapi.identity.v1.json --output out/openapi.v1.json
+      - name: Clonar knock-frontend (rama develop)
+        env:
+          GH_TOKEN: ${{ secrets.FRONTEND_CONTRACT_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::Falta el secreto FRONTEND_CONTRACT_TOKEN (token de grano fino solo para knock-frontend)."
+            exit 1
+          fi
+          gh repo clone "$FRONTEND_REPO" frontend -- --depth 1 --branch develop
+      - name: Copiar el contrato y regenerar el cliente Dart
+        run: |
+          set -euo pipefail
+          cp out/openapi.v1.json frontend/contracts/openapi.v1.json
+          cd frontend
+          python app/tool/generar_cliente_api.py
+          git add -A contracts app/packages/knock_api
+          git diff --cached --stat
+          git diff --cached --binary > ../out/contract-change.patch
+          if [ ! -s ../out/contract-change.patch ]; then
+            echo "El contrato y el cliente ya coinciden con knock-frontend; no hay nada que publicar."
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: openapi-contract
+          path: out/
+          if-no-files-found: error
+      - name: Empujar la rama y abrir el PR en knock-frontend
+        if: env.DRY_RUN != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.FRONTEND_CONTRACT_TOKEN }}
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ ! -s out/contract-change.patch ]; then
+            echo "Nada que publicar."
+            exit 0
+          fi
+          gh auth setup-git
+          short="${SOURCE_SHA:0:7}"
+          branch="contract/api-${short}"
+          cd frontend
+          if git ls-remote --exit-code --heads origin "$branch" > /dev/null 2>&1; then
+            echo "La rama $branch ya existe en knock-frontend; no se vuelve a empujar."
+            exit 0
+          fi
+          git config user.name "contract-publish"
+          git config user.email "contract-publish@users.noreply.github.com"
+          git checkout -b "$branch"
+          git commit -m "chore(deps): update the API contract"
+          git push origin "$branch"
+          cat > ../out/pr-body.md <<EOF
+          Contrato de la API generado desde knock-backend en el commit ${short}.
+
+          ## Qué cambia
+          - \`contracts/openapi.v1.json\`: contrato combinado de Market e Identidad.
+          - \`app/packages/knock_api/\`: cliente Dart regenerado con \`python app/tool/generar_cliente_api.py\`. No se edita a mano.
+
+          ## Criterios
+          No implementa casos: actualiza el contrato vendorizado.
+
+          ## Pruebas
+          - El CI de este repositorio vuelve a comprobar que el cliente coincide con el contrato y que no hay cambios incompatibles (oasdiff).
+
+          ## Uso de IA
+          No se usó IA: PR automático del workflow contract-publish de knock-backend.
+          EOF
+          gh pr create --repo "$FRONTEND_REPO" --base develop --head "$branch" \
+            --title "chore(deps): update the API contract from knock-backend ${short}" \
+            --label puntos-app-0 --body-file ../out/pr-body.md

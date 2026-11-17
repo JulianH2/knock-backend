@@ -10,7 +10,7 @@ namespace Knock.Market.Api.Modules.Catalog.Data;
 /// los entornos). Es repetible: hace upsert por la clave natural (<c>clave</c>; <c>municipio</c>, <c>cp</c>, <c>nombre</c>) y solo
 /// sube <c>version</c> si cambia el contenido. Valida todos los documentos antes de escribir el primero.
 /// </summary>
-internal sealed class CatalogSeeder(CatalogStore store)
+internal sealed class CatalogSeeder(CatalogStore store, ICatalogCache cache)
 {
     public const string OficiosFile = "oficios.json";
     public const string ColoniasFile = "colonias.json";
@@ -37,26 +37,113 @@ internal sealed class CatalogSeeder(CatalogStore store)
         var coloniaDocuments = colonias.Select(ToColonia).ToList();
 
         await store.EnsureIndexesAsync(cancellationToken);
-        foreach (var oficio in oficioDocuments)
+        var before = await SnapshotColoniasAsync(cancellationToken);
+        var touchedPostalCodes = new HashSet<string>(StringComparer.Ordinal);
+        var touchedPairs = new HashSet<(ObjectId Id, string PostalCode)>();
+        try
         {
-            await UpsertAsync(
-                store.Oficios,
-                Builders<BsonDocument>.Filter.Eq(CatalogStore.ClaveField, oficio[CatalogStore.ClaveField]),
-                oficio,
-                cancellationToken);
-        }
+            // Spec 010, R-02 + KNOCK-205: cada escritura invalida sus claves enseguida. Si la siembra se interrumpe a la mitad, el
+            // bloque protegido invalida también lo tocado (más el CP anterior de cada colonia), así que una siembra parcial no deja caché vieja.
+            foreach (var oficio in oficioDocuments)
+            {
+                await UpsertAsync(
+                    store.Oficios,
+                    Builders<BsonDocument>.Filter.Eq(CatalogStore.ClaveField, oficio[CatalogStore.ClaveField]),
+                    oficio,
+                    cancellationToken);
+                await cache.RemoveOficiosAsync(cancellationToken);
+            }
 
-        foreach (var colonia in coloniaDocuments)
-        {
-            var filter = Builders<BsonDocument>.Filter;
-            await UpsertAsync(
-                store.Colonias,
-                filter.Eq(CatalogStore.MunicipioField, colonia[CatalogStore.MunicipioField])
-                    & filter.Eq(CatalogStore.CpField, colonia[CatalogStore.CpField])
-                    & filter.Eq(CatalogStore.NombreField, colonia[CatalogStore.NombreField]),
-                colonia,
-                cancellationToken);
+            foreach (var colonia in coloniaDocuments)
+            {
+                var filter = Builders<BsonDocument>.Filter;
+                await UpsertAsync(
+                    store.Colonias,
+                    filter.Eq(CatalogStore.MunicipioField, colonia[CatalogStore.MunicipioField])
+                        & filter.Eq(CatalogStore.CpField, colonia[CatalogStore.CpField])
+                        & filter.Eq(CatalogStore.NombreField, colonia[CatalogStore.NombreField]),
+                    colonia,
+                    cancellationToken);
+                var id = colonia[CatalogStore.IdField].AsObjectId;
+                var postalCode = colonia[CatalogStore.CpField].AsString;
+                await cache.RemoveNeighborhoodNamesAsync(postalCode, cancellationToken);
+                await cache.RemoveColoniaExistsAsync(id, postalCode, cancellationToken);
+                touchedPostalCodes.Add(postalCode);
+                touchedPairs.Add((id, postalCode));
+            }
+
+            // Cubre lo que ya no está en los documentos escritos: el CP anterior de una colonia cuyo CP cambió, y cualquier CP/pair
+            // que hubiera antes y ya no exista (documento retirado del seed o borrado).
+            foreach (var postalCode in before.PostalCodes)
+            {
+                await cache.RemoveNeighborhoodNamesAsync(postalCode, cancellationToken);
+                touchedPostalCodes.Add(postalCode);
+            }
+
+            foreach (var (id, postalCode) in before.Pairs)
+            {
+                await cache.RemoveColoniaExistsAsync(id, postalCode, cancellationToken);
+                touchedPairs.Add((id, postalCode));
+            }
+
+            // Y lo que ahora vive en la base aunque el seed no lo tocó (p. ej. un documento agregado por otra vía): su clave tampoco puede quedar activa con datos viejos.
+            var after = await SnapshotColoniasAsync(cancellationToken);
+            foreach (var postalCode in after.PostalCodes)
+            {
+                await cache.RemoveNeighborhoodNamesAsync(postalCode, cancellationToken);
+            }
+
+            foreach (var (id, postalCode) in after.Pairs)
+            {
+                await cache.RemoveColoniaExistsAsync(id, postalCode, cancellationToken);
+            }
         }
+        catch (Exception original)
+        {
+            // Invalidación de emergencia con CancellationToken.None: si la siembra falló por cancelación (apagado o timeout), el token ya
+            // cancelado impediría invalidar justo lo que este bloque debe cubrir. Una invalidación que falle no detiene a las demás.
+            var failures = new List<Exception>();
+            foreach (var postalCode in touchedPostalCodes.Concat(before.PostalCodes))
+            {
+                await TryInvalidateAsync(cache.RemoveNeighborhoodNamesAsync(postalCode, CancellationToken.None), failures);
+            }
+
+            foreach (var (id, postalCode) in touchedPairs.Concat(before.Pairs))
+            {
+                await TryInvalidateAsync(cache.RemoveColoniaExistsAsync(id, postalCode, CancellationToken.None), failures);
+            }
+
+            await TryInvalidateAsync(cache.RemoveOficiosAsync(CancellationToken.None), failures);
+            if (failures.Count > 0)
+            {
+                throw new AggregateException("La siembra del catálogo falló y no se pudo invalidar toda la caché.", failures.Prepend(original));
+            }
+
+            throw;
+        }
+    }
+
+    // Espera la invalidación sin lanzar: Task.WhenAny no propaga la excepción, así que se registra y se sigue con las demás claves.
+    private static async Task TryInvalidateAsync(Task invalidation, List<Exception> failures)
+    {
+        await Task.WhenAny(invalidation);
+        if (invalidation.Exception is { } error)
+        {
+            failures.Add(error.InnerExceptions.Count == 1 ? error.InnerExceptions[0] : error);
+        }
+    }
+
+    private sealed record ColoniasSnapshot(IReadOnlyList<string> PostalCodes, IReadOnlyList<(ObjectId Id, string PostalCode)> Pairs);
+
+    private async Task<ColoniasSnapshot> SnapshotColoniasAsync(CancellationToken cancellationToken)
+    {
+        var projection = Builders<BsonDocument>.Projection.Include(CatalogStore.CpField);
+        var documents = await store.Colonias.Find(Builders<BsonDocument>.Filter.Empty)
+            .Project(projection)
+            .ToListAsync(cancellationToken);
+        return new ColoniasSnapshot(
+            documents.Select(document => document[CatalogStore.CpField].AsString).Distinct(StringComparer.Ordinal).ToList(),
+            documents.Select(document => (document[CatalogStore.IdField].AsObjectId, document[CatalogStore.CpField].AsString)).ToList());
     }
 
     private static async Task<IReadOnlyList<BsonDocument>> ReadAsync(string path, CancellationToken cancellationToken)

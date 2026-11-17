@@ -9,9 +9,10 @@ name: ci-deploy
 # - Sin `az acr build` ni ACR Tasks: el build sale del runner (docker/build-push-action).
 # - Solo se construye el servicio que cambió en el commit (detect; Knock.Contracts afecta a todos).
 # - Sin etiqueta `latest`: la única etiqueta es el SHA completo.
-# - Después del push actualiza los Container Apps que cambiaron y corre la prueba de humo contra el
-#   gateway (CA-03 de la spec 007; autorizado por el Tech Lead el 2026-11-10). Costo cero: solo az CLI
-#   en el runner, sin recursos ni secretos nuevos. El grupo de recursos se descubre por nombre de app.
+# - Después del push actualiza los Container Apps que cambiaron y corre la prueba de humo contra
+#   los cuatro servicios (CA-03 de la spec 007; autorizado por el Tech Lead el 2026-11-10). Costo cero: solo
+#   az CLI en el runner, sin recursos ni secretos nuevos. Todo se busca dentro de RESOURCE_GROUP.
+# - Un despliegue a la vez (grupo de concurrencia fijo): dos fusiones seguidas se encolan, no corren en paralelo.
 # - Acciones fijadas por SHA (scripts/ci/pin_actions.py).
 
 on:
@@ -23,13 +24,18 @@ on:
 permissions:
   contents: read
 
+# Grupo fijo: solo un despliegue corre a la vez y los siguientes esperan (con el SHA en el grupo, dos fusiones
+# seguidas corrían en paralelo). GitHub guarda una sola corrida pendiente: si llegan tres seguidas, la de en medio
+# se cancela antes de empezar (ver «Riesgos» del PR #74).
 concurrency:
-  group: ci-deploy-${{ github.event.workflow_run.head_sha }}
+  group: ci-deploy-main
   cancel-in-progress: false
 
 env:
   ACR_NAME: acrknockdevtn01
   ACR_REGISTRY: acrknockdevtn01.azurecr.io
+  # Grupo de recursos de los Container Apps (deploy/README.md: por defecto rg-knock-dev). Nunca se busca en toda la suscripción.
+  RESOURCE_GROUP: rg-knock-dev
 
 jobs:
   detect:
@@ -169,19 +175,21 @@ jobs:
             if [ "$(jq -r --arg s "$svc" '.[$s]' <<<"$CAMBIOS")" != "true" ]; then
               echo "knock-$svc sin cambios: no se actualiza."; continue
             fi
-            rg=$(az containerapp list --query "[?name=='knock-$svc'].resourceGroup | [0]" -o tsv)
-            if [ -z "$rg" ]; then echo "::error::No existe el Container App knock-$svc"; exit 1; fi
-            az containerapp update --name "knock-$svc" --resource-group "$rg" \
+            if ! az containerapp show --name "knock-$svc" --resource-group "$RESOURCE_GROUP" --query name -o tsv >/dev/null; then
+              echo "::error::No existe el Container App knock-$svc en $RESOURCE_GROUP"; exit 1
+            fi
+            az containerapp update --name "knock-$svc" --resource-group "$RESOURCE_GROUP" \
               --image "${ACR_REGISTRY}/knock-$svc:${SHA}" --output none
             echo "::notice::knock-$svc desplegado con la imagen ${SHA}"
           done
 
   smoke:
-    name: Prueba de humo (gateway)
-    needs: deploy
+    name: Prueba de humo (revisiones y gateway)
+    needs: [detect, deploy]
     if: success()
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Hasta 5 minutos por servicio (4) más 5 del gateway.
+    timeout-minutes: 30
     permissions:
       contents: read
       id-token: write
@@ -192,12 +200,39 @@ jobs:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      # Identity, Market y Messaging no tienen ingreso público: se revisan por su revisión en Azure. Pasa cuando la última
+      # revisión es la lista (latestRevisionName == latestReadyRevisionName), su sonda de /health/ready la marca Healthy y,
+      # si el servicio cambió en el commit, corre la imagen con este SHA. Con revision_mode Single, en ese momento la
+      # revisión anterior ya no recibe tráfico: el gateway no puede responder desde la vieja.
+      - name: Revisión nueva y sana en los cuatro servicios
+        env:
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          CAMBIOS: ${{ toJSON(needs.detect.outputs) }}
+        run: |
+          set -euo pipefail
+          az config set extension.use_dynamic_install=yes_without_prompt --only-show-errors
+          for svc in gateway identity messaging market; do
+            cambio=$(jq -r --arg s "$svc" '.[$s]' <<<"$CAMBIOS")
+            esperada="${ACR_REGISTRY}/knock-$svc:${SHA}"
+            listo=false
+            for i in $(seq 1 20); do
+              IFS=$'\t' read -r latest ready image < <(az containerapp show --name "knock-$svc" --resource-group "$RESOURCE_GROUP" \
+                --query "[properties.latestRevisionName, properties.latestReadyRevisionName, properties.template.containers[0].image]" -o tsv | paste -sd $'\t')
+              salud=$(az containerapp revision show --name "knock-$svc" --resource-group "$RESOURCE_GROUP" --revision "$latest" \
+                --query "properties.healthState" -o tsv 2>/dev/null || echo "desconocida")
+              if [ "$latest" = "$ready" ] && [ "$salud" = "Healthy" ] && { [ "$cambio" != "true" ] || [ "$image" = "$esperada" ]; }; then
+                echo "::notice::knock-$svc sano en la revisión $latest (${image##*:})"; listo=true; break
+              fi
+              echo "knock-$svc intento ${i}: revisión ${latest} (lista: ${ready}, salud: ${salud}, imagen: ${image##*:}); reintento en 15 s."
+              sleep 15
+            done
+            if [ "$listo" != "true" ]; then echo "::error::knock-$svc no quedó sano con la revisión nueva en 5 minutos"; exit 1; fi
+          done
       # Reintenta hasta 5 minutos: con réplicas mínimas en 0 la primera petición puede tardar (arranque en frío).
       - name: GET /health y /health/ready por el gateway
         run: |
           set -euo pipefail
-          az config set extension.use_dynamic_install=yes_without_prompt --only-show-errors
-          fqdn=$(az containerapp list --query "[?name=='knock-gateway'].properties.configuration.ingress.fqdn | [0]" -o tsv)
+          fqdn=$(az containerapp show --name knock-gateway --resource-group "$RESOURCE_GROUP" --query "properties.configuration.ingress.fqdn" -o tsv)
           if [ -z "$fqdn" ]; then echo "::error::El gateway no tiene ingreso público"; exit 1; fi
           for i in $(seq 1 20); do
             if curl -fsS --max-time 10 "https://${fqdn}/health" >/dev/null \

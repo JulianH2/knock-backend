@@ -13,6 +13,37 @@ Los `_id` son iguales en todos los entornos (los referencian TT-BD-03 y la zona 
 
 Los dos JSON los generó una sola vez `db/scripts/generate_catalog_seeds.py` desde el GeoJSON, el CSV y la antigua `oficios.sql`, con un PostGIS desechable para el centro. Al volver a correrlo reutiliza los `_id` existentes. `oficios.sql` se retiró en TT-BD-06 (autorización del líder en #53), así que hoy el generador solo sirve como registro de cómo se obtuvieron los centros.
 
+## Demo de clientes
+
+`demo/identity/usuarios.json` contiene diez clientes inventados, sin cuentas Firebase. El cargador de Identity protege los celulares antes de guardarlos y solo admite destinos locales y una colección sin usuarios que no sean demo. No usarlo para datos reales ni en Production.
+
+Para cargar en local, desde la raíz del repositorio:
+
+1. Configura de forma privada las credenciales requeridas por `deploy/docker-compose.local.yml` (`KNOCK_MONGO_PASSWORD` y `KNOCK_REDIS_PASSWORD`). Levanta los servicios necesarios: `docker compose -f deploy/docker-compose.local.yml up -d documentdb redis`.
+2. Configura de forma privada las opciones de Identity, incluidas `ConnectionStrings__KnockMongo` (con `<cadena-local>` hacia `localhost`, `127.0.0.1` o `documentdb-local`), `ConnectionStrings__KnockRedis`, `Jwt__SigningKey` y las llaves y versiones `Identity__PhoneProtection__*`. Consulta la configuración del proyecto; no incluyas valores de secretos en el repositorio ni en evidencia.
+3. En un entorno que **no** sea Production, ejecuta `ASPNETCORE_ENVIRONMENT=Development Seed__Demo=true dotnet run --project src/Knock.Identity.Api`. La carga ocurre al iniciar. Se pueden repetir los arranques; no crea cuentas Firebase.
+
+Para contar o borrar la demo, abre `mongosh --nodb` contra el DocumentDB **local**, pasando `<cadena-local>` por la variable de entorno `KNOCK_DB_URI` en lugar de poner credenciales en la línea de comandos. Dentro de `mongosh`:
+
+```javascript
+const identity = new Mongo(process.env.KNOCK_DB_URI).getDB('identity');
+identity.usuarios.countDocuments({ demo: true });
+// Solo si se desea borrar la demo local:
+identity.usuarios.deleteMany({ demo: true });
+```
+
+Verifica el destino y el filtro antes de borrar; esta operación elimina esos documentos. El cliente local de documentdb-local usa TLS con certificado autofirmado: configura su confianza solo para el entorno local.
+
+**Azure no se carga con este cargador de demo.** La entrega de Azure se hace aparte y manualmente con `db/entrega.js`; ese script aplica índices y semillas del catálogo, **no carga los diez clientes demo**. No se ha implementado aquí un cargador de esos clientes para Azure.
+
+## Demo de Mercado
+
+`demo/market/tecnicos.json` contiene tres técnicos inventados, sin cuenta ni inicio de sesión. El cargador de Market valida todo el archivo y guarda los técnicos en una transacción MongoDB, con upsert por `_id` y `demo: true`. Solo corre con `Seed:Demo=true` fuera de Production; admite exclusivamente los mismos hosts locales que Identity, rechaza SRV y no carga si hay documentos no demo en `tecnicos`. Un host local no descarta por sí mismo un túnel a otra base: verifica el destino antes de ejecutar. No usar datos reales.
+
+Para cargar los técnicos en local, levanta `documentdb` y `redis` como en la sección anterior, configura de forma privada la conexión local de MongoDB, Redis y la llave JWT de Market, y ejecuta desde la raíz `ASPNETCORE_ENVIRONMENT=Development Seed__Demo=true dotnet run --project src/Knock.Market.Api`. Repetir el arranque no duplica los técnicos. El cargador no modifica solicitudes ni cotizaciones.
+
+`demo/market/solicitudes.json` y `demo/market/cotizaciones.json` y sus pruebas de archivo se conservan, pero **su carga está pendiente de T-05 de la spec 020**. Los identificadores de fotos son marcadores, no archivos confirmados; falta la dirección cifrada y las fechas fijas pueden vencer. No cargarlos manualmente como datos utilizables. Cuando T-05 permita implementarlo, el orden acordado es: preparar fotos con nombre fijo; guardar los documentos en una sola transacción MongoDB, cuya operación debe verificarse tanto en documentdb-local como en Azure; e invalidar Redis al final. La forma de recalcular las fechas y los detalles de esa carga se resolverán en esa tarea.
+
 ## GeoJSON piloto de Tula
 
 `colonias_tula.geojson` contiene nueve geometrías piloto aproximadas, no oficiales. Cada feature documenta su autor y fecha de elaboración; las geometrías no se deben presentar como límites oficiales. Antes de integrar o modificar el archivo, ejecutar:

@@ -16,7 +16,6 @@
 | `SCA (dependencias vulnerables, obsoletas y licencias)` | `ci-pr.yml` / `sca` | No | Lo cubre `gate`. |
 | `Secretos (Gitleaks)` | `ci-pr.yml` / `secrets` | No | Lo cubre `gate`. |
 | `Cambios incompatibles en el contrato (oasdiff)` | `ci-pr.yml` / `openapi-diff` | No | Lo cubre `gate`. |
-| `Scripts SQL (sqlfluff)` | `ci-pr.yml` / `sql-lint` | No | Lo cubre `gate`; se salta si no aplica. |
 | `IaC, Dockerfile y workflows (Checkov)` | `ci-pr.yml` / `iac` | No | Lo cubre `gate`. |
 | `Contenedor (build, Trivy, Dockle) (…)` | `ci-pr.yml` / `container` | No | Su nombre lleva el servicio (matriz): **no es estable**; lo cubre `gate`. |
 | `Smoke + DAST (ZAP baseline)` | `ci-pr.yml` / `dast` | No | Lo cubre `gate`; hoy nunca corre (BUG-001, KNOCK-238). |

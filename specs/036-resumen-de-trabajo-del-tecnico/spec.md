@@ -1,7 +1,7 @@
 # Spec 036 — Resumen de trabajo del técnico (`GET /api/v1/tecnicos/me/trabajo`)
 
 > **Estado:** Aprobada · **Repositorio:** knock-backend · **Rector:** `constitution.md`
-> **Origen:** HU-020 (backlog, «Back (API): `GET /api/v1/tecnicos/me/trabajo` (agregado por secciones)»); fija el hueco de backend 028 §15 y de frontend 019 §13. **Clave de Jira:** pendiente de crear.
+> **Origen:** HU-020 (backlog, «Back (API): `GET /api/v1/tecnicos/me/trabajo` (agregado por secciones)»); fija el hueco de backend 028 §15 y de frontend 019 §13. **Clave de Jira:** KNOCK-67.
 > **Servicio:** Mercado (técnicos, solicitudes, cotizaciones y visitas), con la verificación y el nivel leídos de `tecnicos` · **Módulo:** Técnicos · **Colecciones:** ninguna nueva (lee `tecnicos`, `cotizaciones`, `visitas`, `solicitudes`)
 > **Sprint:** 5 (propuesto) · **Responsable:** Guillermo (módulo de Mercado)
 > **Consumidora:** frontend 019 «Pestaña Trabajo» (R-02, R-07) y frontend 025 (etiqueta por `motivoRechazo`)
@@ -36,7 +36,7 @@ Que la pestaña Trabajo del técnico reciba en una sola respuesta sus visitas pr
 - **R-03:** `proximasVisitas[].lugar.direccion` aparece solo si la visita está `confirmada` o `en_curso` (la dirección se revela cuando el técnico ya fue elegido, spec 022 R-05). `cliente` lleva solo `colonia`. Ninguna sección lleva nombre, teléfono ni `sub` del cliente.
 - **R-04:** Cada cotización enviada lleva `motivoRechazo` cuando su estado es `rechazada` o `retirada`, con los valores que define la spec 021 (*decisión de revisión, confirmar*: esta spec no inventa valores nuevos; si la 021 no los define, se añaden allí).
 - **R-05:** `disponibleHoy` se lee del campo de `tecnicos` y, si no existe, vale `false`. Esta spec no lo escribe.
-- **R-06:** `verificacion.estado` y `nivel` se leen del documento del técnico en `tecnicos`. Mercado los mantiene al consumir el evento de la decisión de verificación que publica la spec 025, que no expone ningún endpoint interno de consulta. Esta spec no los escribe.
+- **R-06:** `nivelVerificacion` de `tecnicos` (spec 021 §6) es la fuente de verdad de `verificacion.estado`: `ninguno` se convierte en `sin_verificar`, y `basica` o `completa` en `verificada`. Si falta o tiene un valor no reconocido, se usa `sin_verificar`. `nivel` de reputación se devuelve vacío o nulo hasta que la spec 051 lo defina, incluso si hay datos opcionales no reconocidos. Los errores reales de comunicación o consulta a la base no son datos faltantes: se mapean a `unavailable` según R-07. Esta spec no escribe estos datos.
 - **R-07:** Si cualquier parte del resumen falla (la base no responde o falla una de las cuatro consultas), la respuesta entera es `503 unavailable`. Nunca se devuelve una respuesta parcial (*decisión de revisión, confirmar*: la app trata la pestaña como una sola carga; una falla deja toda la pestaña en error, y así el contrato queda simple).
 - **R-08:** La respuesta lleva `Cache-Control: private, no-store` (spec 010, R-04): contiene datos personales y cambia con cada solicitud.
 - **R-09:** Ninguna sección lleva el código de la visita, el nombre ni el teléfono del cliente, ni la dirección fuera de R-03.
@@ -49,7 +49,7 @@ Que la pestaña Trabajo del técnico reciba en una sola respuesta sus visitas pr
 | `GET /api/v1/tecnicos/me/trabajo` | técnico activo | `cursorTerminadas?`, `limit?` (1–20) | `200` (ver forma abajo) | `400` (`invalid_cursor`), `401`, `403 not_a_technician`, `422` (`limit` fuera de rango), `429`, `503 unavailable` |
 
 **Forma de la respuesta**
-- `disponibleHoy: boolean`, `verificacion: { estado }`, `nivel: { clave, nombre }`
+- `disponibleHoy: boolean`, `verificacion: { estado }`, `nivel: { clave, nombre } | null` (`null` hasta que lo defina la spec 051)
 - `proximasVisitas[]`: `{ visitaId, solicitudId, dia, hora, modalidad, cliente: { colonia }, lugar: { tipo, direccion? }, precio, tope, estado, puedeLlegar }` (mismos nombres que la vista del técnico de la spec 022)
 - `cotizacionesEnviadas[]`: `{ cotizacionId, solicitudId, oficioNombre, tipoPrecio, precio, precioMin?, precioMax?, tope, estado, motivoRechazo?, enviadaEn }`
 - `terminadas`: `{ items: [{ solicitudId, oficioNombre, terminadaEn, precio, calificacion }], nextCursor }`
@@ -73,7 +73,7 @@ Que la pestaña Trabajo del técnico reciba en una sola respuesta sus visitas pr
 - **CA-05:** Dada la base sin responder o una de las cuatro consultas fallando, cuando se pide el resumen, entonces responde `503 unavailable` sin secciones parciales y con `Cache-Control: private, no-store`. (R-07, R-08)
 - **CA-06:** Dada cualquier respuesta, cuando se revisa, entonces no contiene nombre, teléfono ni `sub` del cliente, ni la dirección de una visita no aceptada. (R-03, R-09)
 - **CA-07:** Dado un técnico sin el campo `disponibleHoy`, cuando pide el resumen, entonces `disponibleHoy` es `false` y el resumen no escribe ese campo. (R-05)
-- **CA-08:** Dado un técnico con su nivel y su verificación en `tecnicos`, cuando pide el resumen, entonces `verificacion.estado` y `nivel` vienen de `tecnicos`. (R-06)
+- **CA-08:** Dado un técnico, cuando pide el resumen, entonces `verificacion.estado` se deriva de `nivelVerificacion` y `nivel` queda vacío o nulo según R-06. (R-06)
 - **CA-09:** Dado un técnico que excede el límite de lectura del gateway, cuando pide el resumen, entonces responde `429` con `Retry-After`. (R-10)
 
 ## 7. Pruebas
@@ -98,8 +98,13 @@ Que la pestaña Trabajo del técnico reciba en una sola respuesta sus visitas pr
 2. **Falla completa, no parcial (R-07).** Si falla una parte, la respuesta entera es `503 unavailable`; la app muestra error en la pestaña. Alternativa: secciones con su propio estado, que exige respuestas parciales y un contrato más complejo. *Decisión de revisión, confirmar.*
 3. **Calificación en `null` cuando no hay reseñas.** No hay spec de reseñas; mejor un campo vacío que inventar una fuente. *Decisión de revisión, confirmar.*
 4. **Sin escritura de «Disponible hoy».** Lo define HU-019, que no tiene spec; esta spec solo lee el campo.
+5. **Verificación desde `nivelVerificacion`.** `ninguno`, un campo ausente o un valor desconocido producen `sin_verificar`; `basica` y `completa` producen `verificada`.
+6. **Reputación pendiente de la spec 051.** `nivel` es `null` hasta que esa spec defina su fuente y contrato; no se usan datos opcionales no reconocidos.
+7. **Fallo de consulta distinto de datos ausentes.** Un error real de MongoDB produce `unavailable`, sin valores de respaldo; T-04 debe revisar `ErrorCode` antes de usar el resultado y responder 503 sin secciones parciales.
 
 ## Trazabilidad CA → prueba
+
+Salvo CA-05 y CA-08, los nombres son propuestas pendientes, no evidencia de ejecución.
 
 | CA | Prueba |
 |---|---|
@@ -107,10 +112,10 @@ Que la pestaña Trabajo del técnico reciba en una sola respuesta sus visitas pr
 | CA-02 | `Spec036ResumenTests.Cliente_O_Tecnico_Inactivo_CA_036_02` |
 | CA-03 | `Spec036ResumenTests.Terminadas_Paginadas_CA_036_03` |
 | CA-04 | `Spec036ResumenTests.Motivo_Rechazo_En_Cotizacion_CA_036_04` |
-| CA-05 | `Spec036ResumenTests.Base_Caida_503_Sin_Parciales_CA_036_05` |
+| CA-05 | `Spec036TrabajoStoreTests.Base_Caida_Unavailable_Sin_Valores_De_Respaldo_CA_036_05` (lectura; respuesta HTTP y cabecera pendientes en T-04) |
 | CA-06 | `Spec036ResumenTests.Sin_Datos_De_Contacto_CA_036_06` |
 | CA-07 | `Spec036ResumenTests.DisponibleHoy_Por_Omision_CA_036_07` |
-| CA-08 | `Spec036ResumenTests.Verificacion_Y_Nivel_Desde_Tecnicos_CA_036_08` |
+| CA-08 | `Spec036TrabajoStoreTests.Verificacion_Y_Nivel_Desde_Tecnicos_CA_036_08` y `Campo_No_Texto_Y_Tecnico_Ausente_CA_036_08` (lectura; contrato HTTP pendiente en T-04) |
 | CA-09 | `Spec036ResumenTests.Limite_De_Lectura_429_CA_036_09` |
 
 ## Aprobación

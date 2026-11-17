@@ -1,6 +1,6 @@
 {
   "repo": "knock-backend",
-  "layer_scope": "base de datos (migraciones, semillas y scripts) y API (módulo, endpoints, eventos) con sus pruebas",
+  "layer_scope": "base de datos (colecciones, índices, semillas y scripts) y API (módulo, endpoints, eventos) con sus pruebas",
   "code_dirs": ["src/**", "db/**"],
   "generated": [],
   "protected": ["docs/openapi.v1.json", "tests/**/Fixtures/**"],
@@ -17,7 +17,6 @@
     {"name": "dotnet build", "when": "\\.(cs|csproj|props|json)$", "cmd": ["dotnet", "build", "Knock.slnx", "-c", "Release", "-nologo", "-v", "q"], "requires": "Knock.slnx"},
     {"name": "dotnet format", "when": "\\.cs$", "cmd": ["dotnet", "format", "Knock.slnx", "--verify-no-changes", "--no-restore", "-v", "q"], "requires": "Knock.slnx"},
     {"name": "pruebas de arquitectura", "when": "\\.cs$", "cmd": ["dotnet", "test", "tests/UnitTest", "-c", "Release", "--no-build", "--filter", "FullyQualifiedName~Architecture", "-nologo"], "requires": "tests/UnitTest"},
-    {"name": "pruebas unitarias", "when": "\\.cs$", "cmd": ["dotnet", "test", "tests/UnitTest", "-c", "Release", "--no-build", "-nologo"], "requires": "tests/UnitTest", "mode": "full"},
-    {"name": "SQL (sqlfluff)", "when": "^db/.*\\.sql$", "cmd": ["sqlfluff", "lint", "db", "--dialect", "postgres"], "requires": "db"}
+    {"name": "pruebas unitarias", "when": "\\.cs$", "cmd": ["dotnet", "test", "tests/UnitTest", "-c", "Release", "--no-build", "-nologo"], "requires": "tests/UnitTest", "mode": "full"}
   ]
 }

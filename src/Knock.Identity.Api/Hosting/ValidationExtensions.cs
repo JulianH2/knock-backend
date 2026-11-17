@@ -50,16 +50,21 @@ internal sealed class ValidationFilter : IAsyncActionFilter
             return;
         }
 
-        var problems = context.HttpContext.RequestServices.GetRequiredService<IProblemDetailsService>();
-        context.HttpContext.Response.StatusCode = StatusCodes.Status422UnprocessableEntity;
+        context.Result = await WriteErrorsAsync(context.HttpContext, errors.ToDictionary(e => e.Key, e => e.Value.ToArray(), StringComparer.Ordinal));
+    }
+
+    internal static async Task<IActionResult> WriteErrorsAsync(HttpContext httpContext, IDictionary<string, string[]> errors)
+    {
+        var problems = httpContext.RequestServices.GetRequiredService<IProblemDetailsService>();
+        httpContext.Response.StatusCode = StatusCodes.Status422UnprocessableEntity;
         var problem = new ProblemDetails
         {
             Status = StatusCodes.Status422UnprocessableEntity,
             Title = "One or more validation errors occurred.",
         };
-        problem.Extensions["errors"] = errors.ToDictionary(e => e.Key, e => e.Value.ToArray(), StringComparer.Ordinal);
-        await problems.WriteAsync(new ProblemDetailsContext { HttpContext = context.HttpContext, ProblemDetails = problem });
-        context.Result = new EmptyResult();
+        problem.Extensions["errors"] = errors;
+        await problems.WriteAsync(new ProblemDetailsContext { HttpContext = httpContext, ProblemDetails = problem });
+        return new EmptyResult();
     }
 
     internal static string ToCamelCasePath(string propertyName) =>

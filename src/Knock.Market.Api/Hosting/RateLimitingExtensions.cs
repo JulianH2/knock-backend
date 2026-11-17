@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.RateLimiting;
+using Knock.Market.Api.Common.Errors;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 
@@ -32,6 +33,14 @@ internal sealed class RateLimitSettings
 
 internal static class RateLimitingExtensions
 {
+    public const string WaitlistPolicy = "waitlist";
+
+    /// <summary>Crear solicitudes: 10 por hora por persona (spec 020, §5), además del límite general.</summary>
+    public const string CreateRequestPolicy = "solicitudes-crear";
+    public const string QuotePolicy = "quotes";
+    public const string CompareQuotesPolicy = "cotizaciones-comparar";
+    public const string ChooseQuotePolicy = "cotizaciones-elegir";
+    public const string ArrivalPolicy = "visitas-llegada";
     private const string _healthPath = "/health";
     private const string _readyPath = "/health/ready";
     private const string _unknownClient = "unknown";
@@ -55,6 +64,12 @@ internal static class RateLimitingExtensions
             var auth = settings.Value.Auth;
             var ready = settings.Value.Ready;
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.AddPolicy(WaitlistPolicy, SubjectPolicy(5, TimeSpan.FromHours(1)));
+            options.AddPolicy(CreateRequestPolicy, SubjectPolicy(10, TimeSpan.FromHours(1)));
+            options.AddPolicy(QuotePolicy, SubjectPolicy(3, TimeSpan.FromMinutes(1)));
+            options.AddPolicy(CompareQuotesPolicy, SubjectPolicy(60, TimeSpan.FromMinutes(1)));
+            options.AddPolicy(ChooseQuotePolicy, SubjectPolicy(10, TimeSpan.FromMinutes(1)));
+            options.AddPolicy(ArrivalPolicy, SubjectPolicy(5, TimeSpan.FromMinutes(1)));
             options.GlobalLimiter = PartitionedRateLimiter.CreateChained(
                 PartitionedRateLimiter.Create<HttpContext, string>(context => GlobalPartition(context, global, ready)),
                 PartitionedRateLimiter.Create<HttpContext, string>(context =>
@@ -68,11 +83,17 @@ internal static class RateLimitingExtensions
                 var seconds = Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds));
                 context.HttpContext.Response.Headers.RetryAfter = seconds.ToString(CultureInfo.InvariantCulture);
                 // Cuerpo uniforme: sin IP, clave de partición, límite ni contador.
-                await ProblemResponses.WriteAsync(context.HttpContext, StatusCodes.Status429TooManyRequests, "Too Many Requests");
+                await ProblemResponses.WriteAsync(context.HttpContext, StatusCodes.Status429TooManyRequests, "Too Many Requests", ErrorCodes.RateLimitedCode);
             };
         });
         return services;
     }
+
+    /// <summary>Política por <c>sub</c> del token; sin <c>sub</c> no limita (la autenticación ya respondió).</summary>
+    private static Func<HttpContext, RateLimitPartition<string>> SubjectPolicy(int permitLimit, TimeSpan window) =>
+        context => context.User.FindFirst("sub")?.Value is { Length: > 0 } subject
+            ? RateLimitPartition.GetFixedWindowLimiter(subject, _ => FixedWindow(new RateLimitPolicySettings { PermitLimit = permitLimit, Window = window }))
+            : RateLimitPartition.GetNoLimiter(_unknownClient);
 
     /// <summary>Partición del límite general: <c>/health</c> sin límite, <c>/health/ready</c> con el suyo y el resto con el global.</summary>
     private static RateLimitPartition<string> GlobalPartition(HttpContext context, RateLimitPolicySettings global, RateLimitPolicySettings ready)

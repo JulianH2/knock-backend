@@ -3,7 +3,7 @@
 > TT-API-03 (KNOCK-37). Los valores salen de `src/Knock.Api/appsettings.json` (sección `RateLimiting`), sin secretos, y se afinan con el k6 de TT-QA-02.
 > Orden en el pipeline: `docs/MIDDLEWARES.md`. Implementación: `src/Knock.Api/Hosting/RateLimitingExtensions.cs`.
 
-## Políticas (solo por IP)
+## Políticas por IP
 
 | Política | Alcance | Límite (punto de partida) | Ventana | Clave de partición |
 |---|---|---|---|---|
@@ -38,6 +38,28 @@
 - Un valor de red demasiado amplio también permite evadir el límite: usar el CIDR mínimo del ingress.
 
 - `/api/v1/colonias/en-punto` va bajo la política global por IP sin exención (TT-API-07, KNOCK-141).
+
+## Crear solicitudes en Mercado (spec 020, KNOCK-59)
+
+`POST /api/v1/solicitudes` tiene además una política por `sub` del JWT de **10 solicitudes por hora**, ventana fija, por proceso (`RateLimitingExtensions.CreateRequestPolicy`); la respuesta 429 incluye `Retry-After`. Como las demás políticas de Mercado vive en la memoria de cada réplica, así que con dos réplicas el límite efectivo se duplica. El cuerpo se limita a 8 KB (413 antes de llegar al servicio). Los límites de cotizar (3 por minuto por técnico) los define el controller de cotizaciones (KNOCK-74).
+
+## Comparar y elegir cotización en Mercado (spec 021, KNOCK-82)
+
+`GET /api/v1/solicitudes/{id}/cotizaciones` tiene una política por `sub` del JWT de **60 listados por minuto** y `POST /api/v1/solicitudes/{id}/elegir` de **10 elecciones por minuto**, ambas de ventana fija y por proceso (`RateLimitingExtensions.CompareQuotesPolicy` y `ChooseQuotePolicy`); la respuesta 429 incluye `Retry-After`. Como las demás políticas de Mercado viven en la memoria de cada réplica, con dos réplicas el límite efectivo se duplica. El cuerpo de la elección se limita a 8 KB (413). El control real contra una segunda cita no es el límite sino el índice único de `visitas` por `solicitudId` y la transacción.
+
+## Visita segura en Mercado (spec 022, KNOCK-85)
+
+`POST /api/v1/visitas/{id}/llegada` tiene una política por `sub` del JWT de **5 peticiones por minuto** por técnico, de ventana fija y por proceso (`RateLimitingExtensions.ArrivalPolicy`); la respuesta 429 incluye `Retry-After`. Como las demás políticas de Mercado vive en la memoria de cada réplica, con dos réplicas el límite efectivo se duplica. El control real contra la fuerza bruta del código de cuatro dígitos no es este límite sino los tres intentos por visita y el bloqueo, guardados en la visita. `GET /api/v1/visitas/{id}` y `POST /api/v1/visitas/{id}/aviso` no tienen política propia (decisión del 2026-11-12 para el aviso): rige solo el límite general. El cuerpo de la llegada se limita a 8 KB (413).
+
+## Lista de espera en Mercado (spec 023, KNOCK-47)
+
+`GET /api/v1/zonas/cp/{cp}` requiere sesión y usa los límites globales del gateway por IP y usuario y el límite por IP de Mercado; no tiene política específica adicional.
+
+`POST /api/v1/zonas/lista-espera` tiene además una política por `sub` del JWT de **5 peticiones por hora**, ventana fija, por proceso; la respuesta 429 incluye `Retry-After`. Con una réplica el límite es de 5; con dos puede alcanzar 10 por hora. El límite compartido en Redis queda para KNOCK-247. Se mantienen los límites globales del gateway y el límite por IP de Mercado.
+
+## Cotizaciones en Mercado (spec 020, KNOCK-74)
+
+`POST /api/v1/solicitudes/{id}/cotizaciones` añade una ventana fija de **3 peticiones por minuto por `sub`** y por proceso, además de los límites generales. La cuarta responde 429 con `Retry-After`. Con dos réplicas pueden pasar hasta 6 por minuto; el límite compartido queda para KNOCK-247.
 
 ## Gateway (spec 009, KNOCK-204)
 

@@ -52,14 +52,36 @@ internal sealed class MarketApiFactory(IReadOnlyDictionary<string, string?> sett
             ["Mongo:Databases:Catalog"] = database,
             ["Mongo:Databases:Requests"] = database,
         };
+        var factory = new MarketApiFactory(Merge(values, overrides)) { ExtraServices = configureServices };
+        await EnsureRequestsIndexesAsync(factory.Database);
+        return factory;
+    }
+
+    /// <summary>
+    /// Host sin contenedores: las cadenas de MongoDB y Redis apuntan a un puerto cerrado (el cliente conecta de forma perezosa y la prueba nunca las usa) y
+    /// <paramref name="configureServices"/> sustituye lo que tocaría la base. Sirve para probar el canal HTTP (autenticación, límites, errores y encabezados).
+    /// </summary>
+    public static MarketApiFactory CreateOffline(Action<IServiceCollection> configureServices, IReadOnlyDictionary<string, string?>? overrides = null)
+    {
+        ArgumentNullException.ThrowIfNull(configureServices);
+        var values = new Dictionary<string, string?>
+        {
+            ["ConnectionStrings:KnockMongo"] = "mongodb://127.0.0.1:1/?serverSelectionTimeoutMS=500",
+            ["ConnectionStrings:KnockRedis"] = GatewayTestSupport.DummyRedisConnectionString,
+            ["Mongo:Databases:Catalog"] = "market_offline",
+            ["Mongo:Databases:Requests"] = "market_offline",
+        };
+        return new MarketApiFactory(Merge(values, overrides)) { ExtraServices = configureServices };
+    }
+
+    private static Dictionary<string, string?> Merge(Dictionary<string, string?> values, IReadOnlyDictionary<string, string?>? overrides)
+    {
         foreach (var (key, value) in overrides ?? new Dictionary<string, string?>())
         {
             values[key] = value;
         }
 
-        var factory = new MarketApiFactory(values) { ExtraServices = configureServices };
-        await EnsureRequestsIndexesAsync(factory.Database);
-        return factory;
+        return values;
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -102,6 +124,17 @@ internal sealed class MarketApiFactory(IReadOnlyDictionary<string, string?> sett
             Index("solicitudId_1_tecnicoId_1", new BsonDocument { ["solicitudId"] = 1, ["tecnicoId"] = 1 }, unique: true),
             Index("solicitudId_1_estado_1_creadoEn_1", new BsonDocument { ["solicitudId"] = 1, ["estado"] = 1, ["creadoEn"] = 1 }),
             Index("tecnicoUsuarioId_1_creadoEn_-1", new BsonDocument { ["tecnicoUsuarioId"] = 1, ["creadoEn"] = -1 }),
+        ]);
+        // Spec 021 (db/022-visitas.js): una cita por solicitud.
+        await database.GetCollection<BsonDocument>("visitas").Indexes.CreateManyAsync(
+        [
+            Index("solicitudId_1", new BsonDocument { ["solicitudId"] = 1 }, unique: true),
+            Index("clienteId_1_dia_1", new BsonDocument { ["clienteId"] = 1, ["dia"] = 1 }),
+            Index("tecnicoUsuarioId_1_dia_1", new BsonDocument { ["tecnicoUsuarioId"] = 1, ["dia"] = 1 }),
+            Index("estado_1_dia_1", new BsonDocument { ["estado"] = 1, ["dia"] = 1 }),
+            // Spec 022 (db/024-visitas-llegada.js).
+            Index("estado_1_codigoVenceEn_1", new BsonDocument { ["estado"] = 1, ["codigoVenceEn"] = 1 }),
+            Index("tecnicoUsuarioId_1_estado_1_dia_1", new BsonDocument { ["tecnicoUsuarioId"] = 1, ["estado"] = 1, ["dia"] = 1 }),
         ]);
     }
 

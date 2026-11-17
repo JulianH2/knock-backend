@@ -11,6 +11,7 @@ internal static class KnockApplicationExtensions
             .AddKnockLogging(builder.Configuration)
             .AddControllers(options => options.Filters.Add<ValidationFilter>())
             .AddInternalControllers();
+        builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, MarketJsonSerializerContext.Default));
         builder.AddKnockSecurity();
         builder.Services
             .AddKnockProblemDetails()
@@ -22,7 +23,7 @@ internal static class KnockApplicationExtensions
             .AddKnockOpenApi()
             .AddKnockHealth()
             .AddKnockMongo()
-            .AddKnockModules()
+            .AddKnockModules(builder.Configuration, builder.Environment.IsDevelopment())
             .AddKnockObservability(builder.Configuration, builder.Environment);
         return builder;
     }
@@ -48,9 +49,19 @@ internal static class KnockApplicationExtensions
         }
 
         app.UseMiddleware<CorsMiddleware>();
+        app.Use(async (context, next) =>
+        {
+            if (context.Request.Path.Equals("/api/v1/zonas/lista-espera", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.Headers.CacheControl = "private, no-store";
+            }
+
+            await next(context);
+        });
+        app.UseAuthentication();
         app.UseRateLimiter();
         app.UseMiddleware<RequestBodyLimitMiddleware>();
-        app.UseAuthentication();
+        app.UseMiddleware<JsonCompressionMiddleware>();
         app.UseAuthorization();
         app.MapKnockHealth();
         app.MapKnockOpenApi(app.Environment);

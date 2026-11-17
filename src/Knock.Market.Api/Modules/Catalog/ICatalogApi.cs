@@ -23,4 +23,17 @@ public interface ICatalogApi
     /// </summary>
     /// <exception cref="ArgumentException"><paramref name="coloniaId"/> no son 24 hexadecimales o <paramref name="cp"/> no son 5 dígitos; se lanza antes de consultar.</exception>
     Task<bool> NeighborhoodExistsAsync(string coloniaId, string cp, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Oficio activo con esa <paramref name="clave"/>: su nombre y su modalidad (<c>domicilio</c> o <c>taller</c>), o <see langword="null"/> si no existe o no está
+    /// activo. Solo lectura; lo usa Requests para validar la solicitud (spec 020, R-02).
+    /// </summary>
+    /// <exception cref="ArgumentException">Clave vacía o de más de 16 caracteres; se lanza antes de consultar.</exception>
+    Task<(string Nombre, string Modalidad)?> FindActiveTradeAsync(string clave, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Nombre y código postal de la colonia <paramref name="coloniaId"/>, o <see langword="null"/> si no existe. Solo lectura; lo usa Requests (spec 020, R-02).
+    /// </summary>
+    /// <exception cref="ArgumentException"><paramref name="coloniaId"/> no son 24 hexadecimales; se lanza antes de consultar.</exception>
+    Task<(string Nombre, string Cp)?> FindNeighborhoodAsync(string coloniaId, CancellationToken cancellationToken);
 }

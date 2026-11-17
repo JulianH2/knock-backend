@@ -73,7 +73,7 @@ docker compose up
 | Agente | Para qué | Archivo |
 |---|---|---|
 | `api-builder` | Implementa la capa [Back] de un issue aprobado de knock-backend (contrato, dominio, servicio, controller, eventos y pruebas) dentro de su módulo, siguiendo story-workflow. | `.agents/agents/api-builder.md` |
-| `db-builder` | Implementa la capa [BD] de un issue aprobado de knock-backend (modelo, migraciones EF Core, semillas, catálogo SEPOMEX/PostGIS, scripts y respaldos) con sus pruebas de base de datos. | `.agents/agents/db-builder.md` |
+| `db-builder` | Implementa la capa [BD] de un issue aprobado de knock-backend (modelo, colecciones e índices, semillas, catálogo SEPOMEX con GeoJSON, scripts y respaldos) con sus pruebas de base de datos. | `.agents/agents/db-builder.md` |
 | `docs-keeper` | Mantiene vivos los Markdown de Knock (README, docs, índice de specs y Memoria) al cerrar un issue, sin tocar código. | `.agents/agents/docs-keeper.md` |
 | `security-reviewer` | Audita sin editar la seguridad y privacidad del cambio de un issue de Knock (OWASP Top 10 y API Top 10, amenazas de la spec, datos sensibles, cadena de suministro) y entrega PASS/FAIL; un FAIL bloquea. | `.agents/agents/security-reviewer.md` |
 | `spec-writer` | Refina el borrador de spec de un issue de Knock (HU, TT o BUG) - clave de Jira, verificación por caso, alcance por capa, contrato, amenazas y plan de pruebas - sin tocar código. Úsalo antes de implementar. | `.agents/agents/spec-writer.md` |
@@ -82,7 +82,7 @@ docker compose up
 | Regla | Aplica a | Archivo |
 |---|---|---|
 | `backend-csharp` | `src/**/*.cs`, `src/**/*.csproj` | `.agents/rules/backend-csharp.md` |
-| `database` | `db/**`, `src/**/Migrations/**`, `src/**/Data/**` | `.agents/rules/database.md` |
+| `database` | `db/**`, `src/**/Data/**` | `.agents/rules/database.md` |
 | `specs` | `specs/**` | `.agents/rules/specs.md` |
 | `tests-backend` | `tests/**` | `.agents/rules/tests-backend.md` |
 <!-- skills-index:end -->
