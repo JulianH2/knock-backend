@@ -103,3 +103,13 @@ rules:
     paths:
       include: ["src/**/Modules/**"]
     pattern: await Task.Delay(TimeSpan.$F(...), ...)
+
+  - id: knock-no-registrar-codigo-visita
+    languages: [csharp]
+    severity: ERROR
+    message: El código de visita (en claro o cifrado) nunca se registra ni va en una plantilla de registro (spec 022, R-14 y R-15). Registra solo conteos y códigos de error.
+    paths:
+      include: ["src/**"]
+    pattern-either:
+      - pattern-regex: (?s)\b_?(?:[Ll]og(?:ger)?\w*|Log)\s*\.\s*(?:Log(?:Trace|Debug|Information|Warning|Error|Critical)?|Verbose|Debug|Information|Warning|Error|Fatal)\s*\([^;]*?\b(?:codigo|Codigo|codigoCifrado|CodigoCifrado|EncryptedCode|plainCode|PlainCode)\b
+      - pattern-regex: (?s)\bLoggerMessage\s*\.\s*Define[^;]*?\{(?:codigo|Codigo|codigoCifrado|CodigoCifrado|EncryptedCode)\}

@@ -13,4 +13,12 @@ internal static class RequestErrorCodes
     public const string ContentRejectedCode = "content_rejected";
     public const string ModerationUnavailableCode = "moderation_unavailable";
     public const string InvalidCursorCode = "invalid_cursor";
+
+    // Comparar y elegir cotización (spec 021, §5).
+    public const string RequestAlreadyChosenCode = "request_already_chosen";
+    public const string RequestExpiredCode = "request_expired";
+    public const string RequestCancelledCode = "request_cancelled";
+    public const string RequestWithoutQuotesCode = "request_without_quotes";
+    public const string QuoteUnavailableCode = "quote_unavailable";
+    public const string ServiceUnavailableCode = "service_unavailable";
 }

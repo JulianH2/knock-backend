@@ -18,6 +18,10 @@ public static class RequestsModuleExtensions
     public static IServiceCollection AddRequestsModule(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        services.AddOptions<OleadasOptions>()
+            .BindConfiguration(OleadasOptions.SectionName)
+            .Validate(options => options.IsValid(), "Oleadas values must be positive and MejorOrdenados + 2 must not exceed TamanoOleada.")
+            .ValidateOnStart();
         services.AddOptions<QuotePricingOptions>().BindConfiguration(QuotePricingOptions.SectionName);
         services.AddKnockMongoDatabase(ModuleKey);
         services.AddSingleton(TimeProvider.System);
@@ -35,9 +39,19 @@ public static class RequestsModuleExtensions
         services.TryAddScoped<IRequestPhotos, UnavailableRequestPhotos>();
         services.TryAddSingleton<IContentModerator, UnavailableContentModerator>();
         services.AddScoped<SolicitudService>();
+        services.AddSingleton<VisitCodeFactory>();
+        services.AddScoped<ChoiceStore>();
+        services.AddScoped<QuoteComparisonService>();
+        services.AddScoped<ChooseQuoteService>();
+        services.AddScoped<VisitStore>();
+        services.AddScoped<VisitService>();
+        services.AddScoped<ArrivalService>();
+        services.AddScoped<TrustNoticeService>();
         services.AddScoped<IRequestsApi, RequestsApi>();
         services.AddScoped<DemoTechnicianStore>();
         services.AddScoped<DemoTechnicianSeeder>();
+        services.AddScoped<DemoRequestStore>();
+        services.AddScoped<DemoRequestSeeder>();
         services.AddHostedService<DemoTechnicianStartup>();
         return services;
     }
