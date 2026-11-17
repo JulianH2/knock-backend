@@ -1,6 +1,6 @@
 {
   "repo": "knock-backend",
-  "layer_scope": "base de datos (migraciones, semillas y scripts) y API (módulo, endpoints, eventos) con sus pruebas",
+  "layer_scope": "base de datos (colecciones, índices, semillas y scripts) y API (módulo, endpoints, eventos) con sus pruebas",
   "code_dirs": ["src/**", "db/**"],
   "generated": [],
   "protected": ["docs/openapi.v1.json", "tests/**/Fixtures/**"],
