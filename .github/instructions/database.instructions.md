@@ -1,5 +1,5 @@
 ---
-applyTo: 'db/**,src/**/Migrations/**,src/**/Data/**'
+applyTo: 'db/**,src/**/Data/**'
 ---
 <!-- GENERADO por scripts/sync_agents.py desde .agents/rules/database.md. No editar a mano. -->
 # Reglas de base de datos

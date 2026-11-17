@@ -1,7 +1,6 @@
 ---
 paths:
   - 'db/**'
-  - 'src/**/Migrations/**'
   - 'src/**/Data/**'
 ---
 <!-- GENERADO por scripts/sync_agents.py desde .agents/rules/database.md. No editar a mano. -->
