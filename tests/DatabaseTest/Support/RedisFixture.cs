@@ -44,6 +44,8 @@ internal sealed class RedisFixture : IAsyncDisposable
         return fixture;
     }
 
+    public Task StopAsync() => _container.StopAsync();
+
     /// <summary>IP interna del contenedor en la red de Docker: para otro contenedor (por ejemplo, las herramientas de entrega de CA_010_02).</summary>
     public string ContainerInternalHost => _container.IpAddress;
 
