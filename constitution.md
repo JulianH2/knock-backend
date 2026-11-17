@@ -1,5 +1,5 @@
 ---
-version: 1.1.0
+version: 1.2.0
 status: borrador
 methodology: SDD (Spec Driven Development)
 applies_to: knock-backend
@@ -52,6 +52,7 @@ No se agregan dependencias sin evaluar necesidad, licencia, mantenimiento y vuln
 - **Por qué tres servicios:** usar microservicios es un requerimiento; un solo programa obliga a desplegar todo junto y un error en una parte puede tirar las demás; ocho servicios (uno por módulo) no caben en un equipo de cuatro personas ni en el costo cero. Tres agrupan los módulos que cambian juntos.
 - **Cada servicio es dueño de lo suyo:** tiene su base lógica, su imagen de contenedor, su módulo de infraestructura y su despliegue. Ningún servicio lee la base de datos de otro: se piden lo que necesitan por la interfaz pública del otro servicio.
 - **Contratos compartidos sin lógica:** una biblioteca solo con tipos y contratos describe lo que los servicios se intercambian, para no acoplarlos.
+- **Biblioteca técnica compartida:** `Knock.Hosting` reúne solo piezas técnicas de arranque y de la tubería HTTP que se repetían en los servicios y el gateway: encabezados reenviados, redacción y formato de registros, observabilidad, límite de peticiones, clientes de MongoDB y Redis, salud, encabezados de seguridad, respuestas de error y compresión. No lleva reglas de negocio, entidades, DTO ni colecciones de ningún módulo, y no conoce a ningún servicio ni a `Knock.Contracts`. Cada servicio la configura con sus propias opciones y se sigue construyendo y desplegando por separado. La spec 055 fija qué puede entrar y en qué orden: agregar algo fuera de esa lista requiere cambiar esa spec. Las pruebas de arquitectura verifican estas fronteras.
 - **Capas dentro de cada servicio:** `Controllers` (reciben, validan y responden) → `Services` (reglas de negocio y coordinación) → `Domain` (entidades y sus reglas) → `Data` (MongoDB y Redis). Cada función se construye de punta a punta (rebanada vertical) y los módulos tienen fronteras que las pruebas de arquitectura verifican.
 - **Sin estado en el proceso:** nada de negocio vive en la memoria de una copia; lo compartido vive en MongoDB o en Redis, de modo que el servicio puede correr en varias copias.
 - **Eventos fiables:** un cambio importante guarda su aviso en la misma operación (colección `outbox`) y un proceso de fondo lo entrega, para que no se pierda ni se avise algo que no ocurrió.
@@ -65,6 +66,7 @@ src/
   Knock.Messaging.Api/        servicio Mensajería y notificaciones
   Knock.Market.Api/           servicio Mercado (incluye el módulo Asistente)
   Knock.Contracts/            solo tipos y contratos, sin lógica
+  Knock.Hosting/              piezas técnicas compartidas, sin lógica de negocio (spec 055)
   cada servicio: Modules/<Modulo>/{Controllers,Dtos,Validators,Services,Domain,Data,Events}
                  + Common/, Hosting/, Middleware/
 tests/                        UnitTest, IntegrationTest, SecurityTest, ContractTest, DatabaseTest, MutationTest y PerformanceTest

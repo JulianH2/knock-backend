@@ -59,6 +59,7 @@ Cada carpeta tiene `spec.md`, `plan.md` y `task.md`. Estados: Borrador → Aprob
 | 052 | Asistente de IA: resumen de chat, borrador de cotización, rango de precio y bitácora | Aprobada | [`052-asistente-de-ia`](052-asistente-de-ia/spec.md) |
 | 053 | Panel de revisión: verificaciones de identidad y reportes | Aprobada | [`053-panel-de-revision`](053-panel-de-revision/spec.md) |
 | 054 | Bandeja de salida y tareas programadas (INT-01) | Aprobada | [`054-bandeja-de-salida-y-tareas-programadas`](054-bandeja-de-salida-y-tareas-programadas/spec.md) |
+| 055 | Biblioteca técnica compartida `Knock.Hosting` (KNOCK-251) | Borrador | [`055-biblioteca-tecnica-compartida`](055-biblioteca-tecnica-compartida/spec.md) |
 | BUG-002 | Falta Strict-Transport-Security en el gateway (KNOCK-239) | Implementada | [`BUG-002-falta-strict-transport-security-en-el-gateway`](BUG-002-falta-strict-transport-security-en-el-gateway/spec.md) |
 | BUG-003 | El gateway y Mensajería exponen `Server: Kestrel` (KNOCK-240) | Implementada | [`BUG-003-el-gateway-expone-el-encabezado-server`](BUG-003-el-gateway-expone-el-encabezado-server/spec.md) |
 | BUG-004 | Mensajería sin JWT, encabezados ni límite propios (KNOCK-241) | Implementada | [`BUG-004-mensajeria-sin-jwt-encabezados-ni-limite`](BUG-004-mensajeria-sin-jwt-encabezados-ni-limite/spec.md) |

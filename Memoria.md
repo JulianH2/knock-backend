@@ -1,5 +1,11 @@
 # Memoria — knock-backend
 
+## 2026-11-16 — Spec 055 y enmienda 1.2.0 de la constitución: biblioteca técnica compartida (KNOCK-251)
+- **Decisión:** se redacta en Borrador la spec 055 (`Knock.Hosting`) con la enmienda a la constitución (§4 y estructura del repositorio; versión 1.1.0 → 1.2.0) que permite una biblioteca técnica compartida, como pide EXC-008 («su spec y el cambio de la constitución que la permita»). La spec cubre la biblioteca completa por etapas: la 1 (KNOCK-251) mueve los encabezados reenviados y el redactor de registros y retira EXC-020; la 2 mueve el límite de peticiones (después de KNOCK-247) y retira EXC-025; la 3 mueve el resto del catálogo y retira EXC-007, EXC-008, EXC-015, EXC-016, EXC-018 y EXC-021.
+- **Porqué:** la constitución 1.1.0 solo permitía compartir `Knock.Contracts` sin lógica, y había 9 excepciones vivas de jscpd y codemap por copias de `Hosting/`. El Tech Lead pidió el 2026-11-16 que la spec cubra la biblioteca completa, incluido luego el limitador, y que la apruebe él antes de escribir código.
+- **Pendiente:** la aprobación del Tech Lead; la enmienda necesita la de dos integrantes (§11). También hay que crear las tarjetas de las etapas 2 y 3 y decidir cómo se renuevan las excepciones que vencen el 2026-12-04 y el 2026-12-15. Los cambios de `ci-pr.yml`, `ci-deploy.yml` y `CODEOWNERS` son de una persona.
+- **A evitar:** escribir código de la biblioteca antes de que la spec esté Aprobada y la enmienda fusionada; cambiar el comportamiento de una pieza en el mismo PR que la mueve.
+
 ## 2026-11-14 — KNOCK-246: correcciones de CI del contenedor y pruebas demo
 - **Cambios:** el Dockerfile de Market copia únicamente `tecnicos.json` antes de publicar, siguiendo el patrón de Identity; el csproj ya lo incluía. La prueba de guarda construye la URI con credenciales sintéticas mediante `MongoUrlBuilder`, sin excepciones nuevas.
 - **Verificación:** `docker build -f src/Knock.Market.Api/Dockerfile .` pasó tras actualizar la imagen SDK local; en `/app/db` solo está la semilla de técnicos y no se hallaron archivos con nombres habituales de credenciales. Pruebas Demo: 10 unitarias y 51 de base aprobadas; formato correcto. La traza 020 mantiene 13 criterios pendientes de otras tareas.
