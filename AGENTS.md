@@ -82,7 +82,7 @@ docker compose up
 | Regla | Aplica a | Archivo |
 |---|---|---|
 | `backend-csharp` | `src/**/*.cs`, `src/**/*.csproj` | `.agents/rules/backend-csharp.md` |
-| `database` | `db/**`, `src/**/Migrations/**`, `src/**/Data/**` | `.agents/rules/database.md` |
+| `database` | `db/**`, `src/**/Data/**` | `.agents/rules/database.md` |
 | `specs` | `specs/**` | `.agents/rules/specs.md` |
 | `tests-backend` | `tests/**` | `.agents/rules/tests-backend.md` |
 <!-- skills-index:end -->

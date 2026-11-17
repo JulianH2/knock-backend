@@ -1,7 +1,7 @@
 ---
 name: database
-description: Reglas al editar migraciones, semillas y scripts de base de datos de Knock
-paths: ["db/**", "src/**/Migrations/**", "src/**/Data/**"]
+description: Reglas al editar semillas, índices y scripts de base de datos de Knock
+paths: ["db/**", "src/**/Data/**"]
 ---
 
 # Reglas de base de datos
