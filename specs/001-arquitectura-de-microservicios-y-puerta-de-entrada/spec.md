@@ -19,10 +19,10 @@ Definir el tipo de arquitectura del backend: qué servicios existen, qué respon
 - Infraestructura en la nube (spec 005).
 
 ## 3. Requisitos
-- **R-01:** Existen cuatro proyectos desplegables: gateway, Identidad y confianza, Mensajería y notificaciones y Mercado, más una biblioteca de contratos.
+- **R-01:** Existen cuatro proyectos desplegables: gateway, Identidad y confianza, Mensajería y notificaciones y Mercado, más dos bibliotecas compartidas que no se despliegan: la de contratos (`Knock.Contracts`) y la técnica (`Knock.Hosting`, spec 055).
 - **R-02:** Los servicios internos no tienen dirección pública; solo el gateway recibe tráfico externo.
 - **R-03:** Ningún servicio accede a la base de datos de otro; se comunican por su interfaz pública (REST) o por eventos.
-- **R-04:** La biblioteca de contratos solo contiene tipos y contratos, sin lógica de negocio.
+- **R-04:** Ninguna biblioteca compartida tiene lógica de negocio. La de contratos solo contiene tipos y contratos. La técnica solo contiene las piezas de arranque y de la tubería HTTP del catálogo cerrado de la spec 055 (constitución 1.2.0, §4).
 - **R-05:** Todo servicio genera o reenvía `X-Correlation-Id` y lo escribe en sus registros.
 - **R-06:** Cada servicio se construye, prueba y despliega por separado.
 - **R-07:** El módulo Asistente vive dentro del servicio Mercado.
@@ -57,6 +57,7 @@ No expone endpoints de negocio. Interfaces que fija: el gateway como única entr
 - **Tres servicios y no un solo programa:** usar microservicios es un requerimiento y un solo programa obliga a desplegar todo junto; un fallo en el chat no debe tirar las cotizaciones.
 - **Tres servicios y no ocho:** ocho significan ocho pipelines y diez o más contenedores, lo que no cabe en un equipo de cuatro personas ni en el costo cero.
 - **Una sola puerta de entrada:** cada servicio expuesto es una puerta más que defender; con una sola entrada, la seguridad, el límite de peticiones y el registro se aplican en un único punto.
+- **Biblioteca técnica además de la de contratos (2026-11-16, KNOCK-251):** las piezas técnicas copiadas entre los servicios y el gateway se mueven a `Knock.Hosting` para corregirlas una sola vez. Los contratos siguen siendo solo tipos; la spec 055 fija el catálogo y las pruebas de frontera.
 - **Plan de emergencia:** si el tiempo se acaba, Mensajería y Mercado pueden unirse y quedarían dos servicios.
 
 ## 9. Riesgos y dudas abiertas

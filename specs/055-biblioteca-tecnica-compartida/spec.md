@@ -1,20 +1,20 @@
 # Spec 055 — Biblioteca técnica compartida (`Knock.Hosting`)
 
 > **Estado:** Borrador · **Repositorio:** knock-backend · **Rector:** `constitution.md` (requiere la enmienda 1.2.0 de este mismo cambio)
-> **Clave de trabajo:** KNOCK-251 (TT-API-12 · Mover ForwardedHeadersExtensions y el redactor de registros a una biblioteca compartida). Las etapas 2 y 3 llevan su propia tarjeta (por crear).
+> **Clave de trabajo:** KNOCK-251 (TT-API-12 · Mover ForwardedHeadersExtensions y el redactor de registros a una biblioteca compartida). La etapa 2 es KNOCK-280 y la etapa 3 lleva su propia tarjeta.
 > **Servicio:** gateway y los tres servicios (`Hosting/`); nueva biblioteca `src/Knock.Hosting` · **Colecciones:** ninguna
-> **Sprint:** etapa 1 en Sprint 4 o Sprint 5, según decida el Tech Lead; etapas 2 y 3 en Sprint 5 · **Responsable sugerido:** Erick (etapa 1, como asigna Jira)
+> **Sprint:** etapa 1 según decida el Tech Lead; etapa 2 (KNOCK-280) en Sprint 6; etapa 3 según su tarjeta · **Responsable:** Erick (etapas 1 y 2, como asigna Jira)
 
 ## 1. Objetivo
-Tener una sola implementación de cada pieza técnica que hoy se copia entre el gateway y los tres servicios, para que un arreglo de seguridad o de privacidad se haga una vez y llegue a todos. Hoy hay 9 excepciones de jscpd y codemap vivas por esas copias (EXC-007, EXC-008, EXC-015, EXC-016, EXC-018, EXC-020, EXC-021 y EXC-025). Cuatro vencen el 2026-12-04 y dos el 2026-12-15. Además, el mismo cambio se tiene que repetir en cuatro archivos, como pasó con la redacción de consultas de la spec 035.
+Tener una sola implementación de cada pieza técnica que hoy se copia entre el gateway y los tres servicios, para que un arreglo de seguridad o de privacidad se haga una vez y llegue a todos. Hoy hay 8 excepciones de jscpd y codemap vivas por esas copias (EXC-007, EXC-008, EXC-015, EXC-016, EXC-018, EXC-020, EXC-021 y EXC-025). Tres vencen el 2026-12-04 (EXC-015, EXC-016 y EXC-018), dos el 2026-12-15 (EXC-020 y EXC-021), dos el 2027-02-02 (EXC-007 y EXC-008) y una el 2027-02-13 (EXC-025). Además, el mismo cambio se tiene que repetir en cuatro archivos, como pasó con la redacción de consultas de la spec 035.
 
 La constitución 1.1.0 solo permite compartir `Knock.Contracts`, «solo tipos y contratos, sin lógica», y EXC-008 pide «su spec y el cambio de la constitución que la permita». Esta spec es esa spec y trae la enmienda: define qué puede entrar en la biblioteca y qué no, cómo se prueba que sigue siendo técnica, y en qué orden se mueven las piezas.
 
 ## 2. Historias y alcance
 **2.1 Historias**
-- **TT-API-12 (KNOCK-251), etapa 1:** crear `Knock.Hosting`, mover `ForwardedHeadersExtensions` (y su equivalente del gateway) y el redactor de registros (`TelemetryRedactor`, `RedactingJsonFormatter` y sus procesadores), y retirar EXC-020. *Terminada cuando:* la constitución permite la biblioteca, existe una sola implementación de cada pieza, los cuatro proyectos la usan, jscpd no reporta esos clones, EXC-020 está retirada, EXC-007 ya no cubre `TelemetryRedactor` y siguen pasando las pruebas de las specs 006, 011, 035 y BUG-005.
-- **Etapa 2 (tarjeta por crear, sigue a KNOCK-247):** mover el límite de peticiones (`SharedRateLimiter`, `RedisRequestCounter`, `RateLimitingExtensions`) y retirar EXC-025. *Terminada cuando:* hay un solo limitador, el límite compartido entre copias de la spec 006 (R-05) y los valores de la spec 009 no cambian, y EXC-025 está retirada.
-- **Etapa 3 (tarjeta por crear):** mover el resto del catálogo de §3.2 y retirar EXC-007, EXC-008, EXC-015, EXC-016, EXC-018 y EXC-021. *Terminada cuando:* no queda ninguna copia de una pieza del catálogo en un servicio ni ninguna de esas excepciones.
+- **TT-API-12 (KNOCK-251), etapa 1:** crear `Knock.Hosting`, mover `ForwardedHeadersExtensions` de los tres servicios y su equivalente del gateway (`AddKnockGatewayForwardedHeaders`) y el redactor de registros (`TelemetryRedactor`, `RedactingJsonFormatter` y sus procesadores), y retirar EXC-020. *Terminada cuando:* la constitución permite la biblioteca, existe una sola implementación de cada pieza, los cuatro proyectos la usan, jscpd no reporta esos clones, EXC-020 está retirada, EXC-007 ya no cubre `TelemetryRedactor` y siguen pasando las pruebas de las specs 006, 011, 035 y BUG-005.
+- **Etapa 2 (KNOCK-280, sigue a KNOCK-247):** mover el límite de peticiones (`SharedRateLimiter`, `RedisRequestCounter`, `RateLimitingExtensions`) y retirar EXC-025. *Terminada cuando:* hay un solo limitador, el límite compartido entre copias de la spec 006 (R-05) y los valores de la spec 009 no cambian, y EXC-025 está retirada.
+- **Etapa 3 (tarjeta propia, ver §8):** mover el resto del catálogo de §3.2 y retirar EXC-007, EXC-008, EXC-015, EXC-016, EXC-018 y EXC-021. *Terminada cuando:* no queda ninguna copia de una pieza del catálogo en un servicio ni ninguna de esas excepciones.
 
 **2.2 Dentro**
 - La enmienda a la constitución (§4 y estructura del repositorio) y su número de versión.
@@ -43,10 +43,11 @@ La constitución 1.1.0 solo permite compartir `Knock.Contracts`, «solo tipos y 
   - no contiene DTO de una API.
 
   Solo hace arranque, tubería HTTP, registro, observabilidad, límites, acceso técnico a datos (clientes y salud, nunca consultas de negocio) y seguridad transversal.
-- **R-04:** Solo entran las piezas del catálogo de §3.2. Agregar una pieza fuera del catálogo requiere cambiar esta spec, y el cambio lo aprueba el Tech Lead.
+- **R-04:** Solo entran las piezas del catálogo de §3.2. Agregar una pieza fuera del catálogo requiere cambiar esta spec con las mismas aprobaciones que una enmienda de la constitución (§11: dos integrantes) y una entrada en `Memoria.md`.
 - **R-05:** Cada pieza se configura por opciones o parámetros: nombre del servicio, categoría por defecto del registro, ruta de salud y nombres de las secciones de configuración. Nunca se pregunta en código qué servicio la usa. Las secciones de configuración conservan el nombre que tienen hoy (`ForwardedHeaders`, `Serilog`, `Observability`, `RateLimiting`…), para que no cambien `appsettings*.json` ni las variables de Terraform.
 - **R-06:** La biblioteca expone como `public` solo lo que un proyecto consumidor llama. Lo demás queda `internal`, y las pruebas lo ven con `InternalsVisibleTo` hacia `Knock.UnitTest`, `Knock.IntegrationTest` y `Knock.SecurityTest`.
-- **R-07:** Las dependencias NuGet de la biblioteca son solo las que ya usan los servicios para esas piezas, con la misma versión: Serilog, `Serilog.Formatting.Compact` y OpenTelemetry en la etapa 1, y StackExchange.Redis y MongoDB.Driver en las etapas 2 y 3. Se compila con `packages.lock.json` y `--locked-mode`. Si se agrega una dependencia nueva, se registra en `Memoria.md`.
+- **R-07:** Las dependencias NuGet de la biblioteca son solo las que ya usan los servicios para esas piezas, con la misma versión: Serilog (`Serilog.AspNetCore`) y OpenTelemetry en la etapa 1, StackExchange.Redis en la etapa 2, y MongoDB.Driver solo en `Knock.Hosting.Data`, en la etapa 3 (R-07a). Se compila con `packages.lock.json` y `--locked-mode`. Si se agrega una dependencia nueva, se registra en `Memoria.md`.
+- **R-07a:** El gateway no carga MongoDB.Driver, porque no tiene base de datos, y `Knock.Hosting` no lo referencia. En la etapa 3, la parte de MongoDB (`MongoExtensions`, la salud de MongoDB y la parte técnica de `DataExtensions`) va a `src/Knock.Hosting.Data`, que referencia a `Knock.Hosting` y a MongoDB.Driver y que solo usan los tres servicios. `Knock.Hosting.Data` cumple R-01 a R-06 igual que `Knock.Hosting`.
 
 **3.2 Catálogo cerrado y etapas**
 
@@ -56,7 +57,7 @@ La constitución 1.1.0 solo permite compartir `Knock.Contracts`, «solo tipos y 
 | `TelemetryRedactor`, `CoordinatePairs`, `TelemetryRedactionProcessor`, `LogRedactionProcessor`, `RedactingJsonFormatter` (`Hosting/TelemetryRedactor.cs`) | 4 | EXC-007 (solo `TelemetryRedactor.cs`) y la cuarta copia de BUG-005 | 1 |
 | `SharedRateLimiter`, `RedisRequestCounter`, `RateLimitingExtensions` | 3 a 4 | EXC-025 y la parte de EXC-021 | 2 |
 | `LoggingExtensions`, `ObservabilityExtensions` | 4 | resto de EXC-007 | 3 |
-| `MongoExtensions`, `RedisExtensions`, `HealthExtensions`, `DataExtensions` (solo la parte técnica) | 3 a 4 | EXC-008 y la parte de EXC-021 | 3 |
+| `RedisExtensions` y `HealthExtensions` (en `Knock.Hosting`); `MongoExtensions` y la parte técnica de `DataExtensions` (en `Knock.Hosting.Data`, R-07a) | 3 a 4 | EXC-008 y la parte de EXC-021 | 3 |
 | `SecurityHeadersMiddleware`, `HstsExtensions`, `ProblemResponses`, `CorsExtensions`/`CorsMiddleware`, `RequestBodyLimitMiddleware`, `JwtSettings` y los parámetros de validación del JWT de `AuthenticationExtensions` | 2 a 4 | EXC-016, la parte de EXC-021 y la parte de EXC-015 | 3 |
 | `JsonCompressionMiddleware` y la validación de opciones de caché | 2 | EXC-018 | 3 |
 | El resto de `Common/` y `Hosting/` de Identity copiado de Market (versionado de la API, validación, ProblemDetails, OpenAPI y manejo de excepciones de dominio) | 2 | EXC-015 | 3 |
@@ -77,8 +78,9 @@ La constitución 1.1.0 solo permite compartir `Knock.Contracts`, «solo tipos y 
 **3.4 Compilación, imágenes, CI y versiones**
 - **R-14:** Cada `Dockerfile` del gateway y de los tres servicios copia `src/Knock.Hosting/Knock.Hosting.csproj` y su `packages.lock.json` antes del `restore`, y la carpeta completa antes del `publish`, igual que hace hoy con `Knock.Contracts`. La imagen se sigue construyendo sola, sin depender de otra imagen.
 - **R-15:** En `ci-pr.yml` y `ci-deploy.yml`, la expresión `SHARED` incluye `^src/Knock\.Hosting/`, de modo que un cambio en la biblioteca construye, prueba y despliega los cuatro componentes. `CODEOWNERS` agrega `/src/Knock.Hosting/` con quien decida el Tech Lead. Son archivos protegidos: el cambio lo hace o lo autoriza una persona.
-- **R-16:** Un PR que cambia `src/Knock.Hosting` declara puntos (`puntos-<componente>-N`, spec 012) para cada componente cuyo comportamiento cambia. Un PR que solo mueve una pieza sin cambiar su comportamiento, como la etapa 1, declara `puntos-<componente>-0` para cada componente que reconstruye.
+- **R-16:** Un PR que cambia `src/Knock.Hosting` declara puntos (`puntos-<componente>-N`, spec 012) para cada componente afectado, con al menos `-1` por componente, aunque solo mueva código sin cambiar su comportamiento.
 - **R-17:** Cada servicio sigue construyéndose, probándose y desplegándose por separado (spec 001, R-06). La biblioteca no tiene imagen, despliegue ni configuración propios.
+- **R-18:** El PR de la etapa 1 agrega `**/Knock.Hosting/**/*.cs` a `mutate` de `stryker-config.json`, y el de la etapa 3 agrega `**/Knock.Hosting.Data/**/*.cs`, para que el código movido siga dentro de la meta de mutación de la spec 008.
 
 ## 4. Criterios de aceptación
 - **CA-01:** Dado `Knock.Hosting`, cuando se leen sus ensamblados referenciados, entonces no aparece `Knock.Gateway`, `Knock.Identity.Api`, `Knock.Messaging.Api`, `Knock.Market.Api` ni `Knock.Contracts`.
@@ -93,6 +95,8 @@ La constitución 1.1.0 solo permite compartir `Knock.Contracts`, «solo tipos y 
 - **CA-10:** Dado un PR que solo cambia `src/Knock.Hosting`, cuando corre el job `detect`, entonces marca los cuatro componentes como cambiados.
 - **CA-11:** Dada la etapa 2 terminada, cuando corren las pruebas del límite de peticiones (spec 006 R-05 y spec 009), entonces pasan; los servicios no definen `SharedRateLimiter`, `RedisRequestCounter` ni `RateLimitingExtensions`; y EXC-025 no existe.
 - **CA-12:** Dada la etapa 3 terminada, cuando se buscan las piezas del catálogo en los servicios y las excepciones en `security/exceptions.yaml`, entonces no queda ninguna copia ni ninguna de EXC-007, EXC-008, EXC-015, EXC-016, EXC-018 y EXC-021.
+- **CA-13:** Dados `Knock.Hosting` y el gateway, cuando se leen sus ensamblados referenciados, entonces no aparece `MongoDB.Driver`.
+- **CA-14:** Dado `stryker-config.json` al terminar la etapa 1, cuando se lee `mutate`, entonces incluye `**/Knock.Hosting/**/*.cs`.
 
 **4.1 Criterio → prueba prevista**
 
@@ -110,6 +114,8 @@ La constitución 1.1.0 solo permite compartir `Knock.Contracts`, «solo tipos y 
 | CA-10 | (comando) corrida del CI de un PR de la etapa 1: salida del job `detect` con los cuatro en `true` |
 | CA-11 | `HostingLibraryBoundaryTests.Servicios_Sin_Copias_De_La_Etapa_2_CA_055_11` y las suites de límites de las specs 006 y 009 |
 | CA-12 | `HostingLibraryBoundaryTests.Servicios_Sin_Copias_Del_Catalogo_CA_055_12` y `check_exceptions.py` |
+| CA-13 | `HostingLibraryBoundaryTests.Sin_MongoDB_En_Hosting_Ni_Gateway_CA_055_13` (ArchitectureTest) |
+| CA-14 | (comando) revisión de `stryker-config.json` en el PR de la etapa 1 y corrida del job de mutación |
 
 ## 5. Contrato
 No hay endpoints nuevos ni cambios en el OpenAPI. Interfaces que fija:
@@ -121,7 +127,7 @@ No hay endpoints nuevos ni cambios en el OpenAPI. Interfaces que fija:
 | Encabezados reenviados (etapa 1) | `Knock.Hosting.ForwardedHeaders.ForwardedHeadersExtensions.AddKnockForwardedHeaders(this IServiceCollection)`; lee `ForwardedHeaders:KnownProxies` y `ForwardedHeaders:KnownNetworks` como hoy |
 | Redacción (etapa 1) | `Knock.Hosting.Logging.TelemetryRedactor` (`Redact`, `RedactAttribute`, `RedactUrl`, `ExceptionEvent`, `Placeholder`), `RedactingJsonFormatter(ITextFormatter)` y los dos procesadores de OpenTelemetry |
 | Configuración | Mismas secciones y llaves que hoy; ningún `appsettings*.json` ni variable de Terraform cambia de nombre |
-| Puntos (spec 012) | `puntos-<componente>-N` por cada componente cuyo comportamiento cambia; `-0` si solo se mueve código |
+| Puntos (spec 012) | `puntos-<componente>-N` por cada componente afectado, mínimo `-1`, también si solo se mueve código |
 
 **Códigos de error:** no hay. Un fallo de configuración sigue impidiendo arrancar, como hoy.
 
@@ -129,7 +135,7 @@ No hay endpoints nuevos ni cambios en el OpenAPI. Interfaces que fija:
 Sin colecciones, claves ni campos nuevos. No cambia ninguna configuración.
 
 ## 7. Arquitectura y componentes
-- `src/Knock.Hosting/` se organiza por tema, con una carpeta por pieza del catálogo: `ForwardedHeaders/`, `Logging/`, y después `RateLimiting/`, `Data/`, `Security/` y `Http/`. No se organiza por servicio.
+- `src/Knock.Hosting/` se organiza por tema, con una carpeta por pieza del catálogo: `ForwardedHeaders/`, `Logging/`, y después `RateLimiting/`, `Redis/`, `Security/` y `Http/`. No se organiza por servicio. La parte de MongoDB vive en `src/Knock.Hosting.Data/` (R-07a).
 - Cada servicio conserva su `Hosting/` para lo que es solo suyo. Por ejemplo, `KnockApplicationExtensions` encadena las llamadas a la biblioteca, y `ModulesExtensions`, `SecuritySettings` y `RevokedSessions` del gateway se quedan en su proyecto.
 - `LoggingExtensions` y `ObservabilityExtensions` siguen en cada servicio hasta la etapa 3, pero en la etapa 1 dejan de tener su propio redactor y usan el de la biblioteca.
 - Nueva clase `tests/ArchitectureTest/HostingLibraryBoundaryTests.cs`, con el molde de `ServiceBoundaryTests`: reglas positivas, una regla que puede fallar y la lista de piezas prohibidas en los servicios por etapa.
@@ -138,8 +144,10 @@ Sin colecciones, claves ni campos nuevos. No cambia ninguna configuración.
 
 ## 8. Dependencias
 - **Base:** specs 001 (R-04 y R-06; la enmienda amplía R-04 sin tocar R-06), 006 (encabezados reenviados y límite compartido), 011 (registro y redacción), 012 (puntos), 035 (redacción de consultas y confianza) y BUG-005 (redacción de consola en Market).
-- **Antes de empezar la etapa 1:** que el Tech Lead apruebe esta spec y la enmienda (la constitución pide la aprobación de dos integrantes). El PR #121 (spec 035 T-03) ya está en `sprint-04`, así que la etapa 1 parte de las cuatro copias con la regla de consultas.
-- **Etapa 2:** KNOCK-247 fusionada (el contador en Redis de Identity y Market, EXC-025).
+- **Antes de empezar la etapa 1:** que el Tech Lead y Alexis aprueben esta spec y la enmienda (la constitución pide la aprobación de dos integrantes). El PR #121 (spec 035 T-03) ya está en `sprint-04`, así que la etapa 1 parte de las cuatro copias con la regla de consultas.
+- **Etapa 2 (KNOCK-280, Sprint 6):** KNOCK-247 fusionada (el contador en Redis de Identity y Market, EXC-025).
+- **Etapa 3:** su propia tarjeta en Jira, relacionada con KNOCK-251 y KNOCK-280.
+- **Plan de salida de las excepciones:** el Tech Lead renueva las que vencen antes de su etapa y las liga a ella: EXC-025 y la parte de rate limiting de EXC-021 a la etapa 2 (KNOCK-280); EXC-007, EXC-008, EXC-015, EXC-016, EXC-018 y el resto de EXC-021 a la etapa 3. EXC-020 se retira en la etapa 1.
 - **Archivos protegidos:** `.github/workflows/ci-pr.yml`, `.github/workflows/ci-deploy.yml` y `.github/CODEOWNERS` (R-15) los cambia o autoriza una persona.
 - **Sin dependencias nuevas:** los paquetes de la biblioteca ya están en los servicios.
 
@@ -151,7 +159,7 @@ Sin colecciones, claves ni campos nuevos. No cambia ninguna configuración.
 | Al mover el redactor, un servicio deja de redactar y filtra datos personales en sus registros | Prueba por proyecto con datos sensibles y regresión de las specs 011, 035 y BUG-005 | CA-05, CA-06 |
 | Al mover los encabezados reenviados, un servicio confía en cualquiera y se falsifica la IP del límite | Prueba por proyecto con red de confianza, sin configuración y con red mal escrita | CA-04, CA-06 |
 | Una imagen sale sin la biblioteca o con otra versión de un paquete | `Dockerfile` con la biblioteca y `--locked-mode` | CA-09 |
-| Cadena de suministro: dependencias nuevas o versiones distintas en la biblioteca | R-07: solo los paquetes y versiones ya usados, archivo de bloqueo y auditoría de NuGet | CA-09 |
+| Cadena de suministro: dependencias nuevas o versiones distintas en la biblioteca, o el gateway carga un driver de base de datos que no usa | R-07 y R-07a: solo los paquetes y versiones ya usados, MongoDB solo en `Knock.Hosting.Data`, archivo de bloqueo y auditoría de NuGet | CA-09, CA-13 |
 | Quedan dos implementaciones de la misma pieza y una se queda sin el arreglo | R-08 y R-09, jscpd en cero y la regla de piezas prohibidas en los servicios | CA-03, CA-07, CA-11, CA-12 |
 
 ## 10. Plan de pruebas
@@ -164,7 +172,7 @@ Sin colecciones, claves ni campos nuevos. No cambia ninguna configuración.
 | Regresión | Sí | Suites de las specs 006, 011, 035 y BUG-005 sin perder casos (CA-06) |
 | Contrato | No | No cambia el OpenAPI; el job de contrato del CI comprueba que sigue igual |
 | Rendimiento | No | La prueba de tiempo del redactor (1 ms por 4 KB, `Category=Performance`) se conserva sin cambios; no hay carga nueva |
-| Mutación | Sí | El redactor y la validación de redes pasan a la biblioteca, y la configuración de Stryker la incluye para no perder la meta de la spec 008 |
+| Mutación | Sí | El redactor y la validación de redes pasan a la biblioteca, y la configuración de Stryker la incluye (R-18, CA-14) para no perder la meta de la spec 008 |
 | CI/CD | Sí | `detect` con `SHARED` (CA-10), job de contenedor (CA-09) y gates de la spec 007 |
 | Análisis estático y vulnerabilidades | Sí | jscpd y codemap en cero (CA-07), `check_exceptions.py` (CA-08), Semgrep, Gitleaks y CodeQL sin hallazgos nuevos |
 | Accesibilidad | No | No hay interfaz |
@@ -179,7 +187,7 @@ Sin colecciones, claves ni campos nuevos. No cambia ninguna configuración.
 - Alguien copia de nuevo `TelemetryRedactor` en un servicio: la regla de piezas prohibidas falla.
 
 **Errores esperados**
-- Un `Dockerfile` sin la biblioteca no compila. Un PR que solo toca la biblioteca sin puntos lo rechaza el check de etiquetas.
+- Un `Dockerfile` sin la biblioteca no compila. Un PR que solo toca la biblioteca sin puntos lo rechaza el check de etiquetas, y uno con `-0` lo rechaza la revisión (R-16).
 
 **Casos límite**
 - Otro PR cambia una copia del redactor o de los encabezados reenviados mientras la etapa 1 está abierta: la etapa 1 integra ese cambio en la implementación compartida y conserva sus pruebas.
@@ -188,7 +196,7 @@ Sin colecciones, claves ni campos nuevos. No cambia ninguna configuración.
 ## 12. Definición de terminado
 **Etapa 1 (KNOCK-251)**
 - Enmienda de la constitución fusionada (versión 1.2.0) y esta spec Aprobada antes del primer commit de código.
-- CA-01 a CA-10 con prueba o comando en verde. `python scripts/sdd_lint.py --trace 055` sin faltantes, salvo CA-11 y CA-12, que son de etapas posteriores, y los marcados «(comando)».
+- CA-01 a CA-10, CA-13 y CA-14 con prueba o comando en verde. `python scripts/sdd_lint.py --trace 055` sin faltantes, salvo CA-11 y CA-12, que son de etapas posteriores, y los marcados «(comando)».
 - EXC-020 retirada y EXC-007 acotada. `Memoria.md` con la decisión y `docs/arquitectura.md` con la biblioteca.
 - Revisión del Tech Lead y sin hallazgos de seguridad abiertos.
 
@@ -199,26 +207,30 @@ Sin colecciones, claves ni campos nuevos. No cambia ninguna configuración.
 - **Catálogo cerrado:** la biblioteca solo sirve si no acopla a los servicios; una lista explícita es más fácil de revisar que una regla general.
 - **Mover sin cambiar comportamiento:** el PR de cada etapa se revisa comparando antes y después con las mismas pruebas, y un arreglo no se esconde dentro de un movimiento.
 - **Por etapas:** la etapa 1 retira la excepción que vence antes por KNOCK-251 (EXC-020) y prueba el molde (proyecto, imágenes, CI). Las demás reutilizan el molde.
+- **Decididas por el Tech Lead (2026-11-16):**
+  - el nombre `Knock.Hosting` se queda;
+  - el gateway entra en la etapa 1 con sus encabezados reenviados, y KNOCK-251 lo dice;
+  - los puntos son al menos `-1` por servicio afectado;
+  - ampliar el catálogo pide las mismas aprobaciones que una enmienda;
+  - en la etapa 3 el gateway no carga MongoDB.Driver;
+  - la segunda aprobación de la enmienda es de Alexis.
 
 ## 14. Decisiones tomadas sin consulta
 Las tomó el agente con el criterio de la constitución. El Tech Lead puede cambiarlas antes de aprobar.
 
-1. **Nombre `Knock.Hosting`.** Coincide con la carpeta `Hosting/` de donde salen las piezas. Alternativas: `Knock.BuildingBlocks` o `Knock.Platform`.
-2. **La biblioteca no referencia `Knock.Contracts`**, aunque podría, para que cada biblioteca compartida tenga una sola razón de cambiar. Alternativa: permitir la referencia si una pieza la necesita.
-3. **El gateway entra en la etapa 1 con sus encabezados reenviados.** `AddKnockGatewayForwardedHeaders` hace lo mismo que `AddKnockForwardedHeaders` (spec 035, R-09 a R-12), aunque KNOCK-251 solo nombra la copia de Mensajería. Alternativa: dejarlo para la etapa 3 con el resto de EXC-016.
-4. **`LoggingExtensions` y `ObservabilityExtensions` esperan a la etapa 3**, porque KNOCK-251 solo nombra el redactor. Por eso EXC-007 se acota y no se retira en la etapa 1. Alternativa: moverlas en la etapa 1 y retirar EXC-007 completa.
-5. **Puntos `-0` cuando solo se mueve código**, porque el comportamiento no cambia. Alternativa: `-1` por componente reconstruido.
-6. **Las etapas 2 y 3 en esta misma spec, con tarjetas propias**, como pidió el Tech Lead («que cubra la biblioteca compartida completa, incluido luego el limitador de peticiones»). Alternativa: una spec por etapa.
+1. **La biblioteca no referencia `Knock.Contracts`**, aunque podría, para que cada biblioteca compartida tenga una sola razón de cambiar. Alternativa: permitir la referencia si una pieza la necesita.
+2. **`LoggingExtensions` y `ObservabilityExtensions` esperan a la etapa 3**, porque KNOCK-251 solo nombra el redactor. Por eso EXC-007 se acota y no se retira en la etapa 1. Alternativa: moverlas en la etapa 1 y retirar EXC-007 completa.
+3. **Las etapas 2 y 3 en esta misma spec, con tarjetas propias**, como pidió el Tech Lead («que cubra la biblioteca compartida completa, incluido luego el limitador de peticiones»). Alternativa: una spec por etapa.
+4. **La parte de MongoDB va a un proyecto aparte, `Knock.Hosting.Data` (R-07a)**, para que el gateway no cargue MongoDB.Driver. Alternativa: dejar `MongoExtensions` y `DataExtensions` copiados en los servicios y retirar EXC-008 de otra forma.
 
 ## 15. Riesgos y dudas abiertas
-- **EXC-015, EXC-016 y EXC-018 vencen el 2026-12-04, y EXC-020 y EXC-021 el 2026-12-15:** la etapa 3 difícilmente termina antes. El Tech Lead debe decidir si se renuevan, con la etapa como plan de salida, o si se adelantan piezas.
+- **Solo EXC-015, EXC-016 y EXC-018 vencen el 2026-12-04; EXC-020 y EXC-021 vencen el 2026-12-15.** La etapa 3 no termina antes. El Tech Lead las renueva ligadas a la etapa 2 o a la 3, según el plan de salida de §8. Esta spec no cambia `security/exceptions.yaml`.
 - **`Knock.Contracts` ya tiene lógica técnica** (`CorrelationIdMiddleware`, spec 001 R-05). Esta spec no la mueve. Queda para decidir si pasa a `Knock.Hosting` en la etapa 3 para que `Knock.Contracts` quede solo con tipos.
 - **Cambiar la biblioteca reconstruye y despliega los cuatro componentes.** Es el precio de una sola implementación y se mitiga con las pruebas por proyecto y los puntos por componente.
 - **Archivos protegidos (R-15):** sin el cambio de `SHARED`, un PR que solo toque la biblioteca no probaría los servicios. Debe entrar en el mismo PR de la etapa 1 o antes.
-- **Mutación:** hay que confirmar que la configuración de Stryker de la spec 008 recorre `src/Knock.Hosting`. Si no, la meta baja sin que nadie lo note.
 
 ## Aprobación
 - [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Revisor 2 (enmienda a la constitución, §11) — nombre: ________ fecha: ________
+- [ ] Revisor 2 (enmienda a la constitución, §11) — nombre: Alexis ________ fecha: ________
 - [ ] Sin conflicto con la constitución (con la enmienda 1.2.0)
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Implementada (tras el merge)
