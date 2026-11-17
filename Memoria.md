@@ -1,5 +1,11 @@
 # Memoria — knock-backend
 
+## 2026-11-16 — KNOCK-63: ajuste de consumo real y revisión de T-04
+- **Decisión:** el ajuste aplica el gasto real incluso si supera la reserva y conserva una marca `applied` con el TTL original; un reintento devuelve `AlreadyApplied`, una reserva ausente `NotFound` y Redis o contadores inconsistentes `Unavailable`. Tras caducar la marca ya no se distingue de una reserva inexistente. El llamador fija el `DateOnly`: T-06 debe obtener el día de `America/Mexico_City` con una sola fuente `TimeProvider` y reutilizar el día de la reserva al ajustar.
+- **Redis:** los scripts Lua usan tres claves sin hash tag común y suponen Redis de un solo nodo, como el despliegue actual; Redis Cluster puede rechazarlos por hash slots distintos. No se ha probado ni habilitado Cluster. Redis sin persistencia puede perder contadores y marcas al reiniciarse; un resultado `Unavailable` no demuestra si un ajuste incierto se aplicó.
+- **Condición de reserva:** `PersonalLimit_ExactAndExceeded_CA_024_05` comprueba el valor exacto y el excedente; al cambiar manualmente `user + amount > límite` por `>=`, falló al rechazar el valor exacto. Stryker no muta el Lua incrustado: esto es una mutación manual puntual, no una puntuación ni cobertura de todas las condiciones.
+- **A evitar:** descartar el exceso real, tratar `Unavailable` como no aplicado, llamar `AlreadyApplied` después de vencer la marca, calcular el día por separado en cada llamada o asumir que los scripts funcionan en Redis Cluster.
+
 ## 2026-11-14 — KNOCK-246: correcciones de CI del contenedor y pruebas demo
 - **Cambios:** el Dockerfile de Market copia únicamente `tecnicos.json` antes de publicar, siguiendo el patrón de Identity; el csproj ya lo incluía. La prueba de guarda construye la URI con credenciales sintéticas mediante `MongoUrlBuilder`, sin excepciones nuevas.
 - **Verificación:** `docker build -f src/Knock.Market.Api/Dockerfile .` pasó tras actualizar la imagen SDK local; en `/app/db` solo está la semilla de técnicos y no se hallaron archivos con nombres habituales de credenciales. Pruebas Demo: 10 unitarias y 51 de base aprobadas; formato correcto. La traza 020 mantiene 13 criterios pendientes de otras tareas.
