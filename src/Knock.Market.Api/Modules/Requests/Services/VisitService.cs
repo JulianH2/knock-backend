@@ -126,7 +126,7 @@ internal sealed class VisitService(VisitStore visits, RequestsStore requests, Ch
 
     private async Task<TechnicianPublic?> FindTechnicianAsync(VisitRecord visit, CancellationToken cancellationToken)
     {
-        var found = await choices.FindTechniciansAsync([visit.TechnicianId], cancellationToken);
+        var found = await choices.FindTechniciansAsync([visit.TechnicianId], withContact: true, cancellationToken);
         return found.GetValueOrDefault(visit.TechnicianId);
     }
 

@@ -33,7 +33,7 @@ internal sealed class TrustNoticeService(VisitService views, VisitStore visits, 
             return new TrustNoticeOutcome(TrustNoticeStatus.NotNotifiable);
         }
 
-        var technicians = await choices.FindTechniciansAsync([visit.TechnicianId], cancellationToken);
+        var technicians = await choices.FindTechniciansAsync([visit.TechnicianId], withContact: false, cancellationToken);
         technicians.TryGetValue(visit.TechnicianId, out var technician);
         var text = VisitRules.TrustNotice(technician?.Name ?? "el técnico", technician?.VerificationLevel ?? QuoteComparer.NoVerification, visit.Day, visit.Time);
         return new TrustNoticeOutcome(TrustNoticeStatus.Prepared, new TrustNotice(text, false, false));
