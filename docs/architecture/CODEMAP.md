@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-16T19:48:36Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-17T00:37:21Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -14,7 +14,7 @@
 | `Knock.Market.Api` | -, common, hosting | 29 | 62 | 86 |
 | `Knock.Messaging.Api` | -, hosting | 14 | 37 | 46 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
-| `Requests` | -, controllers, data, domain, dtos, services, validators | 28 | 60 | 52 |
+| `Requests` | -, controllers, data, domain, dtos, services, validators | 30 | 62 | 57 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 25 | 46 | 53 |
 | `Usuarios` | -, controllers, data, domain, dtos, services | 13 | 25 | 34 |
 
@@ -520,6 +520,8 @@
 
 **data**
 
+- `src/Knock.Market.Api/Modules/Requests/Data/DemoRequestStore.cs` — class `DemoRequestStore`
+  - `ValidateAsync()`:20, `SaveAsync()`:26
 - `src/Knock.Market.Api/Modules/Requests/Data/DemoTechnicianGuard.cs` — class `DemoTechnicianGuard`
   - `ValidateAsync()`:9
 - `src/Knock.Market.Api/Modules/Requests/Data/DemoTechnicianStore.cs` — class `DemoTechnicianStore`
@@ -554,10 +556,12 @@
 
 **services**
 
+- `src/Knock.Market.Api/Modules/Requests/Services/DemoRequestSeeder.cs` — class `DemoRequestSeeder`
+  - `DemoRequestSeeder()`:12, `SeedAsync()`:26, `Validate()`:46
 - `src/Knock.Market.Api/Modules/Requests/Services/DemoTechnicianSeeder.cs` — class `DemoTechnicianSeeder`
   - `DemoTechnicianSeeder()`:7, `SeedAsync()`:11
 - `src/Knock.Market.Api/Modules/Requests/Services/DemoTechnicianStartup.cs` — class `DemoTechnicianStartup`
-  - `ShouldRun()`:5, `StartAsync()`:7, `StopAsync()`:17
+  - `ShouldRun()`:5, `StartAsync()`:7, `StopAsync()`:18
 - `src/Knock.Market.Api/Modules/Requests/Services/QuoteService.cs` — record `Technician`, record `QuoteRequestSnapshot`, interface `ITechnicianDirectory`, interface `IQuoteRequestReader`, enum `QuoteCheckResult`, interface `IQuoteWriter`, record `QuoteResponse`, interface `ICreatedQuote`, enum `NoteModerationResult`, interface `INoteModerator`, class `UnavailableNoteModerator`, class `QuoteService`
   - `ModerateAsync()`:48, `QuoteService()`:51, `SendAsync()`:55, `Covers()`:83
 - `src/Knock.Market.Api/Modules/Requests/Services/RequestPorts.cs` — interface `IRequestPhotos`, class `UnavailableRequestPhotos`, class `UnavailableContentModerator`
