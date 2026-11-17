@@ -56,34 +56,17 @@ public sealed class DemoTechnicianLoaderTests
         });
     }
 
-    [Fact]
-    public async Task Demo_InvalidLastEntry_WritesNothing()
-    {
-        await WithDatabase(async (database, loader, _) =>
-        {
-            var input = JsonNode.Parse(await File.ReadAllTextAsync(_path))!.AsArray();
-            input[^1]!["radioAtencionKm"] = 0;
-            var file = Path.GetTempFileName();
-            try
-            {
-                await File.WriteAllTextAsync(file, input.ToJsonString());
-                await Assert.ThrowsAnyAsync<Exception>(() => loader.SeedAsync(file, CancellationToken.None));
-                Assert.Equal(0, await database.GetCollection<BsonDocument>("tecnicos").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
-            }
-            finally { File.Delete(file); }
-        });
-    }
-
     [Theory]
+    [InlineData("radioAtencionKm", 0)]
     [InlineData("nivelVerificacion", "oro")]
     [InlineData("tallerDireccion", "Calle real 123")]
     [InlineData("tallerDireccion", "Taller")]
-    public async Task Demo_InvalidOptionalField_WritesNothing(string field, string value)
+    public async Task Demo_InvalidLastEntry_WritesNothing(string field, object value)
     {
         await WithDatabase(async (database, loader, _) =>
         {
             var input = JsonNode.Parse(await File.ReadAllTextAsync(_path))!.AsArray();
-            input[^1]![field] = value;
+            input[^1]![field] = System.Text.Json.JsonSerializer.SerializeToNode(value);
             var file = Path.GetTempFileName();
             try
             {
