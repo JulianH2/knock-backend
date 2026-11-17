@@ -49,7 +49,7 @@ Que la pestaña Trabajo del técnico reciba en una sola respuesta sus visitas pr
 | `GET /api/v1/tecnicos/me/trabajo` | técnico activo | `cursorTerminadas?`, `limit?` (1–20) | `200` (ver forma abajo) | `400` (`invalid_cursor`), `401`, `403 not_a_technician`, `422` (`limit` fuera de rango), `429`, `503 unavailable` |
 
 **Forma de la respuesta**
-- `disponibleHoy: boolean`, `verificacion: { estado }`, `nivel: { clave, nombre }`
+- `disponibleHoy: boolean`, `verificacion: { estado }`, `nivel: { clave, nombre } | null` (`null` hasta que lo defina la spec 051)
 - `proximasVisitas[]`: `{ visitaId, solicitudId, dia, hora, modalidad, cliente: { colonia }, lugar: { tipo, direccion? }, precio, tope, estado, puedeLlegar }` (mismos nombres que la vista del técnico de la spec 022)
 - `cotizacionesEnviadas[]`: `{ cotizacionId, solicitudId, oficioNombre, tipoPrecio, precio, precioMin?, precioMax?, tope, estado, motivoRechazo?, enviadaEn }`
 - `terminadas`: `{ items: [{ solicitudId, oficioNombre, terminadaEn, precio, calificacion }], nextCursor }`
@@ -98,8 +98,13 @@ Que la pestaña Trabajo del técnico reciba en una sola respuesta sus visitas pr
 2. **Falla completa, no parcial (R-07).** Si falla una parte, la respuesta entera es `503 unavailable`; la app muestra error en la pestaña. Alternativa: secciones con su propio estado, que exige respuestas parciales y un contrato más complejo. *Decisión de revisión, confirmar.*
 3. **Calificación en `null` cuando no hay reseñas.** No hay spec de reseñas; mejor un campo vacío que inventar una fuente. *Decisión de revisión, confirmar.*
 4. **Sin escritura de «Disponible hoy».** Lo define HU-019, que no tiene spec; esta spec solo lee el campo.
+5. **Verificación desde `nivelVerificacion`.** `ninguno`, un campo ausente o un valor desconocido producen `sin_verificar`; `basica` y `completa` producen `verificada`.
+6. **Reputación pendiente de la spec 051.** `nivel` es `null` hasta que esa spec defina su fuente y contrato; no se usan datos opcionales no reconocidos.
+7. **Fallo de consulta distinto de datos ausentes.** Un error real de MongoDB produce `unavailable`, sin valores de respaldo; T-04 debe revisar `ErrorCode` antes de usar el resultado y responder 503 sin secciones parciales.
 
 ## Trazabilidad CA → prueba
+
+Salvo CA-05 y CA-08, los nombres son propuestas pendientes, no evidencia de ejecución.
 
 | CA | Prueba |
 |---|---|
@@ -107,10 +112,10 @@ Que la pestaña Trabajo del técnico reciba en una sola respuesta sus visitas pr
 | CA-02 | `Spec036ResumenTests.Cliente_O_Tecnico_Inactivo_CA_036_02` |
 | CA-03 | `Spec036ResumenTests.Terminadas_Paginadas_CA_036_03` |
 | CA-04 | `Spec036ResumenTests.Motivo_Rechazo_En_Cotizacion_CA_036_04` |
-| CA-05 | `Spec036ResumenTests.Base_Caida_503_Sin_Parciales_CA_036_05` |
+| CA-05 | `Spec036TrabajoStoreTests.Base_Caida_Unavailable_Sin_Valores_De_Respaldo_CA_036_05` (lectura; respuesta HTTP y cabecera pendientes en T-04) |
 | CA-06 | `Spec036ResumenTests.Sin_Datos_De_Contacto_CA_036_06` |
 | CA-07 | `Spec036ResumenTests.DisponibleHoy_Por_Omision_CA_036_07` |
-| CA-08 | `Spec036ResumenTests.Verificacion_Y_Nivel_Desde_Tecnicos_CA_036_08` |
+| CA-08 | `Spec036TrabajoStoreTests.Verificacion_Y_Nivel_Desde_Tecnicos_CA_036_08` y `Campo_No_Texto_Y_Tecnico_Ausente_CA_036_08` (lectura; contrato HTTP pendiente en T-04) |
 | CA-09 | `Spec036ResumenTests.Limite_De_Lectura_429_CA_036_09` |
 
 ## Aprobación
