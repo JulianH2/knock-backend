@@ -52,14 +52,20 @@ internal sealed class DemoTechnicianSeeder(DemoTechnicianStore store, IConfigura
         }
     }
 
-    /// <summary>Contacto público ficticio (spec 021, R-15): solo un teléfono del rango de demostración 55000000NN, nunca un número real.</summary>
+    /// <summary>
+    /// Contacto público ficticio (spec 021, R-14 y R-15): <c>telefono</c> y <c>whatsapp</c> son opcionales, pero debe venir al menos uno y ninguno otro campo. Cada número es del rango de
+    /// demostración 55000000NN, nunca un número real.
+    /// </summary>
     private static bool ValidContact(BsonValue value) =>
-        value is BsonDocument { ElementCount: 1 } contact
-        && contact.TryGetValue("telefono", out var phone)
-        && phone.IsString
-        && phone.AsString.Length == 10
-        && phone.AsString.StartsWith("55000000", StringComparison.Ordinal)
-        && phone.AsString.All(char.IsAsciiDigit);
+        value is BsonDocument { ElementCount: 1 or 2 } contact
+        && contact.Names.All(name => name is "telefono" or "whatsapp")
+        && contact.Values.All(ValidPhone);
+
+    private static bool ValidPhone(BsonValue value) =>
+        value.IsString
+        && value.AsString.Length == 10
+        && value.AsString.StartsWith("55000000", StringComparison.Ordinal)
+        && value.AsString.All(char.IsAsciiDigit);
 
     /// <summary>Dirección ficticia del taller (spec 021, §6): texto de 8 a 200 caracteres que empieza con «Taller Demo».</summary>
     private static bool ValidWorkshop(BsonValue value) =>
