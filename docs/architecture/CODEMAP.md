@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-16T23:51:54Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-17T01:53:09Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -527,7 +527,7 @@
 **data**
 
 - `src/Knock.Market.Api/Modules/Requests/Data/ChoiceStore.cs` — record `ChosenVisit`, record `ChooseResult`, record `TechnicianPublic`, class `ChoiceStore`
-  - `ListQuotesAsync()`:54, `FindTechniciansAsync()`:63, `TryFindTechnicianAsync()`:81, `FindVisitIdsAsync()`:94, `ChooseAsync()`:111
+  - `ListQuotesAsync()`:54, `FindTechniciansAsync()`:67, `TryFindTechnicianAsync()`:89, `FindVisitIdsAsync()`:102, `ChooseAsync()`:119
 - `src/Knock.Market.Api/Modules/Requests/Data/DemoTechnicianGuard.cs` — class `DemoTechnicianGuard`
   - `ValidateAsync()`:9
 - `src/Knock.Market.Api/Modules/Requests/Data/DemoTechnicianStore.cs` — class `DemoTechnicianStore`
@@ -572,7 +572,7 @@
 - `src/Knock.Market.Api/Modules/Requests/Services/ChooseQuoteService.cs` — record `ChooseOutcome`, class `ChooseQuoteService`
   - `ChooseQuoteService()`:18, `ChooseAsync()`:26
 - `src/Knock.Market.Api/Modules/Requests/Services/DemoTechnicianSeeder.cs` — class `DemoTechnicianSeeder`
-  - `DemoTechnicianSeeder()`:7, `SeedAsync()`:13
+  - `DemoTechnicianSeeder()`:7, `SeedAsync()`:17
 - `src/Knock.Market.Api/Modules/Requests/Services/DemoTechnicianStartup.cs` — class `DemoTechnicianStartup`
   - `ShouldRun()`:5, `StartAsync()`:7, `StopAsync()`:17
 - `src/Knock.Market.Api/Modules/Requests/Services/QuoteComparisonService.cs` — class `QuoteComparisonService`

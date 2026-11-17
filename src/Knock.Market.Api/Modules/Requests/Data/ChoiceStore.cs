@@ -60,15 +60,23 @@ internal sealed class ChoiceStore(
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyDictionary<ObjectId, TechnicianPublic>> FindTechniciansAsync(IReadOnlyCollection<ObjectId> ids, CancellationToken cancellationToken)
+    /// <summary>
+    /// Datos públicos de los técnicos dados. El listado de cotizaciones pide solo nombre, foto, calificación y verificación (<paramref name="withContact"/> falso): el contacto público y la
+    /// dirección del taller solo se leen cuando se van a revelar, después de elegir (spec 021, R-08 y R-21).
+    /// </summary>
+    public async Task<IReadOnlyDictionary<ObjectId, TechnicianPublic>> FindTechniciansAsync(IReadOnlyCollection<ObjectId> ids, bool withContact, CancellationToken cancellationToken)
     {
         if (ids.Count == 0)
         {
             return new Dictionary<ObjectId, TechnicianPublic>();
         }
 
-        var projection = Builders<BsonDocument>.Projection.Include("nombre").Include("fotoUrl").Include("calificacion").Include("nivelVerificacion")
-            .Include("contactoPublico").Include("tallerDireccion");
+        var projection = Builders<BsonDocument>.Projection.Include("nombre").Include("fotoUrl").Include("calificacion").Include("nivelVerificacion");
+        if (withContact)
+        {
+            projection = projection.Include("contactoPublico").Include("tallerDireccion");
+        }
+
         var documents = await database.GetCollection<BsonDocument>("tecnicos")
             .Find(Builders<BsonDocument>.Filter.In("_id", ids), _findOptions).Project(projection).ToListAsync(cancellationToken);
         return documents.ToDictionary(d => d["_id"].AsObjectId, ToTechnician);
@@ -82,7 +90,7 @@ internal sealed class ChoiceStore(
     {
         try
         {
-            return (await FindTechniciansAsync([id], cancellationToken)).GetValueOrDefault(id);
+            return (await FindTechniciansAsync([id], withContact: true, cancellationToken)).GetValueOrDefault(id);
         }
         catch (Exception exception) when (exception is MongoException or TimeoutException)
         {
