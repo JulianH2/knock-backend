@@ -39,6 +39,10 @@ public static class RequestsModuleExtensions
         services.TryAddScoped<IRequestPhotos, UnavailableRequestPhotos>();
         services.TryAddSingleton<IContentModerator, UnavailableContentModerator>();
         services.AddScoped<SolicitudService>();
+        services.AddSingleton<VisitCodeFactory>();
+        services.AddScoped<ChoiceStore>();
+        services.AddScoped<QuoteComparisonService>();
+        services.AddScoped<ChooseQuoteService>();
         services.AddScoped<IRequestsApi, RequestsApi>();
         services.AddScoped<DemoTechnicianStore>();
         services.AddScoped<DemoTechnicianSeeder>();

@@ -34,6 +34,7 @@ internal sealed class SolicitudService(
     IContentModerator moderator,
     FieldCipher cipher,
     RequestsStore store,
+    ChoiceStore choices,
     ITechnicianDirectory technicians,
     IQuoteRequestReader quoteRequests,
     TimeProvider clock)
@@ -116,7 +117,9 @@ internal sealed class SolicitudService(
         ArgumentNullException.ThrowIfNull(query);
         (DateTime, ObjectId)? after = string.IsNullOrEmpty(query.Cursor) ? null : RequestCursor.Decode(query.Cursor);
         var page = await store.ListAsync(clientId, query.Estado, after, query.Limit, cancellationToken);
-        var totals = await store.CountLiveQuotesAsync([.. page.Items.Select(item => item.Id)], cancellationToken);
+        var ids = page.Items.Select(item => item.Id).ToList();
+        var totals = await store.CountLiveQuotesAsync(ids, cancellationToken);
+        var visits = await choices.FindVisitIdsAsync(ids, cancellationToken);
         var items = page.Items.Select(item => new RequestSummary(
             item.Id.ToString(),
             RequestStates.ToStored(item.Estado),
@@ -127,7 +130,8 @@ internal sealed class SolicitudService(
             item.Fotos.Count,
             totals.GetValueOrDefault(item.Id),
             new DateTimeOffset(item.VenceEnUtc, TimeSpan.Zero),
-            new DateTimeOffset(item.CreadoEnUtc, TimeSpan.Zero))).ToList();
+            new DateTimeOffset(item.CreadoEnUtc, TimeSpan.Zero),
+            visits.TryGetValue(item.Id, out var visitId) ? visitId.ToString() : null)).ToList();
         return new RequestPage(items, page.NextCursor);
     }
 
@@ -201,5 +205,5 @@ internal sealed class SolicitudService(
         new DateTimeOffset(record.CreadoEnUtc, TimeSpan.Zero));
 
     /// <summary>La dirección va atada a su solicitud: copiada a otro documento no se descifra.</summary>
-    private static string AddressContext(ObjectId id) => $"solicitudes|direccion|{id}";
+    internal static string AddressContext(ObjectId id) => $"solicitudes|direccion|{id}";
 }

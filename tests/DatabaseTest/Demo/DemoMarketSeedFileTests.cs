@@ -122,6 +122,21 @@ public sealed class DemoMarketSeedFileTests
         }
     }
 
+    [Fact]
+    public void Technicians_FourthOneHasTheFictitiousPublicContact_Spec021()
+    {
+        var technicians = Load("demo/market/tecnicos.json");
+
+        Assert.Equal(4, technicians.Length);
+        var withContact = Assert.Single(technicians, x => x.TryGetProperty("contactoPublico", out _));
+        Assert.Equal("demo-tecnico-04", Text(withContact, "uid"));
+        Assert.Equal(UserIdDerivation.Derive("demo-tecnico-04").ToString("D"), Text(withContact, "usuarioId"));
+        Assert.Equal("5500000001", Text(withContact.GetProperty("contactoPublico"), "telefono"));
+        Assert.Single(withContact.GetProperty("contactoPublico").EnumerateObject());
+        Assert.Equal("basica", Text(withContact, "nivelVerificacion"));
+        Assert.StartsWith("Taller Demo", Text(withContact, "tallerDireccion"), StringComparison.Ordinal);
+    }
+
     private static void CheckNames(JsonElement item)
     {
         if (item.ValueKind == JsonValueKind.Array)

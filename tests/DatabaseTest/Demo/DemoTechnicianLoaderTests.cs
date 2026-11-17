@@ -29,7 +29,7 @@ public sealed class DemoTechnicianLoaderTests
             var before = await collection.Find(FilterDefinition<BsonDocument>.Empty).ToListAsync();
             await loader.SeedAsync(_path, CancellationToken.None);
             var after = await collection.Find(FilterDefinition<BsonDocument>.Empty).ToListAsync();
-            Assert.Equal(3, after.Count);
+            Assert.Equal(4, after.Count);
             Assert.Equal(before.OrderBy(x => x["_id"]), after.OrderBy(x => x["_id"]));
             var directory = new MongoTechnicianDirectory(database, options);
             await collection.Indexes.CreateOneAsync(new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Geo2DSphere("ubicacionBase")));
@@ -56,13 +56,17 @@ public sealed class DemoTechnicianLoaderTests
         });
     }
 
-    [Fact]
-    public async Task Demo_InvalidLastEntry_WritesNothing()
+    [Theory]
+    [InlineData("radioAtencionKm", 0)]
+    [InlineData("nivelVerificacion", "oro")]
+    [InlineData("tallerDireccion", "Calle real 123")]
+    [InlineData("tallerDireccion", "Taller")]
+    public async Task Demo_InvalidLastEntry_WritesNothing(string field, object value)
     {
         await WithDatabase(async (database, loader, _) =>
         {
             var input = JsonNode.Parse(await File.ReadAllTextAsync(_path))!.AsArray();
-            input[^1]!["radioAtencionKm"] = 0;
+            input[^1]![field] = System.Text.Json.JsonSerializer.SerializeToNode(value);
             var file = Path.GetTempFileName();
             try
             {

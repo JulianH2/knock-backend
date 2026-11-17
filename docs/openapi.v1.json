@@ -5,6 +5,154 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/v{version}/solicitudes/{id}/elegir": {
+      "post": {
+        "tags": [
+          "ChooseQuote"
+        ],
+        "summary": "Elige la cotización de una solicitud propia; la elección y sus efectos ocurren en una sola transacción.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChooseQuoteBody"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChooseQuoteBody"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChooseQuoteBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v{version}/solicitudes/{id}/cotizaciones": {
       "post": {
         "tags": [
@@ -243,6 +391,110 @@
                 }
               },
               "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "QuoteComparison"
+        ],
+        "summary": "Cotizaciones de una solicitud propia, con el orden pedido. El `sub` del token debe ser el del dueño; cualquier otro recibe 404.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Orden",
+            "in": "query",
+            "description": "Sort order: recomendadas (default), precio, calificacion or pronto.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteComparison"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteComparison"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteComparison"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1061,6 +1313,149 @@
   },
   "components": {
     "schemas": {
+      "Appointment": {
+        "required": [
+          "visitaId",
+          "solicitudId",
+          "cotizacionId",
+          "estado",
+          "modalidad",
+          "dia",
+          "hora",
+          "precio",
+          "tope",
+          "tecnico",
+          "lugar"
+        ],
+        "type": "object",
+        "properties": {
+          "visitaId": {
+            "type": "string"
+          },
+          "solicitudId": {
+            "type": "string"
+          },
+          "cotizacionId": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "modalidad": {
+            "type": "string"
+          },
+          "dia": {
+            "type": "string"
+          },
+          "hora": {
+            "type": "string"
+          },
+          "precio": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "tope": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "tecnico": {
+            "$ref": "#/components/schemas/ChosenTechnician"
+          },
+          "lugar": {
+            "$ref": "#/components/schemas/AppointmentPlace"
+          }
+        },
+        "description": "Cita confirmada al elegir una cotización (spec 021, §5)."
+      },
+      "AppointmentPlace": {
+        "required": [
+          "tipo",
+          "direccion"
+        ],
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string"
+          },
+          "direccion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Lugar de la cita: tipo (`domicilio` o `taller`) y dirección."
+      },
+      "ChooseQuoteBody": {
+        "required": [
+          "cotizacionId"
+        ],
+        "type": "object",
+        "properties": {
+          "cotizacionId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Identificador (24 hexadecimales) de la cotización que se elige."
+          }
+        },
+        "description": "Cuerpo de `POST /solicitudes/{id}/elegir`."
+      },
+      "ChosenTechnician": {
+        "required": [
+          "id",
+          "nombre",
+          "fotoUrl",
+          "verificado",
+          "nivelVerificacion",
+          "telefono",
+          "whatsapp"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "fotoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "verificado": {
+            "type": "boolean"
+          },
+          "nivelVerificacion": {
+            "type": "string"
+          },
+          "telefono": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "whatsapp": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Técnico elegido, con el contacto público que se revela solo después de elegir."
+      },
       "CreateRequestBody": {
         "required": [
           "oficioClave",
@@ -1245,6 +1640,156 @@
           }
         }
       },
+      "QuoteComparison": {
+        "required": [
+          "solicitudId",
+          "cotizaciones",
+          "totalCotizaciones",
+          "tiposMixtos",
+          "puedeElegir",
+          "motivo",
+          "visitaId"
+        ],
+        "type": "object",
+        "properties": {
+          "solicitudId": {
+            "type": "string"
+          },
+          "cotizaciones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuoteComparisonItem"
+            }
+          },
+          "totalCotizaciones": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "tiposMixtos": {
+            "type": "boolean"
+          },
+          "puedeElegir": {
+            "type": "boolean"
+          },
+          "motivo": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "visitaId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Respuesta de `GET /solicitudes/{id}/cotizaciones`: hasta 5 cotizaciones vivas y si el cliente ya puede elegir. `TiposMixtos` es verdadero cuando\nhay precios fijos y rangos o visitas juntos (no son comparables uno a uno); `Motivo` explica por qué `PuedeElegir` es falso; `VisitaId`\naparece si la solicitud ya tiene cita confirmada."
+      },
+      "QuoteComparisonItem": {
+        "required": [
+          "id",
+          "estado",
+          "tipoPrecio",
+          "precio",
+          "precioMin",
+          "precioMax",
+          "tope",
+          "requiereAprobacion",
+          "dia",
+          "hora",
+          "nota",
+          "cubre",
+          "etiquetas",
+          "tecnico",
+          "motivoRechazo"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "tipoPrecio": {
+            "type": "string"
+          },
+          "precio": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "precioMin": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "precioMax": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "tope": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "requiereAprobacion": {
+            "type": "boolean"
+          },
+          "dia": {
+            "type": "string"
+          },
+          "hora": {
+            "type": "string"
+          },
+          "nota": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cubre": {
+            "type": "string"
+          },
+          "etiquetas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tecnico": {
+            "$ref": "#/components/schemas/QuoteTechnician"
+          },
+          "motivoRechazo": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Cotización dentro de la comparación (spec 021, §5). `Cubre` es el texto corto de lo que cubre según su tipo de precio y `Etiquetas` son marcas\ncalculadas por el servidor, por ejemplo la más barata o la más pronto. `Precio` es nulo en un rango (solo hay mínimo y máximo) y `MotivoRechazo` solo aparece en las rechazadas."
+      },
       "QuoteRequest": {
         "required": [
           "tipoPrecio",
@@ -1397,6 +1942,47 @@
             "format": "date-time"
           }
         }
+      },
+      "QuoteTechnician": {
+        "required": [
+          "id",
+          "nombre",
+          "fotoUrl",
+          "calificacion",
+          "verificado",
+          "nivelVerificacion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "fotoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "calificacion": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "verificado": {
+            "type": "boolean"
+          },
+          "nivelVerificacion": {
+            "type": "string"
+          }
+        },
+        "description": "Técnico que cotizó, tal como lo ve el cliente al comparar (spec 021). Sin teléfono: el contacto solo llega con la visita."
       },
       "RequestNeighborhood": {
         "required": [
@@ -1591,9 +2177,15 @@
           "creadoEn": {
             "type": "string",
             "format": "date-time"
+          },
+          "visitaId": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
-        "description": "Fila de `GET /solicitudes`: sin descripción, dirección ni enlaces de fotos."
+        "description": "Fila de `GET /solicitudes`: sin descripción, dirección ni enlaces de fotos. `VisitaId` solo está si ya se eligió una cotización (spec 021, R-22)."
       },
       "RequestTrade": {
         "required": [
@@ -1759,6 +2351,9 @@
   },
   "tags": [
     {
+      "name": "ChooseQuote"
+    },
+    {
       "name": "ColoniaExists"
     },
     {
@@ -1772,6 +2367,9 @@
     },
     {
       "name": "Oficios"
+    },
+    {
+      "name": "QuoteComparison"
     },
     {
       "name": "Solicitudes"

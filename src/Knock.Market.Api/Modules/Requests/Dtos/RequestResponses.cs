@@ -28,7 +28,7 @@ internal sealed record RequestResponse(
     DateTimeOffset VenceEn,
     DateTimeOffset CreadoEn);
 
-/// <summary>Fila de <c>GET /solicitudes</c>: sin descripción, dirección ni enlaces de fotos.</summary>
+/// <summary>Fila de <c>GET /solicitudes</c>: sin descripción, dirección ni enlaces de fotos. <c>VisitaId</c> solo está si ya se eligió una cotización (spec 021, R-22).</summary>
 internal sealed record RequestSummary(
     string Id,
     string Estado,
@@ -39,7 +39,8 @@ internal sealed record RequestSummary(
     int TotalFotos,
     int TotalCotizaciones,
     DateTimeOffset VenceEn,
-    DateTimeOffset CreadoEn);
+    DateTimeOffset CreadoEn,
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string? VisitaId = null);
 
 /// <summary>Página de solicitudes propias; <c>NextCursor</c> es <see langword="null"/> en la última página.</summary>
 internal sealed record RequestPage(IReadOnlyList<RequestSummary> Items, string? NextCursor);

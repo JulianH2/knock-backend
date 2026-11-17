@@ -125,6 +125,14 @@ internal sealed class MarketApiFactory(IReadOnlyDictionary<string, string?> sett
             Index("solicitudId_1_estado_1_creadoEn_1", new BsonDocument { ["solicitudId"] = 1, ["estado"] = 1, ["creadoEn"] = 1 }),
             Index("tecnicoUsuarioId_1_creadoEn_-1", new BsonDocument { ["tecnicoUsuarioId"] = 1, ["creadoEn"] = -1 }),
         ]);
+        // Spec 021 (db/022-visitas.js): una cita por solicitud.
+        await database.GetCollection<BsonDocument>("visitas").Indexes.CreateManyAsync(
+        [
+            Index("solicitudId_1", new BsonDocument { ["solicitudId"] = 1 }, unique: true),
+            Index("clienteId_1_dia_1", new BsonDocument { ["clienteId"] = 1, ["dia"] = 1 }),
+            Index("tecnicoUsuarioId_1_dia_1", new BsonDocument { ["tecnicoUsuarioId"] = 1, ["dia"] = 1 }),
+            Index("estado_1_dia_1", new BsonDocument { ["estado"] = 1, ["dia"] = 1 }),
+        ]);
     }
 
     private static CreateIndexModel<BsonDocument> Index(string name, BsonDocument keys, bool unique = false) =>
