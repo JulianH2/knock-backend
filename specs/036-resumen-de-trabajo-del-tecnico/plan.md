@@ -1,12 +1,12 @@
 # Plan 036 — Resumen de trabajo del técnico
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (Aprobada); la implementación se activa por tarea con indicación de una persona.
 > **Responsable:** Guillermo (módulo de Mercado) · **Sprint:** 5 (propuesto)
 
 ## Enfoque
 1. Añadir `TecnicoTrabajoService` con cuatro consultas independientes (visitas próximas, cotizaciones enviadas, terminadas paginadas y resumen) y componer la respuesta única de R-02.
 2. Escribir las reglas puras: dirección solo en `confirmada` o `en_curso` (R-03), `motivoRechazo` (R-04), `disponibleHoy` por omisión (R-05) y orden con desempate de `terminadas` (R-02).
-3. Leer `verificacion` y `nivel` del documento del técnico en `tecnicos` (que Mercado mantiene con el evento de la spec 025) y mapear cualquier falla de la base a `503 unavailable` (R-06, R-07).
+3. Derivar `verificacion.estado` de `nivelVerificacion` en `tecnicos`: `basica` y `completa` dan `verificada`; `ninguno` y valores ausentes o desconocidos dan `sin_verificar`. Dejar `nivel` en `null` hasta la spec 051 y mapear fallas de base a `503 unavailable`, sin valores de respaldo (R-06, R-07).
 4. Exponer `GET /api/v1/tecnicos/me/trabajo` con `Cache-Control: private, no-store`, cursor de `terminadas` (spec 010) y el límite de lectura del gateway (R-08, R-10).
 5. Documentar la ruta en OpenAPI, `docs/endpoints.md` y `docs/rate-limit-matrix.md`, y la decisión en `Memoria.md`.
 
@@ -19,7 +19,7 @@
 ## Dependencias
 - Spec 020 (técnico, cotizaciones y solicitudes) y 021 (motivo de rechazo y visita confirmada) fusionadas o con datos de semilla.
 - Spec 022 (dirección solo tras elegir y `puedeLlegar`) para la forma de `proximasVisitas`.
-- Spec 025 (evento de la decisión de verificación, que actualiza `tecnicos`) fusionada o, antes, datos de semilla de verificación y nivel en `tecnicos`.
+- Spec 025 (evento que actualiza `nivelVerificacion` en `tecnicos`) fusionada o, antes, datos de semilla de verificación; la reputación y su `nivel` esperan a la spec 051.
 - Spec 010 (cursor y caché) y 009 (límite de lectura del gateway).
 - Frontend 019 consume la respuesta; su cliente se regenera después de que este contrato esté en OpenAPI.
 

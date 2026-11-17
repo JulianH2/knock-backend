@@ -4,6 +4,7 @@ using StackExchange.Redis;
 namespace Knock.Market.Api.Modules.Assistant.Data;
 
 internal enum ConsumptionResult { Reserved, BudgetExhausted, LimitUnavailable }
+internal enum AdjustmentResult { Applied, AlreadyApplied, NotFound, Unavailable }
 
 internal sealed record ConsumptionReservation(string User, DateOnly Day, Guid Id);
 
@@ -27,15 +28,19 @@ internal sealed class ConsumoIaStore(IConnectionMultiplexer redis)
     private const string _adjustScript = """
         local global = redis.call('GET', KEYS[1])
         local user = redis.call('GET', KEYS[2])
-        local reserved = tonumber(redis.call('GET', KEYS[3]) or '0')
+        local value = redis.call('GET', KEYS[3])
+        if not value then return 2 end
+        if value == 'applied' then return 1 end
+        local reserved = tonumber(value)
         local actual = tonumber(ARGV[1])
-        if reserved == 0 or not global or not user or actual > reserved or tonumber(global) < reserved or tonumber(user) < reserved then return 0 end
+        if not reserved or reserved <= 0 or not global or not user or not tonumber(global) or not tonumber(user) or tonumber(global) < reserved or tonumber(user) < reserved then return 3 end
         redis.call('INCRBY', KEYS[1], actual - reserved)
         redis.call('INCRBY', KEYS[2], actual - reserved)
-        redis.call('DEL', KEYS[3])
-        return 1
+        redis.call('SET', KEYS[3], 'applied', 'KEEPTTL')
+        return 0
         """;
 
+    // The caller determines the Mexico City calendar day from its shared TimeProvider.
     public async Task<ReservationResult> ReserveAsync(string user, DateOnly day, int amount, int userLimit, int globalLimit, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(user);
@@ -60,7 +65,7 @@ internal sealed class ConsumoIaStore(IConnectionMultiplexer redis)
         }
     }
 
-    public async Task<bool> AdjustAsync(ConsumptionReservation reservation, int actual, CancellationToken cancellationToken)
+    public async Task<AdjustmentResult> AdjustAsync(ConsumptionReservation reservation, int actual, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(reservation);
         ArgumentException.ThrowIfNullOrWhiteSpace(reservation.User);
@@ -68,11 +73,17 @@ internal sealed class ConsumoIaStore(IConnectionMultiplexer redis)
         cancellationToken.ThrowIfCancellationRequested();
         try
         {
-            return (int)await redis.GetDatabase().ScriptEvaluateAsync(_adjustScript, Keys(reservation), [actual]) == 1;
+            return (int)await redis.GetDatabase().ScriptEvaluateAsync(_adjustScript, Keys(reservation), [actual]) switch
+            {
+                0 => AdjustmentResult.Applied,
+                1 => AdjustmentResult.AlreadyApplied,
+                2 => AdjustmentResult.NotFound,
+                _ => AdjustmentResult.Unavailable,
+            };
         }
         catch (Exception ex) when (ex is RedisException or TimeoutException)
         {
-            return false;
+            return AdjustmentResult.Unavailable;
         }
     }
 
