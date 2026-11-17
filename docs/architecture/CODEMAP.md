@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-17T02:42:54Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-17T03:00:44Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -15,7 +15,7 @@
 | `Knock.Market.Api` | -, common, hosting | 29 | 62 | 86 |
 | `Knock.Messaging.Api` | -, hosting | 14 | 37 | 46 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
-| `Requests` | -, controllers, data, domain, dtos, services, validators | 42 | 92 | 77 |
+| `Requests` | -, controllers, data, domain, dtos, services, validators | 44 | 94 | 82 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 25 | 46 | 53 |
 | `Tecnicos` | data | 1 | 2 | 2 |
 | `Usuarios` | -, controllers, data, domain, dtos, services | 13 | 25 | 34 |
@@ -539,6 +539,8 @@
 
 - `src/Knock.Market.Api/Modules/Requests/Data/ChoiceStore.cs` — record `ChosenVisit`, record `ChooseResult`, record `TechnicianPublic`, class `ChoiceStore`
   - `ListQuotesAsync()`:54, `FindTechniciansAsync()`:67, `TryFindTechnicianAsync()`:89, `FindVisitIdsAsync()`:102, `ChooseAsync()`:119
+- `src/Knock.Market.Api/Modules/Requests/Data/DemoRequestStore.cs` — class `DemoRequestStore`
+  - `ValidateAsync()`:20, `SaveAsync()`:26
 - `src/Knock.Market.Api/Modules/Requests/Data/DemoTechnicianGuard.cs` — class `DemoTechnicianGuard`
   - `ValidateAsync()`:9
 - `src/Knock.Market.Api/Modules/Requests/Data/DemoTechnicianStore.cs` — class `DemoTechnicianStore`
@@ -586,10 +588,12 @@
 
 - `src/Knock.Market.Api/Modules/Requests/Services/ChooseQuoteService.cs` — record `ChooseOutcome`, class `ChooseQuoteService`
   - `ChooseQuoteService()`:18, `ChooseAsync()`:26
+- `src/Knock.Market.Api/Modules/Requests/Services/DemoRequestSeeder.cs` — class `DemoRequestSeeder`
+  - `DemoRequestSeeder()`:12, `SeedAsync()`:26, `Validate()`:46
 - `src/Knock.Market.Api/Modules/Requests/Services/DemoTechnicianSeeder.cs` — class `DemoTechnicianSeeder`
   - `DemoTechnicianSeeder()`:7, `SeedAsync()`:17
 - `src/Knock.Market.Api/Modules/Requests/Services/DemoTechnicianStartup.cs` — class `DemoTechnicianStartup`
-  - `ShouldRun()`:5, `StartAsync()`:7, `StopAsync()`:17
+  - `ShouldRun()`:5, `StartAsync()`:7, `StopAsync()`:18
 - `src/Knock.Market.Api/Modules/Requests/Services/QuoteComparisonService.cs` — class `QuoteComparisonService`
   - `QuoteComparisonService()`:13, `CompareAsync()`:19
 - `src/Knock.Market.Api/Modules/Requests/Services/QuoteService.cs` — record `Technician`, record `QuoteRequestSnapshot`, interface `ITechnicianDirectory`, interface `IQuoteRequestReader`, enum `QuoteCheckResult`, interface `IQuoteWriter`, record `QuoteResponse`, interface `ICreatedQuote`, enum `NoteModerationResult`, interface `INoteModerator`, class `UnavailableNoteModerator`, class `QuoteService`
