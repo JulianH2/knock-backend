@@ -102,6 +102,38 @@ public sealed class Spec028SeleccionTests
         Assert.Equal("03", result[2].TechnicianId);
     }
 
+    [Fact]
+    public void InvalidDistances_AreNotNearest_CA_028_07()
+    {
+        var candidates = Candidates().Select(x => x with
+        {
+            CompletedJobs = 4,
+            DistanceKm = x.TechnicianId switch
+            {
+                "04" => double.NaN,
+                "05" => -1,
+                "06" => double.PositiveInfinity,
+                "07" => 0,
+                _ => null
+            }
+        }).ToArray();
+        var result = SeleccionDeOleada.Select(candidates, [], _options);
+        Assert.Equal(("07", "cercano"), (result[3].TechnicianId, result[3].Reason));
+        var invalidOnly = candidates.Select(x => x.TechnicianId == "07" ? x with { DistanceKm = null } : x);
+        Assert.DoesNotContain(SeleccionDeOleada.Select(invalidOnly, [], _options), x => x.Reason == "cercano");
+    }
+
+    [Fact]
+    public void DuplicateTechnicians_DoNotConsumeRankedSlots_CA_028_01()
+    {
+        var candidates = Candidates();
+        var repeated = candidates.Concat([candidates[0] with { DistanceKm = 0.01 }, candidates[1]]).ToArray();
+        var result = SeleccionDeOleada.Select(repeated, [], _options);
+        Assert.Equal("01,02,03", string.Join(',', result.Take(3).Select(x => x.TechnicianId)));
+        Assert.Equal(5, result.Select(x => x.TechnicianId).Distinct().Count());
+        Assert.Equal(result, SeleccionDeOleada.Select(repeated.Reverse(), [], _options));
+    }
+
     private static WaveCandidate[] Candidates() => Enumerable.Range(1, 10)
         .Select(i => Candidate(i.ToString("D2", CultureInfo.InvariantCulture), 11 - i, i == 5 ? 2 : 4, i == 9 ? 0.1 : i)).ToArray();
 
