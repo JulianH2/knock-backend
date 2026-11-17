@@ -167,6 +167,28 @@ public sealed class Spec021EleccionTests
     }
 
     [Fact]
+    public async Task Elige_Una_Cotizacion_De_Rango_Sin_Campo_Precio_R_14()
+    {
+        await using var host = await Spec020Host.StartAsync();
+        var requestId = await host.CreateRequestAsync();
+        await host.SetRequestAsync(requestId, "cotizando");
+        var technician = await host.SeedPublicTechnicianAsync();
+        var quote = await host.SeedQuoteAsync(requestId, technician, "rango", price: null, min: 600, max: 800);
+        await host.Database.GetCollection<BsonDocument>("cotizaciones").UpdateOneAsync(
+            Builders<BsonDocument>.Filter.Eq("_id", quote),
+            Builders<BsonDocument>.Update.Unset("precio").Unset("precioMin").Unset("precioMax").Unset("nota"));
+
+        using var list = await host.CompareAsync(requestId);
+        using var response = await host.ChooseAsync(requestId, quote);
+
+        list.StatusCode.Should().Be(HttpStatusCode.OK, "una cotización sin los campos opcionales (como las de las semillas de demo) también se lista");
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "ni elegirla puede dar error");
+        var json = await Spec020Host.ReadAsync(response);
+        json.GetProperty("precio").ValueKind.Should().Be(System.Text.Json.JsonValueKind.Null);
+        (await host.CountAsync("visitas")).Should().Be(1);
+    }
+
+    [Fact]
     public async Task Id_Mal_Formado_Y_Cuerpo_Invalido_CA_021_15_Eleccion()
     {
         await using var host = await Spec020Host.StartAsync();
