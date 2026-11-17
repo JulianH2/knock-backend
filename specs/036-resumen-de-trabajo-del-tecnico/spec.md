@@ -1,7 +1,7 @@
 # Spec 036 — Resumen de trabajo del técnico (`GET /api/v1/tecnicos/me/trabajo`)
 
 > **Estado:** Aprobada · **Repositorio:** knock-backend · **Rector:** `constitution.md`
-> **Origen:** HU-020 (backlog, «Back (API): `GET /api/v1/tecnicos/me/trabajo` (agregado por secciones)»); fija el hueco de backend 028 §15 y de frontend 019 §13. **Clave de Jira:** pendiente de crear.
+> **Origen:** HU-020 (backlog, «Back (API): `GET /api/v1/tecnicos/me/trabajo` (agregado por secciones)»); fija el hueco de backend 028 §15 y de frontend 019 §13. **Clave de Jira:** KNOCK-67.
 > **Servicio:** Mercado (técnicos, solicitudes, cotizaciones y visitas), con la verificación y el nivel leídos de `tecnicos` · **Módulo:** Técnicos · **Colecciones:** ninguna nueva (lee `tecnicos`, `cotizaciones`, `visitas`, `solicitudes`)
 > **Sprint:** 5 (propuesto) · **Responsable:** Guillermo (módulo de Mercado)
 > **Consumidora:** frontend 019 «Pestaña Trabajo» (R-02, R-07) y frontend 025 (etiqueta por `motivoRechazo`)
@@ -36,7 +36,7 @@ Que la pestaña Trabajo del técnico reciba en una sola respuesta sus visitas pr
 - **R-03:** `proximasVisitas[].lugar.direccion` aparece solo si la visita está `confirmada` o `en_curso` (la dirección se revela cuando el técnico ya fue elegido, spec 022 R-05). `cliente` lleva solo `colonia`. Ninguna sección lleva nombre, teléfono ni `sub` del cliente.
 - **R-04:** Cada cotización enviada lleva `motivoRechazo` cuando su estado es `rechazada` o `retirada`, con los valores que define la spec 021 (*decisión de revisión, confirmar*: esta spec no inventa valores nuevos; si la 021 no los define, se añaden allí).
 - **R-05:** `disponibleHoy` se lee del campo de `tecnicos` y, si no existe, vale `false`. Esta spec no lo escribe.
-- **R-06:** `verificacion.estado` y `nivel` se leen del documento del técnico en `tecnicos`. Mercado los mantiene al consumir el evento de la decisión de verificación que publica la spec 025, que no expone ningún endpoint interno de consulta. Esta spec no los escribe.
+- **R-06:** `nivelVerificacion` de `tecnicos` (spec 021 §6) es la fuente de verdad de `verificacion.estado`: `ninguno` se convierte en `sin_verificar`, y `basica` o `completa` en `verificada`. Si falta o tiene un valor no reconocido, se usa `sin_verificar`. `nivel` de reputación se devuelve vacío o nulo hasta que la spec 051 lo defina, incluso si hay datos opcionales no reconocidos. Los errores reales de comunicación o consulta a la base no son datos faltantes: se mapean a `unavailable` según R-07. Esta spec no escribe estos datos.
 - **R-07:** Si cualquier parte del resumen falla (la base no responde o falla una de las cuatro consultas), la respuesta entera es `503 unavailable`. Nunca se devuelve una respuesta parcial (*decisión de revisión, confirmar*: la app trata la pestaña como una sola carga; una falla deja toda la pestaña en error, y así el contrato queda simple).
 - **R-08:** La respuesta lleva `Cache-Control: private, no-store` (spec 010, R-04): contiene datos personales y cambia con cada solicitud.
 - **R-09:** Ninguna sección lleva el código de la visita, el nombre ni el teléfono del cliente, ni la dirección fuera de R-03.
@@ -73,7 +73,7 @@ Que la pestaña Trabajo del técnico reciba en una sola respuesta sus visitas pr
 - **CA-05:** Dada la base sin responder o una de las cuatro consultas fallando, cuando se pide el resumen, entonces responde `503 unavailable` sin secciones parciales y con `Cache-Control: private, no-store`. (R-07, R-08)
 - **CA-06:** Dada cualquier respuesta, cuando se revisa, entonces no contiene nombre, teléfono ni `sub` del cliente, ni la dirección de una visita no aceptada. (R-03, R-09)
 - **CA-07:** Dado un técnico sin el campo `disponibleHoy`, cuando pide el resumen, entonces `disponibleHoy` es `false` y el resumen no escribe ese campo. (R-05)
-- **CA-08:** Dado un técnico con su nivel y su verificación en `tecnicos`, cuando pide el resumen, entonces `verificacion.estado` y `nivel` vienen de `tecnicos`. (R-06)
+- **CA-08:** Dado un técnico, cuando pide el resumen, entonces `verificacion.estado` se deriva de `nivelVerificacion` y `nivel` queda vacío o nulo según R-06. (R-06)
 - **CA-09:** Dado un técnico que excede el límite de lectura del gateway, cuando pide el resumen, entonces responde `429` con `Retry-After`. (R-10)
 
 ## 7. Pruebas
