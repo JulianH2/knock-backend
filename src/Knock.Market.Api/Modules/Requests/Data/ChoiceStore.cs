@@ -197,7 +197,8 @@ internal sealed class ChoiceStore(
         var visitId = ObjectId.GenerateNewId();
         var modality = request["modalidad"].AsString;
         var day = chosen["dia"].AsString;
-        var price = chosen["precio"].IsBsonNull ? (int?)null : chosen["precio"].ToInt32();
+        // En un rango no hay precio: el campo viene nulo (cotizaciones del servicio) o ausente (semillas de demo).
+        var price = chosen.TryGetValue("precio", out var priceValue) && priceValue.IsNumeric ? priceValue.ToInt32() : (int?)null;
         var technicianId = chosen["tecnicoId"].AsObjectId;
         var visit = new BsonDocument
         {
