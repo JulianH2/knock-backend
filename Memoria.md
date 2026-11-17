@@ -767,3 +767,9 @@
 - **Decisión:** la consulta de la URL se redacta como primer paso de `Redact`, sin depender del nivel de log.
 - **Por qué:** ningún nivel de log debe dejar salir lat/lon ni datos de la consulta.
 - **A evitar:** bajar el override de `Microsoft.AspNetCore.Hosting.Diagnostics`, o dejar sin probar una consulta con espacios literales.
+
+## 2026-11-16 — KNOCK-246: carga de solicitudes y cotizaciones de demo y estado real de la spec 020
+- **Estado:** `DemoRequestSeeder` y `DemoRequestStore` cargan `solicitudes.json` y `cotizaciones.json` de `db/seeds/demo/market` al arrancar con `Seed:Demo` (después de los técnicos): solo fuera de Producción, solo con host local de MongoDB, solo si todo el archivo es válido y en una sola transacción para las dos colecciones; repetir la carga no duplica y si existe un documento que no es de demo no escribe nada. Las fechas de los archivos son texto ISO y se guardan como fecha, como las lee `RequestsStore`. El Dockerfile y el csproj de Mercado copian ahora los tres archivos. `specs/020/task.md`: T-02, T-05, T-06 y T-07 pasan a «hecha» con sus pruebas (eran las de KNOCK-59) y T-13 queda «parcial» con lo que falta.
+- **Decisiones (con porqué):** (1) La validación rechaza cualquier campo que no esté en la lista y nunca repite un valor del archivo en el error, igual que el cargador de técnicos. (2) Una cotización de rango no lleva el campo `precio` (la semilla no lo trae); el servicio de elegir ya lo admite (KNOCK-82). (3) Se reutiliza `DemoTechnicianGuard` para la guarda de hosts locales en lugar de copiarla.
+- **Pendiente:** fotos de demo con nombre fijo (dependen de la spec 013, OI-2: las solicitudes de demo apuntan a identificadores de foto que no existen en el módulo de archivos, así que el detalle las muestra sin enlaces), transacción verificada en Azure e invalidación de Redis al final de la carga.
+- **A evitar:** cargar datos de demo sin la guarda de host local; escribir fechas como texto.

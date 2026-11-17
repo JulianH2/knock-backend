@@ -42,6 +42,8 @@ public static class RequestsModuleExtensions
         services.AddScoped<IRequestsApi, RequestsApi>();
         services.AddScoped<DemoTechnicianStore>();
         services.AddScoped<DemoTechnicianSeeder>();
+        services.AddScoped<DemoRequestStore>();
+        services.AddScoped<DemoRequestSeeder>();
         services.AddHostedService<DemoTechnicianStartup>();
         return services;
     }
