@@ -30,7 +30,7 @@ internal sealed class QuoteComparisonService(RequestsStore requests, ChoiceStore
         }
 
         var documents = await choices.ListQuotesAsync(requestId, cancellationToken);
-        var technicians = await choices.FindTechniciansAsync([.. documents.Select(d => d["tecnicoId"].AsObjectId).Distinct()], cancellationToken);
+        var technicians = await choices.FindTechniciansAsync([.. documents.Select(d => d["tecnicoId"].AsObjectId).Distinct()], withContact: false, cancellationToken);
         var quotes = documents.Select(d => ToQuote(d, technicians)).ToList();
         var compared = QuoteComparer.Compare(quotes, order ?? QuoteComparer.Recommended);
 

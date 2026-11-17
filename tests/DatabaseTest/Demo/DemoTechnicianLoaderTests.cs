@@ -56,13 +56,17 @@ public sealed class DemoTechnicianLoaderTests
         });
     }
 
-    [Fact]
-    public async Task Demo_InvalidLastEntry_WritesNothing()
+    [Theory]
+    [InlineData("radioAtencionKm", 0)]
+    [InlineData("nivelVerificacion", "oro")]
+    [InlineData("tallerDireccion", "Calle real 123")]
+    [InlineData("tallerDireccion", "Taller")]
+    public async Task Demo_InvalidLastEntry_WritesNothing(string field, object value)
     {
         await WithDatabase(async (database, loader, _) =>
         {
             var input = JsonNode.Parse(await File.ReadAllTextAsync(_path))!.AsArray();
-            input[^1]!["radioAtencionKm"] = 0;
+            input[^1]![field] = System.Text.Json.JsonSerializer.SerializeToNode(value);
             var file = Path.GetTempFileName();
             try
             {

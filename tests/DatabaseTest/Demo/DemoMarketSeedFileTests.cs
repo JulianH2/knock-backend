@@ -133,6 +133,8 @@ public sealed class DemoMarketSeedFileTests
         Assert.Equal(UserIdDerivation.Derive("demo-tecnico-04").ToString("D"), Text(withContact, "usuarioId"));
         Assert.Equal("5500000001", Text(withContact.GetProperty("contactoPublico"), "telefono"));
         Assert.Single(withContact.GetProperty("contactoPublico").EnumerateObject());
+        Assert.Equal("basica", Text(withContact, "nivelVerificacion"));
+        Assert.StartsWith("Taller Demo", Text(withContact, "tallerDireccion"), StringComparison.Ordinal);
     }
 
     private static void CheckNames(JsonElement item)

@@ -7,6 +7,10 @@ namespace Knock.Market.Api.Modules.Requests.Services;
 internal sealed class DemoTechnicianSeeder(DemoTechnicianStore store, IConfiguration configuration, IHostEnvironment environment)
 {
     private const string _contactField = "contactoPublico";
+    private const string _workshopField = "tallerDireccion";
+    private const string _levelField = "nivelVerificacion";
+
+    private static readonly string[] _optionalFields = [_contactField, _workshopField, _levelField];
 
     private static readonly string[] _fields = ["_id", "uid", "usuarioId", "nombre", "estado", "oculto", "oficios", "coloniaBaseId", "ubicacionBase", "radioAtencionKm", "version", "demo"];
 
@@ -29,10 +33,12 @@ internal sealed class DemoTechnicianSeeder(DemoTechnicianStore store, IConfigura
         if (documents.Length != 4) throw new InvalidOperationException("Invalid demo technician seed.");
         foreach (var doc in documents)
         {
-            var hasContact = doc.Contains(_contactField);
-            if (doc.ElementCount != _fields.Length + (hasContact ? 1 : 0)
-                || doc.Names.Any(x => x != _contactField && !_fields.Contains(x, StringComparer.Ordinal))
-                || (hasContact && !ValidContact(doc[_contactField]))
+            var optional = _optionalFields.Count(doc.Contains);
+            if (doc.ElementCount != _fields.Length + optional
+                || doc.Names.Any(x => !_optionalFields.Contains(x, StringComparer.Ordinal) && !_fields.Contains(x, StringComparer.Ordinal))
+                || (doc.Contains(_contactField) && !ValidContact(doc[_contactField]))
+                || (doc.Contains(_workshopField) && !ValidWorkshop(doc[_workshopField]))
+                || (doc.Contains(_levelField) && !(doc[_levelField].IsString && doc[_levelField].AsString is "ninguno" or "basica" or "completa"))
                 || !ids.Add(doc["_id"].AsObjectId) || !users.Add(doc["usuarioId"].AsString) || !uids.Add(doc["uid"].AsString)
                 || !Guid.TryParseExact(doc["usuarioId"].AsString, "D", out _)
                 || !doc["uid"].AsString.StartsWith("demo-tecnico-", StringComparison.Ordinal)
@@ -54,6 +60,10 @@ internal sealed class DemoTechnicianSeeder(DemoTechnicianStore store, IConfigura
         && phone.AsString.Length == 10
         && phone.AsString.StartsWith("55000000", StringComparison.Ordinal)
         && phone.AsString.All(char.IsAsciiDigit);
+
+    /// <summary>Dirección ficticia del taller (spec 021, §6): texto de 8 a 200 caracteres que empieza con «Taller Demo».</summary>
+    private static bool ValidWorkshop(BsonValue value) =>
+        value.IsString && value.AsString is { Length: >= 8 and <= 200 } address && address.StartsWith("Taller Demo", StringComparison.Ordinal);
 
     private static bool ValidPoint(BsonDocument point)
     {

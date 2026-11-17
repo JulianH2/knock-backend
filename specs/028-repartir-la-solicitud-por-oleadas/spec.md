@@ -32,7 +32,7 @@ Que cada solicitud llegue a pocos técnicos adecuados y no a todos: una primera 
 ## 3. Requisitos
 - **R-01:** Al crear una solicitud (spec 020), en la misma transacción se escribe la tarea `RepartirOleada` con `claveNegocio = {solicitudId}:1` y `programadaPara = creadoEn`. La creación no espera a la selección: responde como en la 020.
 - **R-02:** Un técnico es **elegible** para una solicitud si cumple todo: `estado = activo`; `oculto = false`; tiene el `oficioClave` de la solicitud; `disponibleHasta > ahora`; atiende la colonia de la solicitud (misma regla de cobertura que la spec 027, R-08); su `usuarioId` no es el `clienteId` de la solicitud; no tiene ya un envío de esa solicitud (en cualquier estado, incluido `descartado`). Las condiciones de estado, oculto, oficio y zona son la elegibilidad base de la spec 020 (R-23) y rigen aunque las oleadas estén apagadas; las demás son propias del reparto.
-- **R-03:** La oleada tiene como máximo `Oleadas:TamanoOleada` técnicos (5 por omisión) y se arma en este orden: 1) hasta `Oleadas:MejorOrdenados` (3) elegibles con mayor `calificacion`, desempate por más `trabajosTerminados` y luego por `_id`; 2) un técnico **nuevo** (`trabajosTerminados < Oleadas:UmbralNuevo`, 3 por omisión) entre los restantes, el de mayor calificación; 3) el elegible restante más cercano al centro de la colonia; 4) si falta alguno de los tipos anteriores, se completa con los siguientes mejor ordenados. Cada envío guarda su `motivo`: `mejor_ordenado`, `nuevo`, `cercano` o `relleno`.
+- **R-03:** La oleada tiene como máximo `Oleadas:TamanoOleada` técnicos (5 por omisión) y se arma en este orden: 1) hasta `Oleadas:MejorOrdenados` (3) elegibles con mayor `calificacion`, desempate por más `trabajosTerminados` y luego por `_id`; 2) un técnico **nuevo** (`trabajosTerminados < Oleadas:UmbralNuevo`, 3 por omisión) entre los restantes, el de mayor calificación; 3) el elegible restante más cercano al centro de la colonia, con ubicación conocida y sin distancia máxima; 4) si falta alguno de los tipos anteriores, se completa con los siguientes mejor ordenados. Cada envío guarda su `motivo`: `mejor_ordenado`, `nuevo`, `cercano` o `relleno`.
 - **R-04:** La selección es una función pura y determinista: con los mismos técnicos, la misma solicitud y la misma hora da el mismo resultado. Con 200 técnicos elegibles termina en menos de 200 ms.
 - **R-05:** Al ejecutar `RepartirOleada` para la oleada `n`, en una sola transacción: se cambia `solicitudes.oleadaActual` de `n − 1` a `n` solo si la solicitud sigue en `enviada` o `cotizando` y no venció; se insertan los envíos (índice único `{ solicitudId, tecnicoId }`); se escribe un evento `SolicitudEnviadaATecnico` por envío; y se programa `RevisarOleada` con `claveNegocio = {solicitudId}:{n}` a `ahora + Oleadas:MinutosRevision` (15 por omisión). Si la condición de estado no se cumple, la tarea termina sin efectos.
 - **R-06:** `RevisarOleada` de la oleada `n` cuenta las cotizaciones en estado `enviada` o `aceptada` de la solicitud. Si son menos de `Oleadas:MinimoCotizaciones` (2), la solicitud sigue abierta y `n < Oleadas:MaximoOleadas` (3), programa `RepartirOleada` de la oleada `n + 1` para ahora. Si hay 2 o más, si se llegó al máximo o si la solicitud ya no está abierta, no amplía.
@@ -72,14 +72,14 @@ Que cada solicitud llegue a pocos técnicos adecuados y no a todos: una primera 
 
 | Criterio | Prueba prevista |
 |---|---|
-| CA-01 | `Spec028SeleccionTests.Compone_Oleada_Tres_Uno_Uno_CA_028_01` |
+| CA-01 | `Spec028SeleccionTests.Compone_Oleada_Tres_Uno_Uno_CA_028_01` y `DuplicateTechnicians_DoNotConsumeRankedSlots_CA_028_01` (solo selección; tarea y eventos pendientes de T-06) |
 | CA-02 | `Spec028OleadasTests.Amplia_Con_Menos_De_Dos_CA_028_02` |
 | CA-03 | `Spec028OleadasTests.No_Amplia_Con_Dos_O_Mas_CA_028_03` |
-| CA-04 | `Spec028SeleccionTests.Excluye_No_Elegibles_CA_028_04` |
+| CA-04 | `Spec028SeleccionTests.Excluye_Envios_Previos_CA_028_04` (solo envíos previos; filtros restantes pendientes de T-05) |
 | CA-05 | `Spec028ConcurrenciaTests.Una_Sola_Ampliacion_Con_Dos_Replicas_CA_028_05` |
 | CA-06 | `Spec028TopeTests.Rechaza_Sexta_Cotizacion_CA_028_06` |
-| CA-07 | `Spec028SeleccionTests.Completa_Con_Relleno_CA_028_07` |
-| CA-08 | `Spec028SeleccionTests.Determinista_Y_Rapida_CA_028_08` |
+| CA-07 | `Spec028SeleccionTests.Completa_Con_Relleno_CA_028_07`, `MissingLocations_FillsNearestSlot_CA_028_07` e `InvalidDistances_AreNotNearest_CA_028_07` (solo selección; reparto pendiente de T-06) |
+| CA-08 | `Spec028SeleccionTests.SameInputAndDifferentOrderAreDeterministic_CA_028_08` y `TwoHundredCandidatesFinishUnder200Milliseconds_CA_028_08` |
 | CA-09 | `Spec028OleadasTests.Ignora_Solicitud_Cerrada_CA_028_09` |
 | CA-10 | `Spec028OleadasTests.Tope_De_Oleadas_Y_Sin_Tecnicos_CA_028_10` |
 | CA-11 | `Spec028CotizarTests.Cotizar_Exige_Envio_CA_028_11` |
@@ -87,7 +87,7 @@ Que cada solicitud llegue a pocos técnicos adecuados y no a todos: una primera 
 | CA-13 | `Spec028DescarteTests.Descarta_Idempotente_CA_028_13` |
 | CA-14 | `Spec028DetalleTests.Vista_Del_Destinatario_CA_028_14` |
 | CA-15 | `Spec028EjecutorTests.Reintentos_Y_Reserva_Vencida_CA_028_15` |
-| CA-16 | `Spec028ConfiguracionTests.Interruptor_Y_Validacion_CA_028_16` |
+| CA-16 | `Spec028ConfiguracionTests.InvalidConfiguration_PreventsHostStartup_CA_028_16` y `Defaults_StartWithWavesDisabled_CA_028_16` (opciones; comportamiento del interruptor pendiente de T-06 y T-07) |
 | CA-17 | `Spec028RegistrosTests.Sin_Datos_Personales_CA_028_17` |
 | CA-18 | `Spec028SeguridadTests.Exige_Sesion_Y_Limita_Descartes_CA_028_18` |
 
