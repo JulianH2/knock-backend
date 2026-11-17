@@ -1,9 +1,9 @@
 # Spec 055 — Biblioteca técnica compartida (`Knock.Hosting`)
 
 > **Estado:** Borrador · **Repositorio:** knock-backend · **Rector:** `constitution.md` (requiere la enmienda 1.2.0 de este mismo cambio)
-> **Clave de trabajo:** KNOCK-251 (TT-API-12 · Mover ForwardedHeadersExtensions y el redactor de registros a una biblioteca compartida). La etapa 2 es KNOCK-280 y la etapa 3 lleva su propia tarjeta.
+> **Clave de trabajo:** KNOCK-251 (TT-API-12 · Mover ForwardedHeadersExtensions y el redactor de registros a una biblioteca compartida). La etapa 2 es KNOCK-280 y la etapa 3, KNOCK-281.
 > **Servicio:** gateway y los tres servicios (`Hosting/`); nueva biblioteca `src/Knock.Hosting` · **Colecciones:** ninguna
-> **Sprint:** etapa 1 según decida el Tech Lead; etapa 2 (KNOCK-280) en Sprint 6; etapa 3 según su tarjeta · **Responsable:** Erick (etapas 1 y 2, como asigna Jira)
+> **Sprint:** etapa 1 según decida el Tech Lead; etapa 2 (KNOCK-280) en Sprint 6; etapa 3 (KNOCK-281) según decida el Tech Lead · **Responsable:** Erick (etapas 1 y 2, como asigna Jira)
 
 ## 1. Objetivo
 Tener una sola implementación de cada pieza técnica que hoy se copia entre el gateway y los tres servicios, para que un arreglo de seguridad o de privacidad se haga una vez y llegue a todos. Hoy hay 8 excepciones de jscpd y codemap vivas por esas copias (EXC-007, EXC-008, EXC-015, EXC-016, EXC-018, EXC-020, EXC-021 y EXC-025). Tres vencen el 2026-12-04 (EXC-015, EXC-016 y EXC-018), dos el 2026-12-15 (EXC-020 y EXC-021), dos el 2027-02-02 (EXC-007 y EXC-008) y una el 2027-02-13 (EXC-025). Además, el mismo cambio se tiene que repetir en cuatro archivos, como pasó con la redacción de consultas de la spec 035.
@@ -14,7 +14,7 @@ La constitución 1.1.0 solo permite compartir `Knock.Contracts`, «solo tipos y 
 **2.1 Historias**
 - **TT-API-12 (KNOCK-251), etapa 1:** crear `Knock.Hosting`, mover `ForwardedHeadersExtensions` de los tres servicios y su equivalente del gateway (`AddKnockGatewayForwardedHeaders`) y el redactor de registros (`TelemetryRedactor`, `RedactingJsonFormatter` y sus procesadores), y retirar EXC-020. *Terminada cuando:* la constitución permite la biblioteca, existe una sola implementación de cada pieza, los cuatro proyectos la usan, jscpd no reporta esos clones, EXC-020 está retirada, EXC-007 ya no cubre `TelemetryRedactor` y siguen pasando las pruebas de las specs 006, 011, 035 y BUG-005.
 - **Etapa 2 (KNOCK-280, sigue a KNOCK-247):** mover el límite de peticiones (`SharedRateLimiter`, `RedisRequestCounter`, `RateLimitingExtensions`) y retirar EXC-025. *Terminada cuando:* hay un solo limitador, el límite compartido entre copias de la spec 006 (R-05) y los valores de la spec 009 no cambian, y EXC-025 está retirada.
-- **Etapa 3 (tarjeta propia, ver §8):** mover el resto del catálogo de §3.2 y retirar EXC-007, EXC-008, EXC-015, EXC-016, EXC-018 y EXC-021. *Terminada cuando:* no queda ninguna copia de una pieza del catálogo en un servicio ni ninguna de esas excepciones.
+- **Etapa 3 (KNOCK-281):** mover el resto del catálogo de §3.2 y retirar EXC-007, EXC-008, EXC-015, EXC-016, EXC-018 y EXC-021. *Terminada cuando:* no queda ninguna copia de una pieza del catálogo en un servicio ni ninguna de esas excepciones.
 
 **2.2 Dentro**
 - La enmienda a la constitución (§4 y estructura del repositorio) y su número de versión.
@@ -146,8 +146,8 @@ Sin colecciones, claves ni campos nuevos. No cambia ninguna configuración.
 - **Base:** specs 001 (R-04 y R-06; la enmienda amplía R-04 sin tocar R-06), 006 (encabezados reenviados y límite compartido), 011 (registro y redacción), 012 (puntos), 035 (redacción de consultas y confianza) y BUG-005 (redacción de consola en Market).
 - **Antes de empezar la etapa 1:** que el Tech Lead y Alexis aprueben esta spec y la enmienda (la constitución pide la aprobación de dos integrantes). El PR #121 (spec 035 T-03) ya está en `sprint-04`, así que la etapa 1 parte de las cuatro copias con la regla de consultas.
 - **Etapa 2 (KNOCK-280, Sprint 6):** KNOCK-247 fusionada (el contador en Redis de Identity y Market, EXC-025).
-- **Etapa 3:** su propia tarjeta en Jira, relacionada con KNOCK-251 y KNOCK-280.
-- **Plan de salida de las excepciones:** el Tech Lead renueva las que vencen antes de su etapa y las liga a ella: EXC-025 y la parte de rate limiting de EXC-021 a la etapa 2 (KNOCK-280); EXC-007, EXC-008, EXC-015, EXC-016, EXC-018 y el resto de EXC-021 a la etapa 3. EXC-020 se retira en la etapa 1.
+- **Etapa 3 (KNOCK-281):** después de la etapa 2; relacionada con KNOCK-251 y KNOCK-280.
+- **Plan de salida de las excepciones:** el Tech Lead renueva las que vencen antes de su etapa y las liga a ella: EXC-025 y la parte de rate limiting de EXC-021 a la etapa 2 (KNOCK-280); EXC-007, EXC-008, EXC-015, EXC-016, EXC-018 y el resto de EXC-021 a la etapa 3 (KNOCK-281). EXC-020 se retira en la etapa 1.
 - **Archivos protegidos:** `.github/workflows/ci-pr.yml`, `.github/workflows/ci-deploy.yml` y `.github/CODEOWNERS` (R-15) los cambia o autoriza una persona.
 - **Sin dependencias nuevas:** los paquetes de la biblioteca ya están en los servicios.
 

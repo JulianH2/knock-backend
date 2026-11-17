@@ -10,7 +10,7 @@
   - ampliar el catálogo pide las dos aprobaciones de una enmienda;
   - en la etapa 3 el gateway no carga MongoDB.Driver, porque la parte de MongoDB va a `Knock.Hosting.Data`;
   - Stryker incluye `src/Knock.Hosting`;
-  - la etapa 2 es KNOCK-280 (Sprint 6);
+  - la etapa 2 es KNOCK-280 (Sprint 6) y la etapa 3 es KNOCK-281;
   - el Tech Lead renueva EXC-015, EXC-016 y EXC-018 (vencen el 2026-12-04) y EXC-020 y EXC-021 (2026-12-15), ligadas a su etapa.
 
   Se actualizaron la spec 001 (R-01 y R-04) y la ADR-001 para nombrar la biblioteca técnica.
