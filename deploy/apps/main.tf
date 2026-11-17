@@ -74,11 +74,16 @@ locals {
     }
     market = {
       external = false
-      env      = local.forwarded
+      # Cifrado de campos (specs 020 y 022; FieldCipher, sección Security:FieldEncryption): la versión vigente no es secreta y la llave sí.
+      env = merge(local.forwarded, {
+        Security__FieldEncryption__ActiveVersion = "1"
+      })
       # Market usa Redis para la caché del catálogo (spec 010, R-01/R-02): el módulo Catalog registra el cliente al arrancar.
+      # `field-encryption-key` solo la lee Market (un rol por secreto y por servicio) y es distinta de `pii-encryption-key`, que es de Identity.
       secret_env = merge(local.redis_secret, {
-        ConnectionStrings__KnockMongo = "mongo-market"
-        Jwt__SigningKey               = "jwt-signing-key"
+        ConnectionStrings__KnockMongo      = "mongo-market"
+        Jwt__SigningKey                    = "jwt-signing-key"
+        Security__FieldEncryption__Keys__1 = "field-encryption-key"
       })
     }
   }

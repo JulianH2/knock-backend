@@ -1,6 +1,6 @@
 ---
-description: Reglas al editar migraciones, semillas y scripts de base de datos de Knock
-globs: db/**,src/**/Migrations/**,src/**/Data/**
+description: Reglas al editar semillas, índices y scripts de base de datos de Knock
+globs: db/**,src/**/Data/**
 alwaysApply: false
 ---
 <!-- GENERADO por scripts/sync_agents.py desde .agents/rules/database.md. No editar a mano. -->
