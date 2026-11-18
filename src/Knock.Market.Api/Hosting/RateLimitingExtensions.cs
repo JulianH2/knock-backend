@@ -41,6 +41,7 @@ internal static class RateLimitingExtensions
     public const string CompareQuotesPolicy = "cotizaciones-comparar";
     public const string ChooseQuotePolicy = "cotizaciones-elegir";
     public const string ArrivalPolicy = "visitas-llegada";
+    public const string TrustPolicy = "tecnicos-confianza";
     private const string _healthPath = "/health";
     private const string _readyPath = "/health/ready";
     private const string _unknownClient = "unknown";
@@ -70,6 +71,7 @@ internal static class RateLimitingExtensions
             options.AddPolicy(CompareQuotesPolicy, SubjectPolicy(60, TimeSpan.FromMinutes(1)));
             options.AddPolicy(ChooseQuotePolicy, SubjectPolicy(10, TimeSpan.FromMinutes(1)));
             options.AddPolicy(ArrivalPolicy, SubjectPolicy(5, TimeSpan.FromMinutes(1)));
+            options.AddPolicy(TrustPolicy, SubjectPolicy(30, TimeSpan.FromMinutes(1)));
             options.GlobalLimiter = PartitionedRateLimiter.CreateChained(
                 PartitionedRateLimiter.Create<HttpContext, string>(context => GlobalPartition(context, global, ready)),
                 PartitionedRateLimiter.Create<HttpContext, string>(context =>
