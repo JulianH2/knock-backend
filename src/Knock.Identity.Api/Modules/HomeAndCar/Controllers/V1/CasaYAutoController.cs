@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Knock.Identity.Api.Hosting;
 using Knock.Identity.Api.Modules.HomeAndCar.Dtos;
 using Knock.Identity.Api.Modules.HomeAndCar.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -50,6 +51,28 @@ internal sealed class CasaYAutoController(HomeAndCarService service) : Controlle
 
         var item = await service.CreateAsync(sub, request, cancellationToken);
         return Created(new Uri($"{Request.Path.Value!.TrimEnd('/')}/{item.Id}", UriKind.Relative), item);
+    }
+
+    /// <summary>Edita un elemento propio (CAS-03): cambian solo los campos enviados. Uno ajeno o inexistente responde 404.</summary>
+    [HttpPut("{id}")]
+    [RequestSizeLimit(MaxBodyBytes)]
+    [ProducesResponseType<ItemResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status413PayloadTooLarge)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> Update([FromRoute] ItemRoute route, [FromBody] UpdateItemRequest request, CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "private, no-store";
+        if (Sub() is not { } sub)
+        {
+            return Unauthorized();
+        }
+
+        var outcome = await service.UpdateAsync(sub, route.Id!, request, cancellationToken);
+        return outcome.Item is { } item ? Ok(item) : await ValidationFilter.WriteErrorsAsync(HttpContext, outcome.Errors!);
     }
 
     private string? Sub() => User.FindFirst("sub")?.Value is { Length: > 0 } sub ? sub : null;
