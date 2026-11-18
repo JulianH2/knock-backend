@@ -66,7 +66,7 @@ internal sealed class ReportService(ReportesStore store, IUsuariosApi users, ICo
         return new ReportCreation(ReportOutcome.Created, ToCreated(saved));
     }
 
-    /// <summary>Los reportes hechos por quien llama, del más reciente al más antiguo. Un cursor que no se puede leer lanza 400 (<c>invalid_cursor</c>).</summary>
+    /// <summary>Los reportes hechos por quien llama, del más reciente al más antiguo. Un cursor que no se puede leer lanza 400 (<c>invalid_safety_cursor</c>).</summary>
     public async Task<ReportPage> ListAsync(string sub, ReportsQuery query, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);
