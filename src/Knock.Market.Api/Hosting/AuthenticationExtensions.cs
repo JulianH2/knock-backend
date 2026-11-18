@@ -18,7 +18,7 @@ internal static class AuthenticationExtensions
             sp.GetRequiredService<IConfiguration>(),
             sp.GetRequiredService<IHostEnvironment>()));
 
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer().AddInternalServiceScheme();
         services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
             .Configure<JwtSettings>((options, settings) =>
             {
@@ -48,6 +48,7 @@ internal static class AuthenticationExtensions
                 };
             });
         services.AddAuthorization();
+        services.AddKnockInternalServiceAuthentication();
         services.AddHostedService<AuthenticationStartupCheck>();
         return services;
     }
