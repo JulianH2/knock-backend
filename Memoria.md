@@ -797,3 +797,9 @@
 - **Decisión:** `specs/README.md` y los `plan.md` y `task.md` de las specs aprobadas dejan de decir «Borrador». El índice sigue los encabezados de cada `spec.md`: las specs 020 a 038 y BUG-005 pasan a su estado real (BUG-005 como Implementada), se agrega la spec 038 que faltaba y BUG-001 se queda en Borrador.
 - **Porqué:** el índice y las notas de los planes contradecían a las specs aprobadas; una persona o una herramienta que lea primero el índice cuenta endpoints como «sin spec» y specs como «sin aprobar».
 - **A evitar:** actualizar el encabezado de una spec sin actualizar el índice, su `plan.md` y su `task.md` en el mismo cambio.
+
+## 2026-11-18 — KNOCK-72 (spec 030, T-03): ocultador de datos de contacto
+- **Estado:** `OcultadorDeContacto` (función pura en Mensajería, `Modules/Conversaciones/Domain`) reemplaza por «[dato de contacto oculto]» los enlaces de WhatsApp y Telegram, los correos y los teléfonos de 10 dígitos (con espacios, guiones, puntos, paréntesis o `+52`). Devuelve el texto y si ocultó algo (`contactoOculto`). Todavía no lo llama nadie: el servicio de envío (T-06) lo usará solo mientras el técnico no sea el elegido.
+- **Decisiones (con porqué):** (1) patrones propios dentro del módulo, porque el filtro de datos personales de la spec 024 todavía no existe; cuando exista se retira esta copia o se une con ella; (2) falla cerrado: si una expresión agota su tiempo (200 ms) se oculta el texto completo; (3) once dígitos seguidos no se tocan (no son un teléfono de diez), y un número escrito con letras no se reconoce: lo atrapa la moderación de la spec 031 y el reporte de la persona.
+- **Pendiente:** la mutación del ocultador (meta de 70 %) y llamarlo desde el envío de mensajes (T-06, que además espera la moderación de la spec 031).
+- **A evitar:** tres pruebas con cuerpo idéntico y datos distintos (S4144): se juntan en una sola con varios `InlineData`; escribir «todo» en un comentario (S1135).

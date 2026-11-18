@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-17T03:00:59Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-18T15:40:37Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -9,6 +9,7 @@
 |---|---|---|---|---|
 | `Assistant` | data | 2 | 7 | 5 |
 | `Catalog` | -, controllers, data, domain, dtos, services, validators | 37 | 50 | 80 |
+| `Conversaciones` | domain | 1 | 2 | 1 |
 | `Knock.Contracts` | - | 7 | 11 | 7 |
 | `Knock.Gateway` | -, hosting | 14 | 39 | 48 |
 | `Knock.Identity.Api` | -, common, hosting | 29 | 61 | 85 |
@@ -245,6 +246,13 @@
 - `src/Knock.Market.Api/Modules/Catalog/Validators/NeighborhoodExistsQueryValidator.cs` — class `NeighborhoodExistsQueryValidator`
 - `src/Knock.Market.Api/Modules/Catalog/Validators/PostalCodeRouteValidator.cs` — class `PostalCodeRouteValidator`
 - `src/Knock.Market.Api/Modules/Catalog/Validators/WaitlistRequestValidator.cs` — class `WaitlistRequestValidator`
+
+### Conversaciones
+
+**domain**
+
+- `src/Knock.Messaging.Api/Modules/Conversaciones/Domain/OcultadorDeContacto.cs` — record struct `TextoOculto`, class `OcultadorDeContacto`
+  - `Ocultar()`:23
 
 ### Knock.Contracts
 
