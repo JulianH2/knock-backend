@@ -57,6 +57,17 @@ internal sealed class HomeAndCarService(IHomeAndCarStore store, TimeProvider clo
         return new UpdateItemOutcome(ToResponse(saved), null);
     }
 
+    /// <summary>
+    /// Quita un elemento propio (CAS-04); uno ajeno o inexistente lanza 404. Solo toca <c>mi_casa_y_auto</c>: los trabajos terminados de Mercado siguen existiendo y solo se desliga el historial (R-18).
+    /// </summary>
+    public async Task DeleteAsync(string sub, string id, CancellationToken cancellationToken)
+    {
+        if (!ObjectId.TryParse(id, out var objectId) || !await store.DeleteAsync(sub, objectId, cancellationToken))
+        {
+            throw NotFound();
+        }
+    }
+
     private async Task<HomeAndCarItem> FindOwnAsync(string sub, string id, CancellationToken cancellationToken) =>
         ObjectId.TryParse(id, out var objectId) && await store.FindAsync(sub, objectId, cancellationToken) is { } item ? item : throw NotFound();
 

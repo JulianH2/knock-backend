@@ -75,5 +75,24 @@ internal sealed class CasaYAutoController(HomeAndCarService service) : Controlle
         return outcome.Item is { } item ? Ok(item) : await ValidationFilter.WriteErrorsAsync(HttpContext, outcome.Errors!);
     }
 
+    /// <summary>Quita un elemento propio (CAS-04). Uno ajeno o inexistente responde 404. Los trabajos terminados de Mercado no se tocan.</summary>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> Delete([FromRoute] ItemRoute route, CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "private, no-store";
+        if (Sub() is not { } sub)
+        {
+            return Unauthorized();
+        }
+
+        await service.DeleteAsync(sub, route.Id!, cancellationToken);
+        return NoContent();
+    }
+
     private string? Sub() => User.FindFirst("sub")?.Value is { Length: > 0 } sub ? sub : null;
 }
