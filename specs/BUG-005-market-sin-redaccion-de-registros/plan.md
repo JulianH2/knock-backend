@@ -1,6 +1,6 @@
 # plan.md — BUG-005 Market sin redacción de registros
 
-> **Estado:** Borrador. No se ejecuta hasta que la spec esté Aprobada.
+> **Estado:** Aprobada. Las tareas se pueden ejecutar.
 
 ## 1. Mapeo de archivos
 - **Reutilizar:** configuración de consola y `TelemetryRedactor` de los servicios, y pruebas existentes de observabilidad; buscar en el mapa de código antes de crear.
