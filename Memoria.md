@@ -788,3 +788,8 @@
 - **Decisiones (con porqué):** (1) La validación rechaza cualquier campo que no esté en la lista y nunca repite un valor del archivo en el error, igual que el cargador de técnicos. (2) Una cotización de rango no lleva el campo `precio` (la semilla no lo trae); el servicio de elegir ya lo admite (KNOCK-82). (3) Se reutiliza `DemoTechnicianGuard` para la guarda de hosts locales en lugar de copiarla.
 - **Pendiente:** fotos de demo con nombre fijo (dependen de la spec 013, OI-2: las solicitudes de demo apuntan a identificadores de foto que no existen en el módulo de archivos, así que el detalle las muestra sin enlaces), transacción verificada en Azure e invalidación de Redis al final de la carga.
 - **A evitar:** cargar datos de demo sin la guarda de host local; escribir fechas como texto.
+
+## 2026-11-17 — Índice de specs y planes alineados con el estado real (KNOCK-181)
+- **Decisión:** `specs/README.md` y los `plan.md` y `task.md` de las specs aprobadas dejan de decir «Borrador». El índice sigue los encabezados de cada `spec.md`: las specs 020 a 038 y BUG-005 pasan a su estado real (BUG-005 como Implementada), se agrega la spec 038 que faltaba y BUG-001 se queda en Borrador.
+- **Porqué:** el índice y las notas de los planes contradecían a las specs aprobadas; una persona o una herramienta que lea primero el índice cuenta endpoints como «sin spec» y specs como «sin aprobar».
+- **A evitar:** actualizar el encabezado de una spec sin actualizar el índice, su `plan.md` y su `task.md` en el mismo cambio.

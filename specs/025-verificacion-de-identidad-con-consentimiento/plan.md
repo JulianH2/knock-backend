@@ -1,6 +1,6 @@
 # Plan 025 — Verificación de identidad con consentimiento
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Escribir el script de `db/` (base `identity`) con `verificaciones` y `consentimientos` y sus índices, incluido el único parcial sobre `curpVigente`.

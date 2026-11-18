@@ -1,6 +1,6 @@
 # Plan 015 — Registro e inicio de sesión
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Definir las colecciones `usuarios` y `sesiones` con sus índices (único en `sub`, único en `celularHash`, único en `huellaRenovacion`, TTL en `venceEn`) en un script de `db/`.

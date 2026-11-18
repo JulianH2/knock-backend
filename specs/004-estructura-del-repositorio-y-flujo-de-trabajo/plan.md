@@ -1,6 +1,6 @@
 # Plan 004 — Estructura del repositorio y flujo de trabajo
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Crear la estructura de carpetas.
