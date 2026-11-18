@@ -30,7 +30,7 @@ internal interface IHomeAndCarStore
 
 /// <summary>
 /// Lectura y escritura de <c>mi_casa_y_auto</c> (spec 041, §6). Los filtros son tipados del driver y la persona es siempre el <c>sub</c> del token. El límite de 20 no se cuenta antes
-/// de guardar (dos peticiones a la vez lo rebasarían): se guarda y se comprueba que el elemento quede entre los 20 primeros de la persona; si no, se retira (R-15, CA-25).
+/// de guardar (dos peticiones a la vez lo rebasarían): se guarda, se vuelve a contar y, si hay más de 20, el elemento se retira (R-15, CA-25).
 /// </summary>
 internal sealed class HomeAndCarStore(
     [FromKeyedServices(DataExtensions.DatabaseKey)] IMongoDatabase database,
@@ -79,17 +79,13 @@ internal sealed class HomeAndCarStore(
         }
 
         await Items.InsertOneAsync(ToDocument(item), cancellationToken: cancellationToken);
-        var kept = await Items.Find(owner, _findOptions)
-            .Sort(Builders<BsonDocument>.Sort.Ascending("_id"))
-            .Limit(maxItems)
-            .Project(Builders<BsonDocument>.Projection.Include("_id"))
-            .ToListAsync(cancellationToken);
-        if (kept.Any(document => document["_id"].AsObjectId == item.Id))
+        // Se cuenta después de guardar: quien ve más del tope se retira. Con peticiones simultáneas puede retirarse de más (el cliente reintenta), pero nunca quedan más de 20.
+        if (await Items.CountDocumentsAsync(owner, new CountOptions { Limit = maxItems + 1, MaxTime = mongoOptions.Value.QueryMaxTime }, cancellationToken) <= maxItems)
         {
             return AddItemOutcome.Created;
         }
 
-        // Otra petición simultánea llenó el cupo antes: este elemento no cabe y se retira. El orden por _id es el mismo para todas, así que nunca quedan más de 20.
+        // Otra petición simultánea llenó el cupo antes: este elemento no cabe y se retira.
         await Items.DeleteOneAsync(Own(item.OwnerId, item.Id), cancellationToken);
         return AddItemOutcome.LimitReached;
     }
