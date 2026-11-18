@@ -66,14 +66,11 @@ internal sealed class CasaYAutoController(HomeAndCarService service) : Controlle
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Update([FromRoute] ItemRoute route, [FromBody] UpdateItemRequest request, CancellationToken cancellationToken)
     {
-        Response.Headers.CacheControl = "private, no-store";
-        if (Sub() is not { } sub)
+        return await AsOwnerAsync(async sub =>
         {
-            return Unauthorized();
-        }
-
-        var outcome = await service.UpdateAsync(sub, route.Id!, request, cancellationToken);
-        return outcome.Item is { } item ? Ok(item) : await ValidationFilter.WriteErrorsAsync(HttpContext, outcome.Errors!);
+            var outcome = await service.UpdateAsync(sub, route.Id!, request, cancellationToken);
+            return outcome.Item is { } item ? Ok(item) : await ValidationFilter.WriteErrorsAsync(HttpContext, outcome.Errors!);
+        });
     }
 
     /// <summary>Quita un elemento propio (CAS-04). Uno ajeno o inexistente responde 404. Los trabajos terminados de Mercado no se tocan.</summary>
@@ -105,14 +102,18 @@ internal sealed class CasaYAutoController(HomeAndCarService service) : Controlle
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status503ServiceUnavailable)]
     public async Task<IActionResult> History([FromRoute] ItemRoute route, [FromQuery] HistoryQuery query, CancellationToken cancellationToken)
     {
-        Response.Headers.CacheControl = "private, no-store";
-        if (Sub() is not { } sub)
+        return await AsOwnerAsync(async sub =>
         {
-            return Unauthorized();
-        }
+            var outcome = await service.HistoryAsync(sub, route.Id!, query, cancellationToken);
+            return outcome.Page is { } page ? Ok(page) : await ValidationFilter.WriteErrorsAsync(HttpContext, outcome.Errors!);
+        });
+    }
 
-        var outcome = await service.HistoryAsync(sub, route.Id!, query, cancellationToken);
-        return outcome.Page is { } page ? Ok(page) : await ValidationFilter.WriteErrorsAsync(HttpContext, outcome.Errors!);
+    /// <summary>Sin cuerpo en caché y con el <c>sub</c> del token: lo único que toda ruta de esta spec comparte (R-20).</summary>
+    private Task<IActionResult> AsOwnerAsync(Func<string, Task<IActionResult>> action)
+    {
+        Response.Headers.CacheControl = "private, no-store";
+        return Sub() is { } sub ? action(sub) : Task.FromResult<IActionResult>(Unauthorized());
     }
 
     private string? Sub() => User.FindFirst("sub")?.Value is { Length: > 0 } sub ? sub : null;

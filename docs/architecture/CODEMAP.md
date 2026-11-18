@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-18T01:31:50Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-18T01:36:01Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -88,7 +88,7 @@
 - `src/Knock.Identity.Api/Hosting/SecuritySettings.cs:84 SecuritySettingsValidator.IsValidOrigin` · `src/Knock.Market.Api/Hosting/SecuritySettings.cs:83 SecuritySettingsValidator.IsValidOrigin`
 - `src/Knock.Identity.Api/Hosting/ValidationExtensions.cs:70 ValidationFilter.ToCamelCasePath` · `src/Knock.Market.Api/Hosting/ValidationExtensions.cs:65 ValidationFilter.ToCamelCasePath`
 - `src/Knock.Identity.Api/Hosting/ValidationExtensions.cs:74 ValidationFilter.Collect` · `src/Knock.Market.Api/Hosting/ValidationExtensions.cs:69 ValidationFilter.Collect`
-- `src/Knock.Identity.Api/Modules/HomeAndCar/Controllers/V1/CasaYAutoController.cs:106 CasaYAutoController.History` · `src/Knock.Identity.Api/Modules/HomeAndCar/Controllers/V1/CasaYAutoController.cs:67 CasaYAutoController.Update`
+- `src/Knock.Identity.Api/Modules/HomeAndCar/Controllers/V1/CasaYAutoController.cs:103 CasaYAutoController.History` · `src/Knock.Identity.Api/Modules/HomeAndCar/Controllers/V1/CasaYAutoController.cs:67 CasaYAutoController.Update`
 - `src/Knock.Identity.Api/Modules/Usuarios/Controllers/V1/MeController.cs:81 MeController.Matches` · `src/Knock.Market.Api/Modules/Catalog/Controllers/V1/OficiosController.cs:52 OficiosController.Matches`
 - `src/Knock.Identity.Api/Modules/Usuarios/Data/ProfileCacheOptions.cs:25 ProfileCacheOptionsValidator.Validate` · `src/Knock.Market.Api/Modules/Catalog/Data/CatalogCacheOptions.cs:25 CatalogCacheOptionsValidator.Validate`
 
@@ -258,7 +258,7 @@
 **controllers**
 
 - `src/Knock.Identity.Api/Modules/HomeAndCar/Controllers/V1/CasaYAutoController.cs` — class `CasaYAutoController`
-  - `List()`:29, `Create()`:45, `Update()`:67, `Delete()`:86, `History()`:106
+  - `List()`:29, `Create()`:45, `Update()`:67, `Delete()`:83, `History()`:103
 
 **data**
 

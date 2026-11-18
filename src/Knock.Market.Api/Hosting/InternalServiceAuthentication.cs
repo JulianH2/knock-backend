@@ -1,7 +1,7 @@
 using System.Globalization;
-using Microsoft.AspNetCore.Authentication;
 using System.Security.Cryptography;
 using Knock.Market.Api.Common.Errors;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
