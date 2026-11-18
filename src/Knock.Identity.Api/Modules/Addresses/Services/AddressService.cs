@@ -80,7 +80,7 @@ internal sealed partial class AddressService(
             userId,
             existing =>
             {
-                var planned = AddressPlanner.ForCreate(existing, draft, input.Principal);
+                var planned = AddressPlanner.ForCreate(existing, draft, input.Principal, stored => IsSame(stored, input));
                 principal = planned.Upserts.Count > 0 && planned.Upserts[0].Principal;
                 return planned;
             },
@@ -153,11 +153,17 @@ internal sealed partial class AddressService(
         return new AddressResult(AddressOutcome.Deleted);
     }
 
+    /// <summary>Misma dirección: misma colonia y misma calle sin distinguir mayúsculas ni espacios de los extremos. Las referencias no cuentan: no cambian dónde queda.</summary>
+    private bool IsSame(StoredAddress stored, AddressInput input) =>
+        string.Equals(stored.Colonia, input.Colonia, StringComparison.OrdinalIgnoreCase)
+        && string.Equals(cipher.Open(stored).Street, input.Street, StringComparison.OrdinalIgnoreCase);
+
     private static AddressResult Rejected(string rejection) => rejection switch
     {
         AddressRejections.NoAccount => new AddressResult(AddressOutcome.NoAccount),
         AddressRejections.NotFound => throw new DomainException(DomainErrorKind.NotFound, "The address does not exist."),
         AddressRejections.LimitReached => throw new DomainException(DomainErrorKind.Conflict, "The person reached the address limit.", AddressRejections.LimitReached),
+        AddressRejections.Duplicate => throw new DomainException(DomainErrorKind.Conflict, "The person already has this address.", AddressRejections.Duplicate),
         AddressRejections.PrincipalRequired => new AddressResult(AddressOutcome.PrincipalRequired),
         _ => throw new InvalidOperationException("The address change was rejected for an unknown reason."),
     };

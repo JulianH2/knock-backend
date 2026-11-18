@@ -9,11 +9,20 @@ namespace Knock.Identity.Api.Modules.Addresses.Services;
 /// </summary>
 internal static class AddressPlanner
 {
-    /// <summary>Alta: la primera dirección queda principal; marcar otra como principal desmarca la anterior; la undécima se rechaza.</summary>
-    public static AddressChanges ForCreate(IReadOnlyList<StoredAddress> existing, StoredAddress created, bool? wantsPrincipal)
+    /// <summary>
+    /// Alta: una dirección que la persona ya tiene (<paramref name="isSame"/>) se rechaza, así una petición repetida por mala señal no deja duplicados (R-18); la primera dirección queda
+    /// principal; marcar otra como principal desmarca la anterior; la undécima se rechaza.
+    /// </summary>
+    public static AddressChanges ForCreate(IReadOnlyList<StoredAddress> existing, StoredAddress created, bool? wantsPrincipal, Func<StoredAddress, bool> isSame)
     {
         ArgumentNullException.ThrowIfNull(existing);
         ArgumentNullException.ThrowIfNull(created);
+        ArgumentNullException.ThrowIfNull(isSame);
+        if (existing.Any(isSame))
+        {
+            return AddressChanges.Reject(AddressRejections.Duplicate);
+        }
+
         if (existing.Count >= AddressRules.MaxPerPerson)
         {
             return AddressChanges.Reject(AddressRejections.LimitReached);
