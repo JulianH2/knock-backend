@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-18T01:31:02Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-18T01:41:07Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -196,7 +196,7 @@
 - `src/Knock.Identity.Api/Modules/Addresses/Services/AddressRules.cs` — class `AddressRules`, record `AddressInput`, record `AddressEdit`
   - `Normalize()`:23, `HasControlCharacters()`:25, `IsColoniaName()`:27, `AddressInput()`:31, `From()`:33, `ToString()`:43, `AddressEdit()`:50, `From()`:52, `ToString()`:62
 - `src/Knock.Identity.Api/Modules/Addresses/Services/AddressService.cs` — class `AddressCrypto`, enum `AddressOutcome`, record `AddressResult`, class `AddressService`
-  - `StreetContext()`:15, `ReferencesContext()`:17, `AddressResult()`:31, `ToString()`:33, `AddressService()`:40, `ListAsync()`:49, `CreateAsync()`:60, `UpdateAsync()`:97, `DeleteAsync()`:136
+  - `StreetContext()`:16, `ReferencesContext()`:18, `AddressResult()`:32, `ToString()`:34, `AddressService()`:41, `ListAsync()`:48, `CreateAsync()`:59, `UpdateAsync()`:96, `DeleteAsync()`:135
 
 **validators**
 

@@ -12,6 +12,7 @@ graph LR
   Sesiones["Sesiones"]
   Tecnicos["Tecnicos"]
   Usuarios["Usuarios"]
+  Addresses -->|1| Usuarios
   Knock_Identity_Api -->|1| Addresses
   Knock_Identity_Api -->|2| Sesiones
   Knock_Identity_Api -->|2| Usuarios
