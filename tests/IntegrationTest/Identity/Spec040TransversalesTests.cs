@@ -129,7 +129,7 @@ public class Spec040TransversalesTests
         var body = new { calleNumero = "Calle Falsa 123", colonia = "Centro" };
 
         using var first = await host.SendAsync(HttpMethod.Post, AddressesHost.Route, ana.Token, body);
-        using var second = await host.SendAsync(HttpMethod.Post, AddressesHost.Route, ana.Token, new { calleNumero = "  calle FALSA 123 ", colonia = "centro" });
+        using var second = await host.SendAsync(HttpMethod.Post, AddressesHost.Route, ana.Token, new { calleNumero = "  calle FALSA 123 ", colonia = " Centro " });
 
         first.StatusCode.Should().Be(HttpStatusCode.Created);
         second.StatusCode.Should().Be(HttpStatusCode.Conflict);
