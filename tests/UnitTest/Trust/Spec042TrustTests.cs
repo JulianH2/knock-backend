@@ -44,7 +44,7 @@ public sealed class Spec042TrustTests
 
         Action act = () => TrustCursor.Decode(forged);
 
-        act.Should().Throw<DomainException>().Which.Code.Should().Be("invalid_cursor");
+        act.Should().Throw<DomainException>().Which.Code.Should().Be("invalid_trusted_cursor");
     }
 
     [Theory]

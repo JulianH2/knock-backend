@@ -25,7 +25,7 @@ internal sealed record TrustSaveOutcome(TrustSaveStatus Status, TrustedTechnicia
 /// </summary>
 internal sealed class TrustService(TrustStore store, TimeProvider clock)
 {
-    /// <summary>La página de técnicos guardados. Un cursor que no se puede leer lanza 400 (<c>invalid_cursor</c>).</summary>
+    /// <summary>La página de técnicos guardados. Un cursor que no se puede leer lanza 400 (<c>invalid_trusted_cursor</c>).</summary>
     public async Task<TrustedTechnicianPage> ListAsync(string sub, TrustedListQuery query, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);

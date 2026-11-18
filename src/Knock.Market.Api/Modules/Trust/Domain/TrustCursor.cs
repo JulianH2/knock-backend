@@ -11,7 +11,7 @@ internal static class TrustErrorCodes
 {
     public const string TechnicianNotFoundCode = "technician_not_found";
     public const string TrustedTechnicianNotFoundCode = "trusted_technician_not_found";
-    public const string InvalidCursorCode = "invalid_cursor";
+    public const string InvalidCursorCode = "invalid_trusted_cursor";
 }
 
 /// <summary>
