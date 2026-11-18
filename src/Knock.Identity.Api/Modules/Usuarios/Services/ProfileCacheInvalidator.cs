@@ -1,5 +1,4 @@
 using Knock.Identity.Api.Modules.Usuarios.Data;
-using StackExchange.Redis;
 
 namespace Knock.Identity.Api.Modules.Usuarios.Services;
 
@@ -7,16 +6,6 @@ namespace Knock.Identity.Api.Modules.Usuarios.Services;
 internal sealed class ProfileCacheInvalidator(IProfileCache cache)
 {
     /// <returns>Falso si Redis no respondió (el perfil caduca solo por su tiempo de vida).</returns>
-    public async Task<bool> TryForgetAsync(string sub, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await cache.RemoveAsync(sub, cancellationToken);
-            return true;
-        }
-        catch (Exception exception) when (exception is RedisException or TimeoutException)
-        {
-            return false;
-        }
-    }
+    public Task<bool> TryForgetAsync(string sub, CancellationToken cancellationToken) =>
+        DemoProfileCache.TryRemoveAsync(cache, sub, cancellationToken);
 }

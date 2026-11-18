@@ -1,13 +1,13 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-18T01:35:23Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-18T01:37:49Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
 
 | Módulo | Capas | Archivos | Tipos | Métodos públicos |
 |---|---|---|---|---|
-| `Account` | -, controllers, data, domain, dtos, services, validators | 27 | 63 | 60 |
+| `Account` | -, controllers, data, domain, dtos, services, validators | 28 | 63 | 60 |
 | `Assistant` | data | 2 | 7 | 5 |
 | `Catalog` | -, controllers, data, domain, dtos, services, validators | 37 | 50 | 80 |
 | `Knock.Contracts` | - | 7 | 11 | 7 |
@@ -185,6 +185,8 @@
 - `src/Knock.Identity.Api/Modules/Account/Data/AccountStore.cs` — class `AccountStore`, class `Fields`
   - `EnsureIndexesAsync()`:54, `FindBySubAsync()`:77, `PhoneHashExistsAsync()`:82, `FindOtherOpenSessionIdsAsync()`:86, `ChangePhoneAsync()`:95, `FindByPhoneHashAsync()`:149, `CreateRecoveryCaseIfNoneOpenAsync()`:153, `TryStartExportAsync()`:180, `ClearExportAsync()`:193, `FindConsentsAsync()`:199, `SetOptionalConsentAsync()`:206, `FindSessionStartAsync()`:252, `ScheduleDeletionAsync()`:265, `CancelDeletionAsync()`:278
 - `src/Knock.Identity.Api/Modules/Account/Data/IAccountStore.cs` — interface `IAccountStore`
+- `src/Knock.Identity.Api/Modules/Account/Data/RedisSessionCanceller.cs` — class `RedisSessionCanceller`
+  - `CancelAsync()`:10
 
 **domain**
 
@@ -209,8 +211,7 @@
   - `EnqueueSessionRevokedAsync()`:20, `EnqueueExportAsync()`:26
 - `src/Knock.Identity.Api/Modules/Account/Services/IMarketAccountClient.cs` — interface `IMarketAccountClient`, class `UnavailableMarketAccountClient`
   - `GetPendingAsync()`:23, `CancelOpenAsync()`:25
-- `src/Knock.Identity.Api/Modules/Account/Services/ISessionCanceller.cs` — interface `ISessionCanceller`, class `RedisSessionCanceller`
-  - `CancelAsync()`:14
+- `src/Knock.Identity.Api/Modules/Account/Services/ISessionCanceller.cs` — interface `ISessionCanceller`
 - `src/Knock.Identity.Api/Modules/Account/Services/PendingService.cs` — class `PendingService`
   - `PendingService()`:9, `ListAsync()`:14
 - `src/Knock.Identity.Api/Modules/Account/Services/PhoneChangeService.cs` — class `PhoneChangeService`
@@ -821,7 +822,7 @@
 - `src/Knock.Identity.Api/Modules/Usuarios/Services/MarketColoniaCatalog.cs` — class `MarketColoniaCatalog`, record `ExistsResponse`, class `MarketCatalogOptions`
   - `ExistsAsync()`:16, `HasValidBaseUrl()`:65
 - `src/Knock.Identity.Api/Modules/Usuarios/Services/ProfileCacheInvalidator.cs` — class `ProfileCacheInvalidator`
-  - `ProfileCacheInvalidator()`:7, `TryForgetAsync()`:10
+  - `ProfileCacheInvalidator()`:6, `TryForgetAsync()`:9
 - `src/Knock.Identity.Api/Modules/Usuarios/Services/ProfileRules.cs` — class `ProfileOptions`, class `ProfileRules`
   - `ProfileRules()`:19, `Validate()`:36
 - `src/Knock.Identity.Api/Modules/Usuarios/Services/ProfileService.cs` — class `ProfileService`
