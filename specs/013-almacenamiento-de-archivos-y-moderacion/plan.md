@@ -1,6 +1,6 @@
 # Plan 013 — Almacenamiento de archivos, entrega con caché y moderación
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Crear las dos cuentas de almacenamiento y sus contenedores en Terraform (sin CDN, ADR-007).

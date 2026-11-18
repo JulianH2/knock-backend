@@ -1,6 +1,6 @@
 # Plan 020 — Solicitudes y cotizaciones (pedir y enviar)
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Traer a Mercado el módulo de archivos privados (`Media`, TT-API-05) desde `legacy/` o, si ya llegó con la spec 013, reutilizar su `IMediaApi`; sin él no hay fotos y la cadena se bloquea.

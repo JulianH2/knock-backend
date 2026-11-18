@@ -1,6 +1,6 @@
 # Plan 007 — Integración continua y despliegue
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Escribir el workflow con detección de cambios por carpeta.
