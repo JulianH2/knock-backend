@@ -795,3 +795,11 @@
 - **Decisiones (con porqué):** (1) Llave propia de Identity en lugar de reutilizar `field-encryption-key`: un rol por secreto y por servicio, y una llave comprometida no abre los datos del otro servicio. (2) Los valores no pasan por Terraform ni por el repositorio: una persona los crea en Key Vault.
 - **Pendiente:** crear los dos secretos en Key Vault y ejecutar el apply (una persona). Hasta entonces no fusionar los PR que dependen de ellos (direcciones y búsqueda).
 - **A evitar:** pegar el valor de una llave en un chat, un archivo o el historial; fusionar el código que exige una llave antes de que exista el secreto.
+## 2026-11-17 — Respuestas verificadas para la evaluación y equivalencias del Excel (KNOCK-181)
+- **Decisión:** `docs/EVALUACION.md` reúne las respuestas a las preguntas de evaluación del backend con el archivo donde se comprueba cada una, las cifras de métodos de prueba y las equivalencias entre los IDs del Excel de endpoints y las rutas de las specs.
+- **Porqué:** ocho endpoints del Excel tienen otra ruta en las specs (por ejemplo `COT-04` es `POST /solicitudes/{id}/elegir`); quien cuente rutas del Excel contra las specs los da por «sin spec». `CON-02` se eliminó (spec 042, D-04) y `COL-01` (`GET /colonias`) queda pendiente de decisión.
+- **A evitar:** dar cifras de pruebas sin decir si son métodos o casos ejecutados; actualizar una ruta en una spec sin dejar la equivalencia con el Excel.
+## 2026-11-17 — Índice de specs y planes alineados con el estado real (KNOCK-181)
+- **Decisión:** `specs/README.md` y los `plan.md` y `task.md` de las specs aprobadas dejan de decir «Borrador». El índice sigue los encabezados de cada `spec.md`: las specs 020 a 038 y BUG-005 pasan a su estado real (BUG-005 como Implementada), se agrega la spec 038 que faltaba y BUG-001 se queda en Borrador.
+- **Porqué:** el índice y las notas de los planes contradecían a las specs aprobadas; una persona o una herramienta que lea primero el índice cuenta endpoints como «sin spec» y specs como «sin aprobar».
+- **A evitar:** actualizar el encabezado de una spec sin actualizar el índice, su `plan.md` y su `task.md` en el mismo cambio.

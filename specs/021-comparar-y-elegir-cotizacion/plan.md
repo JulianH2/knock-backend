@@ -1,6 +1,6 @@
 # Plan 021 — Comparar y elegir cotización
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Ampliar el script de `db/` con la colección `visitas` y sus índices, y los campos nuevos de `solicitudes`, `cotizaciones` y `tecnicos`.

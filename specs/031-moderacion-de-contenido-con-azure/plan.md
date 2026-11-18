@@ -1,6 +1,6 @@
 # Plan 031 — Moderación de contenido con Azure
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Interfaz y tipos en `Knock.Contracts/Moderation/` (R-01), primero, porque las specs 020, 030 y 032 la necesitan para avanzar con un doble.
