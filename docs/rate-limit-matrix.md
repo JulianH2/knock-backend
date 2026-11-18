@@ -63,14 +63,15 @@
 
 ## Gateway (spec 009, KNOCK-204)
 
-El gateway limita con contadores de ventana fija en Redis (`ratelimit:ip:*`, `ratelimit:auth:*`, `ratelimit:user:*`), compartidos entre réplicas, a diferencia del limitador en memoria de los servicios.
+El gateway limita con contadores de ventana fija en Redis (`ratelimit:ip:*`, `ratelimit:auth:*`, `ratelimit:user:*`, `ratelimit:busqueda:*`), compartidos entre réplicas, a diferencia del limitador en memoria de los servicios.
 
 | Política | Alcance | Límite (punto de partida) | Ventana | Clave |
 |---|---|---|---|---|
 | IP | Toda ruta salvo `/health`, antes de autenticar | 100 peticiones | 1 minuto | IP del cliente (IPv6 por /64) |
 | Estricta `/auth` | `/api/v{n}/auth/*`, además de la de IP | 10 peticiones | 1 minuto | IP del cliente |
 | Usuario | Peticiones con sesión, después de autenticar | 120 peticiones | 1 minuto | `sub` del JWT |
+| Búsqueda de expertos | `/api/v{n}/busqueda`, además de la de usuario (spec 027, R-14) | 30 peticiones | 1 minuto | `sub` del JWT |
 
-- Configuración: `RateLimiting:Ip`, `RateLimiting:Auth` y `RateLimiting:User` (`PermitLimit` y `Window`), sin valores por defecto en código.
+- Configuración: `RateLimiting:Ip`, `RateLimiting:Auth`, `RateLimiting:User` y `RateLimiting:Search` (`PermitLimit` y `Window`), sin valores por defecto en código.
 - 429 en `application/problem+json` con `Retry-After` en segundos (mínimo 1); el cuerpo no revela IP, clave ni contador.
 - Si Redis no responde, el gateway responde 503 con `Retry-After: 5`: sin contadores no se puede limitar.
