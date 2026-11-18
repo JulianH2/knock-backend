@@ -788,3 +788,8 @@
 - **Decisiones (con porqué):** (1) La validación rechaza cualquier campo que no esté en la lista y nunca repite un valor del archivo en el error, igual que el cargador de técnicos. (2) Una cotización de rango no lleva el campo `precio` (la semilla no lo trae); el servicio de elegir ya lo admite (KNOCK-82). (3) Se reutiliza `DemoTechnicianGuard` para la guarda de hosts locales en lugar de copiarla.
 - **Pendiente:** fotos de demo con nombre fijo (dependen de la spec 013, OI-2: las solicitudes de demo apuntan a identificadores de foto que no existen en el módulo de archivos, así que el detalle las muestra sin enlaces), transacción verificada en Azure e invalidación de Redis al final de la carga.
 - **A evitar:** cargar datos de demo sin la guarda de host local; escribir fechas como texto.
+
+## 2026-11-17 — Respuestas verificadas para la evaluación y equivalencias del Excel (KNOCK-181)
+- **Decisión:** `docs/EVALUACION.md` reúne las respuestas a las preguntas de evaluación del backend con el archivo donde se comprueba cada una, las cifras de métodos de prueba y las equivalencias entre los IDs del Excel de endpoints y las rutas de las specs.
+- **Porqué:** ocho endpoints del Excel tienen otra ruta en las specs (por ejemplo `COT-04` es `POST /solicitudes/{id}/elegir`); quien cuente rutas del Excel contra las specs los da por «sin spec». `CON-02` se eliminó (spec 042, D-04) y `COL-01` (`GET /colonias`) queda pendiente de decisión.
+- **A evitar:** dar cifras de pruebas sin decir si son métodos o casos ejecutados; actualizar una ruta en una spec sin dejar la equivalencia con el Excel.
