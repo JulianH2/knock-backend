@@ -18,7 +18,7 @@ internal sealed class AccountStore(
 {
     public const string UsersCollection = "usuarios";
     public const string SessionsCollection = "sesiones";
-    private const int WriteConflictCode = 112;
+    private const int _writeConflictCode = 112;
 
     public const string RecoveriesCollection = "recuperaciones";
 
@@ -139,7 +139,7 @@ internal sealed class AccountStore(
             {
                 return (PhoneChangeOutcome.PhoneTaken, []);
             }
-            catch (MongoCommandException exception) when (exception.Code == WriteConflictCode && attempt < _maxWriteConflictAttempts)
+            catch (MongoCommandException exception) when (exception.Code == _writeConflictCode && attempt < _maxWriteConflictAttempts)
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(50 * attempt), cancellationToken);
             }
