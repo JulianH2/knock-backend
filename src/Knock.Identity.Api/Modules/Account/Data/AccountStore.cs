@@ -141,7 +141,7 @@ internal sealed class AccountStore(
             }
             catch (MongoCommandException exception) when (exception.Code == _writeConflictCode && attempt < _maxWriteConflictAttempts)
             {
-                await Task.Delay(TimeSpan.FromMilliseconds(50 * attempt), cancellationToken);
+                await Task.Delay(WriteConflictBackoff(attempt), cancellationToken);
             }
         }
     }
@@ -312,6 +312,9 @@ internal sealed class AccountStore(
             document[Fields.PhoneHashField].AsBsonBinaryData.Bytes,
             deleteAt);
     }
+
+    /// <summary>Espera técnica y corta entre reintentos de un conflicto de escritura; no es un plazo de negocio.</summary>
+    private static TimeSpan WriteConflictBackoff(int attempt) => TimeSpan.FromMilliseconds(50 * attempt);
 
     /// <summary>Clave duplicada (11000) de una escritura simple o de una transacción.</summary>
     private static bool IsDuplicateKey(Exception exception) =>
