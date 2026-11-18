@@ -75,6 +75,9 @@ internal sealed class SecurityMessagingFactory(IReadOnlyDictionary<string, strin
                 ["Jwt:SigningKey"] = Convert.ToBase64String(TokenForge.SigningKey),
                 ["RateLimiting:Global:PermitLimit"] = _highLimit,
                 ["RateLimiting:Ready:PermitLimit"] = _highLimit,
+                // Spec 026: el arranque exige decir si el chat está encendido y dónde está Mercado; estas pruebas no usan el hub.
+                ["Chat:Habilitado"] = "false",
+                ["Services:Market:BaseUrl"] = "http://127.0.0.1:5234/",
             };
             foreach (var (key, value) in settings)
             {
