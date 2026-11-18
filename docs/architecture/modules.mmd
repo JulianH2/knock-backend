@@ -1,4 +1,5 @@
 graph LR
+  Account["Account"]
   Assistant["Assistant"]
   Catalog["Catalog"]
   Knock_Contracts["Knock.Contracts"]
@@ -11,6 +12,9 @@ graph LR
   Sesiones["Sesiones"]
   Tecnicos["Tecnicos"]
   Usuarios["Usuarios"]
+  Account -->|11| Sesiones
+  Account -->|2| Usuarios
+  Knock_Identity_Api -->|2| Account
   Knock_Identity_Api -->|2| Sesiones
   Knock_Identity_Api -->|2| Usuarios
   Knock_Market_Api -->|2| Catalog

@@ -1,7 +1,6 @@
 using Knock.Identity.Api.Common.Errors;
 using Knock.Identity.Api.Modules.Account.Domain;
 using Knock.Identity.Api.Modules.Account.Services;
-using Knock.Identity.Api.Modules.Sesiones.Data;
 using Knock.Identity.Api.Modules.Sesiones.Services;
 
 namespace Knock.UnitTest.Identity;
@@ -29,7 +28,7 @@ internal sealed class Spec039Verifier(FirebaseIdentity? identity) : IFirebaseIdT
 }
 
 /// <summary>Lista de sesiones canceladas doblada: guarda los ids y la vida que se les pidió.</summary>
-internal sealed class Spec039Cancelled : ISesionCancelada
+internal sealed class Spec039Cancelled : ISessionCanceller
 {
     public List<(string SessionId, TimeSpan Lifetime)> Cancelled { get; } = [];
 

@@ -1,7 +1,6 @@
 using Knock.Identity.Api.Common.Errors;
 using Knock.Identity.Api.Modules.Account.Data;
 using Knock.Identity.Api.Modules.Account.Domain;
-using Knock.Identity.Api.Modules.Sesiones.Data;
 using Knock.Identity.Api.Modules.Sesiones.Services;
 
 namespace Knock.Identity.Api.Modules.Account.Services;
@@ -14,7 +13,7 @@ internal sealed partial class PhoneChangeService(
     IAccountStore store,
     IFirebaseIdTokenVerifier verifier,
     PhoneProtector phones,
-    ISesionCancelada cancelled,
+    ISessionCanceller cancelled,
     IAccountOutbox outbox,
     TimeProvider timeProvider,
     ILogger<PhoneChangeService> logger)

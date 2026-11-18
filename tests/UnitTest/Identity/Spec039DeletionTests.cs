@@ -8,6 +8,7 @@ using Knock.Identity.Api.Modules.Sesiones.Domain;
 using Knock.Identity.Api.Modules.Sesiones.Services;
 using Knock.Identity.Api.Modules.Usuarios.Data;
 using Knock.Identity.Api.Modules.Usuarios.Domain;
+using Knock.Identity.Api.Modules.Usuarios.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -51,7 +52,7 @@ public class Spec039DeletionTests
         var market = new Spec039Market();
         var verifier = new Spec039Verifier(new FirebaseIdentity(_uid, _phone));
         var cache = new NoCache();
-        return new Rig(new AccountDeletionService(store, market, verifier, phones, cache, new Spec039Clock(_now), NullLogger<AccountDeletionService>.Instance), store, market, verifier, cache);
+        return new Rig(new AccountDeletionService(store, market, verifier, phones, new ProfileCacheInvalidator(cache), new Spec039Clock(_now), NullLogger<AccountDeletionService>.Instance), store, market, verifier, cache);
     }
 
     private static DeleteAccountInput Input(string? token = null) => new(token);

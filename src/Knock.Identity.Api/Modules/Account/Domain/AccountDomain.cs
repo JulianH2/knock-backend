@@ -2,6 +2,13 @@ using Knock.Identity.Api.Modules.Sesiones.Services;
 
 namespace Knock.Identity.Api.Modules.Account.Domain;
 
+/// <summary>Estados de la cuenta que esta spec lee y escribe (spec 015, R-07); los mismos valores que guarda Sesiones.</summary>
+internal static class AccountStates
+{
+    public const string Active = "activa";
+    public const string DeletionScheduled = "eliminacion_programada";
+}
+
 /// <summary>Códigos de negocio de la spec 039 (§5): en inglés y en snake_case, sin datos de la persona.</summary>
 internal static class AccountErrorCodes
 {

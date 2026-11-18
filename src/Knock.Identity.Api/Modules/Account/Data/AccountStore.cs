@@ -1,7 +1,5 @@
 using Knock.Identity.Api.Hosting;
 using Knock.Identity.Api.Modules.Account.Domain;
-using Knock.Identity.Api.Modules.Sesiones.Data;
-using Knock.Identity.Api.Modules.Sesiones.Domain;
 using Knock.Identity.Api.Modules.Sesiones.Services;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
@@ -14,10 +12,14 @@ namespace Knock.Identity.Api.Modules.Account.Data;
 /// la persona es siempre la del <c>sub</c> del token (R-27): ninguna entrada se arma como JSON. Ninguna colección se cachea.
 /// </summary>
 internal sealed class AccountStore(
-    [FromKeyedServices(SesionesDataExtensions.ModuleKey)] IMongoDatabase database,
+    [FromKeyedServices(DataExtensions.DatabaseKey)] IMongoDatabase database,
     IMongoClient client,
     IOptions<KnockMongoOptions> mongoOptions) : IAccountStore
 {
+    public const string UsersCollection = "usuarios";
+    public const string SessionsCollection = "sesiones";
+    private const int WriteConflictCode = 112;
+
     public const string RecoveriesCollection = "recuperaciones";
 
     public const string DeleteAtField = "eliminarEn";
@@ -34,17 +36,17 @@ internal sealed class AccountStore(
     private static readonly FilterDefinitionBuilder<BsonDocument> _filter = Builders<BsonDocument>.Filter;
 
     private static readonly ProjectionDefinition<BsonDocument> _accountProjection = Builders<BsonDocument>.Projection
-        .Include(SesionesStore.SubField)
-        .Include(SesionesStore.StateField)
-        .Include(SesionesStore.IsTechnicianField)
-        .Include(SesionesStore.PhoneHashField)
+        .Include(Fields.SubField)
+        .Include(Fields.StateField)
+        .Include(Fields.IsTechnicianField)
+        .Include(Fields.PhoneHashField)
         .Include(DeleteAtField);
 
     private readonly FindOptions _findOptions = new() { MaxTime = mongoOptions.Value.QueryMaxTime };
 
-    public IMongoCollection<BsonDocument> Users { get; } = database.GetCollection<BsonDocument>(SesionesStore.UsersCollection);
+    public IMongoCollection<BsonDocument> Users { get; } = database.GetCollection<BsonDocument>(UsersCollection);
 
-    public IMongoCollection<BsonDocument> Sessions { get; } = database.GetCollection<BsonDocument>(SesionesStore.SessionsCollection);
+    public IMongoCollection<BsonDocument> Sessions { get; } = database.GetCollection<BsonDocument>(SessionsCollection);
 
     public IMongoCollection<BsonDocument> Recoveries { get; } = database.GetCollection<BsonDocument>(RecoveriesCollection);
 
@@ -54,16 +56,16 @@ internal sealed class AccountStore(
         var keys = Builders<BsonDocument>.IndexKeys;
         await Users.Indexes.CreateOneAsync(
             new CreateIndexModel<BsonDocument>(
-                keys.Ascending(SesionesStore.StateField).Ascending(DeleteAtField),
+                keys.Ascending(Fields.StateField).Ascending(DeleteAtField),
                 new CreateIndexOptions { Name = "estado_1_eliminarEn_1" }),
             cancellationToken: cancellationToken);
         await Recoveries.Indexes.CreateManyAsync(
             [
                 new CreateIndexModel<BsonDocument>(
-                    keys.Ascending(SesionesStore.StateField).Ascending(SesionesStore.CreatedAtField),
+                    keys.Ascending(Fields.StateField).Ascending(Fields.CreatedAtField),
                     new CreateIndexOptions { Name = "estado_1_creadoEn_1" }),
                 new CreateIndexModel<BsonDocument>(
-                    keys.Ascending(SesionesStore.UserIdField).Ascending(SesionesStore.StateField),
+                    keys.Ascending(Fields.UserIdField).Ascending(Fields.StateField),
                     new CreateIndexOptions { Name = "usuarioId_1_estado_1" }),
                 new CreateIndexModel<BsonDocument>(
                     keys.Ascending(UpdatedAtField),
@@ -73,21 +75,21 @@ internal sealed class AccountStore(
     }
 
     public async Task<AccountSnapshot?> FindBySubAsync(string sub, CancellationToken cancellationToken) =>
-        ToSnapshot(await Users.Find(_filter.Eq(SesionesStore.SubField, sub), _findOptions).Project(_accountProjection).Limit(1)
+        ToSnapshot(await Users.Find(_filter.Eq(Fields.SubField, sub), _findOptions).Project(_accountProjection).Limit(1)
             .FirstOrDefaultAsync(cancellationToken));
 
     /// <summary>Busca por el HMAC con el índice único: no descifra nada.</summary>
     public async Task<bool> PhoneHashExistsAsync(byte[] phoneHash, CancellationToken cancellationToken) =>
-        await Users.Find(_filter.Eq(SesionesStore.PhoneHashField, new BsonBinaryData(phoneHash)), _findOptions)
-            .Project(Builders<BsonDocument>.Projection.Include(SesionesStore.IdField)).Limit(1).AnyAsync(cancellationToken);
+        await Users.Find(_filter.Eq(Fields.PhoneHashField, new BsonBinaryData(phoneHash)), _findOptions)
+            .Project(Builders<BsonDocument>.Projection.Include(Fields.IdField)).Limit(1).AnyAsync(cancellationToken);
 
     public async Task<IReadOnlyList<string>> FindOtherOpenSessionIdsAsync(
         string userId, string currentSessionId, DateTime now, CancellationToken cancellationToken)
     {
         var documents = await Sessions.Find(OpenSessionsExcept(userId, currentSessionId, now), _findOptions)
-            .Project(Builders<BsonDocument>.Projection.Include(SesionesStore.IdField))
+            .Project(Builders<BsonDocument>.Projection.Include(Fields.IdField))
             .ToListAsync(cancellationToken);
-        return [.. documents.Select(document => document[SesionesStore.IdField].AsObjectId.ToString())];
+        return [.. documents.Select(document => document[Fields.IdField].AsObjectId.ToString())];
     }
 
     public async Task<(PhoneChangeOutcome Outcome, IReadOnlyList<string> RevokedSessionIds)> ChangePhoneAsync(
@@ -106,25 +108,25 @@ internal sealed class AccountStore(
                     async (transaction, token) =>
                     {
                         var update = Builders<BsonDocument>.Update
-                            .Set(SesionesStore.PhoneCiphertextField, new BsonBinaryData(phone.Ciphertext))
-                            .Set(SesionesStore.PhoneCiphertextVersionField, phone.KeyVersion)
-                            .Set(SesionesStore.PhoneHashField, new BsonBinaryData(hash.Value))
-                            .Set(SesionesStore.PhoneHashVersionField, hash.KeyVersion)
+                            .Set(Fields.PhoneCiphertextField, new BsonBinaryData(phone.Ciphertext))
+                            .Set(Fields.PhoneCiphertextVersionField, phone.KeyVersion)
+                            .Set(Fields.PhoneHashField, new BsonBinaryData(hash.Value))
+                            .Set(Fields.PhoneHashVersionField, hash.KeyVersion)
                             .Set(UpdatedAtField, new BsonDateTime(now))
-                            .Inc(SesionesStore.VersionField, 1);
-                        await Users.UpdateOneAsync(transaction, _filter.Eq(SesionesStore.IdField, ObjectId.Parse(userId)), update, cancellationToken: token);
+                            .Inc(Fields.VersionField, 1);
+                        await Users.UpdateOneAsync(transaction, _filter.Eq(Fields.IdField, ObjectId.Parse(userId)), update, cancellationToken: token);
                         var open = OpenSessionsExcept(userId, currentSessionId, now);
                         var ids = (await Sessions.Find(transaction, open, _findOptions)
-                                .Project(Builders<BsonDocument>.Projection.Include(SesionesStore.IdField))
+                                .Project(Builders<BsonDocument>.Projection.Include(Fields.IdField))
                                 .ToListAsync(token))
-                            .Select(document => document[SesionesStore.IdField].AsObjectId)
+                            .Select(document => document[Fields.IdField].AsObjectId)
                             .ToList();
                         if (ids.Count > 0)
                         {
                             await Sessions.UpdateManyAsync(
                                 transaction,
-                                _filter.In(SesionesStore.IdField, ids),
-                                Builders<BsonDocument>.Update.Set(SesionesStore.RevokedField, true),
+                                _filter.In(Fields.IdField, ids),
+                                Builders<BsonDocument>.Update.Set(Fields.RevokedField, true),
                                 cancellationToken: token);
                         }
 
@@ -133,11 +135,11 @@ internal sealed class AccountStore(
                     cancellationToken: cancellationToken);
                 return (PhoneChangeOutcome.Changed, revoked);
             }
-            catch (Exception exception) when (SesionesStore.IsDuplicateKey(exception))
+            catch (Exception exception) when (IsDuplicateKey(exception))
             {
                 return (PhoneChangeOutcome.PhoneTaken, []);
             }
-            catch (MongoCommandException exception) when (exception.Code == SesionesStore.WriteConflictCode && attempt < _maxWriteConflictAttempts)
+            catch (MongoCommandException exception) when (exception.Code == WriteConflictCode && attempt < _maxWriteConflictAttempts)
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(50 * attempt), cancellationToken);
             }
@@ -145,7 +147,7 @@ internal sealed class AccountStore(
     }
 
     public async Task<AccountSnapshot?> FindByPhoneHashAsync(byte[] phoneHash, CancellationToken cancellationToken) =>
-        ToSnapshot(await Users.Find(_filter.Eq(SesionesStore.PhoneHashField, new BsonBinaryData(phoneHash)), _findOptions)
+        ToSnapshot(await Users.Find(_filter.Eq(Fields.PhoneHashField, new BsonBinaryData(phoneHash)), _findOptions)
             .Project(_accountProjection).Limit(1).FirstOrDefaultAsync(cancellationToken));
 
     public async Task<bool> CreateRecoveryCaseIfNoneOpenAsync(RecoveryCase recoveryCase, CancellationToken cancellationToken)
@@ -161,11 +163,11 @@ internal sealed class AccountStore(
                 { "hashVersion", recoveryCase.NewPhoneHash.KeyVersion },
             })
             .SetOnInsert(RecoveryTypeField, recoveryCase.Type)
-            .SetOnInsert(SesionesStore.CreatedAtField, created)
+            .SetOnInsert(Fields.CreatedAtField, created)
             .SetOnInsert(UpdatedAtField, created);
         var open = _filter.And(
-            _filter.Eq(SesionesStore.UserIdField, ObjectId.Parse(recoveryCase.UserId)),
-            _filter.Eq(SesionesStore.StateField, RecoveryStates.Pending));
+            _filter.Eq(Fields.UserIdField, ObjectId.Parse(recoveryCase.UserId)),
+            _filter.Eq(Fields.StateField, RecoveryStates.Pending));
         // Con upsert, los campos del filtro por igualdad (usuarioId y estado) pasan al documento nuevo.
         var before = await Recoveries.FindOneAndUpdateAsync(
             open,
@@ -178,26 +180,26 @@ internal sealed class AccountStore(
     public async Task<ExportStartOutcome> TryStartExportAsync(string userId, DateTime now, CancellationToken cancellationToken)
     {
         var filter = _filter.And(
-            _filter.Eq(SesionesStore.IdField, ObjectId.Parse(userId)),
+            _filter.Eq(Fields.IdField, ObjectId.Parse(userId)),
             _filter.Exists(ExportRequestedAtField, false));
         var update = Builders<BsonDocument>.Update
             .Set(ExportRequestedAtField, new BsonDateTime(now))
             .Set(UpdatedAtField, new BsonDateTime(now))
-            .Inc(SesionesStore.VersionField, 1);
+            .Inc(Fields.VersionField, 1);
         var result = await Users.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
         return result.ModifiedCount == 1 ? ExportStartOutcome.Started : ExportStartOutcome.AlreadyInProgress;
     }
 
     public async Task ClearExportAsync(string userId, CancellationToken cancellationToken) =>
         await Users.UpdateOneAsync(
-            _filter.Eq(SesionesStore.IdField, ObjectId.Parse(userId)),
-            Builders<BsonDocument>.Update.Unset(ExportRequestedAtField).Inc(SesionesStore.VersionField, 1),
+            _filter.Eq(Fields.IdField, ObjectId.Parse(userId)),
+            Builders<BsonDocument>.Update.Unset(ExportRequestedAtField).Inc(Fields.VersionField, 1),
             cancellationToken: cancellationToken);
 
     public async Task<IReadOnlyList<StoredConsent>?> FindConsentsAsync(string sub, CancellationToken cancellationToken)
     {
-        var document = await Users.Find(_filter.Eq(SesionesStore.SubField, sub), _findOptions)
-            .Project(Builders<BsonDocument>.Projection.Include(SesionesStore.ConsentsField)).Limit(1).FirstOrDefaultAsync(cancellationToken);
+        var document = await Users.Find(_filter.Eq(Fields.SubField, sub), _findOptions)
+            .Project(Builders<BsonDocument>.Projection.Include(Fields.ConsentsField)).Limit(1).FirstOrDefaultAsync(cancellationToken);
         return document is null ? null : ReadConsents(document);
     }
 
@@ -206,29 +208,29 @@ internal sealed class AccountStore(
     {
         for (var attempt = 0; attempt < _maxConsentAttempts; attempt++)
         {
-            var document = await Users.Find(_filter.Eq(SesionesStore.SubField, sub), _findOptions)
-                .Project(Builders<BsonDocument>.Projection.Include(SesionesStore.ConsentsField).Include(SesionesStore.VersionField))
+            var document = await Users.Find(_filter.Eq(Fields.SubField, sub), _findOptions)
+                .Project(Builders<BsonDocument>.Projection.Include(Fields.ConsentsField).Include(Fields.VersionField))
                 .Limit(1).FirstOrDefaultAsync(cancellationToken);
             if (document is null)
             {
                 return null;
             }
 
-            var current = document.TryGetValue(SesionesStore.ConsentsField, out var array) && array.IsBsonArray ? array.AsBsonArray : [];
+            var current = document.TryGetValue(Fields.ConsentsField, out var array) && array.IsBsonArray ? array.AsBsonArray : [];
             var entry = new BsonDocument
             {
-                { SesionesStore.DocumentField, type },
-                { SesionesStore.VersionField, version },
+                { Fields.DocumentField, type },
+                { Fields.VersionField, version },
                 { ActiveField, active },
-                { SesionesStore.AcceptedAtField, new BsonDateTime(now) },
+                { Fields.AcceptedAtField, new BsonDateTime(now) },
             };
-            var updated = new BsonArray(current.Where(item => item.AsBsonDocument[SesionesStore.DocumentField].AsString != type)) { entry };
-            var version0 = document[SesionesStore.VersionField];
-            var filter = _filter.And(_filter.Eq(SesionesStore.SubField, sub), _filter.Eq(SesionesStore.VersionField, version0));
+            var updated = new BsonArray(current.Where(item => item.AsBsonDocument[Fields.DocumentField].AsString != type)) { entry };
+            var version0 = document[Fields.VersionField];
+            var filter = _filter.And(_filter.Eq(Fields.SubField, sub), _filter.Eq(Fields.VersionField, version0));
             var update = Builders<BsonDocument>.Update
-                .Set(SesionesStore.ConsentsField, updated)
+                .Set(Fields.ConsentsField, updated)
                 .Set(UpdatedAtField, new BsonDateTime(now))
-                .Inc(SesionesStore.VersionField, 1);
+                .Inc(Fields.VersionField, 1);
             if ((await Users.UpdateOneAsync(filter, update, cancellationToken: cancellationToken)).ModifiedCount == 1)
             {
                 return new StoredConsent(type, version, now, active);
@@ -239,11 +241,11 @@ internal sealed class AccountStore(
     }
 
     private static List<StoredConsent> ReadConsents(BsonDocument document) =>
-        document.TryGetValue(SesionesStore.ConsentsField, out var array) && array.IsBsonArray
+        document.TryGetValue(Fields.ConsentsField, out var array) && array.IsBsonArray
             ? [.. array.AsBsonArray.Select(item => item.AsBsonDocument).Select(consent => new StoredConsent(
-                consent[SesionesStore.DocumentField].AsString,
-                consent[SesionesStore.VersionField].AsString,
-                consent[SesionesStore.AcceptedAtField].ToUniversalTime(),
+                consent[Fields.DocumentField].AsString,
+                consent[Fields.VersionField].AsString,
+                consent[Fields.AcceptedAtField].ToUniversalTime(),
                 consent.TryGetValue(ActiveField, out var active) && active.IsBoolean ? active.AsBoolean : null))]
             : [];
 
@@ -254,45 +256,45 @@ internal sealed class AccountStore(
             return null;
         }
 
-        var filter = _filter.And(_filter.Eq(SesionesStore.IdField, id), _filter.Eq(SesionesStore.UserIdField, ObjectId.Parse(userId)));
-        var document = await Sessions.Find(filter, _findOptions).Project(Builders<BsonDocument>.Projection.Include(SesionesStore.CreatedAtField))
+        var filter = _filter.And(_filter.Eq(Fields.IdField, id), _filter.Eq(Fields.UserIdField, ObjectId.Parse(userId)));
+        var document = await Sessions.Find(filter, _findOptions).Project(Builders<BsonDocument>.Projection.Include(Fields.CreatedAtField))
             .Limit(1).FirstOrDefaultAsync(cancellationToken);
-        return document is null ? null : document[SesionesStore.CreatedAtField].ToUniversalTime();
+        return document is null ? null : document[Fields.CreatedAtField].ToUniversalTime();
     }
 
     public async Task<bool> ScheduleDeletionAsync(string userId, DateTime deleteAt, DateTime now, CancellationToken cancellationToken)
     {
         var filter = _filter.And(
-            _filter.Eq(SesionesStore.IdField, ObjectId.Parse(userId)),
-            _filter.Eq(SesionesStore.StateField, AccountState.Active));
+            _filter.Eq(Fields.IdField, ObjectId.Parse(userId)),
+            _filter.Eq(Fields.StateField, AccountStates.Active));
         var update = Builders<BsonDocument>.Update
-            .Set(SesionesStore.StateField, AccountState.DeletionScheduled)
+            .Set(Fields.StateField, AccountStates.DeletionScheduled)
             .Set(DeleteAtField, new BsonDateTime(deleteAt))
             .Set(UpdatedAtField, new BsonDateTime(now))
-            .Inc(SesionesStore.VersionField, 1);
+            .Inc(Fields.VersionField, 1);
         return (await Users.UpdateOneAsync(filter, update, cancellationToken: cancellationToken)).ModifiedCount == 1;
     }
 
     public async Task<bool> CancelDeletionAsync(string userId, DateTime now, CancellationToken cancellationToken)
     {
         var filter = _filter.And(
-            _filter.Eq(SesionesStore.IdField, ObjectId.Parse(userId)),
-            _filter.Eq(SesionesStore.StateField, AccountState.DeletionScheduled),
+            _filter.Eq(Fields.IdField, ObjectId.Parse(userId)),
+            _filter.Eq(Fields.StateField, AccountStates.DeletionScheduled),
             _filter.Gt(DeleteAtField, new BsonDateTime(now)));
         var update = Builders<BsonDocument>.Update
-            .Set(SesionesStore.StateField, AccountState.Active)
+            .Set(Fields.StateField, AccountStates.Active)
             .Unset(DeleteAtField)
             .Set(UpdatedAtField, new BsonDateTime(now))
-            .Inc(SesionesStore.VersionField, 1);
+            .Inc(Fields.VersionField, 1);
         return (await Users.UpdateOneAsync(filter, update, cancellationToken: cancellationToken)).ModifiedCount == 1;
     }
 
     private static FilterDefinition<BsonDocument> OpenSessionsExcept(string userId, string currentSessionId, DateTime now) =>
         _filter.And(
-            _filter.Eq(SesionesStore.UserIdField, ObjectId.Parse(userId)),
-            _filter.Eq(SesionesStore.RevokedField, false),
-            _filter.Gt(SesionesStore.ExpiresAtField, new BsonDateTime(now)),
-            _filter.Ne(SesionesStore.IdField, ObjectId.Parse(currentSessionId)));
+            _filter.Eq(Fields.UserIdField, ObjectId.Parse(userId)),
+            _filter.Eq(Fields.RevokedField, false),
+            _filter.Gt(Fields.ExpiresAtField, new BsonDateTime(now)),
+            _filter.Ne(Fields.IdField, ObjectId.Parse(currentSessionId)));
 
     private static AccountSnapshot? ToSnapshot(BsonDocument? document)
     {
@@ -303,11 +305,37 @@ internal sealed class AccountStore(
 
         DateTime? deleteAt = document.TryGetValue(DeleteAtField, out var value) && value.IsValidDateTime ? value.ToUniversalTime() : null;
         return new AccountSnapshot(
-            document[SesionesStore.IdField].AsObjectId.ToString(),
-            document[SesionesStore.SubField].AsString,
-            document[SesionesStore.StateField].AsString,
-            document[SesionesStore.IsTechnicianField].AsBoolean,
-            document[SesionesStore.PhoneHashField].AsBsonBinaryData.Bytes,
+            document[Fields.IdField].AsObjectId.ToString(),
+            document[Fields.SubField].AsString,
+            document[Fields.StateField].AsString,
+            document[Fields.IsTechnicianField].AsBoolean,
+            document[Fields.PhoneHashField].AsBsonBinaryData.Bytes,
             deleteAt);
+    }
+
+    /// <summary>Clave duplicada (11000) de una escritura simple o de una transacción.</summary>
+    private static bool IsDuplicateKey(Exception exception) =>
+        exception is MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey }
+        or MongoCommandException { Code: 11000 };
+
+    /// <summary>Nombres de los campos de <c>usuarios</c> y <c>sesiones</c> que usa este módulo (iguales a los de Sesiones).</summary>
+    private static class Fields
+    {
+        public const string IdField = "_id";
+        public const string SubField = "sub";
+        public const string PhoneCiphertextField = "celularCifrado";
+        public const string PhoneCiphertextVersionField = "celularCifradoVersion";
+        public const string PhoneHashField = "celularHash";
+        public const string PhoneHashVersionField = "celularHashVersion";
+        public const string StateField = "estado";
+        public const string IsTechnicianField = "esTecnico";
+        public const string ConsentsField = "consentimientos";
+        public const string DocumentField = "documento";
+        public const string VersionField = "version";
+        public const string AcceptedAtField = "aceptadoEn";
+        public const string CreatedAtField = "creadoEn";
+        public const string UserIdField = "usuarioId";
+        public const string ExpiresAtField = "venceEn";
+        public const string RevokedField = "revocada";
     }
 }

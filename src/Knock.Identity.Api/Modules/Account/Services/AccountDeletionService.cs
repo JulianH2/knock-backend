@@ -1,10 +1,8 @@
 using Knock.Identity.Api.Common.Errors;
 using Knock.Identity.Api.Modules.Account.Data;
 using Knock.Identity.Api.Modules.Account.Domain;
-using Knock.Identity.Api.Modules.Sesiones.Domain;
 using Knock.Identity.Api.Modules.Sesiones.Services;
-using Knock.Identity.Api.Modules.Usuarios.Data;
-using StackExchange.Redis;
+using Knock.Identity.Api.Modules.Usuarios.Services;
 
 namespace Knock.Identity.Api.Modules.Account.Services;
 
@@ -43,7 +41,7 @@ internal sealed partial class AccountDeletionService(
     IMarketAccountClient market,
     IFirebaseIdTokenVerifier verifier,
     PhoneProtector phones,
-    IProfileCache profileCache,
+    ProfileCacheInvalidator profileCache,
     TimeProvider timeProvider,
     ILogger<AccountDeletionService> logger)
 {
@@ -59,7 +57,7 @@ internal sealed partial class AccountDeletionService(
         ArgumentNullException.ThrowIfNull(input);
         var account = await store.FindBySubAsync(sub, cancellationToken)
             ?? throw new DomainException(DomainErrorKind.NotFound, "The account of the token does not exist.");
-        if (account.State != AccountState.Active)
+        if (account.State != AccountStates.Active)
         {
             LogRefused(logger);
             throw NotAllowed();
@@ -137,11 +135,7 @@ internal sealed partial class AccountDeletionService(
     // La caché del perfil lleva el estado de la cuenta: se borra, pero un fallo de Redis no deshace una escritura ya confirmada.
     private async Task ForgetProfileAsync(string sub, CancellationToken cancellationToken)
     {
-        try
-        {
-            await profileCache.RemoveAsync(sub, cancellationToken);
-        }
-        catch (Exception exception) when (exception is RedisException or TimeoutException)
+        if (!await profileCache.TryForgetAsync(sub, cancellationToken))
         {
             LogCacheNotCleared(logger);
         }

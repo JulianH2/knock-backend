@@ -1,6 +1,7 @@
 using Knock.Identity.Api.Modules.Account.Data;
 using Knock.Identity.Api.Modules.Account.Domain;
 using Knock.Identity.Api.Modules.Account.Services;
+using Knock.Identity.Api.Modules.Usuarios.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Knock.Identity.Api.Modules.Account;
@@ -13,6 +14,8 @@ public static class AccountModuleExtensions
         ArgumentNullException.ThrowIfNull(services);
         services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<AccountStore>();
+        services.AddSingleton<ISessionCanceller, RedisSessionCanceller>();
+        services.AddSingleton<ProfileCacheInvalidator>();
         services.AddSingleton<IAccountStore>(provider => provider.GetRequiredService<AccountStore>());
         services.TryAddSingleton<IAccountOutbox, PendingAccountOutbox>();
         services.AddSingleton<PhoneChangeService>();

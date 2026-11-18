@@ -14,7 +14,8 @@ internal abstract class AccountControllerBase : ControllerBase
     {
         sub = User.FindFirst("sub")?.Value ?? string.Empty;
         sessionId = User.FindFirst("sid")?.Value ?? string.Empty;
-        return Guid.TryParse(sub, out _) && ObjectId.TryParse(sessionId, out _);
+        var wellFormed = Guid.TryParse(sub, out _);
+        return wellFormed && ObjectId.TryParse(sessionId, out _);
     }
 
     protected ObjectResult UnauthorizedProblem() => Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Unauthorized");

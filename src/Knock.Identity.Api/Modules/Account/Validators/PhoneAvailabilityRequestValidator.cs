@@ -1,6 +1,6 @@
 using FluentValidation;
 using Knock.Identity.Api.Modules.Account.Dtos;
-using Knock.Identity.Api.Modules.Sesiones.Domain;
+using Knock.Identity.Api.Modules.Sesiones.Services;
 
 namespace Knock.Identity.Api.Modules.Account.Validators;
 
@@ -12,6 +12,6 @@ internal sealed class PhoneAvailabilityRequestValidator : AbstractValidator<Phon
         RuleFor(x => x.CelularNuevo)
             .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("Is required.")
-            .Must(PhoneNumberPolicy.IsValid).WithMessage("Must be a Mexican E.164 number (+52 and 10 digits).");
+            .Must(PhoneNumbers.IsValid).WithMessage("Must be a Mexican E.164 number (+52 and 10 digits).");
     }
 }
