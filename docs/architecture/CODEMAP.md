@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-17T03:00:59Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-18T05:43:33Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -9,11 +9,12 @@
 |---|---|---|---|---|
 | `Assistant` | data | 2 | 7 | 5 |
 | `Catalog` | -, controllers, data, domain, dtos, services, validators | 37 | 50 | 80 |
-| `Knock.Contracts` | - | 7 | 11 | 7 |
-| `Knock.Gateway` | -, hosting | 14 | 39 | 48 |
+| `Chat` | -, data, hubs, services | 6 | 18 | 26 |
+| `Knock.Contracts` | - | 8 | 14 | 7 |
+| `Knock.Gateway` | -, hosting | 15 | 40 | 50 |
 | `Knock.Identity.Api` | -, common, hosting | 29 | 61 | 85 |
 | `Knock.Market.Api` | -, common, hosting | 29 | 62 | 86 |
-| `Knock.Messaging.Api` | -, hosting | 14 | 37 | 46 |
+| `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
 | `Requests` | -, controllers, data, domain, dtos, services, validators | 53 | 119 | 108 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 25 | 46 | 53 |
@@ -30,7 +31,7 @@
 - `src/Knock.Gateway/Hosting/LoggingExtensions.cs:112 LoggingExtensions.OriginalRoute` · `src/Knock.Identity.Api/Hosting/LoggingExtensions.cs:112 LoggingExtensions.OriginalRoute` · `src/Knock.Market.Api/Hosting/LoggingExtensions.cs:111 LoggingExtensions.OriginalRoute` · `src/Knock.Messaging.Api/Hosting/LoggingExtensions.cs:112 LoggingExtensions.OriginalRoute`
 - `src/Knock.Gateway/Hosting/LoggingExtensions.cs:123 LoggingExtensions.IsVersion` · `src/Knock.Identity.Api/Hosting/LoggingExtensions.cs:123 LoggingExtensions.IsVersion` · `src/Knock.Market.Api/Hosting/LoggingExtensions.cs:122 LoggingExtensions.IsVersion` · `src/Knock.Messaging.Api/Hosting/LoggingExtensions.cs:123 LoggingExtensions.IsVersion`
 - `src/Knock.Gateway/Hosting/LoggingExtensions.cs:145 ScopeRequestPathEnricher.Enrich` · `src/Knock.Identity.Api/Hosting/LoggingExtensions.cs:145 ScopeRequestPathEnricher.Enrich` · `src/Knock.Market.Api/Hosting/LoggingExtensions.cs:144 ScopeRequestPathEnricher.Enrich` · `src/Knock.Messaging.Api/Hosting/LoggingExtensions.cs:145 ScopeRequestPathEnricher.Enrich`
-- `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:71 ObservabilityExtensions.AddKnockObservability` · `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:71 ObservabilityExtensions.AddKnockObservability` · `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:67 ObservabilityExtensions.AddKnockObservability` · `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:71 ObservabilityExtensions.AddKnockObservability`
+- `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:71 ObservabilityExtensions.AddKnockObservability` · `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:71 ObservabilityExtensions.AddKnockObservability` · `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:67 ObservabilityExtensions.AddKnockObservability`
 - `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:154 ObservabilityExtensions.ConfigureServerSpans` · `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:154 ObservabilityExtensions.ConfigureServerSpans` · `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:154 ObservabilityExtensions.ConfigureServerSpans`
 - `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:177 TelemetryExceptionRecorder.TryHandleAsync` · `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:177 TelemetryExceptionRecorder.TryHandleAsync` · `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:173 TelemetryExceptionRecorder.TryHandleAsync` · `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:177 TelemetryExceptionRecorder.TryHandleAsync`
 - `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:224 OpenTelemetryLogSink.Emit` · `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:224 OpenTelemetryLogSink.Emit` · `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:220 OpenTelemetryLogSink.Emit` · `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:224 OpenTelemetryLogSink.Emit`
@@ -94,7 +95,7 @@
 
 - `ApiVersioningExtensions`: `src/Knock.Identity.Api/Hosting/ApiVersioningExtensions.cs:6`, `src/Knock.Market.Api/Hosting/ApiVersioningExtensions.cs:5`
 - `AuthenticationExtensions`: `src/Knock.Gateway/Hosting/AuthenticationExtensions.cs:42`, `src/Knock.Identity.Api/Hosting/AuthenticationExtensions.cs:10`, `src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs:10`, `src/Knock.Messaging.Api/Hosting/AuthenticationExtensions.cs:28`
-- `AuthenticationStartupCheck`: `src/Knock.Identity.Api/Hosting/AuthenticationExtensions.cs:89`, `src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs:89`, `src/Knock.Messaging.Api/Hosting/AuthenticationExtensions.cs:120`
+- `AuthenticationStartupCheck`: `src/Knock.Identity.Api/Hosting/AuthenticationExtensions.cs:89`, `src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs:89`, `src/Knock.Messaging.Api/Hosting/AuthenticationExtensions.cs:138`
 - `AzureMonitorExportStatus`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:39`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:39`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:38`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:39`
 - `AzureMonitorSignalSettings`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:36`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:36`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:35`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:36`
 - `CoordinatePairs`: `src/Knock.Gateway/Hosting/TelemetryRedactor.cs:175`, `src/Knock.Identity.Api/Hosting/TelemetryRedactor.cs:175`, `src/Knock.Market.Api/Hosting/TelemetryRedactor.cs:174`, `src/Knock.Messaging.Api/Hosting/TelemetryRedactor.cs:175`
@@ -246,6 +247,32 @@
 - `src/Knock.Market.Api/Modules/Catalog/Validators/PostalCodeRouteValidator.cs` — class `PostalCodeRouteValidator`
 - `src/Knock.Market.Api/Modules/Catalog/Validators/WaitlistRequestValidator.cs` — class `WaitlistRequestValidator`
 
+### Chat
+
+**-**
+
+- `src/Knock.Messaging.Api/Modules/Chat/ChatModuleExtensions.cs` — class `ChatModuleExtensions`
+  - `AddChatModule()`:15, `MapChatHub()`:35
+- `src/Knock.Messaging.Api/Modules/Chat/Options/ChatOptions.cs` — class `ChatOptions`, class `MarketServiceOptions`, class `ChatOptionsValidator`, class `MarketServiceOptionsValidator`
+  - `Validate()`:44, `Validate()`:70
+
+**data**
+
+- `src/Knock.Messaging.Api/Modules/Chat/Data/ChatRedisStore.cs` — record `ChatLimitResult`, class `ChatRedisStore`
+  - `ChatRedisStore()`:15, `ChargeAsync()`:29, `MarkClosedAsync()`:49, `IsClosedAsync()`:56
+- `src/Knock.Messaging.Api/Modules/Chat/Data/MarketVisitaCatalog.cs` — record `VisitaVista`, class `MarketVisitaCatalog`, class `MarketVisitaCatalogRegistration`
+  - `CheckAsync()`:24, `AddMarketVisitaCatalog()`:60
+
+**hubs**
+
+- `src/Knock.Messaging.Api/Modules/Chat/Hubs/ChatHub.cs` — class `ChatHub`
+  - `OnConnectedAsync()`:20, `OnDisconnectedAsync()`:32, `UnirseAVisita()`:41, `SalirDeVisita()`:57, `EnviarMensaje()`:69
+
+**services**
+
+- `src/Knock.Messaging.Api/Modules/Chat/Services/ChatServices.cs` — class `ChatErrorCodes`, record `ChatResult`, record `ChatMessage`, class `ChatConnectionState`, class `ChatMetrics`, class `UnionService`, class `MensajeService`
+  - `Fail()`:37, `ChatConnectionState()`:44, `Dispose()`:83, `UnionService()`:90, `JoinAsync()`:94, `Leave()`:135, `IsValidId()`:147, `MensajeService()`:160, `Group()`:167, `SendAsync()`:169, `Clean()`:220
+
 ### Knock.Contracts
 
 **-**
@@ -260,6 +287,7 @@
 - `src/Knock.Contracts/Pagination/CursorPage.cs` — class `PageLimit`, record `CursorPage`
   - `Resolve()`:11
 - `src/Knock.Contracts/Sessions/SessionRevocationKey.cs` — class `SessionRevocationKey`
+- `src/Knock.Contracts/Visits/IVisitaCatalog.cs` — enum `VisitMembershipStatus`, record `VisitMembership`, interface `IVisitaCatalog`
 
 ### Knock.Gateway
 
@@ -279,6 +307,8 @@
   - `MapKnockReadiness()`:16
 - `src/Knock.Gateway/Hosting/HstsExtensions.cs` — class `HstsSettings`, class `HstsExtensions`
   - `AddKnockGatewayHsts()`:26
+- `src/Knock.Gateway/Hosting/HubQueryTokenMiddleware.cs` — class `HubQueryTokenMiddleware`
+  - `HubQueryTokenMiddleware()`:10, `InvokeAsync()`:16
 - `src/Knock.Gateway/Hosting/LoggingExtensions.cs` — class `LoggingExtensions`, class `ScopeRequestPathEnricher`
   - `AddKnockLogging()`:20, `ConfigureRequestLogging()`:36, `IsQueryBearingBelowWarning()`:67, `RoutePath()`:80, `Enrich()`:145
 - `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs` — class `ObservabilityOptions`, record `AzureMonitorSignalSettings`, class `AzureMonitorExportStatus`, class `ObservabilityExtensions`, class `TelemetryExceptionRecorder`, class `IgnoreIncomingTraceContextPropagator`, class `OpenTelemetryLogSink`, class `SerilogLogState`
@@ -438,7 +468,9 @@
 **hosting**
 
 - `src/Knock.Messaging.Api/Hosting/AuthenticationExtensions.cs` — interface `IRevokedSessions`, class `RedisRevokedSessions`, class `AuthenticationExtensions`, class `AuthenticationStartupCheck`
-  - `IsRevokedAsync()`:20, `AddKnockAuthentication()`:39, `StartAsync()`:122, `StopAsync()`:128
+  - `IsRevokedAsync()`:20, `AddKnockAuthentication()`:39, `StartAsync()`:140, `StopAsync()`:146
+- `src/Knock.Messaging.Api/Hosting/ChatHostingExtensions.cs` — class `ChatHostingExtensions`
+  - `AddKnockChatBridge()`:22, `UseKnockChatGate()`:38
 - `src/Knock.Messaging.Api/Hosting/DataExtensions.cs` — class `DataExtensions`
   - `AddKnockData()`:12
 - `src/Knock.Messaging.Api/Hosting/ForwardedHeadersExtensions.cs` — class `ForwardedHeadersExtensions`

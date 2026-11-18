@@ -23,6 +23,7 @@ public sealed class GatewayRoutingTests : IAsyncLifetime, IDisposable
     private readonly Dictionary<string, string> _addresses = [];
     private readonly List<string?> _correlationSeen = [];
     private readonly List<(string Path, string Method, string? Authorization)> _requestsSeen = [];
+    private readonly List<string> _queriesSeen = [];
     private GatewayTestHost? _host;
     private HttpClient? _client;
 
@@ -40,6 +41,7 @@ public sealed class GatewayRoutingTests : IAsyncLifetime, IDisposable
                 {
                     _correlationSeen.Add(context.Request.Headers[CorrelationId.HeaderName]);
                     _requestsSeen.Add((context.Request.Path.Value!, context.Request.Method, context.Request.Headers.Authorization.ToString()));
+                    _queriesSeen.Add(context.Request.QueryString.Value ?? string.Empty);
                     context.Response.Headers["X-Servicio"] = serviceName;
                     return Results.Ok(new { servicio = serviceName });
                 });
@@ -87,6 +89,39 @@ public sealed class GatewayRoutingTests : IAsyncLifetime, IDisposable
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         _requestsSeen.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task HubToken_InTheQuery_ReachesTheServiceAsABearerHeaderAndLeavesTheUrl_CA_026_18()
+    {
+        var token = _client!.DefaultRequestHeaders.Authorization!.Parameter!;
+        _client.DefaultRequestHeaders.Authorization = null;
+
+        using var response = await _client.PostAsync(new Uri($"/hubs/chat/negotiate?negotiateVersion=1&access_token={Uri.EscapeDataString(token)}", UriKind.Relative), content: null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Headers.GetValues("X-Servicio").Should().ContainSingle().Which.Should().Be("mensajeria");
+        _requestsSeen.Should().ContainSingle().Which.Authorization.Should().Be("Bearer " + token, "el servicio recibe el token en el encabezado");
+        _queriesSeen.Should().ContainSingle().Which.Should().Be("?negotiateVersion=1", "la URL reenviada ya no lleva el token");
+    }
+
+    [Theory]
+    [InlineData("/hubs/chat/negotiate")]
+    [InlineData("/api/v1/me")]
+    public async Task TokenInTheQuery_OnlyCountsForTheHub_AndNeedsAValidToken_CA_026_18(string path)
+    {
+        var token = _client!.DefaultRequestHeaders.Authorization!.Parameter!;
+        _client.DefaultRequestHeaders.Authorization = null;
+        var onlyForTheHub = path.StartsWith("/api", StringComparison.Ordinal);
+
+        using var invalid = await _client.PostAsync(new Uri($"{path}?access_token=no-es-un-token", UriKind.Relative), content: null);
+        using var twice = await _client.PostAsync(new Uri($"{path}?access_token={Uri.EscapeDataString(token)}&access_token={Uri.EscapeDataString(token)}", UriKind.Relative), content: null);
+        using var valid = await _client.PostAsync(new Uri($"{path}?access_token={Uri.EscapeDataString(token)}", UriKind.Relative), content: null);
+
+        invalid.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        twice.StatusCode.Should().Be(HttpStatusCode.Unauthorized, "dos valores no se adivinan");
+        valid.StatusCode.Should().Be(onlyForTheHub ? HttpStatusCode.Unauthorized : HttpStatusCode.OK, "fuera del hub el token en la URL no sirve");
+        _requestsSeen.Count.Should().Be(onlyForTheHub ? 0 : 1);
     }
 
     public async Task DisposeAsync()
