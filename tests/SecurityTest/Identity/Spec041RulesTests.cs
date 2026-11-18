@@ -146,4 +146,20 @@ public class Spec041RulesTests
 
         output.Should().NotContain(secretName).And.NotContain(sub);
     }
+
+    [Theory]
+    [InlineData("{\"tipo\":\"moto\",\"nombre\":\"Nombre válido\"}")]
+    [InlineData("{\"tipo\":\"otro\",\"nombre\":\"X\"}")]
+    [InlineData("{\"tipo\":\"auto\",\"nombre\":\"Nombre válido\",\"anio\":1900}")]
+    [InlineData("{\"tipo\":\"instalacion\",\"nombre\":\"Nombre válido\",\"anio\":2020}")]
+    public async Task InvalidTypeNameOrYear_Returns422AndIsNotSaved_CA_041_24(string json)
+    {
+        var hosts = await SecurityHosts.SharedAsync();
+        var sub = TokenForge.Sub();
+
+        using var response = await HomeAndCarHttp.SendRawAsync(hosts, HttpMethod.Post, HomeAndCarHttp.Route, TokenForge.Valid(sub), json);
+
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        (await HomeAndCarHttp.CountAsync(hosts, sub)).Should().Be(0);
+    }
 }

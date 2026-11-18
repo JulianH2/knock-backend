@@ -74,3 +74,7 @@ El gateway limita con contadores de ventana fija en Redis (`ratelimit:ip:*`, `ra
 - Configuración: `RateLimiting:Ip`, `RateLimiting:Auth` y `RateLimiting:User` (`PermitLimit` y `Window`), sin valores por defecto en código.
 - 429 en `application/problem+json` con `Retry-After` en segundos (mínimo 1); el cuerpo no revela IP, clave ni contador.
 - Si Redis no responde, el gateway responde 503 con `Retry-After: 5`: sin contadores no se puede limitar.
+
+## Mi casa y mi auto en Identidad (spec 041, KNOCK-286)
+
+Las cinco rutas de `/api/v1/me/casa-y-auto` (CAS-01 a CAS-05) no tienen política propia: rige el límite global por IP de Identidad (100 por minuto) y el del gateway por IP y usuario; la respuesta 429 incluye `Retry-After`. Los cuerpos de `POST` y `PUT` se limitan a 4 KB (413). El control contra el abuso por repetición es el tope de 20 elementos por persona (409 `item_limit_reached`). La ruta interna `GET /api/v1/interno/historial` de Mercado cae bajo el límite global por IP de Mercado y no está en el gateway.

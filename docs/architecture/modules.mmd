@@ -1,6 +1,7 @@
 graph LR
   Assistant["Assistant"]
   Catalog["Catalog"]
+  HomeAndCar["HomeAndCar"]
   Knock_Contracts["Knock.Contracts"]
   Knock_Gateway["Knock.Gateway"]
   Knock_Identity_Api["Knock.Identity.Api"]
@@ -11,6 +12,7 @@ graph LR
   Sesiones["Sesiones"]
   Tecnicos["Tecnicos"]
   Usuarios["Usuarios"]
+  Knock_Identity_Api -->|1| HomeAndCar
   Knock_Identity_Api -->|2| Sesiones
   Knock_Identity_Api -->|2| Usuarios
   Knock_Market_Api -->|2| Catalog
