@@ -788,3 +788,10 @@
 - **Decisiones (con porqué):** (1) La validación rechaza cualquier campo que no esté en la lista y nunca repite un valor del archivo en el error, igual que el cargador de técnicos. (2) Una cotización de rango no lleva el campo `precio` (la semilla no lo trae); el servicio de elegir ya lo admite (KNOCK-82). (3) Se reutiliza `DemoTechnicianGuard` para la guarda de hosts locales en lugar de copiarla.
 - **Pendiente:** fotos de demo con nombre fijo (dependen de la spec 013, OI-2: las solicitudes de demo apuntan a identificadores de foto que no existen en el módulo de archivos, así que el detalle las muestra sin enlaces), transacción verificada en Azure e invalidación de Redis al final de la carga.
 - **A evitar:** cargar datos de demo sin la guarda de host local; escribir fechas como texto.
+
+## 2026-11-17 · KNOCK-287 · Llaves de Identity (cifrado de campos) y de Market (cursor de búsqueda)
+- **Qué cambió:** `deploy/apps/main.tf` declara dos secretos nuevos de Key Vault: `identity-field-encryption-key` (lo lee solo `identity`, con `Security__FieldEncryption__ActiveVersion=1` en su `env`) y `search-cursor-key` (lo lee solo `market`, como `Busqueda__Cursor__Key`). `up.sh`, su prueba y `deploy/README.md` los listan entre los secretos obligatorios.
+- **Por qué:** Identity necesita su llave para guardar direcciones (spec 040) y sin ella responde 500; Market exige la clave del cursor de búsqueda (KNOCK-66) fuera de Development y no arranca sin ella.
+- **Decisiones (con porqué):** (1) Llave propia de Identity en lugar de reutilizar `field-encryption-key`: un rol por secreto y por servicio, y una llave comprometida no abre los datos del otro servicio. (2) Los valores no pasan por Terraform ni por el repositorio: una persona los crea en Key Vault.
+- **Pendiente:** crear los dos secretos en Key Vault y ejecutar el apply (una persona). Hasta entonces no fusionar los PR que dependen de ellos (direcciones y búsqueda).
+- **A evitar:** pegar el valor de una llave en un chat, un archivo o el historial; fusionar el código que exige una llave antes de que exista el secreto.
