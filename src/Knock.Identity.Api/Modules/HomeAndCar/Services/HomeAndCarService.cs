@@ -14,7 +14,7 @@ namespace Knock.Identity.Api.Modules.HomeAndCar.Services;
 /// </summary>
 internal sealed class HomeAndCarService(IHomeAndCarStore store, IMarketHistory market, TimeProvider clock)
 {
-    public const string MarketUnavailableCode = "market_unavailable";
+    public const string MarketUnavailableReason = "market_unavailable";
 
     /// <summary>Los elementos de la persona, sin paginar (a lo más 20, R-15), del más reciente al más antiguo.</summary>
     public async Task<IReadOnlyList<ItemResponse>> ListAsync(string sub, CancellationToken cancellationToken) =>
@@ -84,7 +84,7 @@ internal sealed class HomeAndCarService(IHomeAndCarStore store, IMarketHistory m
         {
             HistoryStatus.Ok => new HistoryOutcome(new CursorPage<HistoryItemResponse>([.. result.Items.Select(entry => new HistoryItemResponse(entry.Fecha, entry.Oficio, entry.Tecnico))], result.NextCursor), null),
             HistoryStatus.InvalidCursor => new HistoryOutcome(null, new Dictionary<string, string[]>(StringComparer.Ordinal) { ["cursor"] = [HistoryQueryValidator.CursorReason] }),
-            _ => throw new DomainException(DomainErrorKind.ServiceUnavailable, "Market did not answer the history request.", MarketUnavailableCode),
+            _ => throw new DomainException(DomainErrorKind.ServiceUnavailable, "Market did not answer the history request.", MarketUnavailableReason),
         };
     }
 
