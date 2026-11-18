@@ -57,6 +57,8 @@
 
 `GET /api/v1/tecnicos/{id}` es pública y no tiene política propia: rigen los límites globales del gateway y el límite por IP de Mercado. La caché de 1 minuto del perfil reduce las lecturas a MongoDB por técnico.
 
+`PUT /api/v1/tecnicos/me`, `PUT /api/v1/tecnicos/me/disponibilidad` y `GET`/`PUT /api/v1/tecnicos/me/horarios` no tienen política propia: solo los usa el propio técnico y cada escritura toca un único documento, así que rigen los límites globales del gateway y el límite por IP de Mercado. Los cuerpos se limitan a 8 KB, 1 KB y 4 KB (413).
+
 ## Lista de espera en Mercado (spec 023, KNOCK-47)
 
 `GET /api/v1/zonas/cp/{cp}` requiere sesión y usa los límites globales del gateway por IP y usuario y el límite por IP de Mercado; no tiene política específica adicional.

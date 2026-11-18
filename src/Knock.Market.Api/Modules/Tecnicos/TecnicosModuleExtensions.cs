@@ -24,6 +24,9 @@ public static class TecnicosModuleExtensions
         services.AddMemoryCache();
         services.AddScoped<ITechnicianProfileReader, TechnicianProfileStore>();
         services.AddScoped<TechnicianProfileService>();
+        services.AddOptions<TecnicosOptions>().BindConfiguration(TecnicosOptions.SectionName);
+        services.AddScoped<ITechnicianSelfStore, TechnicianSelfStore>();
+        services.AddScoped<MyTechnicianService>();
         return services;
     }
 }
