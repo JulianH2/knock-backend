@@ -41,5 +41,5 @@ internal sealed class HistoryQuery
     public int ResolvedLimit => int.TryParse(Limite, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var value) ? value : DefaultLimit;
 }
 
-/// <summary>Un trabajo terminado del historial de un elemento (spec 041, R-17): fecha, oficio y técnico, sin precios ni direcciones.</summary>
-internal sealed record HistoryItemResponse(DateTime Fecha, string Oficio, string Tecnico);
+/// <summary>Un trabajo terminado del historial de un elemento (spec 041, R-17): día de la visita (<c>YYYY-MM-DD</c>), oficio y técnico, sin precios ni direcciones.</summary>
+internal sealed record HistoryItemResponse(string Fecha, string Oficio, string Tecnico);

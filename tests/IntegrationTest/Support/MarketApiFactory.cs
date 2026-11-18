@@ -118,6 +118,14 @@ internal sealed class MarketApiFactory(IReadOnlyDictionary<string, string?> sett
             Index("estado_1_venceEn_1", new BsonDocument { ["estado"] = 1, ["venceEn"] = 1 }),
             Index("oficioClave_1_estado_1", new BsonDocument { ["oficioClave"] = 1, ["estado"] = 1 }),
         ]);
+        // Spec 041 (db/041-solicitudes-elemento-id.js): índice parcial del historial de «Mi casa y mi auto», solo donde existe elementoId.
+        await requests.CreateOneAsync(new CreateIndexModel<BsonDocument>(
+            new BsonDocument { ["clienteId"] = 1, ["elementoId"] = 1, ["estado"] = 1 },
+            new CreateIndexOptions<BsonDocument>
+            {
+                Name = "clienteId_1_elementoId_1_estado_1",
+                PartialFilterExpression = new BsonDocument("elementoId", new BsonDocument("$exists", true)),
+            }));
         var quotes = database.GetCollection<BsonDocument>("cotizaciones").Indexes;
         await quotes.CreateManyAsync(
         [

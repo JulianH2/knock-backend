@@ -1,3 +1,4 @@
+using Knock.Contracts.Pagination;
 using Knock.Identity.Api.Common.Errors;
 using Knock.Identity.Api.Modules.HomeAndCar.Data;
 using Knock.Identity.Api.Modules.HomeAndCar.Domain;
@@ -11,8 +12,10 @@ namespace Knock.Identity.Api.Modules.HomeAndCar.Services;
 /// «Mi casa y mi auto» (spec 041): los autos y las cosas de la casa de una persona. La persona es siempre la del <c>sub</c> del token (R-20) y un elemento ajeno es como uno que no existe (R-16).
 /// Nunca registra el nombre del elemento (spec 011).
 /// </summary>
-internal sealed class HomeAndCarService(IHomeAndCarStore store, TimeProvider clock)
+internal sealed class HomeAndCarService(IHomeAndCarStore store, IMarketHistory market, TimeProvider clock)
 {
+    public const string MarketUnavailableCode = "market_unavailable";
+
     /// <summary>Los elementos de la persona, sin paginar (a lo más 20, R-15), del más reciente al más antiguo.</summary>
     public async Task<IReadOnlyList<ItemResponse>> ListAsync(string sub, CancellationToken cancellationToken) =>
         [.. (await store.ListAsync(sub, cancellationToken)).Select(ToResponse)];
@@ -68,6 +71,23 @@ internal sealed class HomeAndCarService(IHomeAndCarStore store, TimeProvider clo
         }
     }
 
+    /// <summary>
+    /// Trabajos terminados ligados a un elemento propio (CAS-05), pedidos a Mercado por su ruta interna con el <c>sub</c> del token: nunca uno que llegue en la consulta (R-20). Un elemento ajeno
+    /// o inexistente lanza 404 antes de llamar a Mercado. Si Mercado no responde lanza 503 <c>market_unavailable</c>: no se inventa un historial. Un cursor que Mercado no entiende devuelve los errores por campo (422).
+    /// </summary>
+    public async Task<HistoryOutcome> HistoryAsync(string sub, string id, HistoryQuery query, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        var item = await FindOwnAsync(sub, id, cancellationToken);
+        var result = await market.ListAsync(sub, item.Id.ToString(), query.Cursor, query.ResolvedLimit, cancellationToken);
+        return result.Status switch
+        {
+            HistoryStatus.Ok => new HistoryOutcome(new CursorPage<HistoryItemResponse>([.. result.Items.Select(entry => new HistoryItemResponse(entry.Fecha, entry.Oficio, entry.Tecnico))], result.NextCursor), null),
+            HistoryStatus.InvalidCursor => new HistoryOutcome(null, new Dictionary<string, string[]>(StringComparer.Ordinal) { ["cursor"] = [HistoryQueryValidator.CursorReason] }),
+            _ => throw new DomainException(DomainErrorKind.ServiceUnavailable, "Market did not answer the history request.", MarketUnavailableCode),
+        };
+    }
+
     private async Task<HomeAndCarItem> FindOwnAsync(string sub, string id, CancellationToken cancellationToken) =>
         ObjectId.TryParse(id, out var objectId) && await store.FindAsync(sub, objectId, cancellationToken) is { } item ? item : throw NotFound();
 
@@ -78,3 +98,6 @@ internal sealed class HomeAndCarService(IHomeAndCarStore store, TimeProvider clo
 
 /// <summary>Resultado de editar: el elemento nuevo, o los errores por campo cuando el elemento resultante no sería coherente.</summary>
 internal sealed record UpdateItemOutcome(ItemResponse? Item, IDictionary<string, string[]>? Errors);
+
+/// <summary>Resultado del historial: la página, o los errores por campo cuando Mercado no entiende el cursor.</summary>
+internal sealed record HistoryOutcome(CursorPage<HistoryItemResponse>? Page, IDictionary<string, string[]>? Errors);

@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Knock.Contracts.Pagination;
 using Knock.Identity.Api.Hosting;
 using Knock.Identity.Api.Modules.HomeAndCar.Dtos;
 using Knock.Identity.Api.Modules.HomeAndCar.Services;
@@ -92,6 +93,26 @@ internal sealed class CasaYAutoController(HomeAndCarService service) : Controlle
 
         await service.DeleteAsync(sub, route.Id!, cancellationToken);
         return NoContent();
+    }
+
+    /// <summary>Trabajos terminados ligados a un elemento propio (CAS-05), del más reciente al más antiguo y por cursor. Uno ajeno o inexistente responde 404; si Mercado no responde, 503 <c>market_unavailable</c>.</summary>
+    [HttpGet("{id}/historial")]
+    [ProducesResponseType<CursorPage<HistoryItemResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status503ServiceUnavailable)]
+    public async Task<IActionResult> History([FromRoute] ItemRoute route, [FromQuery] HistoryQuery query, CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "private, no-store";
+        if (Sub() is not { } sub)
+        {
+            return Unauthorized();
+        }
+
+        var outcome = await service.HistoryAsync(sub, route.Id!, query, cancellationToken);
+        return outcome.Page is { } page ? Ok(page) : await ValidationFilter.WriteErrorsAsync(HttpContext, outcome.Errors!);
     }
 
     private string? Sub() => User.FindFirst("sub")?.Value is { Length: > 0 } sub ? sub : null;
