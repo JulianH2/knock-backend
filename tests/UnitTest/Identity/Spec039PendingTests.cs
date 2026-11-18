@@ -1,7 +1,5 @@
 using AwesomeAssertions;
 using Knock.Identity.Api.Common.Errors;
-using Knock.Identity.Api.Modules.Account.Domain;
-using Knock.Identity.Api.Modules.Account.Services;
 using Xunit;
 
 namespace Knock.UnitTest.Identity;

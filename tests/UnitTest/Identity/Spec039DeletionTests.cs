@@ -1,11 +1,5 @@
 using AwesomeAssertions;
 using Knock.Identity.Api.Common.Errors;
-using Knock.Identity.Api.Modules.Account.Domain;
-using Knock.Identity.Api.Modules.Account.Dtos;
-using Knock.Identity.Api.Modules.Account.Services;
-using Knock.Identity.Api.Modules.Account.Validators;
-using Knock.Identity.Api.Modules.Sesiones.Domain;
-using Knock.Identity.Api.Modules.Sesiones.Services;
 using Knock.Identity.Api.Modules.Usuarios.Data;
 using Knock.Identity.Api.Modules.Usuarios.Domain;
 using Knock.Identity.Api.Modules.Usuarios.Services;

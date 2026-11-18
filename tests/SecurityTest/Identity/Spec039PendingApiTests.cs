@@ -41,11 +41,11 @@ public class Spec039PendingApiTests
     {
         var hosts = await SecurityHosts.SharedAsync();
 
-        using var anonymous = await GetAsync(hosts, null);
-        using var expired = await GetAsync(hosts, TokenForge.Expired());
-
-        await SecureHttp.AssertProblemAsync(anonymous, HttpStatusCode.Unauthorized);
-        await SecureHttp.AssertProblemAsync(expired, HttpStatusCode.Unauthorized);
+        foreach (var token in new[] { null, TokenForge.Expired() })
+        {
+            using var response = await GetAsync(hosts, token);
+            await SecureHttp.AssertProblemAsync(response, HttpStatusCode.Unauthorized);
+        }
     }
 
     [Fact]
