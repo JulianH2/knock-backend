@@ -125,6 +125,84 @@
         }
       }
     },
+    "/api/v{version}/tecnicos/{id}": {
+      "get": {
+        "tags": [
+          "Tecnicos"
+        ],
+        "summary": "Perfil de un técnico (TEC-05): sin sesión, solo el resumen; con sesión válida, también el detalle. Un técnico que no existe o está oculto responde\n404 `technician_not_found`.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianProfileResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianProfileResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianProfileResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v{version}/visitas/{id}/llegada": {
       "post": {
         "tags": [
@@ -2795,6 +2873,128 @@
             "format": "int32"
           }
         }
+      },
+      "TechnicianProfileDetail": {
+        "required": [
+          "descripcion",
+          "atencion",
+          "radioKm",
+          "coloniaId",
+          "disponibleHoy"
+        ],
+        "type": "object",
+        "properties": {
+          "descripcion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "atencion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "radioKm": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "coloniaId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "disponibleHoy": {
+            "type": "boolean"
+          }
+        },
+        "description": "Parte del perfil que solo ve una persona con sesión: descripción completa, forma de atención, radio a domicilio (`null` si solo atiende en\ntaller), colonia base y «Disponible hoy». Los servicios con precio (spec 047), las fotos de trabajos (TEC-07) y los horarios (TEC-10) tienen sus propias rutas."
+      },
+      "TechnicianProfileResponse": {
+        "required": [
+          "id",
+          "nombre",
+          "nombreNegocio",
+          "fotoUrl",
+          "verificacion",
+          "calificacion",
+          "anios",
+          "descripcionCorta",
+          "oficios",
+          "detalle"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "nombreNegocio": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "fotoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "verificacion": {
+            "type": "string"
+          },
+          "calificacion": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "anios": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "descripcionCorta": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "oficios": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "detalle": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TechnicianProfileDetail"
+              }
+            ]
+          }
+        },
+        "description": "Perfil público de un técnico (spec 046, TEC-05, R-42). Sin sesión trae solo el resumen y TechnicianProfileDetail? TechnicianProfileResponse.Detalle va en `null`; con sesión\nsuma el detalle. Nunca trae teléfono, dirección del taller ni ubicación. `verificacion` es `ninguno`, `basica` o `completa` (spec 025);\n`calificacion` es el promedio con un decimal o `null`; `descripcionCorta` son hasta 140 caracteres de la descripción."
       },
       "TechnicianResponse": {
         "required": [

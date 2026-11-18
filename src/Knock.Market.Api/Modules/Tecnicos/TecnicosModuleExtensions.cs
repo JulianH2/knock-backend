@@ -21,6 +21,9 @@ public static class TecnicosModuleExtensions
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<ITechnicianProfileStore, TechnicianProfileStore>();
         services.AddScoped<TechnicianRegistrationService>();
+        services.AddMemoryCache();
+        services.AddScoped<ITechnicianProfileReader, TechnicianProfileStore>();
+        services.AddScoped<TechnicianProfileService>();
         return services;
     }
 }

@@ -18,7 +18,7 @@ namespace Knock.Market.Api.Modules.Tecnicos.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/tecnicos")]
-internal sealed class TecnicosController(TechnicianRegistrationService registration) : ControllerBase
+internal sealed class TecnicosController(TechnicianRegistrationService registration, TechnicianProfileService profiles) : ControllerBase
 {
     private const string _problemJson = "application/problem+json";
 
@@ -51,6 +51,24 @@ internal sealed class TecnicosController(TechnicianRegistrationService registrat
             RegisterTechnicianStatus.TradeInvalid => Rule(StatusCodes.Status422UnprocessableEntity, ErrorCodes.TradeInvalidCode, "oficios"),
             _ => Rule(StatusCodes.Status422UnprocessableEntity, ErrorCodes.ColoniaNotFoundCode, "coloniaId"),
         };
+    }
+
+    /// <summary>
+    /// Perfil de un técnico (TEC-05): sin sesión, solo el resumen; con sesión válida, también el detalle. Un técnico que no existe o está oculto responde
+    /// 404 <c>technician_not_found</c>.
+    /// </summary>
+    [HttpGet("{id}")]
+    [AllowAnonymous]
+    [ProducesResponseType<TechnicianProfileResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, _problemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity, _problemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests, _problemJson)]
+    public async Task<IActionResult> Profile([FromRoute] TechnicianIdRoute route, CancellationToken cancellationToken)
+    {
+        var signedIn = !string.IsNullOrWhiteSpace(User.FindFirst("sub")?.Value);
+        Response.Headers.CacheControl = "private, no-store";
+        var profile = await profiles.GetAsync(MongoDB.Bson.ObjectId.Parse(route.Id), signedIn, cancellationToken);
+        return profile is null ? Rule(StatusCodes.Status404NotFound, TechnicianRules.TechnicianNotFoundCode) : Ok(profile);
     }
 
     /// <summary>Regla de negocio en ProblemDetails, con <c>code</c> y, si se nombra un campo, <c>errors</c> con un motivo genérico que nunca repite el valor.</summary>

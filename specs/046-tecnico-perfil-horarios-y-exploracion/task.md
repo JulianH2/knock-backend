@@ -11,7 +11,7 @@
 | T-03 | `GET /api/v1/tecnicos` (TEC-02): DTO, validador, servicio, almacén, controlador y pruebas | R-04 a R-07 · CA-06 a CA-09 | T-01 | otras rutas | por asignar | pendiente |
 | T-04 | `GET /api/v1/tecnicos/autocompletar` (TEC-03): DTO, validador, servicio, almacén, controlador y pruebas | R-08 a R-10 · CA-10 a CA-12 | T-01 | otras rutas | por asignar | pendiente |
 | T-05 | `GET /api/v1/mapa/tecnicos` (TEC-04): DTO, validador, servicio, almacén, controlador y pruebas | R-11 a R-13 · CA-13 a CA-15 | T-01 | otras rutas | por asignar | pendiente |
-| T-06 | `GET /api/v1/tecnicos/{id}` (TEC-05): DTO, validador, servicio, almacén, controlador y pruebas | R-14 a R-17 · CA-16 a CA-19 | T-01 | otras rutas | por asignar | pendiente |
+| T-06 | `GET /api/v1/tecnicos/{id}` (TEC-05): DTO, validador, servicio, almacén, controlador y pruebas | R-14 a R-17 · CA-16 a CA-19 | T-01 | otras rutas | Erick | en revisión (KNOCK-56): CA-16 a CA-19 y CA-58; servicios, fotos y horarios del detalle llegan con sus rutas |
 | T-07 | `GET /api/v1/tecnicos/{id}/llega-a-mi-colonia` (TEC-06): DTO, validador, servicio, almacén, controlador y pruebas | R-18 a R-21 · CA-20 a CA-24 | T-01 | otras rutas | por asignar | pendiente |
 | T-08 | `GET /api/v1/tecnicos/{id}/fotos-trabajos` (TEC-07): DTO, validador, servicio, almacén, controlador y pruebas | R-22 a R-26 · CA-25 a CA-30 | T-01 | otras rutas | por asignar | pendiente |
 | T-09 | `PUT /api/v1/tecnicos/me` (TEC-08): DTO, validador, servicio, almacén, controlador y pruebas | R-27 a R-28 · CA-31 a CA-35 | T-01 | otras rutas | por asignar | pendiente |

@@ -5,6 +5,7 @@
 - **Porqué:** así un técnico recién registrado puede cotizar sin tocar Requests; la spec no decía de dónde sale la ubicación y el centro de la colonia es la opción más simple y aproximada (no guarda coordenadas de la persona).
 - **Cifrado:** `tallerDireccion` se guarda cifrada (AES-256-GCM, contexto `tecnicos|tallerDireccion|{id}`, `WorkshopAddressCipher`). La elección de cotización la descifra; los técnicos de demostración (`demo: true`) siguen en claro.
 - **Índice:** `db/021-tecnicos-usuario-index.js` deja único `usuarioId_1` y reemplaza el anterior si no lo era (CA-69).
+- **TEC-05 (KNOCK-56):** `GET /api/v1/tecnicos/{id}` es pública; con sesión suma `detalle`. Caché de 1 minuto en memoria de cada réplica (`IMemoryCache`, clave `tecnicos:perfil:{id}`): al escribir se invalida solo en la réplica que escribe y las otras pueden mostrar el perfil viejo hasta 1 minuto, dentro de lo que permite R-17. La visibilidad y «Disponible hoy» se calculan en cada lectura.
 - **A evitar:** escribir `tallerDireccion` en claro fuera de las semillas de demostración; agregar otra ruta de `/tecnicos` sin su entrada en el gateway (`mercado-tecnicos` solo enruta `POST`).
 
 ## 2026-11-16 — KNOCK-63: ajuste de consumo real y revisión de T-04

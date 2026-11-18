@@ -13,7 +13,7 @@ namespace Knock.Market.Api.Modules.Tecnicos.Data;
 /// </summary>
 internal sealed class TechnicianProfileStore(
     [FromKeyedServices(TecnicosModuleExtensions.ModuleKey)] IMongoDatabase database,
-    IOptions<KnockMongoOptions> options) : ITechnicianProfileStore
+    IOptions<KnockMongoOptions> options) : ITechnicianProfileStore, ITechnicianProfileReader
 {
     public const string CollectionName = "tecnicos";
 
@@ -35,6 +35,45 @@ internal sealed class TechnicianProfileStore(
             return false;
         }
     }
+
+    /// <summary>Campos del perfil público: nunca se proyectan <c>tallerDireccion</c>, <c>contactoPublico</c>, <c>ubicacionBase</c> ni <c>usuarioId</c>.</summary>
+    private static readonly string[] _profileFields =
+    [
+        "nombre", "nombreNegocio", "fotoUrl", "nivelVerificacion", "calificacion", "anios", "descripcion", "oficios", "atencion", "radioAtencionKm",
+        "coloniaBaseId", "estado", "oculto", "ocultoHasta", "disponibleHasta",
+    ];
+
+    public async Task<TechnicianProfileRecord?> FindByIdAsync(ObjectId id, CancellationToken cancellationToken)
+    {
+        var projection = Builders<BsonDocument>.Projection.Combine(_profileFields.Select(f => Builders<BsonDocument>.Projection.Include(f)));
+        var document = await Technicians.Find(Builders<BsonDocument>.Filter.Eq("_id", id), new FindOptions { MaxTime = options.Value.QueryMaxTime })
+            .Project(projection).FirstOrDefaultAsync(cancellationToken);
+        return document is null ? null : ToProfile(document);
+    }
+
+    internal static TechnicianProfileRecord ToProfile(BsonDocument d) => new(
+        d["_id"].AsObjectId,
+        Text(d, "nombre") ?? "Técnico",
+        Text(d, "nombreNegocio"),
+        Text(d, "fotoUrl"),
+        Text(d, "nivelVerificacion") ?? TechnicianRules.NoVerification,
+        d.TryGetValue("calificacion", out var rating) && rating.IsNumeric ? rating.ToDouble() : null,
+        Int(d, "anios"),
+        Text(d, "descripcion"),
+        d.TryGetValue("oficios", out var trades) && trades.IsBsonArray ? [.. trades.AsBsonArray.Where(v => v.IsString).Select(v => v.AsString)] : [],
+        Text(d, "atencion"),
+        Int(d, "radioAtencionKm"),
+        Text(d, "coloniaBaseId"),
+        Text(d, "estado") ?? string.Empty,
+        !d.TryGetValue("oculto", out var hidden) || !hidden.IsBoolean || hidden.AsBoolean,
+        Date(d, "ocultoHasta"),
+        Date(d, "disponibleHasta"));
+
+    private static string? Text(BsonDocument d, string name) => d.TryGetValue(name, out var v) && v.IsString ? v.AsString : null;
+
+    private static int? Int(BsonDocument d, string name) => d.TryGetValue(name, out var v) && v.IsInt32 ? v.AsInt32 : null;
+
+    private static DateTime? Date(BsonDocument d, string name) => d.TryGetValue(name, out var v) && v.IsValidDateTime ? v.ToUniversalTime() : null;
 
     internal static BsonDocument ToDocument(NewTechnician t)
     {
