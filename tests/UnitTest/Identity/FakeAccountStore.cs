@@ -51,4 +51,21 @@ internal sealed class FakeAccountStore : IAccountStore
         revoked.ForEach(s => s.Revoked = true);
         return Task.FromResult<(PhoneChangeOutcome, IReadOnlyList<string>)>((PhoneChangeOutcome.Changed, [.. revoked.Select(s => s.Id)]));
     }
+
+    /// <summary>Casos de recuperación guardados, en orden.</summary>
+    public List<RecoveryCase> RecoveryCases { get; } = [];
+
+    public Task<AccountSnapshot?> FindByPhoneHashAsync(byte[] phoneHash, CancellationToken cancellationToken) =>
+        Task.FromResult(Accounts.FirstOrDefault(a => a.PhoneHash.AsSpan().SequenceEqual(phoneHash)));
+
+    public Task<bool> CreateRecoveryCaseIfNoneOpenAsync(RecoveryCase recoveryCase, CancellationToken cancellationToken)
+    {
+        if (RecoveryCases.Any(c => c.UserId == recoveryCase.UserId))
+        {
+            return Task.FromResult(false);
+        }
+
+        RecoveryCases.Add(recoveryCase);
+        return Task.FromResult(true);
+    }
 }

@@ -22,6 +22,9 @@ internal sealed class AccountStore(
     public const string DeleteAtField = "eliminarEn";
     public const string UpdatedAtField = "actualizadoEn";
 
+    public const string NewPhoneField = "celularNuevoProtegido";
+    public const string RecoveryTypeField = "tipo";
+
     private const int _maxWriteConflictAttempts = 6;
 
     private static readonly FilterDefinitionBuilder<BsonDocument> _filter = Builders<BsonDocument>.Filter;
@@ -135,6 +138,37 @@ internal sealed class AccountStore(
                 await Task.Delay(TimeSpan.FromMilliseconds(50 * attempt), cancellationToken);
             }
         }
+    }
+
+    public async Task<AccountSnapshot?> FindByPhoneHashAsync(byte[] phoneHash, CancellationToken cancellationToken) =>
+        ToSnapshot(await Users.Find(_filter.Eq(SesionesStore.PhoneHashField, new BsonBinaryData(phoneHash)), _findOptions)
+            .Project(_accountProjection).Limit(1).FirstOrDefaultAsync(cancellationToken));
+
+    public async Task<bool> CreateRecoveryCaseIfNoneOpenAsync(RecoveryCase recoveryCase, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(recoveryCase);
+        var created = new BsonDateTime(recoveryCase.CreatedAt);
+        var update = Builders<BsonDocument>.Update
+            .SetOnInsert(NewPhoneField, new BsonDocument
+            {
+                { "cifrado", new BsonBinaryData(recoveryCase.NewPhone.Ciphertext) },
+                { "cifradoVersion", recoveryCase.NewPhone.KeyVersion },
+                { "hash", new BsonBinaryData(recoveryCase.NewPhoneHash.Value) },
+                { "hashVersion", recoveryCase.NewPhoneHash.KeyVersion },
+            })
+            .SetOnInsert(RecoveryTypeField, recoveryCase.Type)
+            .SetOnInsert(SesionesStore.CreatedAtField, created)
+            .SetOnInsert(UpdatedAtField, created);
+        var open = _filter.And(
+            _filter.Eq(SesionesStore.UserIdField, ObjectId.Parse(recoveryCase.UserId)),
+            _filter.Eq(SesionesStore.StateField, RecoveryStates.Pending));
+        // Con upsert, los campos del filtro por igualdad (usuarioId y estado) pasan al documento nuevo.
+        var before = await Recoveries.FindOneAndUpdateAsync(
+            open,
+            update,
+            new FindOneAndUpdateOptions<BsonDocument> { IsUpsert = true, ReturnDocument = ReturnDocument.Before, MaxTime = mongoOptions.Value.QueryMaxTime },
+            cancellationToken);
+        return before is null;
     }
 
     private static FilterDefinition<BsonDocument> OpenSessionsExcept(string userId, string currentSessionId, DateTime now) =>

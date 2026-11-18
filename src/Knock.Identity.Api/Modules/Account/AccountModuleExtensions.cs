@@ -15,6 +15,8 @@ public static class AccountModuleExtensions
         services.AddSingleton<IAccountStore>(provider => provider.GetRequiredService<AccountStore>());
         services.TryAddSingleton<IAccountOutbox, PendingAccountOutbox>();
         services.AddSingleton<PhoneChangeService>();
+        services.AddSingleton<IRecoveryAttemptLimiter, RecoveryAttemptLimiter>();
+        services.AddSingleton<AccessRecoveryService>();
         return services;
     }
 }

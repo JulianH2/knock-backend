@@ -66,6 +66,24 @@ internal enum ExportStartOutcome
     AlreadyInProgress,
 }
 
+/// <summary>Estados de un caso de recuperación (spec 039, §6).</summary>
+internal static class RecoveryStates
+{
+    public const string Pending = "pendiente";
+    public const string Approved = "aprobada";
+    public const string Rejected = "rechazada";
+    public const string Expired = "vencida";
+}
+
+/// <summary>Quién pide recuperar el acceso: el tipo de cuenta que dice tener (spec 039, R-21).</summary>
+internal static class RecoveryTypes
+{
+    public const string Technician = "tecnico";
+    public const string Client = "cliente";
+
+    public static bool IsValid(string? type) => type is Technician or Client;
+}
+
 /// <summary>Caso de recuperación de acceso (spec 039, §6 <c>recuperaciones</c>): el celular nuevo se guarda protegido igual que en <c>usuarios</c>.</summary>
 internal sealed record RecoveryCase(string UserId, ProtectedPhone NewPhone, PhoneHash NewPhoneHash, string Type, DateTime CreatedAt)
 {

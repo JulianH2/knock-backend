@@ -21,4 +21,13 @@ internal interface IAccountStore
     /// </summary>
     Task<(PhoneChangeOutcome Outcome, IReadOnlyList<string> RevokedSessionIds)> ChangePhoneAsync(
         string userId, ProtectedPhone phone, PhoneHash hash, string currentSessionId, DateTime now, CancellationToken cancellationToken);
+
+    /// <summary>Cuenta que tiene ese HMAC de celular; <c>null</c> si ninguna.</summary>
+    Task<AccountSnapshot?> FindByPhoneHashAsync(byte[] phoneHash, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Crea el caso de recuperación en estado <c>pendiente</c> salvo que la persona ya tenga uno pendiente (la regla de estado evita duplicados por un
+    /// reintento): en ese caso conserva el primero y no escribe nada. Devuelve si se creó uno nuevo.
+    /// </summary>
+    Task<bool> CreateRecoveryCaseIfNoneOpenAsync(RecoveryCase recoveryCase, CancellationToken cancellationToken);
 }
