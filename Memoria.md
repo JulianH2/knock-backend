@@ -788,3 +788,9 @@
 - **Decisiones (con porqué):** (1) La validación rechaza cualquier campo que no esté en la lista y nunca repite un valor del archivo en el error, igual que el cargador de técnicos. (2) Una cotización de rango no lleva el campo `precio` (la semilla no lo trae); el servicio de elegir ya lo admite (KNOCK-82). (3) Se reutiliza `DemoTechnicianGuard` para la guarda de hosts locales en lugar de copiarla.
 - **Pendiente:** fotos de demo con nombre fijo (dependen de la spec 013, OI-2: las solicitudes de demo apuntan a identificadores de foto que no existen en el módulo de archivos, así que el detalle las muestra sin enlaces), transacción verificada en Azure e invalidación de Redis al final de la carga.
 - **A evitar:** cargar datos de demo sin la guarda de host local; escribir fechas como texto.
+
+## 2026-11-17 — KNOCK-45 (HU-003): conciliación de la spec 016
+- **Estado:** la renovación y el cierre de sesión ya estaban hechos con KNOCK-211 (#19) y KNOCK-203; esta tarjeta solo concilia `specs/016/task.md` con el código real. Los diez casos CA-016 tienen prueba (`sdd_lint.py --trace 016`), el contrato está en `docs/endpoints.md` y `docs/openapi.identity.v1.json`, y no queda ninguna prueba omitida de la spec 016.
+- **Decisión:** no se cambia código ni contrato; la tarjeta no necesita otro PR de funcionalidad. La firma de la spec («Implementada») la hace una persona.
+- **Pendiente:** el evento `sesion_revocada { sid }` que pide la spec 037 (R-13) al cerrar una sesión o por reuso se concreta al implementar la 037 (KNOCK-60); la tolerancia a una renovación perdida por la señal se agrega solo si se mide.
+- **A evitar:** abrir trabajo de código para una tarjeta «cubierta por spec» sin comprobar antes con `--trace` y el contrato que de verdad falta algo.
