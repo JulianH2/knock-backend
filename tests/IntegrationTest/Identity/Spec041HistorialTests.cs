@@ -84,37 +84,19 @@ public sealed class Spec041HistorialTests : IAsyncLifetime
         return id;
     }
 
-    private async Task SeedJobAsync(string client, string? element, string day, ObjectId technician, string trade = "Mecánica", string visitState = "terminada")
-    {
-        var request = new BsonDocument
-        {
-            { "_id", ObjectId.GenerateNewId() },
-            { "clienteId", client },
-            { "oficioClave", "mec" },
-            { "oficioNombre", trade },
-            { "descripcion", "Texto privado de la solicitud" },
-            { "direccionCifrada", "1.cifrada" },
-            { "estado", "terminada" },
-            { "creadoEn", DateTime.UtcNow },
-        };
-        if (element is not null)
-        {
-            request.Add("elementoId", element);
-        }
+    private async Task SeedJobAsync(string client, string? element, string day, ObjectId technician, string trade = "Mecánica", string visitState = "terminada") =>
+        await HistorySeed.JobAsync(_market.Database, client, element, trade, visitState, day, technician);
 
-        await _market.Database.GetCollection<BsonDocument>("solicitudes").InsertOneAsync(request);
-        await _market.Database.GetCollection<BsonDocument>("visitas").InsertOneAsync(new BsonDocument
-        {
-            { "_id", ObjectId.GenerateNewId() },
-            { "solicitudId", request["_id"] },
-            { "clienteId", client },
-            { "tecnicoUsuarioId", Guid.NewGuid().ToString("D") },
-            { "tecnicoId", technician },
-            { "dia", day },
-            { "hora", "10:00" },
-            { "precio", 1234 },
-            { "estado", visitState },
-        });
+    private static async Task<HttpResponseMessage> HistoryWithoutMarketAsync(IReadOnlyDictionary<string, string?> settings)
+    {
+        await using var identity = await IdentityApiFactory.CreateAsync(settings);
+        using var client = identity.CreateClient();
+        var sub = Guid.NewGuid().ToString("D");
+        var id = ObjectId.GenerateNewId();
+        await HistorySeed.AddCarAsync(identity.Database, sub, id);
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"/api/v1/me/casa-y-auto/{id}/historial", UriKind.Relative));
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Token(sub));
+        return await client.SendAsync(request);
     }
 
     private static async Task<JsonElement> ReadAsync(HttpResponseMessage response) => JsonElement.Parse(await response.Content.ReadAsStringAsync());
@@ -323,21 +305,12 @@ public sealed class Spec041HistorialTests : IAsyncLifetime
     [Fact]
     public async Task WhenMarketDoesNotAnswer_Returns503MarketUnavailable_AndInventsNothing_CA_041_18()
     {
-        await using var identity = await IdentityApiFactory.CreateAsync(new Dictionary<string, string?>
+        using var response = await HistoryWithoutMarketAsync(new Dictionary<string, string?>
         {
             ["Services:Market:BaseUrl"] = "http://127.0.0.1:1",
             ["Services:Market:InternalKey"] = InternalServiceTokens.KeyBase64,
             ["Services:Market:TimeoutSeconds"] = "1",
         });
-        using var client = identity.CreateClient();
-        var sub = Guid.NewGuid().ToString("D");
-        var id = ObjectId.GenerateNewId();
-        await identity.Database.GetCollection<BsonDocument>("mi_casa_y_auto").InsertOneAsync(
-            new BsonDocument { { "_id", id }, { "usuarioId", sub }, { "tipo", "auto" }, { "nombre", "Auto de prueba" }, { "creadoEn", DateTime.UtcNow } });
-        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"/api/v1/me/casa-y-auto/{id}/historial", UriKind.Relative));
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Token(sub));
-
-        using var response = await client.SendAsync(request);
 
         response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
         JsonElement.Parse(await response.Content.ReadAsStringAsync()).GetProperty("code").GetString().Should().Be("market_unavailable");
@@ -346,16 +319,7 @@ public sealed class Spec041HistorialTests : IAsyncLifetime
     [Fact]
     public async Task WithoutTheServiceKey_Returns503MarketUnavailable_CA_041_18()
     {
-        await using var identity = await IdentityApiFactory.CreateAsync(new Dictionary<string, string?> { ["Services:Market:BaseUrl"] = "http://market.test" });
-        using var client = identity.CreateClient();
-        var sub = Guid.NewGuid().ToString("D");
-        var id = ObjectId.GenerateNewId();
-        await identity.Database.GetCollection<BsonDocument>("mi_casa_y_auto").InsertOneAsync(
-            new BsonDocument { { "_id", id }, { "usuarioId", sub }, { "tipo", "auto" }, { "nombre", "Auto de prueba" }, { "creadoEn", DateTime.UtcNow } });
-        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"/api/v1/me/casa-y-auto/{id}/historial", UriKind.Relative));
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Token(sub));
-
-        using var response = await client.SendAsync(request);
+        using var response = await HistoryWithoutMarketAsync(new Dictionary<string, string?> { ["Services:Market:BaseUrl"] = "http://market.test" });
 
         response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
     }

@@ -39,44 +39,8 @@ public sealed class Spec041HistorialInternoTests
         return id;
     }
 
-    /// <summary>Una solicitud del cliente (con o sin <c>elementoId</c>) y, si se pide, su visita en el estado dado.</summary>
-    private static async Task<ObjectId> SeedAsync(Spec020Host host, string client, string? element, string trade, string? visitState, string day, ObjectId technician)
-    {
-        var request = new BsonDocument
-        {
-            { "_id", ObjectId.GenerateNewId() },
-            { "clienteId", client },
-            { "oficioClave", "mec" },
-            { "oficioNombre", trade },
-            { "descripcion", "Texto privado de la solicitud" },
-            { "direccionCifrada", "1.cifrada" },
-            { "estado", visitState == "terminada" ? "terminada" : "cita_confirmada" },
-            { "creadoEn", DateTime.UtcNow },
-        };
-        if (element is not null)
-        {
-            request.Add("elementoId", element);
-        }
-
-        await host.Database.GetCollection<BsonDocument>("solicitudes").InsertOneAsync(request);
-        if (visitState is not null)
-        {
-            await host.Database.GetCollection<BsonDocument>("visitas").InsertOneAsync(new BsonDocument
-            {
-                { "_id", ObjectId.GenerateNewId() },
-                { "solicitudId", request["_id"] },
-                { "clienteId", client },
-                { "tecnicoUsuarioId", Guid.NewGuid().ToString("D") },
-                { "tecnicoId", technician },
-                { "dia", day },
-                { "hora", "10:00" },
-                { "precio", 1234 },
-                { "estado", visitState },
-            });
-        }
-
-        return request["_id"].AsObjectId;
-    }
+    private static Task<ObjectId> SeedAsync(Spec020Host host, string client, string? element, string trade, string? visitState, string day, ObjectId technician) =>
+        HistorySeed.JobAsync(host.Database, client, element, trade, visitState, day, technician);
 
     [Fact]
     public async Task ListsOnlyTheFinishedVisitsOfThatClientAndElement_NewestFirst_WithoutPricesOrAddresses_CA_041_27()
