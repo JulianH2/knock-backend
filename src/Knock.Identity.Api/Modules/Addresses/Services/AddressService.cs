@@ -2,6 +2,7 @@ using Knock.Contracts.Colonias;
 using Knock.Identity.Api.Common.Errors;
 using Knock.Identity.Api.Modules.Addresses.Data;
 using Knock.Identity.Api.Modules.Addresses.Domain;
+using Knock.Identity.Api.Modules.Usuarios.Services;
 using MongoDB.Bson;
 
 namespace Knock.Identity.Api.Modules.Addresses.Services;
@@ -44,8 +45,6 @@ internal sealed partial class AddressService(
     TimeProvider timeProvider,
     ILogger<AddressService> logger)
 {
-    public const string MarketUnavailableCode = "market_unavailable";
-
     public async Task<IReadOnlyList<Address>?> ListAsync(string sub, CancellationToken cancellationToken)
     {
         if (await store.FindUserIdAsync(sub, cancellationToken) is not { } userId)
@@ -178,7 +177,7 @@ internal sealed partial class AddressService(
         {
             // Sin poder validar la colonia no se guarda nada ni se acepta sin validar (como en el perfil, spec 017, R-11).
             LogMarketUnavailable(logger);
-            throw new DomainException(DomainErrorKind.ServiceUnavailable, "The colonia catalog did not answer.", MarketUnavailableCode);
+            throw new DomainException(DomainErrorKind.ServiceUnavailable, "The colonia catalog did not answer.", ProfileService.MarketUnavailableCode);
         }
     }
 

@@ -207,6 +207,9 @@ Las pruebas citan el caso como `CA_040_NN` en el nombre (para `python scripts/sd
 
 ## 15. Riesgos y dudas abiertas
 - Sin dudas abiertas: todas las decisiones de esta spec quedaron resueltas en el cierre del 2026-11-13.
+- Implementación (KNOCK-285): CA-09 y CA-15 piden 403 para quien no es dueña, pero R-14 y CA-22 piden 404 sin revelar que la dirección existe; se implementó 404 y queda por decidir si se corrige la spec.
+- Implementación: `principal: false` sobre la única principal responde 422 (`errors.principal`) y una creación repetida (misma colonia y calle) responde 409 `address_duplicate`; ninguno está definido en la spec.
+- Implementación: Identidad lee la llave `Security:FieldEncryption`; hoy el despliegue solo se la da a Mercado.
 - Dependencias: catálogo de colonias de la spec 017 y la copia de la dirección en la visita de la spec 022.
 
 ## Aprobación
