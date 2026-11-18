@@ -13,6 +13,7 @@ public static class AccountModuleExtensions
         services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<AccountStore>();
         services.AddSingleton<IAccountStore>(provider => provider.GetRequiredService<AccountStore>());
+        services.TryAddSingleton<IAccountOutbox, PendingAccountOutbox>();
         services.AddSingleton<PhoneChangeService>();
         return services;
     }

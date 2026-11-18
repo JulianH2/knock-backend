@@ -40,4 +40,34 @@ internal sealed class MeCambioNumeroController(PhoneChangeService phoneChange) :
         await phoneChange.EnsureAvailableAsync(request.CelularNuevo ?? string.Empty, cancellationToken);
         return NoContent();
     }
+
+    /// <summary>USR-04. Confirma el cambio con el token de Firebase del número nuevo, cambia el celular y cierra las demás sesiones.</summary>
+    [HttpPost("confirmar")]
+    [EnableRateLimiting(RateLimitingExtensions.PhoneChangeConfirmPolicy)]
+    [RequestSizeLimit(MaxBodyBytes)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status413PayloadTooLarge)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> Confirm([FromBody] ConfirmPhoneChangeRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryGetCaller(out var sub, out var sessionId))
+        {
+            return UnauthorizedProblem();
+        }
+
+        // El ValidationFilter ya garantizó que el token viene y no es demasiado largo; que Firebase lo acepte se comprueba aquí.
+        var changed = await phoneChange.ConfirmAsync(sub, sessionId, request.FirebaseIdToken ?? string.Empty, cancellationToken);
+        if (!changed)
+        {
+            return await ValidationFilter.WriteErrorsAsync(
+                HttpContext,
+                new Dictionary<string, string[]> { ["firebaseIdToken"] = ["The token is not valid."] });
+        }
+
+        return Ok();
+    }
 }

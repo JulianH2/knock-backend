@@ -1,6 +1,7 @@
 using Knock.Identity.Api.Hosting;
 using Knock.Identity.Api.Modules.Account.Domain;
 using Knock.Identity.Api.Modules.Sesiones.Data;
+using Knock.Identity.Api.Modules.Sesiones.Services;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -13,12 +14,15 @@ namespace Knock.Identity.Api.Modules.Account.Data;
 /// </summary>
 internal sealed class AccountStore(
     [FromKeyedServices(SesionesDataExtensions.ModuleKey)] IMongoDatabase database,
+    IMongoClient client,
     IOptions<KnockMongoOptions> mongoOptions) : IAccountStore
 {
     public const string RecoveriesCollection = "recuperaciones";
 
     public const string DeleteAtField = "eliminarEn";
     public const string UpdatedAtField = "actualizadoEn";
+
+    private const int _maxWriteConflictAttempts = 6;
 
     private static readonly FilterDefinitionBuilder<BsonDocument> _filter = Builders<BsonDocument>.Filter;
 
@@ -69,6 +73,76 @@ internal sealed class AccountStore(
     public async Task<bool> PhoneHashExistsAsync(byte[] phoneHash, CancellationToken cancellationToken) =>
         await Users.Find(_filter.Eq(SesionesStore.PhoneHashField, new BsonBinaryData(phoneHash)), _findOptions)
             .Project(Builders<BsonDocument>.Projection.Include(SesionesStore.IdField)).Limit(1).AnyAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<string>> FindOtherOpenSessionIdsAsync(
+        string userId, string currentSessionId, DateTime now, CancellationToken cancellationToken)
+    {
+        var documents = await Sessions.Find(OpenSessionsExcept(userId, currentSessionId, now), _findOptions)
+            .Project(Builders<BsonDocument>.Projection.Include(SesionesStore.IdField))
+            .ToListAsync(cancellationToken);
+        return [.. documents.Select(document => document[SesionesStore.IdField].AsObjectId.ToString())];
+    }
+
+    public async Task<(PhoneChangeOutcome Outcome, IReadOnlyList<string> RevokedSessionIds)> ChangePhoneAsync(
+        string userId, ProtectedPhone phone, PhoneHash hash, string currentSessionId, DateTime now, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(phone);
+        ArgumentNullException.ThrowIfNull(hash);
+        var attempt = 0;
+        while (true)
+        {
+            attempt++;
+            try
+            {
+                using var session = await client.StartSessionAsync(cancellationToken: cancellationToken);
+                var revoked = await session.WithTransactionAsync(
+                    async (transaction, token) =>
+                    {
+                        var update = Builders<BsonDocument>.Update
+                            .Set(SesionesStore.PhoneCiphertextField, new BsonBinaryData(phone.Ciphertext))
+                            .Set(SesionesStore.PhoneCiphertextVersionField, phone.KeyVersion)
+                            .Set(SesionesStore.PhoneHashField, new BsonBinaryData(hash.Value))
+                            .Set(SesionesStore.PhoneHashVersionField, hash.KeyVersion)
+                            .Set(UpdatedAtField, new BsonDateTime(now))
+                            .Inc(SesionesStore.VersionField, 1);
+                        await Users.UpdateOneAsync(transaction, _filter.Eq(SesionesStore.IdField, ObjectId.Parse(userId)), update, cancellationToken: token);
+                        var open = OpenSessionsExcept(userId, currentSessionId, now);
+                        var ids = (await Sessions.Find(transaction, open, _findOptions)
+                                .Project(Builders<BsonDocument>.Projection.Include(SesionesStore.IdField))
+                                .ToListAsync(token))
+                            .Select(document => document[SesionesStore.IdField].AsObjectId)
+                            .ToList();
+                        if (ids.Count > 0)
+                        {
+                            await Sessions.UpdateManyAsync(
+                                transaction,
+                                _filter.In(SesionesStore.IdField, ids),
+                                Builders<BsonDocument>.Update.Set(SesionesStore.RevokedField, true),
+                                cancellationToken: token);
+                        }
+
+                        return ids.Select(id => id.ToString()).ToList();
+                    },
+                    cancellationToken: cancellationToken);
+                return (PhoneChangeOutcome.Changed, revoked);
+            }
+            catch (Exception exception) when (SesionesStore.IsDuplicateKey(exception))
+            {
+                return (PhoneChangeOutcome.PhoneTaken, []);
+            }
+            catch (MongoCommandException exception) when (exception.Code == SesionesStore.WriteConflictCode && attempt < _maxWriteConflictAttempts)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(50 * attempt), cancellationToken);
+            }
+        }
+    }
+
+    private static FilterDefinition<BsonDocument> OpenSessionsExcept(string userId, string currentSessionId, DateTime now) =>
+        _filter.And(
+            _filter.Eq(SesionesStore.UserIdField, ObjectId.Parse(userId)),
+            _filter.Eq(SesionesStore.RevokedField, false),
+            _filter.Gt(SesionesStore.ExpiresAtField, new BsonDateTime(now)),
+            _filter.Ne(SesionesStore.IdField, ObjectId.Parse(currentSessionId)));
 
     private static AccountSnapshot? ToSnapshot(BsonDocument? document)
     {

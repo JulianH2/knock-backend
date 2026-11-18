@@ -24,7 +24,15 @@ public class Spec039PhoneAvailabilityTests
         var phones = new PhoneProtector(PhoneProtectionTestKeys.Keys());
         var store = new FakeAccountStore();
         store.Accounts.Add(new AccountSnapshot("665f1b2c3d4e5f6071829304", "f0000000-0000-8000-8000-000000000001", AccountState.Active, false, phones.Hash(_taken).Value, null));
-        return (new PhoneChangeService(store, phones, NullLogger<PhoneChangeService>.Instance), store, phones);
+        var service = new PhoneChangeService(
+            store,
+            new Spec039Verifier(null),
+            phones,
+            new Spec039Cancelled(),
+            new Spec039Outbox(),
+            new Spec039Clock(new DateTimeOffset(2026, 11, 17, 12, 0, 0, TimeSpan.Zero)),
+            NullLogger<PhoneChangeService>.Instance);
+        return (service, store, phones);
     }
 
     [Fact]

@@ -1,0 +1,51 @@
+using Knock.Identity.Api.Modules.Account.Services;
+using Knock.Identity.Api.Modules.Sesiones.Data;
+using Knock.Identity.Api.Modules.Sesiones.Services;
+
+namespace Knock.UnitTest.Identity;
+
+/// <summary>Reloj fijo de las pruebas de la spec 039.</summary>
+internal sealed class Spec039Clock(DateTimeOffset now) : TimeProvider
+{
+    public DateTimeOffset Now { get; set; } = now;
+
+    public override DateTimeOffset GetUtcNow() => Now;
+}
+
+/// <summary>Verificador de Firebase doblado: devuelve la identidad indicada o <c>null</c> (token rechazado).</summary>
+internal sealed class Spec039Verifier(FirebaseIdentity? identity) : IFirebaseIdTokenVerifier
+{
+    public FirebaseIdentity? Identity { get; set; } = identity;
+
+    public int Calls { get; private set; }
+
+    public Task<FirebaseIdentity?> VerifyAsync(string idToken, CancellationToken cancellationToken)
+    {
+        Calls++;
+        return Task.FromResult(Identity);
+    }
+}
+
+/// <summary>Lista de sesiones canceladas doblada: guarda los ids y la vida que se les pidió.</summary>
+internal sealed class Spec039Cancelled : ISesionCancelada
+{
+    public List<(string SessionId, TimeSpan Lifetime)> Cancelled { get; } = [];
+
+    public Task CancelAsync(string sessionId, TimeSpan lifetime, CancellationToken cancellationToken)
+    {
+        Cancelled.Add((sessionId, lifetime));
+        return Task.CompletedTask;
+    }
+}
+
+/// <summary>Buzón de salida doblado: guarda en orden lo que se le pidió, para comprobar que el aviso va antes del cierre.</summary>
+internal sealed class Spec039Outbox : IAccountOutbox
+{
+    public List<string> RevokedNotices { get; } = [];
+
+    public Task EnqueueSessionRevokedAsync(string sessionId, CancellationToken cancellationToken)
+    {
+        RevokedNotices.Add(sessionId);
+        return Task.CompletedTask;
+    }
+}
