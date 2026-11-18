@@ -5,7 +5,7 @@
 
 | Tarea | Qué se hace | Cubre | Depende de | En paralelo con | Responsable sugerido | Estado |
 |---|---|---|---|---|---|---|
-| T-01 | Ruta de permiso en Mercado (reglas de apertura, técnico resuelto por `sub`, 404 uniforme) sin publicarla en el gateway | R-02, R-03 · CA-06, CA-17 | specs 020, 021, 028, 029 | T-02, T-03 | Guillermo | pendiente |
+| T-01 | Ruta de permiso en Mercado (reglas de apertura, técnico resuelto por `sub`, 404 uniforme) sin publicarla en el gateway | R-02, R-03 · CA-06, CA-17 | specs 020, 021, 028, 029 | T-02, T-03 | Guillermo | hecha (KNOCK-72): `ConversationPermissionController`, `ConversationPermissionService`, `ConversationPermissionStore` y `ConversationRules` en Mercado (módulo Requests); el contrato `PermisoConversacion` vive en `Knock.Contracts`. Pruebas: `Spec030PermisoMercadoTests` (CA-17 con 404 uniforme) y `Spec030ConversationRulesTests`. El 404 del gateway (CA-17) lo cubre T-09 al agregar las rutas. Sin `envios` (spec 028 T-05) el técnico participa solo si cotizó |
 | T-02 | Script de `db/` con `conversaciones`, `mensajes`, índices y TTL | R-21, §6 · CA-19 | — | T-01, T-03 | Erick | pendiente |
 | T-03 | `OcultadorDeContacto` puro con unitarias y mutación | R-12 · CA-04 | — | T-01, T-02 | Guillermo | pendiente |
 | T-04 | Cliente `MarketPermisoDeConversacion` con caché de 60 s y 503 sin permiso; interfaz en `Knock.Contracts` | R-09 · CA-09 | T-01 | T-05 | Guillermo | pendiente |
