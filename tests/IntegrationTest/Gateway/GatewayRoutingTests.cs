@@ -58,6 +58,8 @@ public sealed class GatewayRoutingTests : IAsyncLifetime, IDisposable
     [InlineData("/api/v1/solicitudes")]
     [InlineData("/api/v1/solicitudes/507f1f77bcf86cd799439011")]
     [InlineData("/api/v1/solicitudes/507f1f77bcf86cd799439011/elegir")]
+    [InlineData("/api/v1/visitas/507f1f77bcf86cd799439011/llegada")]
+    [InlineData("/api/v1/visitas/507f1f77bcf86cd799439011/aviso")]
     public async Task ProtectedPost_IsForwardedUnchangedToMarket_CA_020_16(string path)
     {
         using var response = await _client!.PostAsync(new Uri(path, UriKind.Relative), content: null);
@@ -76,6 +78,8 @@ public sealed class GatewayRoutingTests : IAsyncLifetime, IDisposable
     [InlineData("/api/v1/solicitudes")]
     [InlineData("/api/v1/solicitudes/507f1f77bcf86cd799439011")]
     [InlineData("/api/v1/solicitudes/507f1f77bcf86cd799439011/elegir")]
+    [InlineData("/api/v1/visitas/507f1f77bcf86cd799439011/llegada")]
+    [InlineData("/api/v1/visitas/507f1f77bcf86cd799439011/aviso")]
     public async Task ProtectedPost_WithoutToken_IsNotForwarded_CA_020_16(string path)
     {
         _client!.DefaultRequestHeaders.Authorization = null;

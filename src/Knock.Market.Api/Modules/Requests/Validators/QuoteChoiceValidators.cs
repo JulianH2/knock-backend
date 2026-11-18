@@ -28,3 +28,15 @@ internal sealed class ChooseQuoteBodyValidator : AbstractValidator<ChooseQuoteBo
             .NotEmpty().WithMessage(RequiredReason)
             .Must(value => value!.Length == 24 && ObjectId.TryParse(value, out _)).WithMessage(FormatReason);
 }
+
+/// <summary>Formato de <c>POST /visitas/{id}/llegada</c> (spec 022, R-07): <c>codigo</c> son exactamente cuatro dígitos ASCII; si no, 422 con <c>errors.codigo</c> y no cuenta como intento. Nunca repite el valor.</summary>
+internal sealed class ArrivalBodyValidator : AbstractValidator<ArrivalBody>
+{
+    public const string RequiredReason = "Required.";
+    public const string FormatReason = "The value is not valid.";
+
+    public ArrivalBodyValidator() =>
+        RuleFor(x => x.Codigo).Cascade(CascadeMode.Stop)
+            .NotEmpty().WithMessage(RequiredReason)
+            .Must(value => value!.Length == 4 && value.All(char.IsAsciiDigit)).WithMessage(FormatReason);
+}

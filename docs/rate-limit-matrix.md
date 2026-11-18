@@ -47,6 +47,10 @@
 
 `GET /api/v1/solicitudes/{id}/cotizaciones` tiene una política por `sub` del JWT de **60 listados por minuto** y `POST /api/v1/solicitudes/{id}/elegir` de **10 elecciones por minuto**, ambas de ventana fija y por proceso (`RateLimitingExtensions.CompareQuotesPolicy` y `ChooseQuotePolicy`); la respuesta 429 incluye `Retry-After`. Como las demás políticas de Mercado viven en la memoria de cada réplica, con dos réplicas el límite efectivo se duplica. El cuerpo de la elección se limita a 8 KB (413). El control real contra una segunda cita no es el límite sino el índice único de `visitas` por `solicitudId` y la transacción.
 
+## Visita segura en Mercado (spec 022, KNOCK-85)
+
+`POST /api/v1/visitas/{id}/llegada` tiene una política por `sub` del JWT de **5 peticiones por minuto** por técnico, de ventana fija y por proceso (`RateLimitingExtensions.ArrivalPolicy`); la respuesta 429 incluye `Retry-After`. Como las demás políticas de Mercado vive en la memoria de cada réplica, con dos réplicas el límite efectivo se duplica. El control real contra la fuerza bruta del código de cuatro dígitos no es este límite sino los tres intentos por visita y el bloqueo, guardados en la visita. `GET /api/v1/visitas/{id}` y `POST /api/v1/visitas/{id}/aviso` no tienen política propia (decisión del 2026-11-12 para el aviso): rige solo el límite general. El cuerpo de la llegada se limita a 8 KB (413).
+
 ## Lista de espera en Mercado (spec 023, KNOCK-47)
 
 `GET /api/v1/zonas/cp/{cp}` requiere sesión y usa los límites globales del gateway por IP y usuario y el límite por IP de Mercado; no tiene política específica adicional.
