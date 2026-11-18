@@ -94,6 +94,24 @@ internal sealed class MeDireccionesController(AddressService addresses) : Contro
         };
     }
 
+    /// <summary>Elimina una dirección propia. Una dirección ajena responde 404 igual que una que no existe (R-14).</summary>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> Delete([FromRoute] AddressRoute route, CancellationToken cancellationToken)
+    {
+        if (Sub() is not { } sub)
+        {
+            return Unauthorized();
+        }
+
+        var result = await addresses.DeleteAsync(sub, ObjectId.Parse(route.Id), cancellationToken);
+        return result.Outcome == AddressOutcome.NoAccount ? Unauthorized() : NoContent();
+    }
+
     private Task<IActionResult> ColoniaNotFoundAsync() =>
         ValidationFilter.WriteErrorsAsync(HttpContext, new Dictionary<string, string[]> { ["colonia"] = ["The colonia does not exist in the catalog."] });
 

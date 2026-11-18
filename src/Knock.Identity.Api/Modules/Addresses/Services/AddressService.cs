@@ -21,6 +21,7 @@ internal static class AddressCrypto
 internal enum AddressOutcome
 {
     Saved,
+    Deleted,
     NoAccount,
     ColoniaNotFound,
 }
@@ -128,6 +129,28 @@ internal sealed partial class AddressService(
         return new AddressResult(AddressOutcome.Saved, updated);
     }
 
+    public async Task<AddressResult> DeleteAsync(string sub, ObjectId id, CancellationToken cancellationToken)
+    {
+        if (await store.FindUserIdAsync(sub, cancellationToken) is not { } userId)
+        {
+            return new AddressResult(AddressOutcome.NoAccount);
+        }
+
+        var rejection = await store.ApplyAsync(
+            userId,
+            existing => existing.Any(address => address.Id == id)
+                ? new AddressChanges([], [id])
+                : AddressChanges.Reject(AddressRejections.NotFound),
+            cancellationToken);
+        if (rejection is not null)
+        {
+            return Rejected(rejection);
+        }
+
+        LogDeleted(logger);
+        return new AddressResult(AddressOutcome.Deleted);
+    }
+
     private static AddressResult Rejected(string rejection) => rejection switch
     {
         AddressRejections.NoAccount => new AddressResult(AddressOutcome.NoAccount),
@@ -155,6 +178,9 @@ internal sealed partial class AddressService(
 
     [LoggerMessage(EventId = 4003, Level = LogLevel.Information, Message = "Address updated")]
     private static partial void LogUpdated(ILogger logger);
+
+    [LoggerMessage(EventId = 4004, Level = LogLevel.Information, Message = "Address deleted")]
+    private static partial void LogDeleted(ILogger logger);
 
     [LoggerMessage(EventId = 4002, Level = LogLevel.Warning, Message = "Colonia catalog unavailable: the address was not saved")]
     private static partial void LogMarketUnavailable(ILogger logger);
