@@ -80,4 +80,23 @@ internal sealed class FakeAccountStore : IAccountStore
         ExportsInProgress.Remove(userId);
         return Task.CompletedTask;
     }
+
+    /// <summary>Consentimientos guardados por <c>sub</c>.</summary>
+    public Dictionary<string, List<StoredConsent>> Consents { get; } = [];
+
+    public Task<IReadOnlyList<StoredConsent>?> FindConsentsAsync(string sub, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<StoredConsent>?>(Consents.TryGetValue(sub, out var list) ? [.. list] : null);
+
+    public Task<StoredConsent?> SetOptionalConsentAsync(string sub, string type, bool active, string version, DateTime now, CancellationToken cancellationToken)
+    {
+        if (!Consents.TryGetValue(sub, out var list))
+        {
+            return Task.FromResult<StoredConsent?>(null);
+        }
+
+        list.RemoveAll(consent => consent.Document == type);
+        var saved = new StoredConsent(type, version, now, active);
+        list.Add(saved);
+        return Task.FromResult<StoredConsent?>(saved);
+    }
 }

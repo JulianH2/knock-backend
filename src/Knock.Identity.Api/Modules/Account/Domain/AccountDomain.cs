@@ -44,6 +44,35 @@ internal static class ConsentTypes
 /// <summary>Un consentimiento con su versión y fecha. Un opcional que la persona nunca activó aparece con <c>Active</c> falso y sin versión ni fecha.</summary>
 internal sealed record ConsentEntry(string Type, bool Active, bool Mandatory, string? Version, DateTime? ChangedAt);
 
+/// <summary>Un consentimiento tal como está guardado en <c>usuarios.consentimientos</c>: los dos obligatorios no traen <c>Active</c>.</summary>
+internal sealed record StoredConsent(string Document, string Version, DateTime At, bool? Active);
+
+/// <summary>Arma la lista que ve la persona (spec 039, R-23): los dos obligatorios y los tres opcionales, siempre en el mismo orden.</summary>
+internal static class ConsentCatalog
+{
+    public static IReadOnlyList<ConsentEntry> Build(IEnumerable<StoredConsent> stored)
+    {
+        ArgumentNullException.ThrowIfNull(stored);
+        var byDocument = stored.GroupBy(consent => consent.Document, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.Last(), StringComparer.Ordinal);
+        var entries = new List<ConsentEntry>();
+        foreach (var type in ConsentTypes.Mandatory)
+        {
+            entries.Add(byDocument.TryGetValue(type, out var consent)
+                ? new ConsentEntry(type, true, true, consent.Version, consent.At)
+                : new ConsentEntry(type, true, true, null, null));
+        }
+
+        foreach (var type in ConsentTypes.Optional)
+        {
+            entries.Add(byDocument.TryGetValue(type, out var consent)
+                ? new ConsentEntry(type, consent.Active == true, false, consent.Version, consent.At)
+                : new ConsentEntry(type, false, false, null, null));
+        }
+
+        return entries;
+    }
+}
+
 /// <summary>Versiones de los consentimientos opcionales (<c>Consentimientos:Opcionales</c>); el aviso y los términos usan las de <see cref="ConsentVersionsOptions"/>.</summary>
 internal sealed class OptionalConsentOptions
 {

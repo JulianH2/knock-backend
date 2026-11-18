@@ -22,11 +22,13 @@ internal sealed class AccountStore(
     public const string DeleteAtField = "eliminarEn";
     public const string UpdatedAtField = "actualizadoEn";
 
+    public const string ActiveField = "vigente";
     public const string ExportRequestedAtField = "exportacionSolicitadaEn";
     public const string NewPhoneField = "celularNuevoProtegido";
     public const string RecoveryTypeField = "tipo";
 
     private const int _maxWriteConflictAttempts = 6;
+    private const int _maxConsentAttempts = 5;
 
     private static readonly FilterDefinitionBuilder<BsonDocument> _filter = Builders<BsonDocument>.Filter;
 
@@ -190,6 +192,59 @@ internal sealed class AccountStore(
             _filter.Eq(SesionesStore.IdField, ObjectId.Parse(userId)),
             Builders<BsonDocument>.Update.Unset(ExportRequestedAtField).Inc(SesionesStore.VersionField, 1),
             cancellationToken: cancellationToken);
+
+    public async Task<IReadOnlyList<StoredConsent>?> FindConsentsAsync(string sub, CancellationToken cancellationToken)
+    {
+        var document = await Users.Find(_filter.Eq(SesionesStore.SubField, sub), _findOptions)
+            .Project(Builders<BsonDocument>.Projection.Include(SesionesStore.ConsentsField)).Limit(1).FirstOrDefaultAsync(cancellationToken);
+        return document is null ? null : ReadConsents(document);
+    }
+
+    public async Task<StoredConsent?> SetOptionalConsentAsync(
+        string sub, string type, bool active, string version, DateTime now, CancellationToken cancellationToken)
+    {
+        for (var attempt = 0; attempt < _maxConsentAttempts; attempt++)
+        {
+            var document = await Users.Find(_filter.Eq(SesionesStore.SubField, sub), _findOptions)
+                .Project(Builders<BsonDocument>.Projection.Include(SesionesStore.ConsentsField).Include(SesionesStore.VersionField))
+                .Limit(1).FirstOrDefaultAsync(cancellationToken);
+            if (document is null)
+            {
+                return null;
+            }
+
+            var current = document.TryGetValue(SesionesStore.ConsentsField, out var array) && array.IsBsonArray ? array.AsBsonArray : [];
+            var entry = new BsonDocument
+            {
+                { SesionesStore.DocumentField, type },
+                { SesionesStore.VersionField, version },
+                { ActiveField, active },
+                { SesionesStore.AcceptedAtField, new BsonDateTime(now) },
+            };
+            var updated = new BsonArray(current.Where(item => item.AsBsonDocument[SesionesStore.DocumentField].AsString != type)) { entry };
+            var version0 = document[SesionesStore.VersionField];
+            var filter = _filter.And(_filter.Eq(SesionesStore.SubField, sub), _filter.Eq(SesionesStore.VersionField, version0));
+            var update = Builders<BsonDocument>.Update
+                .Set(SesionesStore.ConsentsField, updated)
+                .Set(UpdatedAtField, new BsonDateTime(now))
+                .Inc(SesionesStore.VersionField, 1);
+            if ((await Users.UpdateOneAsync(filter, update, cancellationToken: cancellationToken)).ModifiedCount == 1)
+            {
+                return new StoredConsent(type, version, now, active);
+            }
+        }
+
+        throw new Common.Errors.DomainException(Common.Errors.DomainErrorKind.Conflict, "The consents were changed concurrently; try again.");
+    }
+
+    private static List<StoredConsent> ReadConsents(BsonDocument document) =>
+        document.TryGetValue(SesionesStore.ConsentsField, out var array) && array.IsBsonArray
+            ? [.. array.AsBsonArray.Select(item => item.AsBsonDocument).Select(consent => new StoredConsent(
+                consent[SesionesStore.DocumentField].AsString,
+                consent[SesionesStore.VersionField].AsString,
+                consent[SesionesStore.AcceptedAtField].ToUniversalTime(),
+                consent.TryGetValue(ActiveField, out var active) && active.IsBoolean ? active.AsBoolean : null))]
+            : [];
 
     private static FilterDefinition<BsonDocument> OpenSessionsExcept(string userId, string currentSessionId, DateTime now) =>
         _filter.And(

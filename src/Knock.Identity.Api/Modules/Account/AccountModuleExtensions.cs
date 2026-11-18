@@ -1,4 +1,5 @@
 using Knock.Identity.Api.Modules.Account.Data;
+using Knock.Identity.Api.Modules.Account.Domain;
 using Knock.Identity.Api.Modules.Account.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -18,6 +19,8 @@ public static class AccountModuleExtensions
         services.AddSingleton<IRecoveryAttemptLimiter, RecoveryAttemptLimiter>();
         services.AddSingleton<AccessRecoveryService>();
         services.AddSingleton<DataExportService>();
+        services.AddOptions<OptionalConsentOptions>().BindConfiguration(OptionalConsentOptions.SectionName);
+        services.AddSingleton<ConsentService>();
         return services;
     }
 }

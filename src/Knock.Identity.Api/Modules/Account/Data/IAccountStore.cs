@@ -39,4 +39,13 @@ internal interface IAccountStore
 
     /// <summary>Quita la marca de exportación en curso (se usa si la tarea no se pudo encolar).</summary>
     Task ClearExportAsync(string userId, CancellationToken cancellationToken);
+
+    /// <summary>Consentimientos guardados de la cuenta; <c>null</c> si la cuenta no existe.</summary>
+    Task<IReadOnlyList<StoredConsent>?> FindConsentsAsync(string sub, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Activa o retira un consentimiento opcional guardando tipo, versión y fecha. Lee y escribe con la <c>version</c> del documento como condición y
+    /// reintenta si otra escritura se adelantó, así dos cambios simultáneos no se pisan. <c>null</c> si la cuenta no existe.
+    /// </summary>
+    Task<StoredConsent?> SetOptionalConsentAsync(string sub, string type, bool active, string version, DateTime now, CancellationToken cancellationToken);
 }
