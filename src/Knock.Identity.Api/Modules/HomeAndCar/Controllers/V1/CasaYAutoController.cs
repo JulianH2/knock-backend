@@ -66,11 +66,7 @@ internal sealed class CasaYAutoController(HomeAndCarService service) : Controlle
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Update([FromRoute] ItemRoute route, [FromBody] UpdateItemRequest request, CancellationToken cancellationToken)
     {
-        return await AsOwnerAsync(async sub =>
-        {
-            var outcome = await service.UpdateAsync(sub, route.Id!, request, cancellationToken);
-            return outcome.Item is { } item ? Ok(item) : await ValidationFilter.WriteErrorsAsync(HttpContext, outcome.Errors!);
-        });
+        return await AsOwnerAsync(async sub => await OkOrErrorsAsync(await service.UpdateAsync(sub, route.Id!, request, cancellationToken)));
     }
 
     /// <summary>Quita un elemento propio (CAS-04). Uno ajeno o inexistente responde 404. Los trabajos terminados de Mercado no se tocan.</summary>
@@ -102,11 +98,7 @@ internal sealed class CasaYAutoController(HomeAndCarService service) : Controlle
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status503ServiceUnavailable)]
     public async Task<IActionResult> History([FromRoute] ItemRoute route, [FromQuery] HistoryQuery query, CancellationToken cancellationToken)
     {
-        return await AsOwnerAsync(async sub =>
-        {
-            var outcome = await service.HistoryAsync(sub, route.Id!, query, cancellationToken);
-            return outcome.Page is { } page ? Ok(page) : await ValidationFilter.WriteErrorsAsync(HttpContext, outcome.Errors!);
-        });
+        return await AsOwnerAsync(async sub => await OkOrErrorsAsync(await service.HistoryAsync(sub, route.Id!, query, cancellationToken)));
     }
 
     /// <summary>Sin cuerpo en caché y con el <c>sub</c> del token: lo único que toda ruta de esta spec comparte (R-20).</summary>
@@ -115,6 +107,9 @@ internal sealed class CasaYAutoController(HomeAndCarService service) : Controlle
         Response.Headers.CacheControl = "private, no-store";
         return Sub() is { } sub ? action(sub) : Task.FromResult<IActionResult>(Unauthorized());
     }
+
+    private async Task<IActionResult> OkOrErrorsAsync(IOutcome outcome) =>
+        outcome.Value is { } value ? Ok(value) : await ValidationFilter.WriteErrorsAsync(HttpContext, outcome.Errors!);
 
     private string? Sub() => User.FindFirst("sub")?.Value is { Length: > 0 } sub ? sub : null;
 }

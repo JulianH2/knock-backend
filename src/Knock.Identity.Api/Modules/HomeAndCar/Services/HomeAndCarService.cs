@@ -97,7 +97,21 @@ internal sealed class HomeAndCarService(IHomeAndCarStore store, IMarketHistory m
 }
 
 /// <summary>Resultado de editar: el elemento nuevo, o los errores por campo cuando el elemento resultante no sería coherente.</summary>
-internal sealed record UpdateItemOutcome(ItemResponse? Item, IDictionary<string, string[]>? Errors);
+internal sealed record UpdateItemOutcome(ItemResponse? Item, IDictionary<string, string[]>? Errors) : IOutcome
+{
+    object? IOutcome.Value => Item;
+}
 
 /// <summary>Resultado del historial: la página, o los errores por campo cuando Mercado no entiende el cursor.</summary>
-internal sealed record HistoryOutcome(CursorPage<HistoryItemResponse>? Page, IDictionary<string, string[]>? Errors);
+internal sealed record HistoryOutcome(CursorPage<HistoryItemResponse>? Page, IDictionary<string, string[]>? Errors) : IOutcome
+{
+    object? IOutcome.Value => Page;
+}
+
+/// <summary>Lo común de un resultado que es una respuesta o los errores por campo.</summary>
+internal interface IOutcome
+{
+    object? Value { get; }
+
+    IDictionary<string, string[]>? Errors { get; }
+}

@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-18T01:36:01Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-18T01:54:15Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | `Assistant` | data | 2 | 7 | 5 |
 | `Catalog` | -, controllers, data, domain, dtos, services, validators | 37 | 50 | 80 |
-| `HomeAndCar` | -, controllers, data, domain, dtos, services, validators | 8 | 31 | 29 |
+| `HomeAndCar` | -, controllers, data, domain, dtos, services, validators | 8 | 32 | 29 |
 | `Knock.Contracts` | - | 7 | 11 | 7 |
 | `Knock.Gateway` | -, hosting | 14 | 39 | 48 |
 | `Knock.Identity.Api` | -, common, hosting | 29 | 61 | 85 |
@@ -88,7 +88,6 @@
 - `src/Knock.Identity.Api/Hosting/SecuritySettings.cs:84 SecuritySettingsValidator.IsValidOrigin` · `src/Knock.Market.Api/Hosting/SecuritySettings.cs:83 SecuritySettingsValidator.IsValidOrigin`
 - `src/Knock.Identity.Api/Hosting/ValidationExtensions.cs:70 ValidationFilter.ToCamelCasePath` · `src/Knock.Market.Api/Hosting/ValidationExtensions.cs:65 ValidationFilter.ToCamelCasePath`
 - `src/Knock.Identity.Api/Hosting/ValidationExtensions.cs:74 ValidationFilter.Collect` · `src/Knock.Market.Api/Hosting/ValidationExtensions.cs:69 ValidationFilter.Collect`
-- `src/Knock.Identity.Api/Modules/HomeAndCar/Controllers/V1/CasaYAutoController.cs:103 CasaYAutoController.History` · `src/Knock.Identity.Api/Modules/HomeAndCar/Controllers/V1/CasaYAutoController.cs:67 CasaYAutoController.Update`
 - `src/Knock.Identity.Api/Modules/Usuarios/Controllers/V1/MeController.cs:81 MeController.Matches` · `src/Knock.Market.Api/Modules/Catalog/Controllers/V1/OficiosController.cs:52 OficiosController.Matches`
 - `src/Knock.Identity.Api/Modules/Usuarios/Data/ProfileCacheOptions.cs:25 ProfileCacheOptionsValidator.Validate` · `src/Knock.Market.Api/Modules/Catalog/Data/CatalogCacheOptions.cs:25 CatalogCacheOptionsValidator.Validate`
 
@@ -258,7 +257,7 @@
 **controllers**
 
 - `src/Knock.Identity.Api/Modules/HomeAndCar/Controllers/V1/CasaYAutoController.cs` — class `CasaYAutoController`
-  - `List()`:29, `Create()`:45, `Update()`:67, `Delete()`:83, `History()`:103
+  - `List()`:29, `Create()`:45, `Update()`:67, `Delete()`:79, `History()`:99
 
 **data**
 
@@ -276,7 +275,7 @@
 
 **services**
 
-- `src/Knock.Identity.Api/Modules/HomeAndCar/Services/HomeAndCarService.cs` — class `HomeAndCarService`, record `UpdateItemOutcome`, record `HistoryOutcome`
+- `src/Knock.Identity.Api/Modules/HomeAndCar/Services/HomeAndCarService.cs` — class `HomeAndCarService`, record `UpdateItemOutcome`, record `HistoryOutcome`, interface `IOutcome`
   - `HomeAndCarService()`:15, `ListAsync()`:20, `CreateAsync()`:27, `UpdateAsync()`:46, `DeleteAsync()`:66, `HistoryAsync()`:78, `ToResponse()`:96
 - `src/Knock.Identity.Api/Modules/HomeAndCar/Services/MarketHistoryClient.cs` — class `MarketHistoryOptions`, record `HistoryEntry`, enum `HistoryStatus`, record `HistoryResult`, interface `IMarketHistory`, class `MarketHistoryClient`, record `MarketPage`, record `MarketEntry`, record `MarketProblem`
   - `HistoryResult()`:38, `Failure()`:40, `ListAsync()`:64, `ReadKey()`:108
