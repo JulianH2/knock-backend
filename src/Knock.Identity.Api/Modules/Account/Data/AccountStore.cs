@@ -1,6 +1,7 @@
 using Knock.Identity.Api.Hosting;
 using Knock.Identity.Api.Modules.Account.Domain;
 using Knock.Identity.Api.Modules.Sesiones.Data;
+using Knock.Identity.Api.Modules.Sesiones.Domain;
 using Knock.Identity.Api.Modules.Sesiones.Services;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
@@ -245,6 +246,46 @@ internal sealed class AccountStore(
                 consent[SesionesStore.AcceptedAtField].ToUniversalTime(),
                 consent.TryGetValue(ActiveField, out var active) && active.IsBoolean ? active.AsBoolean : null))]
             : [];
+
+    public async Task<DateTime?> FindSessionStartAsync(string sessionId, string userId, CancellationToken cancellationToken)
+    {
+        if (!ObjectId.TryParse(sessionId, out var id))
+        {
+            return null;
+        }
+
+        var filter = _filter.And(_filter.Eq(SesionesStore.IdField, id), _filter.Eq(SesionesStore.UserIdField, ObjectId.Parse(userId)));
+        var document = await Sessions.Find(filter, _findOptions).Project(Builders<BsonDocument>.Projection.Include(SesionesStore.CreatedAtField))
+            .Limit(1).FirstOrDefaultAsync(cancellationToken);
+        return document is null ? null : document[SesionesStore.CreatedAtField].ToUniversalTime();
+    }
+
+    public async Task<bool> ScheduleDeletionAsync(string userId, DateTime deleteAt, DateTime now, CancellationToken cancellationToken)
+    {
+        var filter = _filter.And(
+            _filter.Eq(SesionesStore.IdField, ObjectId.Parse(userId)),
+            _filter.Eq(SesionesStore.StateField, AccountState.Active));
+        var update = Builders<BsonDocument>.Update
+            .Set(SesionesStore.StateField, AccountState.DeletionScheduled)
+            .Set(DeleteAtField, new BsonDateTime(deleteAt))
+            .Set(UpdatedAtField, new BsonDateTime(now))
+            .Inc(SesionesStore.VersionField, 1);
+        return (await Users.UpdateOneAsync(filter, update, cancellationToken: cancellationToken)).ModifiedCount == 1;
+    }
+
+    public async Task<bool> CancelDeletionAsync(string userId, DateTime now, CancellationToken cancellationToken)
+    {
+        var filter = _filter.And(
+            _filter.Eq(SesionesStore.IdField, ObjectId.Parse(userId)),
+            _filter.Eq(SesionesStore.StateField, AccountState.DeletionScheduled),
+            _filter.Gt(DeleteAtField, new BsonDateTime(now)));
+        var update = Builders<BsonDocument>.Update
+            .Set(SesionesStore.StateField, AccountState.Active)
+            .Unset(DeleteAtField)
+            .Set(UpdatedAtField, new BsonDateTime(now))
+            .Inc(SesionesStore.VersionField, 1);
+        return (await Users.UpdateOneAsync(filter, update, cancellationToken: cancellationToken)).ModifiedCount == 1;
+    }
 
     private static FilterDefinition<BsonDocument> OpenSessionsExcept(string userId, string currentSessionId, DateTime now) =>
         _filter.And(

@@ -48,4 +48,19 @@ internal interface IAccountStore
     /// reintenta si otra escritura se adelantó, así dos cambios simultáneos no se pisan. <c>null</c> si la cuenta no existe.
     /// </summary>
     Task<StoredConsent?> SetOptionalConsentAsync(string sub, string type, bool active, string version, DateTime now, CancellationToken cancellationToken);
+
+    /// <summary>Cuándo se abrió la sesión <paramref name="sessionId"/> de la cuenta (su <c>creadoEn</c>); <c>null</c> si no existe o no es de esa cuenta.</summary>
+    Task<DateTime?> FindSessionStartAsync(string sessionId, string userId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Programa la eliminación con una sola operación condicionada a que la cuenta esté <c>activa</c>: pasa a <c>eliminacion_programada</c> con
+    /// <c>eliminarEn</c> (el compuesto <c>estado + eliminarEn</c> es lo que lee el proceso de borrado). Falso si ya estaba programada o no está activa.
+    /// </summary>
+    Task<bool> ScheduleDeletionAsync(string userId, DateTime deleteAt, DateTime now, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Cancela la eliminación con una sola operación condicionada a que esté programada y su gracia no haya vencido: la cuenta vuelve a <c>activa</c> y
+    /// se borra <c>eliminarEn</c>. Falso si no había nada que cancelar.
+    /// </summary>
+    Task<bool> CancelDeletionAsync(string userId, DateTime now, CancellationToken cancellationToken);
 }

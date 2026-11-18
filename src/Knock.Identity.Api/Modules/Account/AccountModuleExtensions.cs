@@ -23,6 +23,7 @@ public static class AccountModuleExtensions
         services.AddSingleton<ConsentService>();
         services.TryAddSingleton<IMarketAccountClient, UnavailableMarketAccountClient>();
         services.AddSingleton<PendingService>();
+        services.AddSingleton<AccountDeletionService>();
         return services;
     }
 }
