@@ -99,4 +99,34 @@ internal sealed class FakeAccountStore : IAccountStore
         list.Add(saved);
         return Task.FromResult<StoredConsent?>(saved);
     }
+
+    /// <summary>Inicio de cada sesión (por id) para la regla de las 24 horas.</summary>
+    public Dictionary<string, DateTime> SessionStarts { get; } = [];
+
+    public Task<DateTime?> FindSessionStartAsync(string sessionId, string userId, CancellationToken cancellationToken) =>
+        Task.FromResult<DateTime?>(SessionStarts.TryGetValue(sessionId, out var start) ? start : null);
+
+    public Task<bool> ScheduleDeletionAsync(string userId, DateTime deleteAt, DateTime now, CancellationToken cancellationToken)
+    {
+        var index = Accounts.FindIndex(a => a.Id == userId);
+        if (index < 0 || Accounts[index].State != "activa")
+        {
+            return Task.FromResult(false);
+        }
+
+        Accounts[index] = Accounts[index] with { State = "eliminacion_programada", DeleteAt = deleteAt };
+        return Task.FromResult(true);
+    }
+
+    public Task<bool> CancelDeletionAsync(string userId, DateTime now, CancellationToken cancellationToken)
+    {
+        var index = Accounts.FindIndex(a => a.Id == userId);
+        if (index < 0 || Accounts[index].State != "eliminacion_programada" || Accounts[index].DeleteAt <= now)
+        {
+            return Task.FromResult(false);
+        }
+
+        Accounts[index] = Accounts[index] with { State = "activa", DeleteAt = null };
+        return Task.FromResult(true);
+    }
 }
