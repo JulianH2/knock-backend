@@ -1,0 +1,102 @@
+using System.Globalization;
+using System.Net;
+using AwesomeAssertions;
+using Knock.SecurityTest.Support;
+using Xunit;
+
+namespace Knock.SecurityTest.Identity;
+
+/// <summary>Spec 039: <c>POST /api/v1/me/cambio-numero</c> (USR-03) y <c>/confirmar</c> (USR-04). Host real en Production, MongoDB y Redis reales. Solo datos ficticios.</summary>
+public class Spec039PhoneChangeApiTests
+{
+    private const string _check = "/api/v1/me/cambio-numero";
+
+    private static Task<HttpResponseMessage> CheckAsync(SecurityHosts hosts, string? token, object body) =>
+        SecureHttp.PostJsonAsync(hosts.IdentityClient, _check, body, token);
+
+    [Fact]
+    public async Task FreeNumber_Returns204_CA_039_01()
+    {
+        var hosts = await SecurityHosts.SharedAsync();
+        var person = await hosts.Identity.SignInAsync(hosts.IdentityClient);
+
+        using var response = await CheckAsync(hosts, person.AccessToken, new { celularNuevo = SecurityIdentityFactory.NewPhone() });
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task WithoutTokenOrWithAnExpiredOne_Returns401_CA_039_02()
+    {
+        var hosts = await SecurityHosts.SharedAsync();
+        var body = new { celularNuevo = SecurityIdentityFactory.NewPhone() };
+
+        using var anonymous = await CheckAsync(hosts, null, body);
+        using var expired = await CheckAsync(hosts, TokenForge.Expired(), body);
+
+        await SecureHttp.AssertProblemAsync(anonymous, HttpStatusCode.Unauthorized);
+        await SecureHttp.AssertProblemAsync(expired, HttpStatusCode.Unauthorized);
+    }
+
+    [Theory]
+    [InlineData("5512345678")]
+    [InlineData("+15512345678")]
+    [InlineData("+52551234567")]
+    [InlineData("+52551234567x")]
+    [InlineData("")]
+    public async Task InvalidNumber_Returns422WithFieldErrorsAndDoesNotRepeatIt_CA_039_03(string phone)
+    {
+        var hosts = await SecurityHosts.SharedAsync();
+        var person = await hosts.Identity.SignInAsync(hosts.IdentityClient);
+
+        using var response = await CheckAsync(hosts, person.AccessToken, new { celularNuevo = phone });
+
+        var raw = await SecureHttp.AssertProblemAsync(response, HttpStatusCode.UnprocessableEntity, phone);
+        (await SecureHttp.ReadJsonAsync(response)).GetProperty("errors").TryGetProperty("celularNuevo", out _).Should().BeTrue();
+        raw.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task UnreadableBody_Returns400_CA_039_04()
+    {
+        var hosts = await SecurityHosts.SharedAsync();
+        var person = await hosts.Identity.SignInAsync(hosts.IdentityClient);
+
+        using var response = await SecureHttp.SendRawJsonAsync(hosts.IdentityClient, HttpMethod.Post, _check, "{\"celularNuevo\":", person.AccessToken);
+
+        await SecureHttp.AssertProblemAsync(response, HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task NumberOfAnotherAccount_Returns409PhoneAlreadyRegistered_CA_039_05()
+    {
+        var hosts = await SecurityHosts.SharedAsync();
+        var owner = await hosts.Identity.SignInAsync(hosts.IdentityClient);
+        var person = await hosts.Identity.SignInAsync(hosts.IdentityClient);
+
+        using var response = await CheckAsync(hosts, person.AccessToken, new { celularNuevo = owner.Phone });
+
+        var raw = await SecureHttp.AssertProblemAsync(response, HttpStatusCode.Conflict, owner.Phone);
+        raw.Should().Contain("phone_already_registered");
+    }
+
+    [Fact]
+    public async Task FourthCheckInAnHour_Returns429WithRetryAfter_CA_039_33()
+    {
+        var hosts = await SecurityHosts.SharedAsync();
+        var person = await hosts.Identity.SignInAsync(hosts.IdentityClient);
+        var other = await hosts.Identity.SignInAsync(hosts.IdentityClient);
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            using var allowed = await CheckAsync(hosts, person.AccessToken, new { celularNuevo = SecurityIdentityFactory.NewPhone() });
+            allowed.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        }
+
+        using var limited = await CheckAsync(hosts, person.AccessToken, new { celularNuevo = SecurityIdentityFactory.NewPhone() });
+        using var untouched = await CheckAsync(hosts, other.AccessToken, new { celularNuevo = SecurityIdentityFactory.NewPhone() });
+
+        await SecureHttp.AssertProblemAsync(limited, HttpStatusCode.TooManyRequests);
+        int.Parse(limited.Headers.GetValues("Retry-After").Single(), CultureInfo.InvariantCulture).Should().BeInRange(1, 3600);
+        untouched.StatusCode.Should().Be(HttpStatusCode.NoContent, "el límite es por persona");
+    }
+}
