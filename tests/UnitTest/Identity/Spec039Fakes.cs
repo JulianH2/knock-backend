@@ -43,6 +43,22 @@ internal sealed class Spec039Outbox : IAccountOutbox
 {
     public List<string> RevokedNotices { get; } = [];
 
+    public List<string> ExportTasks { get; } = [];
+
+    /// <summary>Si es verdadero, programar la exportación falla (la tarea no se pudo encolar).</summary>
+    public bool FailExport { get; set; }
+
+    public Task EnqueueExportAsync(string userId, CancellationToken cancellationToken)
+    {
+        if (FailExport)
+        {
+            throw new InvalidOperationException("outbox down");
+        }
+
+        ExportTasks.Add(userId);
+        return Task.CompletedTask;
+    }
+
     public Task EnqueueSessionRevokedAsync(string sessionId, CancellationToken cancellationToken)
     {
         RevokedNotices.Add(sessionId);

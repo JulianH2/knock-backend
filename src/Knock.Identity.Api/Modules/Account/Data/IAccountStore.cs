@@ -30,4 +30,13 @@ internal interface IAccountStore
     /// reintento): en ese caso conserva el primero y no escribe nada. Devuelve si se creó uno nuevo.
     /// </summary>
     Task<bool> CreateRecoveryCaseIfNoneOpenAsync(RecoveryCase recoveryCase, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Marca la exportación en curso con una sola operación condicionada a que no haya otra (una por persona, spec 039 R-22): si ya hay una, no escribe
+    /// nada. La marca la quita la tarea <c>PrepararExportacion</c> (spec 054) al terminar.
+    /// </summary>
+    Task<ExportStartOutcome> TryStartExportAsync(string userId, DateTime now, CancellationToken cancellationToken);
+
+    /// <summary>Quita la marca de exportación en curso (se usa si la tarea no se pudo encolar).</summary>
+    Task ClearExportAsync(string userId, CancellationToken cancellationToken);
 }

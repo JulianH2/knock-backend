@@ -68,4 +68,16 @@ internal sealed class FakeAccountStore : IAccountStore
         RecoveryCases.Add(recoveryCase);
         return Task.FromResult(true);
     }
+
+    /// <summary>Cuentas con una exportación en curso (por <c>_id</c>).</summary>
+    public HashSet<string> ExportsInProgress { get; } = [];
+
+    public Task<ExportStartOutcome> TryStartExportAsync(string userId, DateTime now, CancellationToken cancellationToken) =>
+        Task.FromResult(ExportsInProgress.Add(userId) ? ExportStartOutcome.Started : ExportStartOutcome.AlreadyInProgress);
+
+    public Task ClearExportAsync(string userId, CancellationToken cancellationToken)
+    {
+        ExportsInProgress.Remove(userId);
+        return Task.CompletedTask;
+    }
 }

@@ -22,6 +22,7 @@ internal sealed class AccountStore(
     public const string DeleteAtField = "eliminarEn";
     public const string UpdatedAtField = "actualizadoEn";
 
+    public const string ExportRequestedAtField = "exportacionSolicitadaEn";
     public const string NewPhoneField = "celularNuevoProtegido";
     public const string RecoveryTypeField = "tipo";
 
@@ -170,6 +171,25 @@ internal sealed class AccountStore(
             cancellationToken);
         return before is null;
     }
+
+    public async Task<ExportStartOutcome> TryStartExportAsync(string userId, DateTime now, CancellationToken cancellationToken)
+    {
+        var filter = _filter.And(
+            _filter.Eq(SesionesStore.IdField, ObjectId.Parse(userId)),
+            _filter.Exists(ExportRequestedAtField, false));
+        var update = Builders<BsonDocument>.Update
+            .Set(ExportRequestedAtField, new BsonDateTime(now))
+            .Set(UpdatedAtField, new BsonDateTime(now))
+            .Inc(SesionesStore.VersionField, 1);
+        var result = await Users.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        return result.ModifiedCount == 1 ? ExportStartOutcome.Started : ExportStartOutcome.AlreadyInProgress;
+    }
+
+    public async Task ClearExportAsync(string userId, CancellationToken cancellationToken) =>
+        await Users.UpdateOneAsync(
+            _filter.Eq(SesionesStore.IdField, ObjectId.Parse(userId)),
+            Builders<BsonDocument>.Update.Unset(ExportRequestedAtField).Inc(SesionesStore.VersionField, 1),
+            cancellationToken: cancellationToken);
 
     private static FilterDefinition<BsonDocument> OpenSessionsExcept(string userId, string currentSessionId, DateTime now) =>
         _filter.And(

@@ -17,6 +17,7 @@ public static class AccountModuleExtensions
         services.AddSingleton<PhoneChangeService>();
         services.AddSingleton<IRecoveryAttemptLimiter, RecoveryAttemptLimiter>();
         services.AddSingleton<AccessRecoveryService>();
+        services.AddSingleton<DataExportService>();
         return services;
     }
 }
