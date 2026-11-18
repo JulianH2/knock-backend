@@ -21,3 +21,22 @@ internal sealed record StoredAddress(
 {
     public sealed override string ToString() => nameof(StoredAddress);
 }
+
+/// <summary>
+/// Cambios que el servicio decide sobre las direcciones de una persona: documentos que se escriben (nuevos o ya existentes, con su <c>principal</c> al día) y los que se
+/// borran. Si <see cref="Rejection"/> trae un código, no se escribe nada.
+/// </summary>
+internal sealed record AddressChanges(IReadOnlyList<StoredAddress> Upserts, IReadOnlyList<ObjectId> Deletes, string? Rejection = null)
+{
+    public static AddressChanges Reject(string rejection) => new([], [], rejection);
+
+    public sealed override string ToString() => nameof(AddressChanges);
+}
+
+/// <summary>Motivos por los que no se aplica un cambio. Los que salen al cliente son códigos de negocio en inglés y snake_case (spec 040, R-12 y D-02).</summary>
+internal static class AddressRejections
+{
+    public const string NoAccount = "no_account";
+    public const string NotFound = "not_found";
+    public const string LimitReached = "address_limit_reached";
+}

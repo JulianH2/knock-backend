@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Knock.Identity.Api.Hosting;
 using Knock.Identity.Api.Modules.Addresses.Domain;
 using Knock.Identity.Api.Modules.Addresses.Dtos;
 using Knock.Identity.Api.Modules.Addresses.Services;
@@ -18,6 +19,9 @@ namespace Knock.Identity.Api.Modules.Addresses.Controllers.V1;
 [PrivateNoStore]
 internal sealed class MeDireccionesController(AddressService addresses) : ControllerBase
 {
+    /// <summary>Límite del cuerpo de <c>POST</c> y <c>PUT</c>: 4 KiB (calle, colonia y referencias de hasta 200 caracteres); más responde 413 (spec 009).</summary>
+    public const int MaxBodyBytes = 4096;
+
     /// <summary>Lista las direcciones de quien llama, la más reciente primero. Sin paginar: una persona tiene pocas.</summary>
     [HttpGet]
     [ProducesResponseType<IReadOnlyList<AddressResponse>>(StatusCodes.Status200OK)]
@@ -33,6 +37,37 @@ internal sealed class MeDireccionesController(AddressService addresses) : Contro
         var list = await addresses.ListAsync(sub, cancellationToken);
         return list is null ? Unauthorized() : Ok(list.Select(ToResponse));
     }
+
+    /// <summary>
+    /// Guarda una dirección nueva. Un valor inválido responde 422 con <c>errors.&lt;campo&gt;</c> sin repetirlo; una colonia que no está en el catálogo, 422 en <c>errors.colonia</c>.
+    /// </summary>
+    [HttpPost]
+    [RequestSizeLimit(MaxBodyBytes)]
+    [ProducesResponseType<AddressResponse>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status413PayloadTooLarge)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status503ServiceUnavailable)]
+    public async Task<IActionResult> Create([FromBody] CreateAddressRequest request, CancellationToken cancellationToken)
+    {
+        if (Sub() is not { } sub)
+        {
+            return Unauthorized();
+        }
+
+        var result = await addresses.CreateAsync(sub, AddressInput.From(request), cancellationToken);
+        return result.Outcome switch
+        {
+            AddressOutcome.NoAccount => Unauthorized(),
+            AddressOutcome.ColoniaNotFound => await ColoniaNotFoundAsync(),
+            _ => StatusCode(StatusCodes.Status201Created, ToResponse(result.Address!)),
+        };
+    }
+
+    private Task<IActionResult> ColoniaNotFoundAsync() =>
+        ValidationFilter.WriteErrorsAsync(HttpContext, new Dictionary<string, string[]> { ["colonia"] = ["The colonia does not exist in the catalog."] });
 
     private static AddressResponse ToResponse(Address address) =>
         new(address.Id, address.Street, address.Colonia, address.References, address.Principal, address.CreatedAt);
