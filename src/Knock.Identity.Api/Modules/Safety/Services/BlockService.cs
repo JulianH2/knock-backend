@@ -3,7 +3,6 @@ using Knock.Identity.Api.Modules.Safety.Data;
 using Knock.Identity.Api.Modules.Safety.Domain;
 using Knock.Identity.Api.Modules.Safety.Dtos;
 using Knock.Identity.Api.Modules.Usuarios;
-using MongoDB.Bson;
 
 namespace Knock.Identity.Api.Modules.Safety.Services;
 
@@ -58,7 +57,7 @@ internal sealed class BlockService(BloqueosStore store, IUsuariosApi users, Time
     public async Task<BlockedPage> ListAsync(string sub, BlocksQuery query, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);
-        var rows = await store.ListAsync(sub, ParseCursor(query.Cursor), query.Limite + 1, cancellationToken);
+        var rows = await store.ListAsync(sub, SafetyCursor.Parse(query.Cursor), query.Limite + 1, cancellationToken);
         var page = rows.Take(query.Limite).ToList();
         var items = new List<BlockedPerson>(page.Count);
         foreach (var row in page)
@@ -68,17 +67,5 @@ internal sealed class BlockService(BloqueosStore store, IUsuariosApi users, Time
         }
 
         return new BlockedPage(items, rows.Count > query.Limite ? page[^1].RecordId.ToString() : null);
-    }
-
-    private static ObjectId? ParseCursor(string? cursor)
-    {
-        if (string.IsNullOrEmpty(cursor))
-        {
-            return null;
-        }
-
-        return cursor.Length == 24 && ObjectId.TryParse(cursor, out var id)
-            ? id
-            : throw new DomainException(DomainErrorKind.BadRequest, "The cursor is not valid.", SafetyErrorCodes.InvalidCursorCode);
     }
 }
