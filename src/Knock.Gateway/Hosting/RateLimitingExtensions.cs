@@ -1,3 +1,4 @@
+// jscpd:ignore-start -- EXC-025
 using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
@@ -184,3 +185,4 @@ internal static class RateLimitCheck
         return true;
     }
 }
+// jscpd:ignore-end
