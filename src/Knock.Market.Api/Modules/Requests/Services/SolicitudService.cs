@@ -100,7 +100,8 @@ internal sealed class SolicitudService(
             hasAddress ? cipher.Encrypt(body.Direccion!.Trim(), AddressContext(id)) : null,
             RequestState.Enviada,
             RequestRules.ExpiresAt(now).UtcDateTime,
-            now.UtcDateTime);
+            now.UtcDateTime,
+            body.ElementoId is null ? null : ObjectId.Parse(body.ElementoId).ToString());
         var message = OutboxMessage.Create(
             _createdEvent,
             id.ToString(),

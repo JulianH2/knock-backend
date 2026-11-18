@@ -23,7 +23,8 @@ internal sealed record RequestRecord(
     string? DireccionCifrada,
     RequestState Estado,
     DateTime VenceEnUtc,
-    DateTime CreadoEnUtc);
+    DateTime CreadoEnUtc,
+    string? ElementoId = null);
 
 /// <summary>Una página de solicitudes propias y el cursor de la siguiente, o <see langword="null"/> en la última.</summary>
 internal sealed record RequestRecordPage(IReadOnlyList<RequestRecord> Items, string? NextCursor);
@@ -146,6 +147,12 @@ internal sealed class RequestsStore(
             document.Add("direccionCifrada", record.DireccionCifrada);
         }
 
+        if (record.ElementoId is not null)
+        {
+            // Spec 041, R-19: opcional y aditivo; sin él el documento queda como antes.
+            document.Add("elementoId", record.ElementoId);
+        }
+
         document.Add("estado", RequestStates.ToStored(record.Estado));
         document.Add("venceEn", record.VenceEnUtc);
         document.Add("creadoEn", record.CreadoEnUtc);
@@ -169,5 +176,6 @@ internal sealed class RequestsStore(
         document.TryGetValue("direccionCifrada", out var address) && address.IsString ? address.AsString : null,
         RequestStates.ParseRequest(document["estado"].AsString),
         document["venceEn"].ToUniversalTime(),
-        document["creadoEn"].ToUniversalTime());
+        document["creadoEn"].ToUniversalTime(),
+        document.TryGetValue("elementoId", out var elementId) && elementId.IsString ? elementId.AsString : null);
 }

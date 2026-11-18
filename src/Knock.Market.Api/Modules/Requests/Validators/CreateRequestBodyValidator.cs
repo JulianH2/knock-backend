@@ -55,6 +55,11 @@ internal sealed partial class CreateRequestBodyValidator : AbstractValidator<Cre
             .NotNull().WithMessage(RequiredReason)
             .Must(IsObjectId).WithMessage(FormatReason);
 
+        // Spec 041, R-19: solo el formato; ausente o nulo se trata como siempre.
+        RuleFor(x => x.ElementoId)
+            .Must(IsObjectId).WithMessage(FormatReason)
+            .When(x => x.ElementoId is not null);
+
         RuleFor(x => x.Direccion)
             .Must(value => value!.Trim().Length is >= MinAddress and <= MaxAddress).WithMessage(FormatReason)
             .When(x => x.Direccion is not null);
