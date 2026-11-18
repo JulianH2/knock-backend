@@ -5,6 +5,7 @@ using Knock.Identity.Api.Modules.Addresses.Dtos;
 using Knock.Identity.Api.Modules.Addresses.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 
 namespace Knock.Identity.Api.Modules.Addresses.Controllers.V1;
 
@@ -63,6 +64,33 @@ internal sealed class MeDireccionesController(AddressService addresses) : Contro
             AddressOutcome.NoAccount => Unauthorized(),
             AddressOutcome.ColoniaNotFound => await ColoniaNotFoundAsync(),
             _ => StatusCode(StatusCodes.Status201Created, ToResponse(result.Address!)),
+        };
+    }
+
+    /// <summary>Edita los campos enviados de una dirección propia. Una dirección ajena responde 404 igual que una que no existe (R-14).</summary>
+    [HttpPut("{id}")]
+    [RequestSizeLimit(MaxBodyBytes)]
+    [ProducesResponseType<AddressResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status413PayloadTooLarge)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status503ServiceUnavailable)]
+    public async Task<IActionResult> Update([FromRoute] AddressRoute route, [FromBody] UpdateAddressRequest request, CancellationToken cancellationToken)
+    {
+        if (Sub() is not { } sub)
+        {
+            return Unauthorized();
+        }
+
+        var result = await addresses.UpdateAsync(sub, ObjectId.Parse(route.Id), AddressEdit.From(request), cancellationToken);
+        return result.Outcome switch
+        {
+            AddressOutcome.NoAccount => Unauthorized(),
+            AddressOutcome.ColoniaNotFound => await ColoniaNotFoundAsync(),
+            _ => Ok(ToResponse(result.Address!)),
         };
     }
 

@@ -42,3 +42,22 @@ internal sealed record AddressInput(string Street, string Colonia, string? Refer
 
     public sealed override string ToString() => nameof(AddressInput);
 }
+
+/// <summary>
+/// Los campos que una edición cambia, ya recortados: <see langword="null"/> deja el campo igual. En <see cref="References"/>, un texto vacío las borra. Sin <c>ToString</c> con
+/// datos: un registro imprimiría la dirección.
+/// </summary>
+internal sealed record AddressEdit(string? Street, string? Colonia, string? References, bool? Principal)
+{
+    public static AddressEdit From(UpdateAddressRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return new AddressEdit(
+            request.CalleNumero is null ? null : AddressRules.Normalize(request.CalleNumero),
+            request.Colonia is null ? null : AddressRules.Normalize(request.Colonia),
+            request.Referencias is null ? null : AddressRules.Normalize(request.Referencias),
+            request.Principal);
+    }
+
+    public sealed override string ToString() => nameof(AddressEdit);
+}

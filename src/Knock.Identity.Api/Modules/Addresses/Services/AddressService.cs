@@ -91,9 +91,49 @@ internal sealed partial class AddressService(
         return new AddressResult(AddressOutcome.Saved, new Address(id.ToString(), input.Street, input.Colonia, input.References, principal, created));
     }
 
-    private static AddressResult Rejected(string rejection) => rejection == AddressRejections.NoAccount
-        ? new AddressResult(AddressOutcome.NoAccount)
-        : throw new InvalidOperationException("The address change was rejected for an unknown reason.");
+    public async Task<AddressResult> UpdateAsync(string sub, ObjectId id, AddressEdit edit, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(edit);
+        if (await store.FindUserIdAsync(sub, cancellationToken) is not { } userId)
+        {
+            return new AddressResult(AddressOutcome.NoAccount);
+        }
+
+        if (edit.Colonia is not null && !await ColoniaExistsAsync(edit.Colonia, cancellationToken))
+        {
+            return new AddressResult(AddressOutcome.ColoniaNotFound);
+        }
+
+        Address? updated = null;
+        var rejection = await store.ApplyAsync(
+            userId,
+            existing =>
+            {
+                // La búsqueda filtra por las direcciones de la cuenta del token: una dirección ajena no existe aquí (R-14).
+                if (existing.FirstOrDefault(address => address.Id == id) is not { } current)
+                {
+                    return AddressChanges.Reject(AddressRejections.NotFound);
+                }
+
+                (var changed, updated) = cipher.Edit(current, edit);
+                return new AddressChanges([changed], []);
+            },
+            cancellationToken);
+        if (rejection is not null)
+        {
+            return Rejected(rejection);
+        }
+
+        LogUpdated(logger);
+        return new AddressResult(AddressOutcome.Saved, updated);
+    }
+
+    private static AddressResult Rejected(string rejection) => rejection switch
+    {
+        AddressRejections.NoAccount => new AddressResult(AddressOutcome.NoAccount),
+        AddressRejections.NotFound => throw new DomainException(DomainErrorKind.NotFound, "The address does not exist."),
+        _ => throw new InvalidOperationException("The address change was rejected for an unknown reason."),
+    };
 
     private async Task<bool> ColoniaExistsAsync(string colonia, CancellationToken cancellationToken)
     {
@@ -112,6 +152,9 @@ internal sealed partial class AddressService(
     // Los registros no llevan calle, colonia, referencias, identificadores de dirección ni sub (spec 040, R-13 y R-16).
     [LoggerMessage(EventId = 4001, Level = LogLevel.Information, Message = "Address created")]
     private static partial void LogCreated(ILogger logger);
+
+    [LoggerMessage(EventId = 4003, Level = LogLevel.Information, Message = "Address updated")]
+    private static partial void LogUpdated(ILogger logger);
 
     [LoggerMessage(EventId = 4002, Level = LogLevel.Warning, Message = "Colonia catalog unavailable: the address was not saved")]
     private static partial void LogMarketUnavailable(ILogger logger);
