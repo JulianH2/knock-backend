@@ -203,6 +203,168 @@
         }
       }
     },
+    "/api/v{version}/tecnicos/autocompletar": {
+      "get": {
+        "tags": [
+          "Tecnicos"
+        ],
+        "summary": "Sugerencias de oficios y negocios mientras se escribe (TEC-03): hasta 8, públicas y sin registrar el texto.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutocompleteResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutocompleteResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutocompleteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/tecnicos/{id}/llega-a-mi-colonia": {
+      "get": {
+        "tags": [
+          "Tecnicos"
+        ],
+        "summary": "Dice si el técnico atiende la colonia de la persona (TEC-06). 404 si el técnico no existe o está oculto; 422 si la colonia no está en el catálogo.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "colonia",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoverageResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoverageResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoverageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v{version}/tecnicos/me": {
       "put": {
         "tags": [
@@ -2360,6 +2522,21 @@
         },
         "description": "Cuerpo de `POST /visitas/{id}/llegada`: `Codigo` son exactamente cuatro dígitos ASCII, con los ceros a la izquierda."
       },
+      "AutocompleteResponse": {
+        "required": [
+          "sugerencias"
+        ],
+        "type": "object",
+        "properties": {
+          "sugerencias": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Suggestion"
+            }
+          }
+        },
+        "description": "Hasta 8 sugerencias."
+      },
       "AvailabilityBody": {
         "required": [
           "disponibleHoy"
@@ -2452,6 +2629,18 @@
           }
         },
         "description": "Técnico elegido, con el contacto público que se revela solo después de elegir."
+      },
+      "CoverageResponse": {
+        "required": [
+          "atiende"
+        ],
+        "type": "object",
+        "properties": {
+          "atiende": {
+            "type": "boolean"
+          }
+        },
+        "description": "Respuesta de TEC-06 (R-43)."
       },
       "CreateRequestBody": {
         "required": [
@@ -3339,6 +3528,36 @@
           }
         },
         "description": "Cuerpo de `PUT /tecnicos/me/horarios` y respuesta de `GET` (TEC-10 y TEC-11): los siete días, cada uno una vez."
+      },
+      "Suggestion": {
+        "required": [
+          "tipo",
+          "texto",
+          "clave",
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string"
+          },
+          "texto": {
+            "type": "string"
+          },
+          "clave": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Una sugerencia de TEC-03: `tipo` es `oficio` (con su `clave`) o `negocio` (con el `id` del técnico). Los servicios con precio\n(spec 047) se suman cuando exista su colección."
       },
       "TechnicianProfileBody": {
         "required": [

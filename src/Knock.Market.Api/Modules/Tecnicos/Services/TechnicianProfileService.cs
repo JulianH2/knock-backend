@@ -73,7 +73,7 @@ internal sealed class TechnicianProfileService(ITechnicianProfileReader reader, 
     public void Forget(ObjectId id) => cache.Remove(CacheKey(id));
 
     internal static bool IsVisible(TechnicianProfileRecord record, DateTime nowUtc) =>
-        record.Estado == TechnicianRules.ActiveState && !record.Oculto && (record.OcultoHasta is null || record.OcultoHasta <= nowUtc);
+        TechnicianRules.IsVisible(record.Estado, record.Oculto, record.OcultoHasta, nowUtc);
 
     internal static string? Shorten(string? description)
     {

@@ -27,6 +27,8 @@ public static class TecnicosModuleExtensions
         services.AddOptions<TecnicosOptions>().BindConfiguration(TecnicosOptions.SectionName);
         services.AddScoped<ITechnicianSelfStore, TechnicianSelfStore>();
         services.AddScoped<MyTechnicianService>();
+        services.AddScoped<ITechnicianLookupReader, TechnicianLookupStore>();
+        services.AddScoped<TechnicianLookupService>();
         return services;
     }
 }

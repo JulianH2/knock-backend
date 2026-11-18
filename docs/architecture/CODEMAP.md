@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-18T18:04:18Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-18T18:27:58Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -8,7 +8,7 @@
 | Módulo | Capas | Archivos | Tipos | Métodos públicos |
 |---|---|---|---|---|
 | `Assistant` | data | 2 | 7 | 5 |
-| `Catalog` | -, controllers, data, domain, dtos, services, validators | 37 | 50 | 80 |
+| `Catalog` | -, controllers, data, domain, dtos, services, validators | 37 | 50 | 81 |
 | `Knock.Contracts` | - | 7 | 11 | 7 |
 | `Knock.Gateway` | -, hosting | 14 | 39 | 48 |
 | `Knock.Identity.Api` | -, common, hosting | 29 | 61 | 85 |
@@ -17,7 +17,7 @@
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
 | `Requests` | -, controllers, data, domain, dtos, services, validators | 53 | 119 | 108 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 25 | 46 | 53 |
-| `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 18 | 41 | 46 |
+| `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 22 | 55 | 57 |
 | `Usuarios` | -, controllers, data, domain, dtos, services | 13 | 25 | 34 |
 
 ## ⚠️ Código duplicado (misma estructura)
@@ -224,7 +224,7 @@
 **services**
 
 - `src/Knock.Market.Api/Modules/Catalog/Services/CatalogApi.cs` — class `CatalogApi`
-  - `FindNeighborhoodCenterAsync()`:12, `FindNeighborhoodAtAsync()`:15, `FindNeighborhoodsByPostalCodeAsync()`:18, `NeighborhoodExistsAsync()`:29, `FindActiveTradeAsync()`:45, `FindNeighborhoodAsync()`:56
+  - `ListActiveTradesAsync()`:12, `FindNeighborhoodCenterAsync()`:15, `FindNeighborhoodAtAsync()`:18, `FindNeighborhoodsByPostalCodeAsync()`:21, `NeighborhoodExistsAsync()`:32, `FindActiveTradeAsync()`:48, `FindNeighborhoodAsync()`:59
 - `src/Knock.Market.Api/Modules/Catalog/Services/INeighborhoodLocator.cs` — interface `INeighborhoodLocator`
 - `src/Knock.Market.Api/Modules/Catalog/Services/INeighborhoodNames.cs` — interface `INeighborhoodNames`
 - `src/Knock.Market.Api/Modules/Catalog/Services/NeighborhoodLocator.cs` — class `NeighborhoodLocator`
@@ -714,12 +714,14 @@
 - `src/Knock.Market.Api/Modules/Tecnicos/Controllers/TechnicianProblems.cs` — class `TechnicianProblems`
   - `Rule()`:12
 - `src/Knock.Market.Api/Modules/Tecnicos/Controllers/V1/TecnicosController.cs` — class `TecnicosController`
-  - `Register()`:37, `Profile()`:66
+  - `Register()`:38, `Profile()`:67, `Autocomplete()`:81, `Coverage()`:95
 - `src/Knock.Market.Api/Modules/Tecnicos/Controllers/V1/TecnicosMeController.cs` — class `TecnicosMeController`
   - `Update()`:32, `Availability()`:54, `Schedule()`:67, `ReplaceSchedule()`:84
 
 **data**
 
+- `src/Knock.Market.Api/Modules/Tecnicos/Data/TechnicianLookupStore.cs` — class `TechnicianLookupStore`
+  - `FindCoverageAsync()`:19, `ToCoverage()`:28, `FindBusinessNamesAsync()`:45
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TechnicianProfileStore.cs` — class `TechnicianProfileStore`
   - `ExistsAsync()`:22, `InsertAsync()`:26, `FindByIdAsync()`:46, `ToProfile()`:54, `ToDocument()`:78
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TechnicianSelfStore.cs` — class `TechnicianSelfStore`
@@ -732,7 +734,7 @@
 - `src/Knock.Market.Api/Modules/Tecnicos/Domain/ScheduleRules.cs` — class `ScheduleRules`
   - `EndOfCityDayUtc()`:14, `AllClosed()`:23, `TryParseTime()`:25, `IsValid()`:31, `Normalize()`:61
 - `src/Knock.Market.Api/Modules/Tecnicos/Domain/TechnicianRules.cs` — class `TechnicianRules`
-  - `IsKnownAttention()`:29, `UsesWorkshop()`:31, `VisitsHomes()`:33
+  - `IsVisible()`:30, `IsKnownAttention()`:33, `UsesWorkshop()`:35, `VisitsHomes()`:37
 
 **dtos**
 
@@ -740,12 +742,15 @@
   - `AvailabilityBody()`:4, `UpdateTechnicianBody()`:17, `ScheduleBody()`:39
 - `src/Knock.Market.Api/Modules/Tecnicos/Dtos/RegisterTechnicianBody.cs` — record `RegisterTechnicianBody`, record `TechnicianProfileBody`, record `TechnicianResponse`
   - `RegisterTechnicianBody()`:13
+- `src/Knock.Market.Api/Modules/Tecnicos/Dtos/TechnicianLookupDtos.cs` — class `CoverageQuery`, record `CoverageResponse`, class `AutocompleteQuery`, record `Suggestion`, record `AutocompleteResponse`
 - `src/Knock.Market.Api/Modules/Tecnicos/Dtos/TechnicianProfileDtos.cs` — class `TechnicianIdRoute`, record `TechnicianProfileResponse`, record `TechnicianProfileDetail`
 
 **services**
 
 - `src/Knock.Market.Api/Modules/Tecnicos/Services/MyTechnicianService.cs` — class `TecnicosOptions`, record `OwnTechnician`, interface `ITechnicianSelfStore`, enum `UpdateTechnicianStatus`, record `UpdateTechnicianOutcome`, class `MyTechnicianService`
   - `MyTechnicianService()`:52, `SetAvailabilityAsync()`:61, `GetScheduleAsync()`:76, `SetScheduleAsync()`:88, `UpdateAsync()`:102
+- `src/Knock.Market.Api/Modules/Tecnicos/Services/TechnicianLookupService.cs` — record `TechnicianCoverage`, record `BusinessName`, interface `ITechnicianLookupReader`, enum `CoverageStatus`, record `CoverageOutcome`, class `TechnicianLookupService`
+  - `TechnicianLookupService()`:47, `CoverageAsync()`:61, `AutocompleteAsync()`:104, `Normalize()`:130, `DistanceKm()`:142
 - `src/Knock.Market.Api/Modules/Tecnicos/Services/TechnicianProfileService.cs` — record `TechnicianProfileRecord`, interface `ITechnicianProfileReader`, class `TechnicianProfileService`
   - `TechnicianProfileService()`:37, `CacheKey()`:44, `GetAsync()`:46, `Forget()`:73, `IsVisible()`:75, `Shorten()`:78
 - `src/Knock.Market.Api/Modules/Tecnicos/Services/TechnicianRegistrationService.cs` — enum `RegisterTechnicianStatus`, record `RegisterTechnicianOutcome`, record `NewTechnician`, interface `ITechnicianProfileStore`, class `TechnicianRegistrationService`
@@ -756,6 +761,7 @@
 - `src/Knock.Market.Api/Modules/Tecnicos/Validators/MyTechnicianValidators.cs` — class `AvailabilityBodyValidator`, class `ScheduleBodyValidator`, class `UpdateTechnicianBodyValidator`
 - `src/Knock.Market.Api/Modules/Tecnicos/Validators/RegisterTechnicianBodyValidator.cs` — class `RegisterTechnicianBodyValidator`
 - `src/Knock.Market.Api/Modules/Tecnicos/Validators/TechnicianIdRouteValidator.cs` — class `TechnicianIdRouteValidator`
+- `src/Knock.Market.Api/Modules/Tecnicos/Validators/TechnicianLookupValidators.cs` — class `CoverageQueryValidator`, class `AutocompleteQueryValidator`
 
 ### Usuarios
 
