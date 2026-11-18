@@ -24,6 +24,7 @@ internal enum AddressOutcome
     Deleted,
     NoAccount,
     ColoniaNotFound,
+    PrincipalRequired,
 }
 
 /// <summary>Resultado de guardar: la dirección guardada (solo con <see cref="AddressOutcome.Saved"/>) o el motivo por el que no se guardó.</summary>
@@ -73,14 +74,15 @@ internal sealed partial class AddressService(
         var created = timeProvider.GetUtcNow().UtcDateTime;
         var street = cipher.SealStreet(id, input.Street);
         var references = input.References is null ? null : cipher.SealReferences(id, input.References);
+        var draft = new StoredAddress(id, userId, street, input.Colonia, references, false, created);
         var principal = false;
         var rejection = await store.ApplyAsync(
             userId,
             existing =>
             {
-                // La primera dirección de la persona queda como principal (R-11).
-                principal = existing.Count == 0;
-                return new AddressChanges([new StoredAddress(id, userId, street, input.Colonia, references, principal, created)], []);
+                var planned = AddressPlanner.ForCreate(existing, draft, input.Principal);
+                principal = planned.Upserts.Count > 0 && planned.Upserts[0].Principal;
+                return planned;
             },
             cancellationToken);
         if (rejection is not null)
@@ -116,8 +118,10 @@ internal sealed partial class AddressService(
                     return AddressChanges.Reject(AddressRejections.NotFound);
                 }
 
-                (var changed, updated) = cipher.Edit(current, edit);
-                return new AddressChanges([changed], []);
+                var (changed, open) = cipher.Edit(current, edit);
+                var planned = AddressPlanner.ForEdit(existing, changed, edit.Principal);
+                updated = planned.Upserts.Count > 0 ? open with { Principal = planned.Upserts[0].Principal } : open;
+                return planned;
             },
             cancellationToken);
         if (rejection is not null)
@@ -138,9 +142,7 @@ internal sealed partial class AddressService(
 
         var rejection = await store.ApplyAsync(
             userId,
-            existing => existing.Any(address => address.Id == id)
-                ? new AddressChanges([], [id])
-                : AddressChanges.Reject(AddressRejections.NotFound),
+            existing => AddressPlanner.ForDelete(existing, id),
             cancellationToken);
         if (rejection is not null)
         {
@@ -155,6 +157,8 @@ internal sealed partial class AddressService(
     {
         AddressRejections.NoAccount => new AddressResult(AddressOutcome.NoAccount),
         AddressRejections.NotFound => throw new DomainException(DomainErrorKind.NotFound, "The address does not exist."),
+        AddressRejections.LimitReached => throw new DomainException(DomainErrorKind.Conflict, "The person reached the address limit.", AddressRejections.LimitReached),
+        AddressRejections.PrincipalRequired => new AddressResult(AddressOutcome.PrincipalRequired),
         _ => throw new InvalidOperationException("The address change was rejected for an unknown reason."),
     };
 

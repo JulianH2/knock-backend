@@ -90,6 +90,7 @@ internal sealed class MeDireccionesController(AddressService addresses) : Contro
         {
             AddressOutcome.NoAccount => Unauthorized(),
             AddressOutcome.ColoniaNotFound => await ColoniaNotFoundAsync(),
+            AddressOutcome.PrincipalRequired => await PrincipalRequiredAsync(),
             _ => Ok(ToResponse(result.Address!)),
         };
     }
@@ -111,6 +112,9 @@ internal sealed class MeDireccionesController(AddressService addresses) : Contro
         var result = await addresses.DeleteAsync(sub, ObjectId.Parse(route.Id), cancellationToken);
         return result.Outcome == AddressOutcome.NoAccount ? Unauthorized() : NoContent();
     }
+
+    private Task<IActionResult> PrincipalRequiredAsync() =>
+        ValidationFilter.WriteErrorsAsync(HttpContext, new Dictionary<string, string[]> { ["principal"] = ["Mark another address as principal instead of unmarking this one."] });
 
     private Task<IActionResult> ColoniaNotFoundAsync() =>
         ValidationFilter.WriteErrorsAsync(HttpContext, new Dictionary<string, string[]> { ["colonia"] = ["The colonia does not exist in the catalog."] });

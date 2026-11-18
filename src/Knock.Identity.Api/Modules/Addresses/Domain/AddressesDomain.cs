@@ -39,4 +39,5 @@ internal static class AddressRejections
     public const string NoAccount = "no_account";
     public const string NotFound = "not_found";
     public const string LimitReached = "address_limit_reached";
+    public const string PrincipalRequired = "principal_required";
 }
