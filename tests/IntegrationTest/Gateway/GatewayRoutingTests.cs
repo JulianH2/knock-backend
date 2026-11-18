@@ -112,6 +112,8 @@ public sealed class GatewayRoutingTests : IAsyncLifetime, IDisposable
     [InlineData("/api/v1/auth/firebase", "identidad")]
     [InlineData("/api/v1/me", "identidad")]
     [InlineData("/api/v1/me/sesiones", "identidad")]
+    [InlineData("/api/v1/me/bloqueos", "identidad")]
+    [InlineData("/api/v1/usuarios/507f1f77-bcf8-6cd7-9943-9011507f1f77/bloqueo", "identidad")]
     [InlineData("/api/v1/oficios", "mercado")]
     [InlineData("/api/v1/colonias/en-punto", "mercado")]
     [InlineData("/api/v1/zonas/cp/42800", "mercado")]
