@@ -20,7 +20,7 @@ OUT="$WORK/out.txt"
 SENTINEL="SECRETO-CENTINELA-NO-DEBE-SALIR-7f3a"
 SUB="11111111-2222-3333-4444-555555555555"
 ADMIN="aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
-ALL_SECRETS="jwt-signing-key redis-password redis-connection-string pii-encryption-key pii-hmac-key mongo-identity mongo-market mongo-messaging field-encryption-key identity-field-encryption-key search-cursor-key"
+ALL_SECRETS="jwt-signing-key redis-password redis-connection-string pii-encryption-key pii-hmac-key mongo-identity mongo-market mongo-messaging field-encryption-key identity-field-encryption-key search-cursor-key interno-key-identity"
 
 # ---- terraform falso ----
 # Registra cada llamada en $LOG con el formato «subcomando|directorio|argumentos».

@@ -65,6 +65,8 @@ locals {
         Identity__PhoneProtection__HmacKeys__1       = "pii-hmac-key"
         # Llave propia de Identity, distinta de `field-encryption-key` (Market) y de `pii-encryption-key`.
         Security__FieldEncryption__Keys__1 = "identity-field-encryption-key"
+        # Token de servicio de Identidad hacia Mercado (historial de «Mi casa y mi auto», spec 041): Identidad lo firma y Mercado lo valida.
+        Services__Market__InternalKey = "interno-key-identity"
       })
     }
     # BUG-004 (KNOCK-241): Mensajería valida el JWT de Knock y lee la lista de sesiones canceladas en Redis; sin estos dos secretos no arranca.
@@ -90,6 +92,8 @@ locals {
         Security__FieldEncryption__Keys__1 = "field-encryption-key"
         # Clave del cursor de la búsqueda de expertos (spec 027, KNOCK-66): sin ella Market no arranca fuera de Development.
         Busqueda__Cursor__Key = "search-cursor-key"
+        # Valida los tokens de servicio de Identidad (ruta interna de historial, spec 041); mismo secreto que lee Identidad.
+        Security__InternalTokens__IdentityKey = "interno-key-identity"
       })
     }
   }
