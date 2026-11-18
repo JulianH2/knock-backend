@@ -54,7 +54,7 @@ internal sealed class BlockService(BloqueosStore store, IUsuariosApi users, Time
         }
     }
 
-    /// <summary>Las personas bloqueadas por quien llama, con su nombre público. Un cursor que no se puede leer lanza 400 (<c>invalid_cursor</c>).</summary>
+    /// <summary>Las personas bloqueadas por quien llama, con su nombre público. Un cursor que no se puede leer lanza 400 (<c>invalid_safety_cursor</c>).</summary>
     public async Task<BlockedPage> ListAsync(string sub, BlocksQuery query, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);

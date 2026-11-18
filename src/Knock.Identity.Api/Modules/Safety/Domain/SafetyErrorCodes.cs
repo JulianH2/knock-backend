@@ -6,5 +6,5 @@ internal static class SafetyErrorCodes
     public const string UserNotFoundCode = "user_not_found";
     public const string AlreadyBlockedCode = "already_blocked";
     public const string BlockNotFoundCode = "block_not_found";
-    public const string InvalidCursorCode = "invalid_cursor";
+    public const string InvalidCursorCode = "invalid_safety_cursor";
 }
