@@ -29,7 +29,7 @@ az login
 ./deploy/up.sh --image-tag <sha> --name-suffix <sufijo> --apply       # aplica en orden infra, database y apps
 ```
 - Prerrequisitos que valida: Terraform >= 1.9, Azure CLI con sesión iniciada, que exista el grupo de recursos (`--resource-group`, por defecto `rg-knock-dev`; Terraform no lo crea), una `--image-tag` distinta de `latest` y el `--name-suffix` del entorno. La suscripción sale de `az account show` (o `--subscription-id`) y los administradores de secretos, de tu sesión (o `--secret-admin-ids`).
-- No imprime secretos: pasa solo valores no secretos a Terraform y de Key Vault únicamente lista los **nombres** de los secretos. Con `--apply` exige que existan los ocho (`jwt-signing-key`, `redis-password`, `redis-connection-string`, `pii-encryption-key`, `pii-hmac-key`, `mongo-identity`, `mongo-market`, `mongo-messaging`), que una persona escribe a mano.
+- No imprime secretos: pasa solo valores no secretos a Terraform y de Key Vault únicamente lista los **nombres** de los secretos. Con `--apply` exige que existan los nueve (`jwt-signing-key`, `redis-password`, `redis-connection-string`, `pii-encryption-key`, `pii-hmac-key`, `mongo-identity`, `mongo-market`, `mongo-messaging`, `field-encryption-key`), que una persona escribe a mano.
 - Respeta `prevent_destroy` y la importación de `knock-docdb`: `database/` solo importa el clúster (en un entorno nuevo el plan dice «1 to import»; después, «No changes»). Si el plan de cualquiera de los tres directorios destruye o reemplaza algún recurso, el script se detiene aunque tenga `--apply`.
 - Con `--apply` primero planea `infra` y `database` (si cualquiera destruye algo, se detiene sin haber cambiado nada), luego aplica exactamente el plan guardado de cada directorio, en orden, y se detiene en el primer error. Si `terraform state list` de `infra` no devuelve recursos, no continúa con `apps`. `--no-lock` no se permite con `--apply`.
 - En un entorno que todavía no existe, el plan de `apps` no se puede calcular (lee las salidas del estado de `infra`): el script lo omite y avisa. Con `--apply` crea `infra` y planea `apps` enseguida.
@@ -48,7 +48,7 @@ Con `database/` se importa el clúster la primera vez: `terraform apply -var sub
 ## Secretos (una persona, a mano)
 Los valores no pasan por Terraform ni por el repositorio (CA-04). Nombres fijos en Key Vault:
 `jwt-signing-key`, `redis-password` (contraseña del servidor Redis), `redis-connection-string` (la cadena que leen los servicios: `knock-redis:6379,password=<la misma contraseña>`), `pii-encryption-key`, `pii-hmac-key`, `mongo-identity`, `mongo-market`,
-`mongo-messaging`.
+`mongo-messaging`, `field-encryption-key`.
 ```
 az keyvault secret set --vault-name <kv> --name redis-password --value "<valor>"
 ```
@@ -58,7 +58,21 @@ az keyvault secret set --vault-name <kv> --name redis-password --value "<valor>"
 - `pii-encryption-key`: Base64 de **exactamente 32 bytes** (AES-256-GCM).
 - `pii-hmac-key`: Base64 de **al menos 32 bytes** y **distinta** de la de cifrado.
 - `redis-connection-string`: `knock-redis:6379,password=<la misma de redis-password>`.
-Una forma de generarlas: `python -c "import os,base64;print(base64.b64encode(os.urandom(32)).decode())"`. Los valores nunca se pegan en un chat ni en el repositorio.
+- `field-encryption-key`: Base64 de **exactamente 32 bytes**, **distinta** de `pii-encryption-key` (que es de Identity).
+Una forma de generarlas (las demás; para `field-encryption-key` usa el procedimiento de abajo): `python -c "import os,base64;print(base64.b64encode(os.urandom(32)).decode())"`. Los valores nunca se pegan en un chat ni en el repositorio.
+
+### Llave de cifrado de campos de Mercado (`field-encryption-key`)
+La lee solo el servicio `market` (variables `Security__FieldEncryption__Keys__1` y `Security__FieldEncryption__ActiveVersion=1`, esta última no es secreta y va en el `env` de Terraform). Cada servicio tiene un rol de Key Vault solo sobre los secretos que declara su `secret_env`, así que Identity, Messaging y el gateway no pueden leerla.
+
+Una sola llave protege la dirección del cliente (spec 020) y el código de visita (spec 022): **si se pierde, ambos datos quedan ilegibles**. Respáldala donde lo hagas con el resto de secretos del equipo.
+
+Crearla sin que el valor quede en el historial de la terminal ni en el repositorio: se genera y se sube en una sola tubería, sin imprimirla ni guardarla en una variable ni en un archivo.
+```
+python -c "import os,base64,sys;sys.stdout.write(base64.b64encode(os.urandom(32)).decode())" | az keyvault secret set --vault-name <kv> --name field-encryption-key --file /dev/stdin --encoding utf-8 --output none
+```
+En PowerShell, sustituye `/dev/stdin` por un archivo temporal que borres de inmediato, o usa el portal de Azure (Key Vault > Secretos > Generar o importar, nombre `field-encryption-key`, valor `<32-bytes-base64>`). Comprueba solo que exista: `az keyvault secret list --vault-name <kv> --query "[?name=='field-encryption-key'].name" -o tsv`. No uses `secret show`.
+
+Rotación: agrega la versión nueva como `Security__FieldEncryption__Keys__2` (otro secreto de Key Vault referenciado en `secret_env`) y cambia `Security__FieldEncryption__ActiveVersion` a `"2"`. La versión 1 se conserva para poder descifrar lo ya guardado; solo se retira cuando nada la use.
 
 **Cursor de búsqueda (KNOCK-66):** Market exige `Busqueda:Cursor:Key` en todos los entornos, también Development: Base64 de 32 bytes aleatorios, distinto de las demás claves. Para ejecución local fuera de contenedor, guárdalo en los *user-secrets* de `src/Knock.Market.Api/Knock.Market.Api.csproj`, sin pegar el valor en archivos del repositorio ni compartirlo. Todas las réplicas de un mismo entorno necesitan la misma clave; rotarla invalida los cursores anteriores. En Azure debe suministrarse desde Key Vault a `Busqueda__Cursor__Key`: **el secreto y su conexión a Market todavía no están configurados en Terraform** y requieren aprobación del Tech Lead antes de desplegar esta versión. Sin la clave, Market no arranca.
 
@@ -130,7 +144,7 @@ Lo que la etapa 2 **no** demuestra: que Azure acepte la creación. Las pruebas c
 - **Qué crearía:** red virtual y subred, entorno de Container Apps, Log Analytics, Application Insights, Key Vault con la asignación de rol de quien administra secretos, cuenta de almacenamiento con su contenedor privado, registro de contenedores (ACR, SKU Basic) y, en `apps`, el gateway, Identity, Messaging, Market y Redis como Container Apps.
 - **Por qué cuesta:** las Container Apps, el ACR, el almacenamiento y los registros facturan por uso o por día aunque el entorno esté inactivo. El clúster gratuito de DocumentDB ya existe y solo se permite uno por suscripción, así que `database/` no se puede crear de nuevo en la misma suscripción.
 - **Quién lo autoriza:** el líder técnico, porque gasta crédito de la suscripción. No debe correrlo un agente ni el pipeline.
-- **Antes de correrlo:** imágenes publicadas en el ACR con la etiqueta que se pasa a `--image-tag`, los ocho secretos escritos a mano en el Key Vault (CA-04) y las etapas 1 a 4 sin fallas.
+- **Antes de correrlo:** imágenes publicadas en el ACR con la etiqueta que se pasa a `--image-tag`, los nueve secretos escritos a mano en el Key Vault (CA-04) y las etapas 1 a 4 sin fallas.
 - **Cómo se revierte:** `terraform destroy` en `apps/` y luego en `infra/` (pasos 3 y 4); nunca en `database/`. Después de borrar un Key Vault, su nombre puede quedar reservado por la eliminación lógica, así que conviene probar con un sufijo propio.
 - **Lo que no se puede saber sin crearlo:** si la creación desde cero tiene éxito. Las cuotas de la suscripción y los nombres ya usados solo se descubren al crear.
 
