@@ -1,6 +1,6 @@
 # Plan 033 — Panel interno con permisos y doble factor (backend)
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Contrato primero: publicar en el OpenAPI de Identity los cuatro endpoints con sus cuerpos, la cookie y los códigos, para que frontend (spec 023) genere su cliente y avance con una API simulada mientras se implementa.

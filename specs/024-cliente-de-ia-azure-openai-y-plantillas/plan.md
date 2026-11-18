@@ -1,6 +1,6 @@
 # Plan 024 — Cliente de IA con Azure OpenAI y plantillas locales de respaldo
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada. **La implementación es del Sprint 5**; en el Sprint 4 solo se cierran la decisión del tope y el ADR.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec. **La implementación es del Sprint 5**; en el Sprint 4 solo se cierran la decisión del tope y el ADR.
 
 ## Enfoque
 1. Decidir el tope de tokens y actualizar el ADR-008 (Azure OpenAI con plantillas locales de respaldo).

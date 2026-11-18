@@ -1,6 +1,6 @@
 # Plan 054 — Bandeja de salida y tareas programadas (INT-01)
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Scripts de `db/` con los índices y los TTL de `outbox` y `tareas_programadas` en las tres bases (idempotentes y con prueba de base de datos).

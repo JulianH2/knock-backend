@@ -1,6 +1,6 @@
 # Plan 023 — Zona por ubicación o código postal, con lista de espera
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Escribir el script de `db/` con `listas_espera` y sus índices (único `{ usuarioId, cp }`).
