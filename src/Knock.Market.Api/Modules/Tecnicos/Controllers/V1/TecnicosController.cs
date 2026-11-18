@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Knock.Market.Api.Common.Errors;
 using Knock.Market.Api.Hosting;
 using Knock.Market.Api.Modules.Tecnicos.Domain;
 using Knock.Market.Api.Modules.Tecnicos.Dtos;
@@ -47,8 +48,8 @@ internal sealed class TecnicosController(TechnicianRegistrationService registrat
         {
             RegisterTechnicianStatus.Created => Created(new Uri($"/api/v1/tecnicos/{outcome.Technician!.Id}", UriKind.Relative), outcome.Technician),
             RegisterTechnicianStatus.AlreadyTechnician => Rule(StatusCodes.Status409Conflict, TechnicianRules.AlreadyTechnicianCode),
-            RegisterTechnicianStatus.TradeInvalid => Rule(StatusCodes.Status422UnprocessableEntity, TechnicianRules.TradeInvalidCode, "oficios"),
-            _ => Rule(StatusCodes.Status422UnprocessableEntity, TechnicianRules.ColoniaNotFoundCode, "coloniaId"),
+            RegisterTechnicianStatus.TradeInvalid => Rule(StatusCodes.Status422UnprocessableEntity, ErrorCodes.TradeInvalidCode, "oficios"),
+            _ => Rule(StatusCodes.Status422UnprocessableEntity, ErrorCodes.ColoniaNotFoundCode, "coloniaId"),
         };
     }
 

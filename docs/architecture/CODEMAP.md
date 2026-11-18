@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-18T01:36:08Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-18T02:07:10Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -537,7 +537,7 @@
 - `src/Knock.Market.Api/Modules/Requests/Controllers/V1/QuoteComparisonController.cs` — class `QuoteComparisonController`
   - `Compare()`:33
 - `src/Knock.Market.Api/Modules/Requests/Controllers/V1/SolicitudesController.cs` — class `SolicitudesController`
-  - `Create()`:37, `List()`:60, `Get()`:70
+  - `Create()`:38, `List()`:61, `Get()`:71
 - `src/Knock.Market.Api/Modules/Requests/Controllers/V1/TrustNoticeController.cs` — class `TrustNoticeController`
   - `Prepare()`:29
 - `src/Knock.Market.Api/Modules/Requests/Controllers/V1/VisitasController.cs` — class `VisitasController`
@@ -712,7 +712,7 @@
 **controllers**
 
 - `src/Knock.Market.Api/Modules/Tecnicos/Controllers/V1/TecnicosController.cs` — class `TecnicosController`
-  - `Register()`:36
+  - `Register()`:37
 
 **data**
 
@@ -724,7 +724,7 @@
 **domain**
 
 - `src/Knock.Market.Api/Modules/Tecnicos/Domain/TechnicianRules.cs` — class `TechnicianRules`
-  - `IsKnownAttention()`:30, `UsesWorkshop()`:32, `VisitsHomes()`:34
+  - `IsKnownAttention()`:26, `UsesWorkshop()`:28, `VisitsHomes()`:30
 
 **dtos**
 

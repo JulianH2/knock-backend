@@ -16,10 +16,6 @@ internal static class TechnicianRules
     /// <summary>409 de TEC-01 (spec 046, §5).</summary>
     public const string AlreadyTechnicianCode = "already_a_technician";
 
-    public const string TradeInvalidCode = "trade_invalid";
-
-    public const string ColoniaNotFoundCode = "colonia_not_found";
-
     /// <summary>
     /// Tope técnico de claves en el cuerpo para acotar la entrada; la regla de negocio no tiene máximo (D-07) y el catálogo es más corto que esto.
     /// </summary>
