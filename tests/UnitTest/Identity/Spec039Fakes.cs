@@ -1,3 +1,5 @@
+using Knock.Identity.Api.Common.Errors;
+using Knock.Identity.Api.Modules.Account.Domain;
 using Knock.Identity.Api.Modules.Account.Services;
 using Knock.Identity.Api.Modules.Sesiones.Data;
 using Knock.Identity.Api.Modules.Sesiones.Services;
@@ -63,5 +65,36 @@ internal sealed class Spec039Outbox : IAccountOutbox
     {
         RevokedNotices.Add(sessionId);
         return Task.CompletedTask;
+    }
+}
+
+/// <summary>Mercado doblado: devuelve los pendientes indicados y anota las cancelaciones.</summary>
+internal sealed class Spec039Market : IMarketAccountClient
+{
+    public AccountPending Pending { get; set; } = new(0, [], 0, [], false);
+
+    public List<string> Cancelled { get; } = [];
+
+    public bool Down { get; set; }
+
+    public Task<AccountPending> GetPendingAsync(string sub, CancellationToken cancellationToken)
+    {
+        EnsureUp();
+        return Task.FromResult(Pending);
+    }
+
+    public Task CancelOpenAsync(string sub, CancellationToken cancellationToken)
+    {
+        EnsureUp();
+        Cancelled.Add(sub);
+        return Task.CompletedTask;
+    }
+
+    private void EnsureUp()
+    {
+        if (Down)
+        {
+            throw new DomainException(DomainErrorKind.ServiceUnavailable, "Market is down.", AccountErrorCodes.MarketUnavailable);
+        }
     }
 }

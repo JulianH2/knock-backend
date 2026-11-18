@@ -21,6 +21,8 @@ public static class AccountModuleExtensions
         services.AddSingleton<DataExportService>();
         services.AddOptions<OptionalConsentOptions>().BindConfiguration(OptionalConsentOptions.SectionName);
         services.AddSingleton<ConsentService>();
+        services.TryAddSingleton<IMarketAccountClient, UnavailableMarketAccountClient>();
+        services.AddSingleton<PendingService>();
         return services;
     }
 }
