@@ -1,13 +1,13 @@
 # Tareas 046 — Técnico: perfil, horarios, disponibilidad, mapa y explorar
 
-> **Estado:** pendientes. En esta etapa **no se ejecutan**: se activan cuando la spec esté Aprobada y una persona lo indique.
+> **Estado:** en curso desde el 2026-11-17 (Sprint 5; el Tech Lead asignó el bloque a Erick).
 > «Depende de» = tareas que deben estar fusionadas antes; «Paralelo con» = tareas que se pueden trabajar a la vez.
 
 | Tarea | Qué se hace | Cubre | Depende de | Paralelo con | Responsable sugerido | Estado |
 |---|---|---|---|---|---|---|
 | T-00 | Prerrequisitos que hoy no existen y no son parte de esta spec: Almacén de búsqueda de la spec 027 y elegibilidad de la 028 (hoy no implementados); `disponibleHasta` (HU-019): hoy solo existe en las semillas | §8 | — | T-01 | por asignar | pendiente |
-| T-01 | Script de `db/` con colecciones e índices de §6 y prueba de base de datos | §6 | — | T-02 en adelante (con datos de prueba) | por asignar | pendiente |
-| T-02 | `POST /api/v1/tecnicos` (TEC-01): DTO, validador, servicio, almacén, controlador y pruebas | R-01 a R-03 · CA-01 a CA-05 | T-01 | otras rutas | por asignar | pendiente |
+| T-01 | Script de `db/` con colecciones e índices de §6 y prueba de base de datos | §6 | — | T-02 en adelante (con datos de prueba) | Erick | en curso: índice único de `usuarioId` en `db/021-tecnicos-usuario-index.js` (KNOCK-48); 2dsphere, compuesto y de texto llegan con TEC-02, TEC-03 y TEC-04 |
+| T-02 | `POST /api/v1/tecnicos` (TEC-01): DTO, validador, servicio, almacén, controlador y pruebas | R-01 a R-03 · CA-01 a CA-05 | T-01 | otras rutas | Erick | en revisión (KNOCK-48): CA-01 a CA-05, CA-55 y CA-66 a CA-69 del registro |
 | T-03 | `GET /api/v1/tecnicos` (TEC-02): DTO, validador, servicio, almacén, controlador y pruebas | R-04 a R-07 · CA-06 a CA-09 | T-01 | otras rutas | por asignar | pendiente |
 | T-04 | `GET /api/v1/tecnicos/autocompletar` (TEC-03): DTO, validador, servicio, almacén, controlador y pruebas | R-08 a R-10 · CA-10 a CA-12 | T-01 | otras rutas | por asignar | pendiente |
 | T-05 | `GET /api/v1/mapa/tecnicos` (TEC-04): DTO, validador, servicio, almacén, controlador y pruebas | R-11 a R-13 · CA-13 a CA-15 | T-01 | otras rutas | por asignar | pendiente |

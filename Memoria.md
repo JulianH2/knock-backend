@@ -1,5 +1,12 @@
 # Memoria — knock-backend
 
+## 2026-11-17 — Spec 046, TEC-01: registro como técnico (KNOCK-48)
+- **Decisión:** `POST /api/v1/tecnicos` vive en el módulo `Tecnicos` de Mercado (la carpeta ya existía; la spec dice `Technicians`), con su clave de base `Mongo:Databases:Tecnicos` = `market`. Guarda con los nombres que ya leen la elegibilidad y la elección de cotización (`coloniaBaseId`, `ubicacionBase`, `radioAtencionKm`, `tallerDireccion`, `nivelVerificacion`, `oculto`) en lugar de los de §6 (`ubicacion`, `radioKm`, `direccionTaller`). La ubicación aproximada es el centro de la colonia (`coloniaId` en el cuerpo, que §5 no nombraba). `nombre` también va en el cuerpo (R-01: «nombre y apellido»).
+- **Porqué:** así un técnico recién registrado puede cotizar sin tocar Requests; la spec no decía de dónde sale la ubicación y el centro de la colonia es la opción más simple y aproximada (no guarda coordenadas de la persona).
+- **Cifrado:** `tallerDireccion` se guarda cifrada (AES-256-GCM, contexto `tecnicos|tallerDireccion|{id}`, `WorkshopAddressCipher`). La elección de cotización la descifra; los técnicos de demostración (`demo: true`) siguen en claro.
+- **Índice:** `db/021-tecnicos-usuario-index.js` deja único `usuarioId_1` y reemplaza el anterior si no lo era (CA-69).
+- **A evitar:** escribir `tallerDireccion` en claro fuera de las semillas de demostración; agregar otra ruta de `/tecnicos` sin su entrada en el gateway (`mercado-tecnicos` solo enruta `POST`).
+
 ## 2026-11-16 — KNOCK-63: ajuste de consumo real y revisión de T-04
 - **Decisión:** el ajuste aplica el gasto real incluso si supera la reserva y conserva una marca `applied` con el TTL original; un reintento devuelve `AlreadyApplied`, una reserva ausente `NotFound` y Redis o contadores inconsistentes `Unavailable`. Tras caducar la marca ya no se distingue de una reserva inexistente. El llamador fija el `DateOnly`: T-06 debe obtener el día de `America/Mexico_City` con una sola fuente `TimeProvider` y reutilizar el día de la reserva al ajustar.
 - **Redis:** los scripts Lua usan tres claves sin hash tag común y suponen Redis de un solo nodo, como el despliegue actual; Redis Cluster puede rechazarlos por hash slots distintos. No se ha probado ni habilitado Cluster. Redis sin persistencia puede perder contadores y marcas al reiniciarse; un resultado `Unavailable` no demuestra si un ajuste incierto se aplicó.

@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-17T03:00:59Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-18T01:36:08Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -12,12 +12,12 @@
 | `Knock.Contracts` | - | 7 | 11 | 7 |
 | `Knock.Gateway` | -, hosting | 14 | 39 | 48 |
 | `Knock.Identity.Api` | -, common, hosting | 29 | 61 | 85 |
-| `Knock.Market.Api` | -, common, hosting | 29 | 62 | 86 |
+| `Knock.Market.Api` | -, common, hosting | 30 | 63 | 89 |
 | `Knock.Messaging.Api` | -, hosting | 14 | 37 | 46 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
 | `Requests` | -, controllers, data, domain, dtos, services, validators | 53 | 119 | 108 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 25 | 46 | 53 |
-| `Tecnicos` | data | 1 | 2 | 2 |
+| `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 8 | 15 | 13 |
 | `Usuarios` | -, controllers, data, domain, dtos, services | 13 | 25 | 34 |
 
 ## ⚠️ Código duplicado (misma estructura)
@@ -77,9 +77,9 @@
 - `src/Knock.Identity.Api/Hosting/MongoExtensions.cs:185 MongoExtensions.CreateSettings` · `src/Knock.Market.Api/Hosting/MongoExtensions.cs:183 MongoExtensions.CreateSettings` · `src/Knock.Messaging.Api/Hosting/MongoExtensions.cs:185 MongoExtensions.CreateSettings`
 - `src/Knock.Identity.Api/Hosting/MongoExtensions.cs:196 MongoExtensions.Bind` · `src/Knock.Market.Api/Hosting/MongoExtensions.cs:194 MongoExtensions.Bind` · `src/Knock.Messaging.Api/Hosting/MongoExtensions.cs:196 MongoExtensions.Bind`
 - `src/Knock.Identity.Api/Hosting/MongoExtensions.cs:229 MongoReadinessHealthCheck.CheckHealthAsync` · `src/Knock.Market.Api/Hosting/MongoExtensions.cs:227 MongoReadinessHealthCheck.CheckHealthAsync` · `src/Knock.Messaging.Api/Hosting/MongoExtensions.cs:229 MongoReadinessHealthCheck.CheckHealthAsync`
-- `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:79 RateLimitingExtensions.GlobalPartition` · `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:99 RateLimitingExtensions.GlobalPartition`
-- `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:119 RateLimitingExtensions.IsAuthPath` · `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:139 RateLimitingExtensions.IsAuthPath`
-- `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:132 RateLimitingExtensions.ClientKey` · `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:152 RateLimitingExtensions.ClientKey` · `src/Knock.Messaging.Api/Hosting/RateLimitingExtensions.cs:99 RateLimitingExtensions.ClientKey`
+- `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:79 RateLimitingExtensions.GlobalPartition` · `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:103 RateLimitingExtensions.GlobalPartition`
+- `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:119 RateLimitingExtensions.IsAuthPath` · `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:143 RateLimitingExtensions.IsAuthPath`
+- `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:132 RateLimitingExtensions.ClientKey` · `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:156 RateLimitingExtensions.ClientKey` · `src/Knock.Messaging.Api/Hosting/RateLimitingExtensions.cs:99 RateLimitingExtensions.ClientKey`
 - `src/Knock.Identity.Api/Hosting/SecurityExtensions.cs:13 SecurityExtensions.AddKnockSecurity` · `src/Knock.Market.Api/Hosting/SecurityExtensions.cs:12 SecurityExtensions.AddKnockSecurity`
 - `src/Knock.Identity.Api/Hosting/SecurityHeadersMiddleware.cs:12 SecurityHeadersMiddleware` · `src/Knock.Market.Api/Hosting/SecurityHeadersMiddleware.cs:11 SecurityHeadersMiddleware`
 - `src/Knock.Identity.Api/Hosting/SecurityHeadersMiddleware.cs:25 SecurityHeadersMiddleware.Apply` · `src/Knock.Market.Api/Hosting/SecurityHeadersMiddleware.cs:24 SecurityHeadersMiddleware.Apply`
@@ -124,7 +124,7 @@
 - `KnockRedisOptionsValidator`: `src/Knock.Gateway/Hosting/RedisExtensions.cs:39`, `src/Knock.Identity.Api/Hosting/RedisExtensions.cs:39`, `src/Knock.Market.Api/Hosting/RedisExtensions.cs:37`, `src/Knock.Messaging.Api/Hosting/RedisExtensions.cs:38`
 - `LogRedactionProcessor`: `src/Knock.Gateway/Hosting/TelemetryRedactor.cs:329`, `src/Knock.Identity.Api/Hosting/TelemetryRedactor.cs:329`, `src/Knock.Market.Api/Hosting/TelemetryRedactor.cs:328`, `src/Knock.Messaging.Api/Hosting/TelemetryRedactor.cs:329`
 - `LoggingExtensions`: `src/Knock.Gateway/Hosting/LoggingExtensions.cs:13`, `src/Knock.Identity.Api/Hosting/LoggingExtensions.cs:13`, `src/Knock.Market.Api/Hosting/LoggingExtensions.cs:12`, `src/Knock.Messaging.Api/Hosting/LoggingExtensions.cs:13`
-- `ModulesExtensions`: `src/Knock.Identity.Api/Hosting/ModulesExtensions.cs:7`, `src/Knock.Market.Api/Hosting/ModulesExtensions.cs:7`
+- `ModulesExtensions`: `src/Knock.Identity.Api/Hosting/ModulesExtensions.cs:7`, `src/Knock.Market.Api/Hosting/ModulesExtensions.cs:8`
 - `MongoExtensions`: `src/Knock.Identity.Api/Hosting/MongoExtensions.cs:138`, `src/Knock.Market.Api/Hosting/MongoExtensions.cs:136`, `src/Knock.Messaging.Api/Hosting/MongoExtensions.cs:138`
 - `MongoReadinessHealthCheck`: `src/Knock.Identity.Api/Hosting/MongoExtensions.cs:227`, `src/Knock.Market.Api/Hosting/MongoExtensions.cs:225`, `src/Knock.Messaging.Api/Hosting/MongoExtensions.cs:227`
 - `ObservabilityExtensions`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:51`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:51`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:50`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:51`
@@ -373,6 +373,8 @@
 
 - `src/Knock.Market.Api/Common/Crypto/FieldCipher.cs` — class `FieldEncryptionOptions`, class `FieldCipher`
   - `FieldCipher()`:25, `Encrypt()`:31, `Decrypt()`:53
+- `src/Knock.Market.Api/Common/Crypto/WorkshopAddressCipher.cs` — class `WorkshopAddressCipher`
+  - `Context()`:12, `Encrypt()`:14, `Read()`:20
 - `src/Knock.Market.Api/Common/Errors/DomainException.cs` — enum `DomainErrorKind`, class `DomainException`, class `DomainErrors`
   - `ToStatusCode()`:56
 - `src/Knock.Market.Api/Common/Errors/ErrorCodes.cs` — class `ErrorCodes`
@@ -403,7 +405,7 @@
 - `src/Knock.Market.Api/Hosting/LoggingExtensions.cs` — class `LoggingExtensions`, class `ScopeRequestPathEnricher`
   - `AddKnockLogging()`:19, `ConfigureRequestLogging()`:35, `IsQueryBearingBelowWarning()`:66, `RoutePath()`:79, `Enrich()`:144
 - `src/Knock.Market.Api/Hosting/ModulesExtensions.cs` — class `ModulesExtensions`
-  - `AddKnockModules()`:9
+  - `AddKnockModules()`:10
 - `src/Knock.Market.Api/Hosting/MongoExtensions.cs` — class `KnockMongoOptions`, class `KnockMongoOptionsValidator`, class `MongoExtensions`, class `MongoReadinessHealthCheck`
   - `Seconds()`:58, `Validate()`:74, `AddKnockMongo()`:147, `AddKnockMongoDatabase()`:169, `CreateSettings()`:183, `CheckHealthAsync()`:227
 - `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs` — class `ObservabilityOptions`, record `AzureMonitorSignalSettings`, class `AzureMonitorExportStatus`, class `ObservabilityExtensions`, class `TelemetryExceptionRecorder`, class `IgnoreIncomingTraceContextPropagator`, class `OpenTelemetryLogSink`, class `SerilogLogState`
@@ -413,7 +415,7 @@
 - `src/Knock.Market.Api/Hosting/ProblemDetailsExtensions.cs` — class `ProblemDetailsExtensions`
   - `AddKnockProblemDetails()`:8
 - `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs` — class `RateLimitPolicySettings`, class `RateLimitSettings`, class `RateLimitingExtensions`
-  - `AddKnockRateLimiting()`:52, `ClientKey()`:152
+  - `AddKnockRateLimiting()`:55, `ClientKey()`:156
 - `src/Knock.Market.Api/Hosting/RedisExtensions.cs` — class `KnockRedisOptions`, class `KnockRedisOptionsValidator`, class `RedisExtensions`, class `RedisReadinessHealthCheck`
   - `Validate()`:39, `AddKnockRedis()`:103, `CreateConfiguration()`:121, `CheckHealthAsync()`:160
 - `src/Knock.Market.Api/Hosting/RequestBodyLimitMiddleware.cs` — class `ProblemResponses`, class `RequestBodyLimitMiddleware`
@@ -544,7 +546,7 @@
 **data**
 
 - `src/Knock.Market.Api/Modules/Requests/Data/ChoiceStore.cs` — record `ChosenVisit`, record `ChooseResult`, record `TechnicianPublic`, class `ChoiceStore`
-  - `ListQuotesAsync()`:54, `FindTechniciansAsync()`:67, `TryFindTechnicianAsync()`:89, `FindVisitIdsAsync()`:102, `ChooseAsync()`:119
+  - `ListQuotesAsync()`:56, `FindTechniciansAsync()`:69, `TryFindTechnicianAsync()`:91, `FindVisitIdsAsync()`:104, `ChooseAsync()`:121
 - `src/Knock.Market.Api/Modules/Requests/Data/DemoRequestStore.cs` — class `DemoRequestStore`
   - `ValidateAsync()`:20, `SaveAsync()`:26
 - `src/Knock.Market.Api/Modules/Requests/Data/DemoTechnicianGuard.cs` — class `DemoTechnicianGuard`
@@ -702,10 +704,41 @@
 
 ### Tecnicos
 
+**-**
+
+- `src/Knock.Market.Api/Modules/Tecnicos/TecnicosModuleExtensions.cs` — class `TecnicosModuleExtensions`
+  - `AddTecnicosModule()`:15
+
+**controllers**
+
+- `src/Knock.Market.Api/Modules/Tecnicos/Controllers/V1/TecnicosController.cs` — class `TecnicosController`
+  - `Register()`:36
+
 **data**
 
+- `src/Knock.Market.Api/Modules/Tecnicos/Data/TechnicianProfileStore.cs` — class `TechnicianProfileStore`
+  - `ExistsAsync()`:22, `InsertAsync()`:26, `ToDocument()`:39
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TrabajoStore.cs` — record `TrabajoVerification`, class `TrabajoStore`
   - `TrabajoStore()`:10, `ReadVerificationAsync()`:12
+
+**domain**
+
+- `src/Knock.Market.Api/Modules/Tecnicos/Domain/TechnicianRules.cs` — class `TechnicianRules`
+  - `IsKnownAttention()`:30, `UsesWorkshop()`:32, `VisitsHomes()`:34
+
+**dtos**
+
+- `src/Knock.Market.Api/Modules/Tecnicos/Dtos/RegisterTechnicianBody.cs` — record `RegisterTechnicianBody`, record `TechnicianProfileBody`, record `TechnicianResponse`
+  - `RegisterTechnicianBody()`:13
+
+**services**
+
+- `src/Knock.Market.Api/Modules/Tecnicos/Services/TechnicianRegistrationService.cs` — enum `RegisterTechnicianStatus`, record `RegisterTechnicianOutcome`, record `NewTechnician`, interface `ITechnicianProfileStore`, class `TechnicianRegistrationService`
+  - `TechnicianRegistrationService()`:47, `RegisterAsync()`:54
+
+**validators**
+
+- `src/Knock.Market.Api/Modules/Tecnicos/Validators/RegisterTechnicianBodyValidator.cs` — class `RegisterTechnicianBodyValidator`
 
 ### Usuarios
 
