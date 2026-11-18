@@ -57,7 +57,7 @@ internal sealed class MarketHistoryClient(HttpClient http, IOptions<MarketHistor
     public const string Issuer = "knock-identity";
     public const string Audience = "knock-market";
     public const string HistoryPermission = "historial";
-    public const string InvalidCursorCode = "invalid_cursor";
+    public const string InvalidCursorProblem = "invalid_cursor";
     public const int MinKeyBytes = 32;
     public static readonly TimeSpan TokenLifetime = TimeSpan.FromMinutes(1);
 
@@ -149,7 +149,7 @@ internal sealed class MarketHistoryClient(HttpClient http, IOptions<MarketHistor
         try
         {
             var problem = await response.Content.ReadFromJsonAsync<MarketProblem>(cancellationToken);
-            return string.Equals(problem?.Code, InvalidCursorCode, StringComparison.Ordinal);
+            return string.Equals(problem?.Code, InvalidCursorProblem, StringComparison.Ordinal);
         }
         catch (Exception exception) when (exception is JsonException or NotSupportedException)
         {
