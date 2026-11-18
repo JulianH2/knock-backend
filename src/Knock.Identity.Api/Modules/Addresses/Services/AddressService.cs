@@ -2,7 +2,6 @@ using Knock.Contracts.Colonias;
 using Knock.Identity.Api.Common.Errors;
 using Knock.Identity.Api.Modules.Addresses.Data;
 using Knock.Identity.Api.Modules.Addresses.Domain;
-using Knock.Identity.Api.Modules.Usuarios.Services;
 using MongoDB.Bson;
 
 namespace Knock.Identity.Api.Modules.Addresses.Services;
@@ -177,7 +176,7 @@ internal sealed partial class AddressService(
         {
             // Sin poder validar la colonia no se guarda nada ni se acepta sin validar (como en el perfil, spec 017, R-11).
             LogMarketUnavailable(logger);
-            throw new DomainException(DomainErrorKind.ServiceUnavailable, "The colonia catalog did not answer.", ProfileService.MarketUnavailableCode);
+            throw new DomainException(DomainErrorKind.ServiceUnavailable, "The colonia catalog did not answer.", CommonErrorCodes.MarketUnavailable);
         }
     }
 

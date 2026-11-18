@@ -802,3 +802,9 @@
 - **Decisión:** `specs/README.md` y los `plan.md` y `task.md` de las specs aprobadas dejan de decir «Borrador». El índice sigue los encabezados de cada `spec.md`: las specs 020 a 038 y BUG-005 pasan a su estado real (BUG-005 como Implementada), se agrega la spec 038 que faltaba y BUG-001 se queda en Borrador.
 - **Porqué:** el índice y las notas de los planes contradecían a las specs aprobadas; una persona o una herramienta que lea primero el índice cuenta endpoints como «sin spec» y specs como «sin aprobar».
 - **A evitar:** actualizar el encabezado de una spec sin actualizar el índice, su `plan.md` y su `task.md` en el mismo cambio.
+
+## 2026-11-18 · KNOCK-285 · Respuesta a la revisión de pares del PR #159
+- **Qué cambió:** el código `market_unavailable` pasa a `CommonErrorCodes` en `Common/Errors`; `ProfileService.MarketUnavailableCode` lo referencia y `AddressService` ya no usa `Modules.Usuarios.Services`. La spec 040 §15 registra la aceptación del incremento de `versionDirecciones` en `usuarios`, el riesgo del listado con un valor ilegible y la duplicación de `FieldCipher` con Mercado.
+- **Por qué:** la revisión de pares pidió resolver o aceptar por escrito la escritura en la colección de otro módulo y quitar la dependencia entre servicios de módulos.
+- **Decisiones (con porqué):** (1) Se acepta la escritura de `versionDirecciones` porque es el mecanismo de bloqueo por persona y no cambia otros campos. (2) Se conserva `ProfileService.MarketUnavailableCode` como referencia al valor compartido para no romper sus pruebas.
+- **A evitar:** que un módulo dependa de los servicios de otro solo por un código de error; retirar una versión de llave de cifrado mientras existan datos cifrados con ella.

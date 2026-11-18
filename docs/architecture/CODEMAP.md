@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-18T01:41:07Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-18T05:29:33Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -12,7 +12,7 @@
 | `Catalog` | -, controllers, data, domain, dtos, services, validators | 37 | 50 | 80 |
 | `Knock.Contracts` | - | 7 | 11 | 7 |
 | `Knock.Gateway` | -, hosting | 14 | 39 | 48 |
-| `Knock.Identity.Api` | -, common, hosting | 30 | 63 | 88 |
+| `Knock.Identity.Api` | -, common, hosting | 31 | 64 | 88 |
 | `Knock.Market.Api` | -, common, hosting | 29 | 62 | 86 |
 | `Knock.Messaging.Api` | -, hosting | 14 | 37 | 46 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
@@ -196,7 +196,7 @@
 - `src/Knock.Identity.Api/Modules/Addresses/Services/AddressRules.cs` — class `AddressRules`, record `AddressInput`, record `AddressEdit`
   - `Normalize()`:23, `HasControlCharacters()`:25, `IsColoniaName()`:27, `AddressInput()`:31, `From()`:33, `ToString()`:43, `AddressEdit()`:50, `From()`:52, `ToString()`:62
 - `src/Knock.Identity.Api/Modules/Addresses/Services/AddressService.cs` — class `AddressCrypto`, enum `AddressOutcome`, record `AddressResult`, class `AddressService`
-  - `StreetContext()`:16, `ReferencesContext()`:18, `AddressResult()`:32, `ToString()`:34, `AddressService()`:41, `ListAsync()`:48, `CreateAsync()`:59, `UpdateAsync()`:96, `DeleteAsync()`:135
+  - `StreetContext()`:15, `ReferencesContext()`:17, `AddressResult()`:31, `ToString()`:33, `AddressService()`:40, `ListAsync()`:47, `CreateAsync()`:58, `UpdateAsync()`:95, `DeleteAsync()`:134
 
 **validators**
 
@@ -356,6 +356,7 @@
   - `FieldCipher()`:27, `Encrypt()`:34, `Decrypt()`:57
 - `src/Knock.Identity.Api/Common/Errors/DomainException.cs` — enum `DomainErrorKind`, class `DomainException`, class `DomainErrors`
   - `ToStatusCode()`:58
+- `src/Knock.Identity.Api/Common/Errors/ErrorCodes.cs` — class `CommonErrorCodes`
 - `src/Knock.Identity.Api/Common/Security/JwtSettings.cs` — record `JwtSettings`
 - `src/Knock.Identity.Api/Common/Security/JwtSettingsFactory.cs` — class `JwtSettingsFactory`
   - `Create()`:15
