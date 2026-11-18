@@ -1,6 +1,6 @@
 # Plan 030 — Chatear antes de elegir y mis conversaciones
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Ruta de permiso en Mercado (módulo Requests), no publicada en el gateway (R-02, R-03).

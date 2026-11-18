@@ -1,6 +1,6 @@
 # Plan 014 — Entrega del proyecto y reproducibilidad
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Consolidar los scripts de `db/` en el script de entrega.
