@@ -16,6 +16,9 @@ namespace Knock.Identity.Api.Modules.HomeAndCar.Controllers.V1;
 [Authorize]
 internal sealed class CasaYAutoController(HomeAndCarService service) : ControllerBase
 {
+    /// <summary>Límite del cuerpo de <c>POST</c> y <c>PUT</c>: 4 KiB (tres campos cortos); un cuerpo mayor responde 413 antes de leerse (spec 009).</summary>
+    public const int MaxBodyBytes = 4096;
+
     /// <summary>Lista los autos y las cosas de la casa de la persona (CAS-01).</summary>
     [HttpGet]
     [ProducesResponseType<IReadOnlyList<ItemResponse>>(StatusCodes.Status200OK)]
@@ -25,6 +28,28 @@ internal sealed class CasaYAutoController(HomeAndCarService service) : Controlle
     {
         Response.Headers.CacheControl = "private, no-store";
         return Sub() is { } sub ? Ok(await service.ListAsync(sub, cancellationToken)) : Unauthorized();
+    }
+
+    /// <summary>Registra un auto o una cosa de la casa (CAS-02). Con 20 elementos ya registrados responde 409 <c>item_limit_reached</c>.</summary>
+    [HttpPost]
+    [RequestSizeLimit(MaxBodyBytes)]
+    [ProducesResponseType<ItemResponse>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status413PayloadTooLarge)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> Create([FromBody] CreateItemRequest request, CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "private, no-store";
+        if (Sub() is not { } sub)
+        {
+            return Unauthorized();
+        }
+
+        var item = await service.CreateAsync(sub, request, cancellationToken);
+        return Created(new Uri($"{Request.Path.Value!.TrimEnd('/')}/{item.Id}", UriKind.Relative), item);
     }
 
     private string? Sub() => User.FindFirst("sub")?.Value is { Length: > 0 } sub ? sub : null;
