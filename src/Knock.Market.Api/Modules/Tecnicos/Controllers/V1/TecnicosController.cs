@@ -18,7 +18,8 @@ namespace Knock.Market.Api.Modules.Tecnicos.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/tecnicos")]
-internal sealed class TecnicosController(TechnicianRegistrationService registration, TechnicianProfileService profiles) : ControllerBase
+internal sealed class TecnicosController(TechnicianRegistrationService registration, TechnicianProfileService profiles, TechnicianLookupService lookup)
+    : ControllerBase
 {
     private const string _problemJson = TechnicianProblems.ProblemJson;
 
@@ -69,6 +70,38 @@ internal sealed class TecnicosController(TechnicianRegistrationService registrat
         Response.Headers.CacheControl = "private, no-store";
         var profile = await profiles.GetAsync(MongoDB.Bson.ObjectId.Parse(route.Id), signedIn, cancellationToken);
         return profile is null ? Rule(StatusCodes.Status404NotFound, TechnicianRules.TechnicianNotFoundCode) : Ok(profile);
+    }
+
+    /// <summary>Sugerencias de oficios y negocios mientras se escribe (TEC-03): hasta 8, públicas y sin registrar el texto.</summary>
+    [HttpGet("autocompletar")]
+    [AllowAnonymous]
+    [ProducesResponseType<AutocompleteResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity, _problemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests, _problemJson)]
+    public async Task<IActionResult> Autocomplete([FromQuery] AutocompleteQuery query, CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "public, max-age=30";
+        return Ok(await lookup.AutocompleteAsync(query.Q!, cancellationToken));
+    }
+
+    /// <summary>Dice si el técnico atiende la colonia de la persona (TEC-06). 404 si el técnico no existe o está oculto; 422 si la colonia no está en el catálogo.</summary>
+    [HttpGet("{id}/llega-a-mi-colonia")]
+    [Authorize]
+    [ProducesResponseType<CoverageResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized, _problemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, _problemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity, _problemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests, _problemJson)]
+    public async Task<IActionResult> Coverage([FromRoute] TechnicianIdRoute route, [FromQuery] CoverageQuery query, CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "private, no-store";
+        var outcome = await lookup.CoverageAsync(MongoDB.Bson.ObjectId.Parse(route.Id), query.Colonia!, cancellationToken);
+        return outcome.Status switch
+        {
+            CoverageStatus.Found => Ok(new CoverageResponse(outcome.Atiende)),
+            CoverageStatus.TechnicianNotFound => Rule(StatusCodes.Status404NotFound, TechnicianRules.TechnicianNotFoundCode),
+            _ => Rule(StatusCodes.Status422UnprocessableEntity, ErrorCodes.ColoniaNotFoundCode, "colonia"),
+        };
     }
 
     private ObjectResult Rule(int status, string code, string? field = null) => TechnicianProblems.Rule(this, status, code, field);

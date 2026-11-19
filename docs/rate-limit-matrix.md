@@ -59,6 +59,8 @@
 
 `PUT /api/v1/tecnicos/me`, `PUT /api/v1/tecnicos/me/disponibilidad` y `GET`/`PUT /api/v1/tecnicos/me/horarios` no tienen política propia: solo los usa el propio técnico y cada escritura toca un único documento, así que rigen los límites globales del gateway y el límite por IP de Mercado. Los cuerpos se limitan a 8 KB, 1 KB y 4 KB (413).
 
+`GET /api/v1/tecnicos/autocompletar` es pública: la frena el límite global por IP del gateway y de Mercado (R-41) y la caché de 30 s por texto. `GET /api/v1/tecnicos/{id}/llega-a-mi-colonia` pide sesión y usa los límites globales; su caché de 1 minuto evita repetir la lectura.
+
 ## Lista de espera en Mercado (spec 023, KNOCK-47)
 
 `GET /api/v1/zonas/cp/{cp}` requiere sesión y usa los límites globales del gateway por IP y usuario y el límite por IP de Mercado; no tiene política específica adicional.
