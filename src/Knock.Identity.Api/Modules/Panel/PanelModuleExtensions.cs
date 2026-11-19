@@ -1,3 +1,6 @@
+using Knock.Identity.Api.Modules.Panel.Data;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
 namespace Knock.Identity.Api.Modules.Panel;
 
 /// <summary>Módulo Panel (spec 033): sesión del panel interno, permisos y auditoría. Solo esta clase es pública; el resto del módulo es internal.</summary>
@@ -6,6 +9,17 @@ public static class PanelModuleExtensions
     public static IServiceCollection AddPanelModule(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddSingleton<PanelCuentasStore>();
+        services.AddSingleton<IPanelCuentasStore>(provider => provider.GetRequiredService<PanelCuentasStore>());
+        services.AddSingleton<PanelSesionesStore>();
+        services.AddSingleton<IPanelSesionesStore>(provider => provider.GetRequiredService<PanelSesionesStore>());
+        services.AddSingleton<PanelActivacionesStore>();
+        services.AddSingleton<IPanelActivacionesStore>(provider => provider.GetRequiredService<PanelActivacionesStore>());
+        services.AddSingleton<PanelAuditoriaStore>();
+        services.AddSingleton<IPanelAuditoriaStore>(provider => provider.GetRequiredService<PanelAuditoriaStore>());
+        services.AddSingleton<IPanelDesafios, RedisPanelDesafios>();
+        services.AddSingleton<IPanelCuentaCache, RedisPanelCuentaCache>();
         return services;
     }
 }
