@@ -13,7 +13,7 @@ internal static class ProblemResponses
         return services;
     }
 
-    public static async Task WriteAsync(HttpContext context, int statusCode, string title)
+    public static async Task WriteAsync(HttpContext context, int statusCode, string title, string? code = null)
     {
         ArgumentNullException.ThrowIfNull(context);
         context.Response.StatusCode = statusCode;
@@ -23,11 +23,13 @@ internal static class ProblemResponses
         }
 
         var problems = context.RequestServices.GetRequiredService<IProblemDetailsService>();
-        await problems.WriteAsync(new ProblemDetailsContext
+        var details = new ProblemDetails { Status = statusCode, Title = title };
+        if (code is not null)
         {
-            HttpContext = context,
-            ProblemDetails = { Status = statusCode, Title = title },
-        });
+            details.Extensions["code"] = code;
+        }
+
+        await problems.WriteAsync(new ProblemDetailsContext { HttpContext = context, ProblemDetails = details });
     }
 }
 // jscpd:ignore-end -- EXC-021
