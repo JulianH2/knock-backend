@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-21T01:27:10Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-21T03:01:50Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -1154,7 +1154,7 @@
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TechnicianLookupStore.cs` — class `TechnicianLookupStore`
   - `FindCoverageAsync()`:19, `ToCoverage()`:28, `FindBusinessNamesAsync()`:45
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TechnicianProfileStore.cs` — class `TechnicianProfileStore`
-  - `ExistsAsync()`:22, `InsertAsync()`:26, `FindByIdAsync()`:46, `ToProfile()`:54, `ToDocument()`:78
+  - `ExistsAsync()`:22, `InsertAsync()`:26, `FindByIdAsync()`:59, `ToProfile()`:67, `ToDocument()`:91
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TechnicianSelfStore.cs` — class `TechnicianSelfStore`
   - `FindOwnAsync()`:26, `ReadOwnAsync()`:37, `SetAvailableUntilAsync()`:60, `ReadScheduleAsync()`:63, `SetScheduleAsync()`:71, `UpdateAsync()`:82
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TrabajoStore.cs` — record `TrabajoVerification`, class `TrabajoStore`

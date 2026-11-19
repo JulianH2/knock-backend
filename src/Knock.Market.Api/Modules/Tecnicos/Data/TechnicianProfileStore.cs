@@ -30,11 +30,24 @@ internal sealed class TechnicianProfileStore(
             await Technicians.InsertOneAsync(ToDocument(technician), cancellationToken: cancellationToken);
             return true;
         }
-        catch (MongoWriteException exception) when (exception.WriteError.Category == ServerErrorCategory.DuplicateKey)
+        catch (MongoWriteException exception) when (exception.WriteError.Category == ServerErrorCategory.DuplicateKey
+            || exception.WriteError.Code == _writeConflictCode)
+        {
+            return false;
+        }
+        catch (MongoCommandException exception) when (exception.Code is _duplicateKeyCode or _writeConflictCode)
         {
             return false;
         }
     }
+
+    /// <summary>
+    /// Dos registros simultáneos de la misma cuenta chocan en el índice único de <c>usuarioId</c>. MongoDB responde «llave duplicada» (11000), pero
+    /// DocumentDB puede responder «conflicto de escritura» (112) a las inserciones concurrentes. En ambos casos el otro registro ganó (CA-69).
+    /// </summary>
+    private const int _duplicateKeyCode = 11000;
+
+    private const int _writeConflictCode = 112;
 
     /// <summary>Campos del perfil público: nunca se proyectan <c>tallerDireccion</c>, <c>contactoPublico</c>, <c>ubicacionBase</c> ni <c>usuarioId</c>.</summary>
     private static readonly string[] _profileFields =
