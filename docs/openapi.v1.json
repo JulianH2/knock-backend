@@ -1079,6 +1079,91 @@
         }
       }
     },
+    "/api/v{version}/solicitudes/{id}/conversacion": {
+      "get": {
+        "tags": [
+          "ConversationPermission"
+        ],
+        "summary": "El permiso del par (solicitud, técnico) para quien pide: el cliente dueño debe mandar `tecnicoId`; el técnico no (se ignora si lo manda). Cualquier otro caso es 404 uniforme.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tecnicoId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermisoConversacion"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermisoConversacion"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermisoConversacion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v{version}/solicitudes/{id}/cotizaciones": {
       "post": {
         "tags": [
@@ -2820,6 +2905,68 @@
         },
         "description": "Oficio activo del catálogo tal como lo ve la app: solo clave, nombre y modalidad (nunca id ni activo)."
       },
+      "PermisoConversacion": {
+        "required": [
+          "solicitudId",
+          "tecnicoId",
+          "clienteId",
+          "tecnicoUsuarioId",
+          "rol",
+          "abierta",
+          "motivoCierre",
+          "elegido",
+          "visitaId",
+          "servicio",
+          "coloniaNombre",
+          "tecnicoPublico"
+        ],
+        "type": "object",
+        "properties": {
+          "solicitudId": {
+            "type": "string"
+          },
+          "tecnicoId": {
+            "type": "string"
+          },
+          "clienteId": {
+            "type": "string"
+          },
+          "tecnicoUsuarioId": {
+            "type": "string"
+          },
+          "rol": {
+            "type": "string"
+          },
+          "abierta": {
+            "type": "boolean"
+          },
+          "motivoCierre": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "elegido": {
+            "type": "boolean"
+          },
+          "visitaId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "servicio": {
+            "type": "string"
+          },
+          "coloniaNombre": {
+            "type": "string"
+          },
+          "tecnicoPublico": {
+            "$ref": "#/components/schemas/TecnicoPublicoConversacion"
+          }
+        },
+        "description": "Lo que Mercado dice a Mensajería sobre quién puede conversar en el par (solicitud, técnico) y si la conversación está abierta (spec 030, R-02 y R-03). La ruta que lo\ndevuelve no se publica en el gateway: solo la llama Mensajería por la red interna con la sesión de quien pide. string PermisoConversacion.Rol es `cliente` o `tecnico`."
+      },
       "ProblemDetails": {
         "type": "object",
         "properties": {
@@ -3804,6 +3951,25 @@
         },
         "description": "Perfil propio recién creado (201). Nunca trae la dirección del taller, el teléfono ni la ubicación."
       },
+      "TecnicoPublicoConversacion": {
+        "required": [
+          "nombre",
+          "fotoUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string"
+          },
+          "fotoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Datos públicos del técnico de una conversación: solo nombre y foto, nunca contacto (spec 030, R-06)."
+      },
       "TimeRangeDto": {
         "required": [
           "inicio",
@@ -4288,6 +4454,9 @@
     },
     {
       "name": "Colonias"
+    },
+    {
+      "name": "ConversationPermission"
     },
     {
       "name": "Cotizaciones"
