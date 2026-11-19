@@ -802,3 +802,10 @@
 - **Decisión:** `specs/README.md` y los `plan.md` y `task.md` de las specs aprobadas dejan de decir «Borrador». El índice sigue los encabezados de cada `spec.md`: las specs 020 a 038 y BUG-005 pasan a su estado real (BUG-005 como Implementada), se agrega la spec 038 que faltaba y BUG-001 se queda en Borrador.
 - **Porqué:** el índice y las notas de los planes contradecían a las specs aprobadas; una persona o una herramienta que lea primero el índice cuenta endpoints como «sin spec» y specs como «sin aprobar».
 - **A evitar:** actualizar el encabezado de una spec sin actualizar el índice, su `plan.md` y su `task.md` en el mismo cambio.
+
+## 2026-11-17 · KNOCK-282 · Stryker 5.1.0 con la solución sin proyectos de prueba
+- **Qué cambió:** `stryker-config.json` deja de declarar `test-projects`; queda solo `solution` (`Knock.slnx`) y el filtro `test-case-filter` que limita las pruebas a `Knock.UnitTest`.
+- **Por qué:** dotnet-stryker 5.1.0 (entró con un bump de Dependabot) rechaza declarar a la vez la solución y los proyectos de prueba («Test projects cannot be specified when running Stryker in solution context»), y el job informativo fallaba sin mutar nada. La 5.0.0 lo toleraba.
+- **Decisiones (con porqué):** (1) Opción A de la tarjeta: se conserva la versión nueva y se quita una línea en vez de fijar la 5.0.0 (cambiar la versión pide el visto bueno del Tech Lead). (2) El filtro de casos sigue limitando la ejecución a las pruebas unitarias.
+- **Pendiente:** confirmar que el job corre en este PR, muta y genera reporte, y que la regla R-18 (mutación de `Knock.Hosting`) sigue aplicando.
+- **A evitar:** declarar `solution` y `test-projects` a la vez; subir la versión de dotnet-stryker sin probar el job en un PR.
