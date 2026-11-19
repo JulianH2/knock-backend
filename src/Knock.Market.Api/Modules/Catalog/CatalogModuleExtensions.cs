@@ -2,6 +2,7 @@ using Knock.Contracts.Catalog;
 using Knock.Market.Api.Hosting;
 using Knock.Market.Api.Modules.Catalog.Data;
 using Knock.Market.Api.Modules.Catalog.Services;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Knock.Market.Api.Modules.Catalog;
@@ -23,14 +24,29 @@ public static class CatalogModuleExtensions
         // sin esto, la exportación del OpenAPI y los entornos sin Redis no podrían arrancar la API (spec 003: Market arranca sin Redis).
         if (string.IsNullOrWhiteSpace(configuration.GetConnectionString(KnockRedisOptions.ConnectionStringName)))
         {
-            services.AddSingleton<ICatalogCache, DisabledCatalogCache>();
+            services.AddSingleton<DisabledCatalogCache>();
+            services.AddSingleton<ICatalogCache>(sp => sp.GetRequiredService<DisabledCatalogCache>());
+            services.AddSingleton<ISearchResponseCache>(sp => sp.GetRequiredService<DisabledCatalogCache>());
         }
         else
         {
             services.AddKnockRedis();
-            services.AddSingleton<ICatalogCache, RedisCatalogCache>();
+            services.AddSingleton<RedisCatalogCache>();
+            services.AddSingleton<ICatalogCache>(sp => sp.GetRequiredService<RedisCatalogCache>());
+            services.AddSingleton<ISearchResponseCache>(sp => sp.GetRequiredService<RedisCatalogCache>());
         }
         services.AddSingleton<CatalogStore>();
+        services.AddOptions<SearchCursorOptions>().BindConfiguration(SearchCursorOptions.SectionName).ValidateOnStart();
+        services.AddSingleton<IPostConfigureOptions<SearchCursorOptions>, DevelopmentSearchCursorKey>();
+        services.AddSingleton<IValidateOptions<SearchCursorOptions>, SearchCursorOptionsValidator>();
+        services.TryAddSingleton<IFiltroDatosPersonales, FiltroDatosPersonalesNoDisponible>();
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddSingleton<BusquedaStore>();
+        services.AddSingleton<IBusquedaSource, BusquedaSource>();
+        services.AddSingleton<BusquedaService>(sp => new BusquedaService(
+            sp.GetRequiredService<IBusquedaSource>(), sp.GetRequiredService<ISearchResponseCache>(),
+            sp.GetRequiredService<IFiltroDatosPersonales>(), sp.GetRequiredService<TimeProvider>(),
+            Convert.FromBase64String(sp.GetRequiredService<IOptions<SearchCursorOptions>>().Value.Key!)));
         services.AddSingleton<IWaitlistStore, WaitlistStore>();
         services.AddSingleton<WaitlistService>();
         services.AddSingleton<NeighborhoodLocator>();

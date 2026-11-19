@@ -1,5 +1,6 @@
 graph LR
   Account["Account"]
+  Addresses["Addresses"]
   Assistant["Assistant"]
   Catalog["Catalog"]
   Chat["Chat"]
@@ -15,10 +16,12 @@ graph LR
   Safety["Safety"]
   Sesiones["Sesiones"]
   Tecnicos["Tecnicos"]
+  Trust["Trust"]
   Usuarios["Usuarios"]
   Account -->|11| Sesiones
   Account -->|2| Usuarios
   Knock_Identity_Api -->|2| Account
+  Knock_Identity_Api -->|1| Addresses
   Knock_Identity_Api -->|1| HomeAndCar
   Knock_Identity_Api -->|1| Safety
   Knock_Identity_Api -->|2| Sesiones
@@ -27,6 +30,7 @@ graph LR
   Knock_Market_Api -->|1| Media
   Knock_Market_Api -->|1| Requests
   Knock_Market_Api -->|1| Tecnicos
+  Knock_Market_Api -->|1| Trust
   Knock_Messaging_Api -->|3| Chat
   Requests -->|1| Catalog
   Safety -->|2| Usuarios

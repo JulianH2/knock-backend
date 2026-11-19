@@ -74,6 +74,8 @@ En PowerShell, sustituye `/dev/stdin` por un archivo temporal que borres de inme
 
 Rotación: agrega la versión nueva como `Security__FieldEncryption__Keys__2` (otro secreto de Key Vault referenciado en `secret_env`) y cambia `Security__FieldEncryption__ActiveVersion` a `"2"`. La versión 1 se conserva para poder descifrar lo ya guardado; solo se retira cuando nada la use.
 
+**Cursor de búsqueda (KNOCK-66):** Market exige `Busqueda:Cursor:Key` en todos los entornos, también Development: Base64 de 32 bytes aleatorios, distinto de las demás claves. Para ejecución local fuera de contenedor, guárdalo en los *user-secrets* de `src/Knock.Market.Api/Knock.Market.Api.csproj`, sin pegar el valor en archivos del repositorio ni compartirlo. Todas las réplicas de un mismo entorno necesitan la misma clave; rotarla invalida los cursores anteriores. En Azure debe suministrarse desde Key Vault a `Busqueda__Cursor__Key`: **el secreto y su conexión a Market todavía no están configurados en Terraform** y requieren aprobación del Tech Lead antes de desplegar esta versión. Sin la clave, Market no arranca.
+
 ## Paso 2 — desplegar
 Las imágenes deben estar en el ACR (las publica el pipeline, spec 007).
 ```

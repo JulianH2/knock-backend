@@ -105,6 +105,19 @@ async function deliver() {
   const writtenOficios = seed('oficios', read('oficios.json'), ['clave']);
   const writtenColonias = seed('colonias', read('colonias.json'), ['municipio', 'cp', 'nombre']);
 
+  // La versión se incrementa antes de insertar nuevos términos: una interrupción nunca reutiliza la versión anterior.
+  const synonyms = read('sinonimos.json');
+  const dictionary = market.getCollection('sinonimos');
+  const metadata = market.getCollection('catalogo_meta');
+  const missing = synonyms.filter((s) => !dictionary.findOne({ termino: s.termino, oficioClave: s.oficioClave }));
+  if (missing.length > 0) {
+    metadata.updateOne({ _id: 'sinonimos' }, { $inc: { version: 1 } }, { upsert: true });
+    const version = metadata.findOne({ _id: 'sinonimos' }).version;
+    for (const synonym of missing) {
+      dictionary.updateOne(synonym, { $setOnInsert: { ...synonym, version } }, { upsert: true });
+    }
+  }
+
   const after = snapshot();
   const postalCodes = new Set([...before.postalCodes, ...after.postalCodes, ...writtenColonias.map((d) => d.cp)]);
   const pairKeys = new Map();
@@ -116,7 +129,7 @@ async function deliver() {
     pairKeys.set(`${id}:${d.cp}`, { id, cp: d.cp });
   }
 
-  const invalidate = [['catalog:oficios', 'catalog:gen:oficios']];
+  const invalidate = [['catalog:oficios', 'catalog:gen:oficios'], ['catalog:busqueda', 'catalog:gen:busqueda']];
   for (const cp of postalCodes) {
     invalidate.push([`catalog:colonias:cp:${cp}`, `catalog:gen:colonias:cp:${cp}`]);
   }
@@ -126,7 +139,7 @@ async function deliver() {
 
   // Con KNOCK_REDIS_HOST siempre se invalida, aunque no haya escrituras: reaplicar repara una caché que una corrida anterior dejó vieja.
   // Sin KNOCK_REDIS_HOST solo se exige Redis si esta corrida escribió algo; si no, avisa por si una corrida anterior terminó en 2 o 3.
-  const writes = writtenOficios.length + writtenColonias.length;
+  const writes = writtenOficios.length + writtenColonias.length + missing.length;
   if (!env.KNOCK_REDIS_HOST && writes === 0) {
     print('Sin cambios en MongoDB: no hace falta invalidar Redis. Si una corrida anterior terminó con código 2 o 3, córrelo con KNOCK_REDIS_HOST.');
     print('Entrega de la base lista.');
