@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-19T16:17:18Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-19T16:18:25Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -10,6 +10,7 @@
 | `Assistant` | data | 2 | 7 | 5 |
 | `Catalog` | -, controllers, data, domain, dtos, services, validators | 37 | 50 | 81 |
 | `Chat` | -, data, hubs, services | 6 | 18 | 26 |
+| `Conversaciones` | domain | 1 | 2 | 1 |
 | `Knock.Contracts` | - | 9 | 16 | 7 |
 | `Knock.Gateway` | -, hosting | 15 | 40 | 51 |
 | `Knock.Identity.Api` | -, common, hosting | 29 | 61 | 85 |
@@ -273,6 +274,13 @@
 
 - `src/Knock.Messaging.Api/Modules/Chat/Services/ChatServices.cs` — class `ChatErrorCodes`, record `ChatResult`, record `ChatMessage`, class `ChatConnectionState`, class `ChatMetrics`, class `UnionService`, class `MensajeService`
   - `Fail()`:37, `ChatConnectionState()`:44, `Dispose()`:83, `UnionService()`:90, `JoinAsync()`:94, `Leave()`:135, `IsValidId()`:147, `MensajeService()`:160, `Group()`:167, `SendAsync()`:169, `Clean()`:220
+
+### Conversaciones
+
+**domain**
+
+- `src/Knock.Messaging.Api/Modules/Conversaciones/Domain/OcultadorDeContacto.cs` — record struct `TextoOculto`, class `OcultadorDeContacto`
+  - `Ocultar()`:23
 
 ### Knock.Contracts
 
