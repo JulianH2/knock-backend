@@ -1803,6 +1803,133 @@
         }
       }
     },
+    "/api/v{version}/interno/historial": {
+      "get": {
+        "tags": [
+          "InternalHistory"
+        ],
+        "summary": "Visitas terminadas del cliente ligadas al elemento, de la más reciente a la más antigua, por cursor. Sin precios ni direcciones.",
+        "parameters": [
+          {
+            "name": "usuarioId",
+            "in": "query",
+            "description": "The sub of the client whose finished visits are listed.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "elementoId",
+            "in": "query",
+            "description": "The element id (24 hexadecimal characters) linked to the requests.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor returned as nextCursor by the previous page.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "description": "Page size, 1 to 50. Defaults to 20.",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPageOfHistoryEntryResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPageOfHistoryEntryResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPageOfHistoryEntryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v{version}/solicitudes": {
       "post": {
         "tags": [
@@ -3413,9 +3540,40 @@
               "string"
             ],
             "description": "De 8 a 200 caracteres; obligatoria en modalidad domicilio y no admitida en taller. Se guarda cifrada."
+          },
+          "elementoId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Opcional (spec 041, R-19, ampliación aditiva de la spec 020): identificador (24 hexadecimales) de un elemento de «Mi casa y mi auto» al que se liga el trabajo. Solo se valida su formato; nunca se devuelve."
           }
         },
         "description": "Cuerpo de `POST /solicitudes` (spec 020, R-01). El 422 lo da `CreateRequestBodyValidator`; nunca repite el valor recibido."
+      },
+      "CursorPageOfHistoryEntryResponse": {
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoryEntryResponse"
+            },
+            "description": "Elementos de la página, como máximo int PageLimit.Max."
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Cursor opaco para pedir la página siguiente, o `null` si no hay más."
+          }
+        },
+        "description": "Una página de un listado paginado por cursor (`cursor`, `limit`, `nextCursor`); `NextCursor` es `null` en la última página."
       },
       "DayScheduleDto": {
         "required": [
@@ -3448,6 +3606,26 @@
           }
         },
         "description": "Horario de un día (spec 046, R-47): `dia` de `lunes` a `domingo`; abierto con una o dos franjas `HH:mm`, o cerrado sin franjas."
+      },
+      "HistoryEntryResponse": {
+        "required": [
+          "fecha",
+          "oficio",
+          "tecnico"
+        ],
+        "type": "object",
+        "properties": {
+          "fecha": {
+            "type": "string"
+          },
+          "oficio": {
+            "type": "string"
+          },
+          "tecnico": {
+            "type": "string"
+          }
+        },
+        "description": "Un trabajo terminado del historial (spec 041, R-17): día de la visita (`YYYY-MM-DD`), oficio y nombre del técnico. Sin precios ni direcciones."
       },
       "NeighborhoodAtPointColoniaResponse": {
         "required": [
@@ -5140,6 +5318,9 @@
     },
     {
       "name": "Cotizaciones"
+    },
+    {
+      "name": "InternalHistory"
     },
     {
       "name": "ListaEspera"

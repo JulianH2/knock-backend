@@ -41,6 +41,8 @@ public static class RequestsModuleExtensions
         services.AddScoped<SolicitudService>();
         services.AddSingleton<VisitCodeFactory>();
         services.AddScoped<ChoiceStore>();
+        services.AddScoped<HistoryStore>();
+        services.AddScoped<HistoryService>();
         services.AddScoped<QuoteComparisonService>();
         services.AddScoped<ConversationPermissionStore>();
         services.AddScoped<ConversationPermissionService>();

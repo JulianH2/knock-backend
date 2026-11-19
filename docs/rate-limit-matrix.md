@@ -97,6 +97,10 @@ El gateway limita con contadores de ventana fija en Redis (`ratelimit:ip:*`, `ra
 - 429 en `application/problem+json` con `Retry-After` en segundos (mínimo 1); el cuerpo no revela IP, clave ni contador.
 - Si Redis no responde, el gateway responde 503 con `Retry-After: 5`: sin contadores no se puede limitar.
 
+## Mi casa y mi auto en Identidad (spec 041, KNOCK-286)
+
+Las cinco rutas de `/api/v1/me/casa-y-auto` (CAS-01 a CAS-05) no tienen política propia: rige el límite global por IP de Identidad (100 por minuto) y el del gateway por IP y usuario; la respuesta 429 incluye `Retry-After`. Los cuerpos de `POST` y `PUT` se limitan a 4 KB (413). El control contra el abuso por repetición es el tope de 20 elementos por persona (409 `item_limit_reached`). La ruta interna `GET /api/v1/interno/historial` de Mercado cae bajo el límite global por IP de Mercado y no está en el gateway.
+
 ## Cuenta y datos personales en Identidad (spec 039, KNOCK-284)
 
 Políticas por `sub` del JWT (ventana fija, por proceso; con dos réplicas el límite efectivo se duplica), todas con 429 y `Retry-After`: `POST /me/cambio-numero` **3 por hora** (R-20), `POST /me/cambio-numero/confirmar` **5 por hora**, `POST /me/exportaciones` **3 por hora** y `POST /me/eliminacion` **5 por hora**; estos tres últimos son valores propuestos porque la spec no los fija. `POST /recuperacion-acceso` (pública) tiene **3 por hora por IP** y además **3 por hora por número** (nuevo y anterior, contados por su HMAC en `RecoveryAttemptLimiter`, en memoria del proceso). `GET/PUT /me/consentimientos`, `GET /me/pendientes` y `POST /me/eliminacion/cancelar` usan solo el límite general. Cuerpos: 4 KiB en cambio de número y recuperación, 8 KiB en eliminación, 1 KiB en consentimientos, exportaciones y cancelar (413). Para que las políticas por persona lean el `sub`, Identidad ejecuta `UseAuthentication` antes de `UseRateLimiter`.
