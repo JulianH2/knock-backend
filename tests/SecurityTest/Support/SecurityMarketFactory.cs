@@ -78,6 +78,7 @@ internal sealed class SecurityMarketFactory(IReadOnlyDictionary<string, string?>
         }
         var values = new Dictionary<string, string?>
         {
+            ["Busqueda:Cursor:Key"] = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)),
             ["ConnectionStrings:KnockMongo"] = mongo.ConnectionString,
             ["ConnectionStrings:KnockRedis"] = redisConnectionString,
             ["Mongo:Databases:Catalog"] = "market_sec_" + Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(6)),

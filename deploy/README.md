@@ -48,7 +48,7 @@ Con `database/` se importa el clúster la primera vez: `terraform apply -var sub
 ## Secretos (una persona, a mano)
 Los valores no pasan por Terraform ni por el repositorio (CA-04). Nombres fijos en Key Vault:
 `jwt-signing-key`, `redis-password` (contraseña del servidor Redis), `redis-connection-string` (la cadena que leen los servicios: `knock-redis:6379,password=<la misma contraseña>`), `pii-encryption-key`, `pii-hmac-key`, `mongo-identity`, `mongo-market`,
-`mongo-messaging`, `field-encryption-key`.
+`mongo-messaging`, `field-encryption-key`, `identity-field-encryption-key` (llave de cifrado de campos de Identity, solo la lee `identity`; Base64 de 32 bytes, distinta de las demás), `search-cursor-key` (clave del cursor de la búsqueda, solo la lee `market`; Base64 de 32 bytes) e `interno-key-identity` (firma los tokens de servicio de Identidad hacia Mercado: la leen `identity` y `market`; Base64 de 32 bytes). Se crean igual que `field-encryption-key`, con `--name identity-field-encryption-key`, `--name search-cursor-key` y `--name interno-key-identity`, sin imprimir el valor.
 ```
 az keyvault secret set --vault-name <kv> --name redis-password --value "<valor>"
 ```
@@ -73,6 +73,8 @@ python -c "import os,base64,sys;sys.stdout.write(base64.b64encode(os.urandom(32)
 En PowerShell, sustituye `/dev/stdin` por un archivo temporal que borres de inmediato, o usa el portal de Azure (Key Vault > Secretos > Generar o importar, nombre `field-encryption-key`, valor `<32-bytes-base64>`). Comprueba solo que exista: `az keyvault secret list --vault-name <kv> --query "[?name=='field-encryption-key'].name" -o tsv`. No uses `secret show`.
 
 Rotación: agrega la versión nueva como `Security__FieldEncryption__Keys__2` (otro secreto de Key Vault referenciado en `secret_env`) y cambia `Security__FieldEncryption__ActiveVersion` a `"2"`. La versión 1 se conserva para poder descifrar lo ya guardado; solo se retira cuando nada la use.
+
+**Cursor de búsqueda (KNOCK-66):** Market exige `Busqueda:Cursor:Key` en todos los entornos, también Development: Base64 de 32 bytes aleatorios, distinto de las demás claves. Para ejecución local fuera de contenedor, guárdalo en los *user-secrets* de `src/Knock.Market.Api/Knock.Market.Api.csproj`, sin pegar el valor en archivos del repositorio ni compartirlo. Todas las réplicas de un mismo entorno necesitan la misma clave; rotarla invalida los cursores anteriores. En Azure debe suministrarse desde Key Vault a `Busqueda__Cursor__Key`: **el secreto y su conexión a Market todavía no están configurados en Terraform** y requieren aprobación del Tech Lead antes de desplegar esta versión. Sin la clave, Market no arranca.
 
 ## Paso 2 — desplegar
 Las imágenes deben estar en el ACR (las publica el pipeline, spec 007).

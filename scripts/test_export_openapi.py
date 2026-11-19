@@ -57,8 +57,11 @@ class NormalizeTests(unittest.TestCase):
 
 
 class SyntheticEnvironmentTests(unittest.TestCase):
-    def test_market_needs_nothing_extra(self) -> None:
-        self.assertEqual({}, export_openapi.service_environment("market"))
+    def test_market_cursor_key_is_random_and_valid(self) -> None:
+        first = export_openapi.service_environment("market")["Busqueda__Cursor__Key"]
+        second = export_openapi.service_environment("market")["Busqueda__Cursor__Key"]
+        self.assertEqual(32, len(base64.b64decode(first, validate=True)))
+        self.assertNotEqual(first, second)
 
     def test_identity_secrets_are_random_and_valid(self) -> None:
         first = export_openapi.service_environment("identity")

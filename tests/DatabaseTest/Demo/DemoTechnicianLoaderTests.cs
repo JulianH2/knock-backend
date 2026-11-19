@@ -57,22 +57,49 @@ public sealed class DemoTechnicianLoaderTests
     }
 
     [Theory]
-    [InlineData("radioAtencionKm", 0)]
-    [InlineData("nivelVerificacion", "oro")]
-    [InlineData("tallerDireccion", "Calle real 123")]
-    [InlineData("tallerDireccion", "Taller")]
-    public async Task Demo_InvalidLastEntry_WritesNothing(string field, object value)
+    [InlineData("radioAtencionKm", "0")]
+    [InlineData("nivelVerificacion", "\"oro\"")]
+    [InlineData("tallerDireccion", "\"Calle real 123\"")]
+    [InlineData("tallerDireccion", "\"Taller\"")]
+    [InlineData("contactoPublico", "{\"telefono\":\"5512345678\"}")]
+    [InlineData("contactoPublico", "{\"telefono\":\"5500000001\",\"correo\":\"demo@example.com\"}")]
+    [InlineData("contactoPublico", "{\"telefono\":\"550000001\"}")]
+    [InlineData("contactoPublico", "{\"whatsapp\":\"5512345678\"}")]
+    [InlineData("contactoPublico", "{\"telefono\":\"5500000001\",\"whatsapp\":\"550000000A\"}")]
+    [InlineData("contactoPublico", "{}")]
+    public async Task Demo_InvalidLastEntry_WritesNothing(string field, string json)
     {
         await WithDatabase(async (database, loader, _) =>
         {
             var input = JsonNode.Parse(await File.ReadAllTextAsync(_path))!.AsArray();
-            input[^1]![field] = System.Text.Json.JsonSerializer.SerializeToNode(value);
+            input[^1]![field] = JsonNode.Parse(json);
             var file = Path.GetTempFileName();
             try
             {
                 await File.WriteAllTextAsync(file, input.ToJsonString());
                 await Assert.ThrowsAnyAsync<Exception>(() => loader.SeedAsync(file, CancellationToken.None));
                 Assert.Equal(0, await database.GetCollection<BsonDocument>("tecnicos").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+            }
+            finally { File.Delete(file); }
+        });
+    }
+
+    [Theory]
+    [InlineData("{\"whatsapp\":\"5500000002\"}")]
+    [InlineData("{\"telefono\":\"5500000001\",\"whatsapp\":\"5500000002\"}")]
+    public async Task Demo_ValidContact_IsSaved(string json)
+    {
+        await WithDatabase(async (database, loader, _) =>
+        {
+            var input = JsonNode.Parse(await File.ReadAllTextAsync(_path))!.AsArray();
+            input[^1]!["contactoPublico"] = JsonNode.Parse(json);
+            var file = Path.GetTempFileName();
+            try
+            {
+                await File.WriteAllTextAsync(file, input.ToJsonString());
+                await loader.SeedAsync(file, CancellationToken.None);
+                var saved = await database.GetCollection<BsonDocument>("tecnicos").Find(Builders<BsonDocument>.Filter.Eq("uid", "demo-tecnico-04")).SingleAsync();
+                Assert.Equal(BsonDocument.Parse(json), saved["contactoPublico"].AsBsonDocument);
             }
             finally { File.Delete(file); }
         });

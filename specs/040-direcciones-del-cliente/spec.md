@@ -207,7 +207,11 @@ Las pruebas citan el caso como `CA_040_NN` en el nombre (para `python scripts/sd
 
 ## 15. Riesgos y dudas abiertas
 - Sin dudas abiertas: todas las decisiones de esta spec quedaron resueltas en el cierre del 2026-11-13.
+- Implementación (KNOCK-285): CA-09 y CA-15 piden 403 para quien no es dueña, pero R-14 y CA-22 piden 404 sin revelar que la dirección existe; se implementó 404 y queda por decidir si se corrige la spec.
+- Implementación: `principal: false` sobre la única principal responde 422 (`errors.principal`) y una creación repetida (misma colonia y calle) responde 409 `address_duplicate`; ninguno está definido en la spec.
+- Implementación: Identidad lee la llave `Security:FieldEncryption`; hoy el despliegue solo se la da a Mercado.
 - Dependencias: catálogo de colonias de la spec 017 y la copia de la dirección en la visita de la spec 022.
+- Revisión de pares (2026-11-17), decidido por José Julián el 2026-11-18: (1) **aceptado**: `AddressesStore` incrementa `versionDirecciones` en `usuarios` solo para serializar las transacciones por persona; es la única escritura de este módulo fuera de su colección y no cambia ningún otro campo. (2) **corregido** en la implementación: el código `market_unavailable` vive en `Common/Errors` (`CommonErrorCodes`) y el módulo ya no depende de `ProfileService`. (3) **riesgo conocido**: `ListAsync` descifra todas las direcciones; si una no se puede descifrar (por ejemplo, al retirar una versión de llave), el `GET` responde 500; no se retiran versiones de llave mientras haya datos con ella. (4) **deuda aceptada**: `FieldCipher` de Identidad repite el de Mercado hasta la biblioteca compartida (spec 055, KNOCK-251).
 
 ## Aprobación
 - [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-14

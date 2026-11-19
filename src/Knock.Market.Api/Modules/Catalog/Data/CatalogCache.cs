@@ -6,6 +6,13 @@ using StackExchange.Redis;
 
 namespace Knock.Market.Api.Modules.Catalog.Data;
 
+internal interface ISearchResponseCache
+{
+    Task<long> GetSearchGenerationAsync(CancellationToken cancellationToken);
+    Task<string?> GetSearchAsync(byte[] fingerprint, CancellationToken cancellationToken);
+    Task SetSearchAsync(byte[] fingerprint, string response, CancellationToken cancellationToken);
+}
+
 /// <summary>
 /// Caché del catálogo (spec 010, R-01, R-02 y R-04): existe para probar <see cref="CatalogStore"/> con dobles sin Redis.
 /// Solo guarda lo que la política declara cacheable (oficios, nombres por CP y existencia por <c>_id</c> y CP); la colonia por
@@ -52,8 +59,9 @@ internal interface ICatalogCache
 /// <see cref="CatalogCacheOptions"/> (spec 010, R-04: vigencia inicial de los catálogos, a ajustar con pruebas de carga). Leer y guardar
 /// fallan en silencio (se va a MongoDB); borrar no.
 /// </summary>
-internal sealed partial class RedisCatalogCache(IConnectionMultiplexer redis, IOptions<CatalogCacheOptions> cacheOptions, ILogger<RedisCatalogCache> logger) : ICatalogCache
+internal sealed partial class RedisCatalogCache(IConnectionMultiplexer redis, IOptions<CatalogCacheOptions> cacheOptions, ILogger<RedisCatalogCache> logger) : ICatalogCache, ISearchResponseCache
 {
+    public const string SearchGenerationKey = "catalog:gen:busqueda";
     public const string OficiosKey = "catalog:oficios";
     public const string NeighborhoodNamesKeyPrefix = "catalog:colonias:cp:";
     public const string ColoniaExistsKeyPrefix = "catalog:colonias:existe:";
@@ -69,6 +77,46 @@ internal sealed partial class RedisCatalogCache(IConnectionMultiplexer redis, IO
     public static string ColoniaExistsGenerationKey(ObjectId id, string postalCode) => ColoniaExistsGenerationKeyPrefix + id + ":" + postalCode;
 
     private readonly TimeSpan _lifetime = cacheOptions.Value.Lifetime;
+
+    public Task<long> GetSearchGenerationAsync(CancellationToken cancellationToken) => GetGenerationAsync(SearchGenerationKey, cancellationToken);
+
+    public async Task<string?> GetSearchAsync(byte[] fingerprint, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var key = SearchKey(fingerprint);
+        try
+        {
+            var value = await redis.GetDatabase().StringGetAsync(key);
+            return value.IsNull ? null : value.ToString();
+        }
+        catch (Exception exception) when (exception is RedisException or TimeoutException)
+        {
+            LogCacheUnavailable(logger);
+            return null;
+        }
+    }
+
+    public async Task SetSearchAsync(byte[] fingerprint, string response, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(response);
+        cancellationToken.ThrowIfCancellationRequested();
+        var key = SearchKey(fingerprint);
+        try
+        {
+            await redis.GetDatabase().StringSetAsync(key, response, TimeSpan.FromSeconds(30));
+        }
+        catch (Exception exception) when (exception is RedisException or TimeoutException)
+        {
+            LogCacheUnavailable(logger);
+        }
+    }
+
+    private static string SearchKey(byte[] fingerprint)
+    {
+        ArgumentNullException.ThrowIfNull(fingerprint);
+        if (fingerprint.Length != 32) throw new ArgumentException("A SHA-256 fingerprint is required.", nameof(fingerprint));
+        return "busqueda:" + Convert.ToHexStringLower(fingerprint);
+    }
 
     // Las claves de generación no llevan TTL a propósito: expirar una y reiniciar su contador a 0 podría hacer coincidir la generación
     // de un lector lento con la de una clave nueva y resucitar datos obsoletos. Su crecimiento está acotado por el número de CP y
@@ -270,8 +318,13 @@ internal sealed partial class RedisCatalogCache(IConnectionMultiplexer redis, IO
 /// MongoDB, igual que cuando Redis no responde (las lecturas de <see cref="RedisCatalogCache"/> fallan abiertas y las generaciones
 /// quedan en -1, así que nada se guarda); invalidar no hace nada porque no hay nada que invalidar.
 /// </summary>
-internal sealed class DisabledCatalogCache : ICatalogCache
+internal sealed class DisabledCatalogCache : ICatalogCache, ISearchResponseCache
 {
+    public Task<long> GetSearchGenerationAsync(CancellationToken cancellationToken) => Task.FromResult(-1L);
+    public Task<string?> GetSearchAsync(byte[] fingerprint, CancellationToken cancellationToken) => Task.FromResult<string?>(null);
+
+    public Task SetSearchAsync(byte[] fingerprint, string response, CancellationToken cancellationToken) => Task.CompletedTask;
+
     public Task<IReadOnlyList<OficioListing>?> GetOficiosAsync(CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<OficioListing>?>(null);
 
