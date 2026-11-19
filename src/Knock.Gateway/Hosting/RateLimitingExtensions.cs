@@ -17,7 +17,7 @@ internal sealed class RateLimitPolicy
     public bool IsValid => PermitLimit > 0 && Window > TimeSpan.Zero;
 }
 
-/// <summary>Valores de <c>RateLimiting</c> (sin secretos): por IP antes de autenticar, estricto para <c>/auth</c> y por usuario después (spec 009, R-04).</summary>
+/// <summary>Valores de <c>RateLimiting</c> (sin secretos): por IP antes de autenticar, estricto para <c>/auth</c>, por usuario después (spec 009, R-04) y propio de la búsqueda (spec 027, R-14).</summary>
 internal sealed class RateLimitSettings
 {
     public const string SectionName = "RateLimiting";
@@ -27,6 +27,8 @@ internal sealed class RateLimitSettings
     public RateLimitPolicy Auth { get; set; } = new();
 
     public RateLimitPolicy User { get; set; } = new();
+
+    public RateLimitPolicy Search { get; set; } = new();
 }
 
 /// <summary>Contador de ventana fija compartido entre réplicas. Existe para probar el límite con dobles sin Redis.</summary>
@@ -68,11 +70,21 @@ internal static class RateLimitingExtensions
         services.AddOptions<RateLimitSettings>()
             .BindConfiguration(RateLimitSettings.SectionName)
             .Validate(
-                s => s.Ip.IsValid && s.Auth.IsValid && s.User.IsValid,
-                "RateLimiting:Ip, RateLimiting:Auth and RateLimiting:User need a PermitLimit > 0 and a Window > 0.")
+                s => s.Ip.IsValid && s.Auth.IsValid && s.User.IsValid && s.Search.IsValid,
+                "RateLimiting:Ip, RateLimiting:Auth, RateLimiting:User and RateLimiting:Search need a PermitLimit > 0 and a Window > 0.")
             .ValidateOnStart();
         services.AddSingleton<IRequestCounter, RedisRequestCounter>();
         return services;
+    }
+
+    /// <summary>Es <c>/api/v{version}/{segment}</c> o lo que cuelga de ahí; sin distinguir mayúsculas porque el enrutador tampoco las distingue.</summary>
+    internal static bool IsApiPath(PathString path, string segment)
+    {
+        var segments = path.Value?.Split('/', StringSplitOptions.RemoveEmptyEntries) ?? [];
+        return segments.Length >= 3
+            && segments[0].Equals("api", StringComparison.OrdinalIgnoreCase)
+            && segments[1][0] is 'v' or 'V'
+            && segments[2].Equals(segment, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>IP del cliente: la de la conexión (ya sustituida por la reenviada solo si viene de un proxy de confianza). IPv4 mapeada se normaliza y las IPv6 se agrupan por /64.</summary>
@@ -131,24 +143,22 @@ internal sealed class IpRateLimitMiddleware(RequestDelegate next, IRequestCounte
     /// <summary>
     /// <c>/api/v{version}/auth</c> y lo que cuelga de ahí; sin distinguir mayúsculas porque el enrutador tampoco las distingue.
     /// </summary>
-    internal static bool IsAuthPath(PathString path)
-    {
-        var segments = path.Value?.Split('/', StringSplitOptions.RemoveEmptyEntries) ?? [];
-        return segments.Length >= 3
-            && segments[0].Equals("api", StringComparison.OrdinalIgnoreCase)
-            && segments[1][0] is 'v' or 'V'
-            && segments[2].Equals("auth", StringComparison.OrdinalIgnoreCase);
-    }
+    internal static bool IsAuthPath(PathString path) => RateLimitingExtensions.IsApiPath(path, "auth");
 }
 
-/// <summary>Límite por usuario (<c>sub</c> del JWT), después de autenticar; las peticiones sin sesión ya las limitó la IP (spec 009, R-04).</summary>
+/// <summary>
+/// Límite por usuario (<c>sub</c> del JWT), después de autenticar; las peticiones sin sesión ya las limitó la IP (spec 009, R-04). La búsqueda de expertos
+/// (<c>/api/v{n}/busqueda</c>) suma su propio contador por <c>sub</c> (spec 027, R-14).
+/// </summary>
 internal sealed class UserRateLimitMiddleware(RequestDelegate next, IRequestCounter counter, IOptions<RateLimitSettings> options)
 {
     public async Task InvokeAsync(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
         var sub = context.User.Identity?.IsAuthenticated == true ? context.User.FindFirst("sub")?.Value : null;
-        if (sub is not null && await RateLimitCheck.RejectedAsync(context, counter, $"ratelimit:user:{sub}", options.Value.User))
+        if (sub is not null
+            && (await RateLimitCheck.RejectedAsync(context, counter, $"ratelimit:user:{sub}", options.Value.User)
+                || (RateLimitingExtensions.IsApiPath(context.Request.Path, "busqueda") && await RateLimitCheck.RejectedAsync(context, counter, $"ratelimit:busqueda:{sub}", options.Value.Search))))
         {
             return;
         }
