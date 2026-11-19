@@ -14,7 +14,7 @@ internal sealed class PanelAuditoriaStore([FromKeyedServices(SesionesDataExtensi
 
     private static readonly TimeSpan _retention = TimeSpan.FromDays(365);
 
-    public IMongoCollection<BsonDocument> Entries { get; } = database.GetCollection<BsonDocument>(Collection);
+    private IMongoCollection<BsonDocument> Entries { get; } = database.GetCollection<BsonDocument>(Collection);
 
     /// <summary>Índices de §6 (idempotentes); los invocan las pruebas y el script <c>db/044-identity-panel.js</c>.</summary>
     public async Task EnsureIndexesAsync(CancellationToken cancellationToken)

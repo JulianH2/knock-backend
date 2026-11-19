@@ -1,4 +1,5 @@
 using Knock.Identity.Api.Modules.Panel.Data;
+using Knock.Identity.Api.Modules.Panel.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Knock.Identity.Api.Modules.Panel;
@@ -20,6 +21,9 @@ public static class PanelModuleExtensions
         services.AddSingleton<IPanelAuditoriaStore>(provider => provider.GetRequiredService<PanelAuditoriaStore>());
         services.AddSingleton<IPanelDesafios, RedisPanelDesafios>();
         services.AddSingleton<IPanelCuentaCache, RedisPanelCuentaCache>();
+        services.AddHttpContextAccessor();
+        services.AddSingleton<PanelIpHasher>();
+        services.AddSingleton<AuditoriaPanel>();
         return services;
     }
 }
