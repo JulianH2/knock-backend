@@ -2,9 +2,6 @@
   "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-net/master/src/Stryker.Configuration/stryker-config.schema.json",
   "stryker-config": {
     "solution": "Knock.slnx",
-    "test-projects": [
-      "tests/UnitTest/Knock.UnitTest.csproj"
-    ],
     "test-case-filter": "FullyQualifiedName~Knock.UnitTest",
     "mutate": [
       "**/Knock.Identity.Api/Modules/Sesiones/**/*.cs",
