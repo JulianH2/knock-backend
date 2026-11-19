@@ -17,7 +17,6 @@ internal static class VisitErrorCodes
     public const string VisitWithoutCodeCode = "visit_without_code";
     public const string OutsideWindowCode = "outside_window";
     public const string VisitNotNotifiableCode = "visit_not_notifiable";
-    public const string NotATechnicianCode = "not_a_technician";
 }
 
 /// <summary>Por qué un intento de llegada no se acepta y no cuenta como intento (spec 022, R-07 y R-09).</summary>

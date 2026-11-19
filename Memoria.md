@@ -1,5 +1,15 @@
 # Memoria — knock-backend
 
+## 2026-11-17 — Spec 046, TEC-01: registro como técnico (KNOCK-48)
+- **Decisión:** `POST /api/v1/tecnicos` vive en el módulo `Tecnicos` de Mercado (la carpeta ya existía; la spec dice `Technicians`), con su clave de base `Mongo:Databases:Tecnicos` = `market`. Guarda con los nombres que ya leen la elegibilidad y la elección de cotización (`coloniaBaseId`, `ubicacionBase`, `radioAtencionKm`, `tallerDireccion`, `nivelVerificacion`, `oculto`) en lugar de los de §6 (`ubicacion`, `radioKm`, `direccionTaller`). La ubicación aproximada es el centro de la colonia (`coloniaId` en el cuerpo, que §5 no nombraba). `nombre` también va en el cuerpo (R-01: «nombre y apellido»).
+- **Porqué:** así un técnico recién registrado puede cotizar sin tocar Requests; la spec no decía de dónde sale la ubicación y el centro de la colonia es la opción más simple y aproximada (no guarda coordenadas de la persona).
+- **Cifrado:** `tallerDireccion` se guarda cifrada (AES-256-GCM, contexto `tecnicos|tallerDireccion|{id}`, `WorkshopAddressCipher`). La elección de cotización la descifra; los técnicos de demostración (`demo: true`) siguen en claro.
+- **Índice:** `db/021-tecnicos-usuario-index.js` deja único `usuarioId_1` y reemplaza el anterior si no lo era (CA-69).
+- **TEC-05 (KNOCK-56):** `GET /api/v1/tecnicos/{id}` es pública; con sesión suma `detalle`. Caché de 1 minuto en memoria de cada réplica (`IMemoryCache`, clave `tecnicos:perfil:{id}`): al escribir se invalida solo en la réplica que escribe y las otras pueden mostrar el perfil viejo hasta 1 minuto, dentro de lo que permite R-17. La visibilidad y «Disponible hoy» se calculan en cada lectura.
+- **TEC-08 a TEC-11 (KNOCK-57 y 58):** rutas de `/tecnicos/me`. La disponibilidad se guarda como `disponibleHasta` (23:59:59 de hoy en `America/Mexico_City`, en UTC). Los horarios se guardan en `tecnicos.horarios` (siete días, `abierto` y `franjas`). `fotoUrl` solo se acepta de los hosts de `Tecnicos:HostsFoto`, vacío por ahora, hasta que exista la subida de la spec 032. `not_a_technician` pasó a `Common/Errors/ErrorCodes` (un código por servicio, spec 002).
+- **TEC-03 y TEC-06:** el autocompletado usa `ICatalogApi.ListActiveTradesAsync` (nuevo, solo lectura) para no leer `oficios` desde otro módulo, y busca negocios con el texto escapado. «Llega a mi colonia» atiende la colonia base siempre y, a domicilio, las colonias cuyo centro queda dentro del radio.
+- **A evitar:** escribir `tallerDireccion` en claro fuera de las semillas de demostración; agregar otra ruta de `/tecnicos` sin su entrada en el gateway (`mercado-tecnicos` solo enruta `POST`).
+
 ## 2026-11-16 — KNOCK-63: ajuste de consumo real y revisión de T-04
 - **Decisión:** el ajuste aplica el gasto real incluso si supera la reserva y conserva una marca `applied` con el TTL original; un reintento devuelve `AlreadyApplied`, una reserva ausente `NotFound` y Redis o contadores inconsistentes `Unavailable`. Tras caducar la marca ya no se distingue de una reserva inexistente. El llamador fija el `DateOnly`: T-06 debe obtener el día de `America/Mexico_City` con una sola fuente `TimeProvider` y reutilizar el día de la reserva al ajustar.
 - **Redis:** los scripts Lua usan tres claves sin hash tag común y suponen Redis de un solo nodo, como el despliegue actual; Redis Cluster puede rechazarlos por hash slots distintos. No se ha probado ni habilitado Cluster. Redis sin persistencia puede perder contadores y marcas al reiniciarse; un resultado `Unavailable` no demuestra si un ajuste incierto se aplicó.
@@ -821,6 +831,11 @@
 - **Pendiente:** confirmar que el job corre en este PR, muta y genera reporte, y que la regla R-18 (mutación de `Knock.Hosting`) sigue aplicando.
 - **A evitar:** declarar `solution` y `test-projects` a la vez; subir la versión de dotnet-stryker sin probar el job en un PR.
 
+## 2026-11-19 — KNOCK-66: política de búsqueda del gateway (spec 027, T-06)
+- **Estado:** el gateway limita `GET /api/v1/busqueda` a 30 peticiones por minuto por `sub` (`RateLimiting:Search`, contador `ratelimit:busqueda:{sub}` en Redis con el mismo script atómico de la spec 009) y la enruta a Mercado con la política de sesión y CORS `knock` (ruta `mercado-busqueda`). Al pasarse responde 429 con `Retry-After`; si Redis no responde, 503. `docs/rate-limit-matrix.md` tiene la fila nueva. Prueba: `GatewaySecurityTests.SearchRoute_HasItsOwnLimitPerPerson_AndNeedsASession_CA_027_16`.
+- **Decisiones (con porqué):** (1) el contador de la búsqueda se suma al de usuario (120 por minuto), así que una búsqueda gasta de los dos y el límite de usuario sigue valiendo para todas las rutas; (2) `IsApiPath` reemplaza al análisis de ruta propio de `IsAuthPath` para no duplicarlo.
+- **Pendiente:** el endpoint `GET /api/v1/busqueda` en Mercado es del #118; hasta que se fusione, la ruta responde lo que Mercado responda (404). Ese PR debe quitar la fila «propuesta pendiente T-06» de la matriz de límites.
+- **A evitar:** abrir una ruta de consulta masiva (padrón de técnicos) sin un límite propio por persona.
 ## 2026-11-19 · KNOCK-290 · Excepción temporal de Trivy por CVE-2026-97054 (pebble, imagen base)
 - **Qué cambió:** `.trivyignore` acepta CVE-2026-97054 y `security/exceptions.yaml` registra EXC-026 (responsable el Tech Lead, vence el 2026-12-03).
 - **Por qué:** el binario `usr/bin/pebble` de `mcr.microsoft.com/dotnet/aspnet:11.0` (construida el 2026-11-10) trae Go 1.27.3 y Trivy bloquea los PR; Microsoft aún no publica la imagen corregida y el sprint cierra el 2026-11-22.
