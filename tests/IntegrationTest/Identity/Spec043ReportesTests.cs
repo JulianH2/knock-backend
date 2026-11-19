@@ -136,9 +136,9 @@ public sealed class Spec043ReportesTests
         using var unavailable = await host.PostJsonAsync(_reports, host.Caller, Body(reported));
 
         rejected.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
-        (await SafetyHost.ReadAsync(rejected)).GetProperty("code").GetString().Should().Be("content_rejected");
+        (await SafetyHost.ReadAsync(rejected)).GetProperty("code").GetString().Should().Be("report_content_rejected");
         unavailable.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
-        (await SafetyHost.ReadAsync(unavailable)).GetProperty("code").GetString().Should().Be("moderation_unavailable");
+        (await SafetyHost.ReadAsync(unavailable)).GetProperty("code").GetString().Should().Be("report_moderation_unavailable");
         (await host.CountReportsAsync()).Should().Be(0, "falla cerrado: sin revisión no se guarda");
     }
 

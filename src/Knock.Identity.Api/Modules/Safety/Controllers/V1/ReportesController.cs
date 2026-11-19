@@ -20,7 +20,7 @@ internal sealed class ReportesController(ReportService service) : ControllerBase
 
     /// <summary>
     /// Crea un reporte (<c>abierto</c>). 201 la primera vez y 200 si ya había uno abierto igual; 422 con <c>errors.&lt;campo&gt;</c> si un valor no es válido, si es contra uno mismo o contra alguien
-    /// que no existe, o <c>content_rejected</c>; 503 <c>moderation_unavailable</c> si la moderación no responde. Con motivo de peligro la respuesta lleva el aviso de llamar al 911.
+    /// que no existe, o <c>report_content_rejected</c>; 503 <c>report_moderation_unavailable</c> si la moderación no responde. Con motivo de peligro la respuesta lleva el aviso de llamar al 911.
     /// </summary>
     [HttpPost("api/v{version:apiVersion}/reportes")]
     [RequestSizeLimit(CreateReportBody.MaxBodyBytes)]

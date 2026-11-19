@@ -7,7 +7,7 @@ internal static class SafetyErrorCodes
     public const string AlreadyBlockedCode = "already_blocked";
     public const string BlockNotFoundCode = "block_not_found";
     public const string InvalidCursorCode = "invalid_safety_cursor";
-    public const string ContentRejectedCode = "content_rejected";
-    public const string ModerationUnavailableCode = "moderation_unavailable";
+    public const string ContentRejectedCode = "report_content_rejected";
+    public const string ModerationUnavailableCode = "report_moderation_unavailable";
     public const string AppealNotAllowedCode = "appeal_not_allowed";
 }

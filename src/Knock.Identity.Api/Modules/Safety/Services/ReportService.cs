@@ -31,7 +31,7 @@ internal sealed class ReportService(ReportesStore store, IUsuariosApi users, ICo
 {
     /// <summary>
     /// Crea el reporte (<c>abierto</c>, a la espera del panel de la spec 053). Un reporte contra uno mismo o contra una persona que no existe es <see cref="ReportOutcome.ReportedInvalid"/> (422);
-    /// repetir el mismo reporte abierto devuelve el que ya existe. Lanza 422 <c>content_rejected</c> o 503 <c>moderation_unavailable</c> según la moderación.
+    /// repetir el mismo reporte abierto devuelve el que ya existe. Lanza 422 <c>report_content_rejected</c> o 503 <c>report_moderation_unavailable</c> según la moderación.
     /// </summary>
     public async Task<ReportCreation> CreateAsync(string sub, CreateReportBody body, CancellationToken cancellationToken)
     {
