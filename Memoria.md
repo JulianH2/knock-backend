@@ -876,3 +876,9 @@
 - **Por qué:** el binario `usr/bin/pebble` de `mcr.microsoft.com/dotnet/aspnet:11.0` (construida el 2026-11-10) trae Go 1.27.3 y Trivy bloquea los PR; Microsoft aún no publica la imagen corregida y el sprint cierra el 2026-11-22.
 - **Decisiones (con porqué):** (1) Excepción en vez de esperar la imagen: no hay fecha de corrección y bloquea la fusión de unos 16 PR. (2) Vencimiento de 14 días y alcance de un solo CVE; los demás hallazgos siguen bloqueando.
 - **A evitar:** dejar la excepción al vencer sin revisar la imagen base; ampliarla a otros CVE sin una EXC propia.
+
+## 2026-11-19 · KNOCK-284 · Políticas de Identidad con el limitador compartido (sprint-05 no compilaba)
+- **Qué cambió:** en `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs`, las políticas de cuenta (`PhoneChangeCheck`, `PhoneChangeConfirm`, `AccessRecovery`, `Export`, `Deletion`) usan `SharedPartition` y `SubjectPolicy(nombre, límite, ventana, services)`, como las de Mercado.
+- **Por qué:** al fusionar #163 (limitador compartido en Redis, que quitó el helper `FixedWindow`) y #157 (políticas de cuenta que aún lo usaban), Git las unió sin conflicto pero `sprint-05` dejó de compilar (CS0103 `FixedWindow`).
+- **Decisiones (con porqué):** (1) Mismas claves de partición (`recuperacion:` y `<política>:<sub>`) y mismos límites, para no cambiar el comportamiento. (2) Arreglo mínimo en un PR aparte para destrabar al resto.
+- **A evitar:** fusionar un PR sincronizado sin su CI cuando otro PR cambió una API que él usa; fusiones sin conflicto de texto pueden romper la compilación.
