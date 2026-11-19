@@ -809,3 +809,8 @@
 - **Decisiones (con porqué):** (1) Opción A de la tarjeta: se conserva la versión nueva y se quita una línea en vez de fijar la 5.0.0 (cambiar la versión pide el visto bueno del Tech Lead). (2) El filtro de casos sigue limitando la ejecución a las pruebas unitarias.
 - **Pendiente:** confirmar que el job corre en este PR, muta y genera reporte, y que la regla R-18 (mutación de `Knock.Hosting`) sigue aplicando.
 - **A evitar:** declarar `solution` y `test-projects` a la vez; subir la versión de dotnet-stryker sin probar el job en un PR.
+
+## 2026-11-19 · KNOCK-286 · Prueba 422 de la spec 041 ya no falla por azar
+- **Qué cambió:** las pruebas de valor inválido (crear y actualizar, CA-041-05) buscan el valor enviado solo dentro de `errors`, no en todo el cuerpo.
+- **Por qué:** el `traceId` y el `correlationId` del ProblemDetails son al azar y a veces contienen «9999», lo que hacía fallar la prueba sin ser un error del código. El 422 ya tenía el formato de la spec (`errors` por campo).
+- **A evitar:** buscar texto corto en el cuerpo completo de una respuesta que lleva identificadores aleatorios.

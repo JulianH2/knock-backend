@@ -82,8 +82,10 @@ public class Spec041CreateTests
         using var response = await HomeAndCarHttp.SendRawAsync(hosts, HttpMethod.Post, HomeAndCarHttp.Route, TokenForge.Valid(sub), json);
 
         var raw = await SecureHttp.AssertProblemAsync(response, HttpStatusCode.UnprocessableEntity);
-        System.Text.Json.JsonElement.Parse(raw).GetProperty("errors").TryGetProperty(field, out _).Should().BeTrue($"el error va en errors.{field}");
-        raw.Should().NotContain("vehiculo-raro").And.NotContain("").And.NotContain("9999");
+        var errors = System.Text.Json.JsonElement.Parse(raw).GetProperty("errors");
+        errors.TryGetProperty(field, out _).Should().BeTrue($"el error va en errors.{field}");
+        // Solo se revisa errors: el traceId y el correlationId son al azar y pueden contener "9999".
+        errors.GetRawText().Should().NotContain("vehiculo-raro").And.NotContain("").And.NotContain("9999");
         (await HomeAndCarHttp.CountAsync(hosts, sub)).Should().Be(0);
     }
 
