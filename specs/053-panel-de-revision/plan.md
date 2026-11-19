@@ -1,6 +1,6 @@
 # Plan 053 — Panel de revisión: verificaciones de identidad y reportes
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Scripts de `db/` con las colecciones e índices de §6 (idempotentes, con prueba de base de datos).

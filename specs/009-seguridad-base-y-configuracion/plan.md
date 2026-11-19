@@ -1,6 +1,6 @@
 # Plan 009 — Seguridad base y configuración
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Definir la configuración tipada y su validación al arrancar.
