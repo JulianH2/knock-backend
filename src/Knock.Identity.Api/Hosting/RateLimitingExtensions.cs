@@ -54,7 +54,7 @@ internal static class RateLimitingExtensions
 
     /// <summary>
     /// Límite por IP con el limitador del framework: política global (cualquier ruta salvo <c>/health</c> y <c>/health/ready</c>), política estricta
-    /// para <c>/api/v{n}/auth/*</c> y política propia para <c>/health/ready</c>; <c>/health</c> es la única exención. Vive en memoria del proceso (con varias réplicas el límite efectivo se multiplica). Responde 429 en ProblemDetails.
+    /// para <c>/api/v{n}/auth/*</c> y política propia para <c>/health/ready</c>; <c>/health</c> es la única exención. Usa Redis compartido y respaldo en memoria por réplica. Responde 429 en ProblemDetails.
     /// </summary>
     public static IServiceCollection AddKnockRateLimiting(this IServiceCollection services)
     {
@@ -65,7 +65,7 @@ internal static class RateLimitingExtensions
                 "RateLimiting:Global, RateLimiting:Auth and RateLimiting:Ready need a PermitLimit > 0 and a Window > 0.")
             .ValidateOnStart();
         services.AddRateLimiter(_ => { });
-        services.AddOptions<RateLimiterOptions>().Configure<IOptions<RateLimitSettings>>((options, settings) =>
+        services.AddOptions<RateLimiterOptions>().Configure<IOptions<RateLimitSettings>, IServiceProvider>((options, settings, services) =>
         {
             var global = settings.Value.Global;
             var auth = settings.Value.Auth;
@@ -78,10 +78,10 @@ internal static class RateLimitingExtensions
             options.AddPolicy(ExportPolicy, SubjectPolicy(3, TimeSpan.FromHours(1)));
             options.AddPolicy(DeletionPolicy, SubjectPolicy(5, TimeSpan.FromHours(1)));
             options.GlobalLimiter = PartitionedRateLimiter.CreateChained(
-                PartitionedRateLimiter.Create<HttpContext, string>(context => GlobalPartition(context, global, ready)),
+                PartitionedRateLimiter.Create<HttpContext, string>(context => GlobalPartition(context, global, ready, services)),
                 PartitionedRateLimiter.Create<HttpContext, string>(context =>
                     IsAuthPath(context.Request.Path)
-                        ? RateLimitPartition.GetFixedWindowLimiter($"auth:{ClientKey(context)}", _ => FixedWindow(auth))
+                        ? SharedPartition($"auth:{ClientKey(context)}", auth, services)
                         : RateLimitPartition.GetNoLimiter("outside-auth")));
             options.OnRejected = async (context, _) =>
             {
@@ -103,7 +103,7 @@ internal static class RateLimitingExtensions
             : RateLimitPartition.GetFixedWindowLimiter($"persona:{subject}", _ => FixedWindow(new RateLimitPolicySettings { PermitLimit = permitLimit, Window = window }));
 
     /// <summary>Partición del límite general: <c>/health</c> sin límite, <c>/health/ready</c> con el suyo y el resto con el global.</summary>
-    private static RateLimitPartition<string> GlobalPartition(HttpContext context, RateLimitPolicySettings global, RateLimitPolicySettings ready)
+    private static RateLimitPartition<string> GlobalPartition(HttpContext context, RateLimitPolicySettings global, RateLimitPolicySettings ready, IServiceProvider services)
     {
         var path = context.Request.Path;
         if (IsHealthPath(path))
@@ -112,8 +112,8 @@ internal static class RateLimitingExtensions
         }
 
         return IsReadyPath(path)
-            ? RateLimitPartition.GetFixedWindowLimiter($"ready:{ClientKey(context)}", _ => FixedWindow(ready))
-            : RateLimitPartition.GetFixedWindowLimiter($"global:{ClientKey(context)}", _ => FixedWindow(global));
+            ? SharedPartition($"ready:{ClientKey(context)}", ready, services)
+            : SharedPartition($"global:{ClientKey(context)}", global, services);
     }
 
     /// <summary>Ventana de la política que aplica a la ruta (respaldo de <c>Retry-After</c> cuando el limitador no da una pista).</summary>
@@ -127,13 +127,8 @@ internal static class RateLimitingExtensions
         return IsReadyPath(path) ? ready.Window : global.Window;
     }
 
-    private static FixedWindowRateLimiterOptions FixedWindow(RateLimitPolicySettings policy) => new()
-    {
-        PermitLimit = policy.PermitLimit,
-        Window = policy.Window,
-        QueueLimit = 0,
-        AutoReplenishment = true,
-    };
+    private static RateLimitPartition<string> SharedPartition(string key, RateLimitPolicySettings policy, IServiceProvider services) =>
+        RateLimitPartition.Get(key, partition => new SharedRateLimiter(services, partition, policy));
 
     private static bool IsHealthPath(PathString path) => path.Equals(_healthPath, StringComparison.OrdinalIgnoreCase);
 
