@@ -18,6 +18,58 @@ public sealed class Spec006ScalingTests
     private static readonly Uri _meUri = new("/api/v1/me", UriKind.Relative);
 
     [Fact]
+    public async Task ConcurrentRequests_TwoInstances_DoNotExceedSharedLimit_R_006_05()
+    {
+        var settings = new Dictionary<string, string?> { ["RateLimiting:Global:PermitLimit"] = "2" };
+        using var first = await IdentityApiFactory.CreateAsync(settings);
+        using var second = await IdentityApiFactory.CreateAsync(settings);
+        using var client1 = first.CreateClient();
+        using var client2 = second.CreateClient();
+        var ip = $"198.20.{RandomNumberGenerator.GetInt32(1, 255)}.{RandomNumberGenerator.GetInt32(1, 255)}";
+        client1.DefaultRequestHeaders.Add(IdentityApiFactory.RemoteIpHeader, ip);
+        client2.DefaultRequestHeaders.Add(IdentityApiFactory.RemoteIpHeader, ip);
+        var responses = await Task.WhenAll(Enumerable.Range(0, 20).Select(i => (i % 2 == 0 ? client1 : client2).GetAsync(_meUri)));
+        try
+        {
+            responses.Count(response => response.StatusCode == HttpStatusCode.Unauthorized).Should().Be(2);
+            responses.Count(response => response.StatusCode == HttpStatusCode.TooManyRequests).Should().Be(18);
+        }
+        finally
+        {
+            foreach (var response in responses)
+            {
+                response.Dispose();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task TwoInstances_ShareIpLimit_R_006_05()
+    {
+        var settings = new Dictionary<string, string?> { ["RateLimiting:Global:PermitLimit"] = "2" };
+        using var first = await IdentityApiFactory.CreateAsync(settings);
+        using var second = await IdentityApiFactory.CreateAsync(settings);
+        using var client1 = first.CreateClient();
+        using var client2 = second.CreateClient();
+        var ip = $"198.18.{RandomNumberGenerator.GetInt32(1, 255)}.{RandomNumberGenerator.GetInt32(1, 255)}";
+        client1.DefaultRequestHeaders.Add(IdentityApiFactory.RemoteIpHeader, ip);
+        client2.DefaultRequestHeaders.Add(IdentityApiFactory.RemoteIpHeader, ip);
+
+        using var one = await client1.GetAsync(_meUri);
+        using var two = await client2.GetAsync(_meUri);
+        using var three = await client1.GetAsync(_meUri);
+
+        one.StatusCode.Should().NotBe(HttpStatusCode.TooManyRequests);
+        two.StatusCode.Should().NotBe(HttpStatusCode.TooManyRequests);
+        three.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
+        three.Content.Headers.ContentType!.MediaType.Should().Be("application/problem+json");
+        var multiplexer = first.Services.GetService(typeof(StackExchange.Redis.IConnectionMultiplexer)) as StackExchange.Redis.IConnectionMultiplexer;
+        var key = "ratelimit:identity:" + Convert.ToHexStringLower(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes($"global:{ip}")));
+        (await multiplexer!.GetDatabase().KeyExistsAsync(key)).Should().BeTrue();
+        key.Should().NotContain(ip);
+    }
+
+    [Fact]
     public async Task OneInstanceDown_TheOtherServesAndTheSessionStaysValid_CA_006_01()
     {
         var database = "identity_s006_" + Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(6));
