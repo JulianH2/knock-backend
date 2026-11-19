@@ -1,6 +1,6 @@
 # Plan 012 — Versionamiento por puntos
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Escribir el script de cálculo de versiones con pruebas.

@@ -1,6 +1,6 @@
 # Plan 010 — Caché en tres niveles y paginación
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Definir la interfaz de caché y su implementación con Redis.
