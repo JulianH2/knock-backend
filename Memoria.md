@@ -803,3 +803,9 @@
 - **Decisiones (con porqué):** (1) patrones propios dentro del módulo, porque el filtro de datos personales de la spec 024 todavía no existe; cuando exista se retira esta copia o se une con ella; (2) falla cerrado: si una expresión agota su tiempo (200 ms) se oculta el texto completo; (3) once dígitos seguidos no se tocan (no son un teléfono de diez), y un número escrito con letras no se reconoce: lo atrapa la moderación de la spec 031 y el reporte de la persona.
 - **Pendiente:** la mutación del ocultador (meta de 70 %) y llamarlo desde el envío de mensajes (T-06, que además espera la moderación de la spec 031).
 - **A evitar:** tres pruebas con cuerpo idéntico y datos distintos (S4144): se juntan en una sola con varios `InlineData`; escribir «todo» en un comentario (S1135).
+## 2026-11-17 · KNOCK-282 · Stryker 5.1.0 con la solución sin proyectos de prueba
+- **Qué cambió:** `stryker-config.json` deja de declarar `test-projects`; queda solo `solution` (`Knock.slnx`) y el filtro `test-case-filter` que limita las pruebas a `Knock.UnitTest`.
+- **Por qué:** dotnet-stryker 5.1.0 (entró con un bump de Dependabot) rechaza declarar a la vez la solución y los proyectos de prueba («Test projects cannot be specified when running Stryker in solution context»), y el job informativo fallaba sin mutar nada. La 5.0.0 lo toleraba.
+- **Decisiones (con porqué):** (1) Opción A de la tarjeta: se conserva la versión nueva y se quita una línea en vez de fijar la 5.0.0 (cambiar la versión pide el visto bueno del Tech Lead). (2) El filtro de casos sigue limitando la ejecución a las pruebas unitarias.
+- **Pendiente:** confirmar que el job corre en este PR, muta y genera reporte, y que la regla R-18 (mutación de `Knock.Hosting`) sigue aplicando.
+- **A evitar:** declarar `solution` y `test-projects` a la vez; subir la versión de dotnet-stryker sin probar el job en un PR.
