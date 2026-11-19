@@ -345,6 +345,7 @@ public sealed class Spec027BusquedaStoreTests(ITestOutputHelper output)
         ["ubicacionBase"] = new BsonDocument { ["type"] = "Point", ["coordinates"] = new BsonArray { longitude, 0 } },
         ["radioAtencionKm"] = radius,
         ["coloniaBaseId"] = "colonia-demo",
+        ["usuarioId"] = ObjectId.GenerateNewId().ToString(), // índice único usuarioId_1 (spec 046) exige un valor distinto por técnico
         ["estado"] = state,
         ["oculto"] = hidden,
         ["nivelVerificacion"] = verification,
