@@ -10,10 +10,10 @@ namespace Knock.UnitTest.Media;
 /// <summary>Spec 032, R-13 y CA-19: <c>ImagenPublicaUrl</c> acepta solo la dirección que produce y rechaza cualquier otra.</summary>
 public sealed class Spec032UrlTests
 {
-    private const string Base = "https://stknockdevab12.blob.core.windows.net/imagenes-publicas";
+    private const string _base = "https://stknockdevab12.blob.core.windows.net/imagenes-publicas";
     private static readonly string _huella = new('a', 64);
 
-    private static ImagenPublicaUrl Create() => new(Microsoft.Extensions.Options.Options.Create(new ImagenesOptions { BaseUrlPublica = Base }));
+    private static ImagenPublicaUrl Create() => new(Microsoft.Extensions.Options.Options.Create(new ImagenesOptions { BaseUrlPublica = _base }));
 
     [Theory]
     [InlineData("perfil")]
@@ -23,11 +23,11 @@ public sealed class Spec032UrlTests
         var url = Create();
         var huella = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
-        url.TryParse($"{Base}/{proposito}/{huella}.jpg", out var imagen).Should().BeTrue();
+        url.TryParse($"{_base}/{proposito}/{huella}.jpg", out var imagen).Should().BeTrue();
 
         imagen!.Proposito.Should().Be(PropositoImagenExtensions.Parse(proposito));
         imagen.Huella.Should().Be(huella);
-        imagen.Url.AbsoluteUri.Should().Be($"{Base}/{proposito}/{huella}.jpg");
+        imagen.Url.AbsoluteUri.Should().Be($"{_base}/{proposito}/{huella}.jpg");
     }
 
     [Fact]

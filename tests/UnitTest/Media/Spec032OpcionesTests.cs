@@ -10,14 +10,14 @@ namespace Knock.UnitTest.Media;
 /// <summary>Spec 032, R-03 y CA-24: <c>Imagenes:BaseUrlPublica</c> se valida al arrancar y el mensaje nombra la llave sin su valor.</summary>
 public sealed class Spec032OpcionesTests
 {
-    private const string Valida = "https://stknockdevab12.blob.core.windows.net/imagenes-publicas";
+    private const string _valida = "https://stknockdevab12.blob.core.windows.net/imagenes-publicas";
 
     [Fact]
     public void Base_Url_Valida_Arranca_CA_032_24()
     {
-        using var provider = Build(Valida);
+        using var provider = Build(_valida);
 
-        provider.GetRequiredService<IOptions<ImagenesOptions>>().Value.BaseUrlPublica.Should().Be(Valida);
+        provider.GetRequiredService<IOptions<ImagenesOptions>>().Value.BaseUrlPublica.Should().Be(_valida);
     }
 
     [Theory]

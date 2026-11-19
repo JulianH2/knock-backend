@@ -14,7 +14,7 @@ namespace Knock.DatabaseTest.Scripts;
 /// </summary>
 public sealed class Spec032ImagesScriptTests
 {
-    private const string Script = "044-market-subidas-imagen.js";
+    private const string _script = "044-market-subidas-imagen.js";
 
     [Fact]
     public async Task Script_CreatesCollectionsIndexesAndTtlIdempotently_AndKeepsTheDocuments_R_19()
@@ -25,7 +25,7 @@ public sealed class Spec032ImagesScriptTests
         try
         {
             await using var tools = await MongoToolsContainer.StartAsync(documentDb, new Dictionary<string, string> { ["KNOCK_DB_MARKET"] = name });
-            var script = $"{MongoToolsContainer.DbDirectory}/{Script}";
+            var script = $"{MongoToolsContainer.DbDirectory}/{_script}";
 
             var applied = await tools.RunAsync("mongosh", "--nodb", "--quiet", "--file", script);
 
@@ -60,7 +60,7 @@ public sealed class Spec032ImagesScriptTests
         var documentDb = await DocumentDbFixture.SharedAsync();
         await using var tools = await MongoToolsContainer.StartAsync(documentDb, new Dictionary<string, string> { ["KNOCK_DB_MARKET"] = name });
 
-        var result = await tools.RunAsync("mongosh", "--nodb", "--quiet", "--file", $"{MongoToolsContainer.DbDirectory}/{Script}");
+        var result = await tools.RunAsync("mongosh", "--nodb", "--quiet", "--file", $"{MongoToolsContainer.DbDirectory}/{_script}");
 
         result.ExitCode.Should().NotBe(0);
     }
