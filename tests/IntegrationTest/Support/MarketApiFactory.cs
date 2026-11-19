@@ -51,6 +51,7 @@ internal sealed class MarketApiFactory(IReadOnlyDictionary<string, string?> sett
             ["ConnectionStrings:KnockRedis"] = redis.ConnectionString,
             ["Mongo:Databases:Catalog"] = database,
             ["Mongo:Databases:Requests"] = database,
+            ["Mongo:Databases:Tecnicos"] = database,
         };
         var factory = new MarketApiFactory(Merge(values, overrides)) { ExtraServices = configureServices };
         await EnsureRequestsIndexesAsync(factory.Database);
@@ -70,6 +71,7 @@ internal sealed class MarketApiFactory(IReadOnlyDictionary<string, string?> sett
             ["ConnectionStrings:KnockRedis"] = GatewayTestSupport.DummyRedisConnectionString,
             ["Mongo:Databases:Catalog"] = "market_offline",
             ["Mongo:Databases:Requests"] = "market_offline",
+            ["Mongo:Databases:Tecnicos"] = "market_offline",
         };
         return new MarketApiFactory(Merge(values, overrides)) { ExtraServices = configureServices };
     }

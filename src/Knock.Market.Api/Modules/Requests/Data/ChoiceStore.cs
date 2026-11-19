@@ -1,3 +1,4 @@
+using Knock.Market.Api.Common.Crypto;
 using Knock.Market.Api.Hosting;
 using Knock.Market.Api.Modules.Requests.Domain;
 using Knock.Market.Api.Modules.Requests.Services;
@@ -33,7 +34,8 @@ internal sealed class ChoiceStore(
     [FromKeyedServices(RequestsModuleExtensions.ModuleKey)] IMongoDatabase database,
     IOptions<KnockMongoOptions> mongoOptions,
     IOutbox outbox,
-    VisitCodeFactory codes)
+    VisitCodeFactory codes,
+    FieldCipher cipher)
 {
     public const string VisitsCollection = "visitas";
     private const string _stateField = "estado";
@@ -74,7 +76,7 @@ internal sealed class ChoiceStore(
         var projection = Builders<BsonDocument>.Projection.Include("nombre").Include("fotoUrl").Include("calificacion").Include("nivelVerificacion");
         if (withContact)
         {
-            projection = projection.Include("contactoPublico").Include("tallerDireccion");
+            projection = projection.Include("contactoPublico").Include("tallerDireccion").Include("demo");
         }
 
         var documents = await database.GetCollection<BsonDocument>("tecnicos")
@@ -315,7 +317,7 @@ internal sealed class ChoiceStore(
         return state == "cotizando" ? null : ChooseStatus.WithoutQuotes;
     }
 
-    private static TechnicianPublic ToTechnician(BsonDocument document)
+    private TechnicianPublic ToTechnician(BsonDocument document)
     {
         var contact = document.TryGetValue("contactoPublico", out var value) && value.IsBsonDocument ? value.AsBsonDocument : new BsonDocument();
         return new TechnicianPublic(
@@ -326,7 +328,8 @@ internal sealed class ChoiceStore(
             Text(document, "nivelVerificacion") ?? QuoteComparer.NoVerification,
             Text(contact, "telefono"),
             Text(contact, "whatsapp"),
-            Text(document, "tallerDireccion"));
+            WorkshopAddressCipher.Read(cipher, document["_id"].AsObjectId, Text(document, "tallerDireccion"),
+                document.TryGetValue("demo", out var demo) && demo.IsBoolean && demo.AsBoolean));
     }
 
     private static string? Text(BsonDocument document, string name) => document.TryGetValue(name, out var value) && value.IsString ? value.AsString : null;
