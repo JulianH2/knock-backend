@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | `atlassian` (MCP oficial de Atlassian, remoto) | Leer incidencias de Jira del proyecto KNOCK (`getJiraIssue`, `searchJiraIssuesUsingJql` y otras de lectura) | **Solo lectura.** Las herramientas de escritura están denegadas | OAuth 2.1 de cada persona con su cuenta de Atlassian; el repositorio no guarda tokens | José Julián Hernández Hernández, 2026-11-04 (spec 019) |
 
-Dirección del servidor: `https://mcp.atlassian.com/v1/mcp/authv2` (HTTP remoto). Según la sección 9 de la spec, la dirección y las herramientas se confirman con la documentación oficial de Atlassian al implementar; **esa confirmación sigue pendiente** y es parte de la prueba manual (T-04).
+Dirección del servidor: `https://mcp.atlassian.com/v2/mcp` (HTTP remoto). Según la sección 9 de la spec, la dirección y las herramientas se confirman con la documentación oficial de Atlassian al implementar; **esa confirmación sigue pendiente** y es parte de la prueba manual (T-04).
 
 ## Lo que no se usa, y por qué
 
