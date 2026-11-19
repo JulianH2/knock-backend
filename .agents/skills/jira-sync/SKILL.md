@@ -8,9 +8,10 @@ description: Mantiene la tarjeta de Jira (KNOCK-N) al día con el estado real de
 > Regla del equipo (cierre del Sprint 4): Jira refleja lo que de verdad pasa en GitHub, sin depender de acordarse. La clave `KNOCK-N` en la rama, el título del PR y los commits es lo que lo hace posible.
 
 ## Antes de empezar
-1. El conector MCP de Atlassian debe estar conectado y autorizado (en Claude Code: `claude mcp add --transport sse atlassian https://mcp.atlassian.com/v1/sse` y `/mcp` para autorizar). Prueba leyendo la tarjeta de tu rama. **Si no puedes leerla, detente y dilo**: no inventes el estado de una tarjeta.
+1. El conector MCP de Atlassian debe estar conectado y autorizado con la sesión de la persona que invoca la skill (en Claude Code: `claude mcp add --transport http atlassian https://mcp.atlassian.com/v2/mcp` y `/mcp` para autorizar; la dirección `/v1/sse` está obsoleta y se retira el 2027-03-01). Prueba leyendo la tarjeta de tu rama. **Si no puedes leerla, detente y dilo**: no inventes el estado de una tarjeta.
 2. Saca la clave `KNOCK-N` de la rama (`git branch --show-current`, formato `<tipo>/KNOCK-<N>-<english-description>`), del título del PR (`KNOCK-N · …`) y de los commits (`(KNOCK-N)`). **Si no hay clave o las fuentes no coinciden, no muevas nada**: avisa y pide la clave real.
 3. Lee la tarjeta antes de moverla: estado actual, responsable y etiquetas.
+4. `docs/mcp.md` y `AGENTS.md` dejan el conector en solo lectura y con las herramientas de escritura denegadas por defecto: mover o comentar la tarjeta solo se hace cuando la persona que invoca la skill (el Tech Lead o quien él autorice) aprueba esas escrituras en su propia sesión. Si están denegadas y no hay aprobación, no escribas: dime qué movimiento o comentario haría y detente.
 
 ## Qué movimiento hace cada hecho
 | Hecho en GitHub | Qué haces en Jira |
