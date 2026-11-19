@@ -966,3 +966,9 @@
 - **Por qué:** al fusionar #163 (limitador compartido en Redis, que quitó el helper `FixedWindow`) y #157 (políticas de cuenta que aún lo usaban), Git las unió sin conflicto pero `sprint-05` dejó de compilar (CS0103 `FixedWindow`).
 - **Decisiones (con porqué):** (1) Mismas claves de partición (`recuperacion:` y `<política>:<sub>`) y mismos límites, para no cambiar el comportamiento. (2) Arreglo mínimo en un PR aparte para destrabar al resto.
 - **A evitar:** fusionar un PR sincronizado sin su CI cuando otro PR cambió una API que él usa; fusiones sin conflicto de texto pueden romper la compilación.
+
+## 2026-11-19 · KNOCK-291 · Variables de Mensajería en Terraform
+- **Qué cambió:** el bloque `messaging` de `deploy/apps/main.tf` declara `Chat__Habilitado = "true"` y `Services__Market__BaseUrl` (dirección interna de Mercado).
+- **Por qué:** `Chat:Habilitado` no tiene valor por omisión (spec 026) y sin él Mensajería no arranca con el código del chat; `Services:Market:BaseUrl` es la dirección que usa para consultar a Mercado.
+- **Decisiones (con porqué):** (1) `true` en el despliegue: el chat es parte de la entrega del sprint 5; apagarlo es cambiar este valor. (2) Solo valores no secretos; ninguna llave nueva.
+- **A evitar:** agregar una opción obligatoria al servicio sin declararla en Terraform en el mismo cambio; el plan lo habría mostrado antes de promover.
