@@ -1,5 +1,5 @@
 # Sin tokens: la sesión es de cada persona (codex mcp login atlassian). Lista de herramientas: docs/mcp.md.
 [mcp_servers.atlassian]
-url = "https://mcp.atlassian.com/v1/mcp/authv2"
+url = "https://mcp.atlassian.com/v2/mcp"
 enabled_tools = ["atlassianUserInfo", "getAccessibleAtlassianResources", "getVisibleJiraProjects", "getJiraIssue", "searchJiraIssuesUsingJql", "getJiraProjectIssueTypesMetadata", "getJiraIssueTypeMetaWithFields", "getTransitionsForJiraIssue", "getJiraIssueRemoteIssueLinks", "getIssueLinkTypes", "lookupJiraAccountId"]
 disabled_tools = ["addCommentToJiraIssue", "addWorklogToJiraIssue", "createJiraIssue", "editJiraIssue", "transitionJiraIssue", "createIssueLink", "createConfluencePage", "createConfluenceFooterComment", "createConfluenceInlineComment", "updateConfluencePage", "createCompassComponent", "createCompassComponentRelationship", "createCompassCustomFieldDefinition", "addTeamworkGraphContext"]
