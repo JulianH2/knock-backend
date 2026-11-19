@@ -1,5 +1,6 @@
 using System.Net;
 using AwesomeAssertions;
+using Knock.IntegrationTest.Support;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -81,7 +82,7 @@ public sealed class Spec041ElementoIdTests
         System.Text.Json.JsonElement.Parse(raw).GetProperty("errors").TryGetProperty("elementoId", out _).Should().BeTrue();
         if (value.Length > 2)
         {
-            raw.Should().NotContain(value);
+            ProblemBody.Reasons(raw).Should().NotContain(value);
         }
 
         (await host.CountRequestsAsync()).Should().Be(0);

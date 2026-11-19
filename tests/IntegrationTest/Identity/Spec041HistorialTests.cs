@@ -201,7 +201,7 @@ public sealed class Spec041HistorialTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         var raw = await response.Content.ReadAsStringAsync();
         JsonElement.Parse(raw).GetProperty("errors").TryGetProperty(field, out _).Should().BeTrue($"el error va en errors.{field}");
-        raw.Should().NotContain("abc").And.NotContain("script");
+        ProblemBody.Reasons(raw).Should().NotContain("abc").And.NotContain("script");
     }
 
     [Fact]

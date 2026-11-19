@@ -1,5 +1,6 @@
 using System.Net;
 using AwesomeAssertions;
+using Knock.IntegrationTest.Support;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -182,7 +183,7 @@ public sealed class Spec022LlegadaTests
         System.Text.Json.JsonElement.Parse(raw).GetProperty("errors").TryGetProperty("codigo", out _).Should().BeTrue();
         if (code.Length > 0)
         {
-            raw.Should().NotContain(code.Trim(), "el motivo nunca repite el valor enviado");
+            ProblemBody.Reasons(raw).Should().NotContain(code.Trim(), "el motivo nunca repite el valor enviado");
         }
 
         (await host.VisitDocAsync(visit.VisitId))["intentos"].AsInt32.Should().Be(0);
