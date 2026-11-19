@@ -977,3 +977,7 @@
 - **Qué cambió:** `.mcp.json`, `.vscode/mcp.json`, `opencode.json`, `.codex/config.toml` y `docs/mcp.md` apuntan a `https://mcp.atlassian.com/v2/mcp`. Solo cambió la dirección: mismo transporte y mismos permisos (lectura permitida, escritura denegada).
 - **Por qué:** la dirección `/v1/mcp/authv2` está deprecada y Atlassian la retira el 2027-03-01.
 - **A evitar:** dejar direcciones antiguas del conector en configuraciones de agentes; al cambiar de endpoint, revisar los cinco archivos a la vez y no tocar la lista de herramientas.
+## 2026-11-19 · KNOCK-87 · Borrador de la spec 057 (borrado de fotos de verificación)
+- **Qué cambió:** `specs/057-borrado-de-fotos-de-verificacion/` (spec, plan, task y gates) en estado Borrador y su fila en `specs/README.md`. Sin código.
+- **Decisiones (con porqué):** (1) usa los tipos de tarea `AvisarAlVerificador` y `BorrarFotosDeVerificacion` de la spec 054, no los nombres de la ficha, para no duplicar el catálogo. (2) La llave se destruye antes que los blobs, así lo que falte queda ilegible. (3) Incluye la baja de cuenta porque la spec 025 §2.3 la difiere a HU-068. (4) Casos `TC-HU-068-KK` de la ficha; `sdd_lint.py --trace` de las specs numeradas solo reconoce `CA-NN`.
+- **A evitar:** implementar antes de aprobar y de tener la spec 025 (almacén cifrado), 053 y 054 en Identidad; dudas abiertas en §8 (correo, llave en Key Vault, respaldos).
