@@ -1,13 +1,13 @@
 using Asp.Versioning;
 using Knock.Market.Api.Common.Errors;
 using Knock.Market.Api.Hosting;
+using Knock.Market.Api.Modules.Tecnicos.Controllers;
 using Knock.Market.Api.Modules.Tecnicos.Domain;
 using Knock.Market.Api.Modules.Tecnicos.Dtos;
 using Knock.Market.Api.Modules.Tecnicos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.AspNetCore.WebUtilities;
 
 namespace Knock.Market.Api.Modules.Tecnicos.Controllers.V1;
 
@@ -18,9 +18,10 @@ namespace Knock.Market.Api.Modules.Tecnicos.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/tecnicos")]
-internal sealed class TecnicosController(TechnicianRegistrationService registration, TechnicianProfileService profiles) : ControllerBase
+internal sealed class TecnicosController(TechnicianRegistrationService registration, TechnicianProfileService profiles, TechnicianLookupService lookup)
+    : ControllerBase
 {
-    private const string _problemJson = "application/problem+json";
+    private const string _problemJson = TechnicianProblems.ProblemJson;
 
     /// <summary>Registra a la persona del token como técnico (TEC-01): nace <c>activo</c>, sin verificación y con «Disponible hoy» apagado.</summary>
     [HttpPost]
@@ -71,16 +72,37 @@ internal sealed class TecnicosController(TechnicianRegistrationService registrat
         return profile is null ? Rule(StatusCodes.Status404NotFound, TechnicianRules.TechnicianNotFoundCode) : Ok(profile);
     }
 
-    /// <summary>Regla de negocio en ProblemDetails, con <c>code</c> y, si se nombra un campo, <c>errors</c> con un motivo genérico que nunca repite el valor.</summary>
-    private ObjectResult Rule(int status, string code, string? field = null)
+    /// <summary>Sugerencias de oficios y negocios mientras se escribe (TEC-03): hasta 8, públicas y sin registrar el texto.</summary>
+    [HttpGet("autocompletar")]
+    [AllowAnonymous]
+    [ProducesResponseType<AutocompleteResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity, _problemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests, _problemJson)]
+    public async Task<IActionResult> Autocomplete([FromQuery] AutocompleteQuery query, CancellationToken cancellationToken)
     {
-        var problem = ProblemDetailsFactory.CreateProblemDetails(HttpContext, status, ReasonPhrases.GetReasonPhrase(status));
-        problem.Extensions["code"] = code;
-        if (field is not null)
-        {
-            problem.Extensions["errors"] = new Dictionary<string, string[]> { [field] = [ValidationFilter.GenericReason] };
-        }
-
-        return new ObjectResult(problem) { StatusCode = status, ContentTypes = { _problemJson } };
+        Response.Headers.CacheControl = "public, max-age=30";
+        return Ok(await lookup.AutocompleteAsync(query.Q!, cancellationToken));
     }
+
+    /// <summary>Dice si el técnico atiende la colonia de la persona (TEC-06). 404 si el técnico no existe o está oculto; 422 si la colonia no está en el catálogo.</summary>
+    [HttpGet("{id}/llega-a-mi-colonia")]
+    [Authorize]
+    [ProducesResponseType<CoverageResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized, _problemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, _problemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity, _problemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests, _problemJson)]
+    public async Task<IActionResult> Coverage([FromRoute] TechnicianIdRoute route, [FromQuery] CoverageQuery query, CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "private, no-store";
+        var outcome = await lookup.CoverageAsync(MongoDB.Bson.ObjectId.Parse(route.Id), query.Colonia!, cancellationToken);
+        return outcome.Status switch
+        {
+            CoverageStatus.Found => Ok(new CoverageResponse(outcome.Atiende)),
+            CoverageStatus.TechnicianNotFound => Rule(StatusCodes.Status404NotFound, TechnicianRules.TechnicianNotFoundCode),
+            _ => Rule(StatusCodes.Status422UnprocessableEntity, ErrorCodes.ColoniaNotFoundCode, "colonia"),
+        };
+    }
+
+    private ObjectResult Rule(int status, string code, string? field = null) => TechnicianProblems.Rule(this, status, code, field);
 }

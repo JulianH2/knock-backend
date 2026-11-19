@@ -18,4 +18,7 @@ internal static class ErrorCodes
 
     /// <summary>Colonia que no está en el catálogo (solicitudes, spec 020; registro de técnicos, spec 046).</summary>
     public const string ColoniaNotFoundCode = "colonia_not_found";
+
+    /// <summary>La cuenta no tiene perfil de técnico (llegada a la visita, spec 022; disponibilidad, spec 046).</summary>
+    public const string NotATechnicianCode = "not_a_technician";
 }

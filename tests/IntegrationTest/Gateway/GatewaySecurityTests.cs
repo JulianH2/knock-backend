@@ -20,6 +20,7 @@ public sealed class GatewaySecurityTests
 {
     private static readonly Uri _protectedUri = new("/api/v1/colonias/en-punto", UriKind.Relative);
     private static readonly Uri _publicCatalogUri = new("/api/v1/oficios", UriKind.Relative);
+    private static readonly Uri _searchUri = new("/api/v1/busqueda?q=boiler", UriKind.Relative);
 
     private static async Task<GatewayHost> StartWithRedisAsync(Dictionary<string, string?>? settings = null)
     {
@@ -248,6 +249,53 @@ public sealed class GatewaySecurityTests
         using var otherUser = await GetAsync(host.Client, _protectedUri, other);
         statuses.Should().Equal(HttpStatusCode.OK, HttpStatusCode.OK, HttpStatusCode.TooManyRequests);
         otherUser.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task SearchRoute_HasItsOwnLimitPerPerson_AndNeedsASession_CA_027_16()
+    {
+        await using var host = await StartWithRedisAsync(new Dictionary<string, string?>
+        {
+            ["RateLimiting:Ip:PermitLimit"] = "1000",
+            ["RateLimiting:Auth:PermitLimit"] = "1000",
+            ["RateLimiting:User:PermitLimit"] = "1000",
+            ["RateLimiting:Search:PermitLimit"] = "2",
+            ["RateLimiting:Search:Window"] = "00:01:00",
+        });
+        var searcher = GatewayTestSupport.IssueToken(sub: Guid.NewGuid().ToString("D"));
+        var other = GatewayTestSupport.IssueToken(sub: Guid.NewGuid().ToString("D"));
+        var statuses = new List<HttpStatusCode>();
+        HttpResponseMessage? limited = null;
+
+        try
+        {
+            for (var i = 0; i < 3; i++)
+            {
+                var response = await GetAsync(host.Client, _searchUri, searcher);
+                statuses.Add(response.StatusCode);
+                if (i < 2)
+                {
+                    response.Dispose();
+                }
+                else
+                {
+                    limited = response;
+                }
+            }
+
+            using var otherUser = await GetAsync(host.Client, _searchUri, other);
+            using var elsewhere = await GetAsync(host.Client, _protectedUri, searcher);
+            using var withoutToken = await GetAsync(host.Client, _searchUri);
+            statuses.Should().Equal(HttpStatusCode.OK, HttpStatusCode.OK, HttpStatusCode.TooManyRequests);
+            limited!.Headers.RetryAfter.Should().NotBeNull("el 429 dice cuándo reintentar");
+            otherUser.StatusCode.Should().Be(HttpStatusCode.OK, "el contador es por persona");
+            elsewhere.StatusCode.Should().Be(HttpStatusCode.OK, "la búsqueda no gasta el límite de las demás rutas");
+            withoutToken.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+        finally
+        {
+            limited?.Dispose();
+        }
     }
 
     [Fact]

@@ -26,6 +26,10 @@ internal static class TechnicianRules
 
     public static readonly IReadOnlySet<int> Radii = new HashSet<int> { 3, 5, 8, 12 };
 
+    /// <summary>Visible para clientes: <c>activo</c>, no oculto y sin un ocultamiento vigente de la moderación (R-42).</summary>
+    public static bool IsVisible(string estado, bool oculto, DateTime? ocultoHasta, DateTime nowUtc) =>
+        estado == ActiveState && !oculto && (ocultoHasta is null || ocultoHasta <= nowUtc);
+
     public static bool IsKnownAttention(string? attention) => attention is Taller or Domicilio or Ambos;
 
     public static bool UsesWorkshop(string? attention) => attention is Taller or Ambos;
