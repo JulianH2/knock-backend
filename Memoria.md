@@ -1,5 +1,9 @@
 # Memoria — knock-backend
 
+## 2026-11-19 — KNOCK-186: soporte compartido de trazas de la spec 035
+- **Cambio:** `QueryTraceCapture` reúne el exportador en memoria y las aserciones de consulta ausente en `tests/IntegrationTest/Support/QueryLeakDetector.cs`, archivo ya enlazado por SecurityTest; no se agregó referencia entre proyectos ni dependencia. Se conservan las comprobaciones y el plazo de espera.
+- **Verificación:** build Release sin restaurar y formato de los tres archivos C# correctos; codemap actualizado y `--check` correcto. jscpd acotado ya no muestra los dos clones de la spec 035, pero devuelve error por un clon entre `CorrelationAcrossServicesTests.cs` y `GatewayRoutingTests.cs`. No se ejecutaron pruebas de integración por instrucción.
+
 ## 2026-11-19 — KNOCK-186: HTTP y trazas de T-04
 - **Resultado:** las fábricas existentes prueban `instance` y trazas exportadas en gateway (401), Identidad (400), Mercado (422) y Mensajería (401); el span se espera mediante una señal del exportador, no una pausa. El fallo existente del localizador de Mercado provoca un 500 y comprueba el ProblemDetails y su registro sin consulta.
 - **Pendiente:** no se encontró una ruta existente de Mensajería que produzca 400/422 con ProblemDetails; el 401 no satisface literalmente esa petición. No se halló un mecanismo existente equivalente para provocar 500 en los otros tres hosts. CA-08 sigue para una persona; T-04 queda parcial.

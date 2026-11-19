@@ -1,5 +1,3 @@
-using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Net;
 using AwesomeAssertions;
 using Knock.IntegrationTest.Support;
@@ -7,8 +5,6 @@ using Knock.SecurityTest.Support;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using OpenTelemetry;
-using OpenTelemetry.Trace;
 using Xunit;
 
 namespace Knock.SecurityTest.Logging;
@@ -75,11 +71,8 @@ public sealed class Spec035RegistrosTests
         WebApplicationFactory<T> factory, HttpMethod method, string path, HttpStatusCode status, string? json = null, string? bearer = null)
         where T : class
     {
-        var traces = new ConcurrentBag<Dictionary<string, object?>>();
-        var exported = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var host = factory.WithWebHostBuilder(builder => builder.ConfigureServices(services =>
-            services.ConfigureOpenTelemetryTracerProvider(tracing =>
-                tracing.AddProcessor(new SimpleActivityExportProcessor(new TraceExporter(traces, exported))))));
+        var capture = new QueryTraceCapture();
+        using var host = factory.WithWebHostBuilder(builder => builder.ConfigureServices(capture.Configure));
         using var client = host.CreateClient();
         var url = path + "?q=secreto&token=x";
         using var response = json is null
@@ -89,33 +82,7 @@ public sealed class Spec035RegistrosTests
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/problem+json");
         var body = await SecureHttp.ReadJsonAsync(response);
         body.GetProperty("instance").GetString().Should().Be(path);
-        await exported.Task.WaitAsync(TimeSpan.FromSeconds(10));
-        var span = traces.Should().ContainSingle().Which;
-        span.Should().NotContainKey("url.query");
-        foreach (var key in new[] { "url.full", "http.target" })
-        {
-            if (span.TryGetValue(key, out var value))
-            {
-                value?.ToString().Should().NotContain("?").And.NotContain("secreto").And.NotContain("token=x");
-            }
-        }
-    }
-
-    private sealed class TraceExporter(ConcurrentBag<Dictionary<string, object?>> traces, TaskCompletionSource exported) : BaseExporter<Activity>
-    {
-        public override ExportResult Export(in Batch<Activity> batch)
-        {
-            foreach (var activity in batch)
-            {
-                if (activity.Kind == ActivityKind.Server)
-                {
-                    traces.Add(activity.TagObjects.ToDictionary(tag => tag.Key, tag => tag.Value, StringComparer.Ordinal));
-                    exported.TrySetResult();
-                }
-            }
-
-            return ExportResult.Success;
-        }
+        await capture.AssertNoQueryAsync();
     }
 
     [Fact]
