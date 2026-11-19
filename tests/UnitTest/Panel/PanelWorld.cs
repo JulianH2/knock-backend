@@ -36,14 +36,34 @@ internal sealed class NoHttpContext : IHttpContextAccessor
     public HttpContext? HttpContext { get; set; }
 }
 
+/// <summary>Verificador de Firebase de pruebas: acepta solo los <c>idToken</c> registrados.</summary>
+internal sealed class FakeFirebaseVerifier : IFirebaseIdTokenVerifier
+{
+    public Dictionary<string, FirebaseIdentity> Tokens { get; } = [];
+
+    public bool Unavailable { get; set; }
+
+    public Task<FirebaseIdentity?> VerifyAsync(string idToken, CancellationToken cancellationToken)
+    {
+        if (Unavailable)
+        {
+            throw new HttpRequestException("https://www.googleapis.com/ no responde");
+        }
+
+        return Task.FromResult(Tokens.GetValueOrDefault(idToken));
+    }
+}
+
 /// <summary>Todos los dobles del panel y los servicios armados sobre ellos, con datos ficticios.</summary>
 internal sealed class PanelWorld
 {
     public const string Origin = "https://panel.example";
     public const string Phone = "+525555550211";
     public const string OtherPhone = "+525555550212";
-    public const string AppSub = "11111111-1111-8111-8111-111111111111";
-    public const string OtherAppSub = "22222222-2222-8222-8222-222222222222";
+    public const string Uid = "uid-ana";
+    public const string OtherUid = "uid-beto";
+    public static readonly string AppSub = UserIdDerivation.Derive(Uid).ToString("D");
+    public static readonly string OtherAppSub = UserIdDerivation.Derive(OtherUid).ToString("D");
 
     public PanelWorld(string environment = "Development")
     {
@@ -58,6 +78,10 @@ internal sealed class PanelWorld
         AppAccounts.Users.Add(new UserAccount("665f1b2c3d4e5f6071829301", AppSub, AccountState.Active, true, Phones.Hash(Phone).Value));
         Audit = new AuditoriaPanel(AuditStore, new PanelIpHasher(PhoneProtectionTestKeys.Keys()), new NoHttpContext(), Clock, NullLogger<AuditoriaPanel>.Instance);
         Admin = new PanelAdminService(Accounts, Sessions, Invitations, Cache, AppAccounts, Cancelled, Phones, Totp, Audit, Clock);
+        Issuer = new PanelTokenIssuer(Settings, Clock);
+        SessionService = new SesionPanelService(Sessions, Cancelled, Issuer, Clock, NullLogger<SesionPanelService>.Instance);
+        Access = new AccesoPanelService(Verifier, Accounts, AppAccounts, Challenges, Totp, SessionService, Audit, Settings, Clock);
+        Activation = new ActivacionPanelService(Invitations, Accounts, Cache, Totp, Audit, Settings, Clock);
     }
 
     public PanelClock Clock { get; }
@@ -90,11 +114,33 @@ internal sealed class PanelWorld
 
     public PanelAdminService Admin { get; }
 
+    public FakeFirebaseVerifier Verifier { get; } = new();
+
+    public PanelTokenIssuer Issuer { get; }
+
+    public SesionPanelService SessionService { get; }
+
+    public AccesoPanelService Access { get; }
+
+    public ActivacionPanelService Activation { get; }
+
+    /// <summary>Registra un <c>idToken</c> ficticio que el verificador acepta para el <c>uid</c> y el celular dados.</summary>
+    public string TokenFor(string uid = Uid, string phone = Phone)
+    {
+        var token = "idtoken-" + uid;
+        Verifier.Tokens[token] = new FirebaseIdentity(uid, phone);
+        return token;
+    }
+
+    /// <summary>Código TOTP vigente para el secreto, según el reloj de pruebas.</summary>
+    public string CurrentCode(byte[] secret, int stepOffset = 0) => TotpService.CodeFor(secret, TotpService.StepOf(Clock.GetUtcNow()) + stepOffset);
+
     public PanelCli Cli(FakePanelConsole console) => new(Admin, Settings, Environment, console);
 
     /// <summary>Crea una cuenta del panel ya lista para entrar: TOTP configurado con el secreto dado.</summary>
-    public CuentaPanel SeedAccount(string sub = AppSub, string[]? roles = null, byte[]? secret = null)
+    public CuentaPanel SeedAccount(string? sub = null, string[]? roles = null, byte[]? secret = null)
     {
+        sub ??= AppSub;
         var protectedSecret = Totp.Protect(secret ?? TotpService.GenerateSecret(), sub);
         var account = new CuentaPanel(
             Guid.NewGuid().ToString("N")[..24], sub, "Ana de prueba", roles ?? [PanelRoles.Administrador], PanelCuentaEstado.Activa, 1,
