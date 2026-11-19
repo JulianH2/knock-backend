@@ -9,6 +9,9 @@ internal sealed class CatalogApi(NeighborhoodLocator locator, CatalogStore store
 {
     public string ModuleName => CatalogModuleExtensions.ModuleKey;
 
+    public async Task<IReadOnlyList<(string Clave, string Nombre)>> ListActiveTradesAsync(CancellationToken cancellationToken) =>
+        [.. (await store.FindActiveOficiosAsync(cancellationToken)).Select(o => (o.Clave, o.Nombre))];
+
     public Task<(double Latitude, double Longitude)?> FindNeighborhoodCenterAsync(string coloniaId, CancellationToken cancellationToken) =>
         ObjectId.TryParse(coloniaId, out var id) ? store.FindCenterAsync(id, cancellationToken) : Task.FromResult<(double, double)?>(null);
 

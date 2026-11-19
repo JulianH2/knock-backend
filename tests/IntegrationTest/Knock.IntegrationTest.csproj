@@ -11,6 +11,7 @@
     <PackageReference Include="AwesomeAssertions" Version="9.6.0" />
     <PackageReference Include="coverlet.collector" Version="10.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="11.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="11.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="Testcontainers" Version="4.16.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
@@ -21,6 +22,7 @@
     <!-- Alias: Identity.Api, Market.Api y Gateway declaran un Program global; el alias evita la ambigüedad en este proyecto. -->
     <ProjectReference Include="..\..\src\Knock.Identity.Api\Knock.Identity.Api.csproj" Aliases="IdentityApi" />
     <ProjectReference Include="..\..\src\Knock.Market.Api\Knock.Market.Api.csproj" Aliases="MarketApi" />
+    <ProjectReference Include="..\..\src\Knock.Messaging.Api\Knock.Messaging.Api.csproj" Aliases="MessagingApi" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,6 +39,7 @@
     <!-- Media (spec 013, OI-2): pruebas de integración de los servicios internos contra Azurite, sin endpoints.
          Alias: Market.Api y Gateway declaran un Program global; el alias evita la ambigüedad. -->
     <ProjectReference Include="..\..\src\Knock.Market.Api\Knock.Market.Api.csproj" Aliases="MarketApi" />
+    <ProjectReference Include="..\..\src\Knock.Messaging.Api\Knock.Messaging.Api.csproj" Aliases="MessagingApi" />
   </ItemGroup>
 
 </Project>
