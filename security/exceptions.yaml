@@ -305,3 +305,16 @@ excepciones:
     creada: 2026-11-15
     vence: 2027-02-13
     plan: mover el contador y el limitador a la biblioteca técnica compartida de KNOCK-251, quitar los marcadores y las huellas de la línea base de clones y retirar esta excepción antes de vencer.
+  - id: EXC-026
+    herramienta: trivy
+    regla: CVE-2026-97054 (HIGH, stdlib de Go 1.27.3; corregido en 1.27.4) en usr/bin/pebble de la imagen base mcr.microsoft.com/dotnet/aspnet:11.0
+    alcance: solo ese CVE en .trivyignore, para las imágenes de Gateway, Identidad, Mercado y Mensajería, que usan esa imagen base; cualquier otro hallazgo sigue bloqueando
+    justificacion: >-
+      Trivy 0.76.1 bloquea el chequeo Contenedor de los PR desde el 2026-11-19 porque la base aspnet:11.0 (construida por Microsoft el 2026-11-10) trae el binario pebble compilado con Go 1.27.3.
+      El binario es una herramienta de la imagen que nuestras APIs no ejecutan, y el CVE trata de servidores HTTP/1 con MaxBytesReader. Aún no existe una imagen base corregida y el sprint 5 cierra el 2026-11-22.
+      Decisión del líder del 2026-11-19: aceptar el hallazgo con vencimiento corto en lugar de esperar la imagen. Evidencia: corrida de ci-pr del 2026-11-19 (ejemplo: PR #158, job Contenedor de Gateway,
+      «Total: 1 (HIGH: 1)» en usr/bin/pebble).
+    responsable: José Julián Hernández Hernández
+    creada: 2026-11-19
+    vence: 2026-12-03
+    plan: cuando Microsoft publique una aspnet:11.0 con Go 1.27.4 o superior, volver a correr el CI, quitar la línea de .trivyignore y retirar esta excepción (KNOCK-290); si no hay imagen corregida antes de vencer, se revisa o se renueva con la decisión del líder.
