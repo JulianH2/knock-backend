@@ -804,3 +804,9 @@
 - **Decisiones (con porqué):** (1) Opción A de la tarjeta: se conserva la versión nueva y se quita una línea en vez de fijar la 5.0.0 (cambiar la versión pide el visto bueno del Tech Lead). (2) El filtro de casos sigue limitando la ejecución a las pruebas unitarias.
 - **Pendiente:** confirmar que el job corre en este PR, muta y genera reporte, y que la regla R-18 (mutación de `Knock.Hosting`) sigue aplicando.
 - **A evitar:** declarar `solution` y `test-projects` a la vez; subir la versión de dotnet-stryker sin probar el job en un PR.
+
+## 2026-11-19 — KNOCK-66: política de búsqueda del gateway (spec 027, T-06)
+- **Estado:** el gateway limita `GET /api/v1/busqueda` a 30 peticiones por minuto por `sub` (`RateLimiting:Search`, contador `ratelimit:busqueda:{sub}` en Redis con el mismo script atómico de la spec 009) y la enruta a Mercado con la política de sesión y CORS `knock` (ruta `mercado-busqueda`). Al pasarse responde 429 con `Retry-After`; si Redis no responde, 503. `docs/rate-limit-matrix.md` tiene la fila nueva. Prueba: `GatewaySecurityTests.SearchRoute_HasItsOwnLimitPerPerson_AndNeedsASession_CA_027_16`.
+- **Decisiones (con porqué):** (1) el contador de la búsqueda se suma al de usuario (120 por minuto), así que una búsqueda gasta de los dos y el límite de usuario sigue valiendo para todas las rutas; (2) `IsApiPath` reemplaza al análisis de ruta propio de `IsAuthPath` para no duplicarlo.
+- **Pendiente:** el endpoint `GET /api/v1/busqueda` en Mercado es del #118; hasta que se fusione, la ruta responde lo que Mercado responda (404). Ese PR debe quitar la fila «propuesta pendiente T-06» de la matriz de límites.
+- **A evitar:** abrir una ruta de consulta masiva (padrón de técnicos) sin un límite propio por persona.
