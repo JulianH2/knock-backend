@@ -49,10 +49,11 @@ internal static class KnockApplicationExtensions
         }
 
         app.UseMiddleware<CorsMiddleware>();
+        // La autenticación va antes del limitador para que las políticas por persona (spec 039) lean el `sub`; el 401 lo produce la autorización.
+        app.UseAuthentication();
         app.UseRateLimiter();
         app.UseMiddleware<RequestBodyLimitMiddleware>();
         app.UseMiddleware<JsonCompressionMiddleware>();
-        app.UseAuthentication();
         app.UseAuthorization();
         // /health: vida (spec 001, igual que el gateway y Messaging); /health/ready: dependencias de datos (spec 003).
         app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "identidad" }));
