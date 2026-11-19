@@ -54,7 +54,7 @@ internal sealed class TrustedTechniciansController(TrustService service) : Contr
         {
             TrustSaveStatus.Created => Created(new Uri($"/api/v1/me/tecnicos-confianza/{route.TecnicoId}", UriKind.Relative), outcome.Technician),
             TrustSaveStatus.AlreadySaved => Ok(outcome.Technician),
-            _ => Rule(StatusCodes.Status404NotFound, TrustErrorCodes.TechnicianNotFoundCode),
+            _ => Rule(StatusCodes.Status404NotFound, TrustErrorCodes.TechnicianNotFound),
         };
     }
 

@@ -9,7 +9,8 @@ namespace Knock.Market.Api.Modules.Trust.Domain;
 /// <summary>Códigos de error de negocio de los técnicos de confianza (spec 042, §5). En inglés y <c>snake_case</c>, sin datos de nadie.</summary>
 internal static class TrustErrorCodes
 {
-    public const string TechnicianNotFoundCode = "technician_not_found";
+    /// <summary>Mismo código que da Técnicos (spec 046): no se declara dos veces (spec 002, CA-07).</summary>
+    public const string TechnicianNotFound = Knock.Market.Api.Modules.Tecnicos.Domain.TechnicianRules.TechnicianNotFoundCode;
     public const string TrustedTechnicianNotFoundCode = "trusted_technician_not_found";
     public const string InvalidCursorCode = "invalid_trusted_cursor";
 }

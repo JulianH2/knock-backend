@@ -52,6 +52,7 @@ internal sealed class MarketApiFactory(IReadOnlyDictionary<string, string?> sett
             ["Mongo:Databases:Catalog"] = database,
             ["Mongo:Databases:Requests"] = database,
             ["Mongo:Databases:Trust"] = database,
+            ["Mongo:Databases:Tecnicos"] = database,
         };
         var factory = new MarketApiFactory(Merge(values, overrides)) { ExtraServices = configureServices };
         await EnsureRequestsIndexesAsync(factory.Database);
@@ -72,6 +73,7 @@ internal sealed class MarketApiFactory(IReadOnlyDictionary<string, string?> sett
             ["Mongo:Databases:Catalog"] = "market_offline",
             ["Mongo:Databases:Requests"] = "market_offline",
             ["Mongo:Databases:Trust"] = "market_offline",
+            ["Mongo:Databases:Tecnicos"] = "market_offline",
         };
         return new MarketApiFactory(Merge(values, overrides)) { ExtraServices = configureServices };
     }

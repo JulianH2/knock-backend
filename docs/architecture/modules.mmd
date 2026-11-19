@@ -1,6 +1,8 @@
 graph LR
   Assistant["Assistant"]
   Catalog["Catalog"]
+  Chat["Chat"]
+  Conversaciones["Conversaciones"]
   Knock_Contracts["Knock.Contracts"]
   Knock_Gateway["Knock.Gateway"]
   Knock_Identity_Api["Knock.Identity.Api"]
@@ -8,15 +10,21 @@ graph LR
   Knock_Messaging_Api["Knock.Messaging.Api"]
   Media["Media"]
   Requests["Requests"]
+  Safety["Safety"]
   Sesiones["Sesiones"]
   Tecnicos["Tecnicos"]
   Trust["Trust"]
   Usuarios["Usuarios"]
+  Knock_Identity_Api -->|1| Safety
   Knock_Identity_Api -->|2| Sesiones
   Knock_Identity_Api -->|2| Usuarios
   Knock_Market_Api -->|2| Catalog
   Knock_Market_Api -->|1| Media
   Knock_Market_Api -->|1| Requests
+  Knock_Market_Api -->|1| Tecnicos
   Knock_Market_Api -->|1| Trust
+  Knock_Messaging_Api -->|3| Chat
   Requests -->|1| Catalog
+  Safety -->|2| Usuarios
+  Tecnicos -->|3| Catalog
   Usuarios -->|1| Sesiones

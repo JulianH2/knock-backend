@@ -293,6 +293,784 @@
         }
       }
     },
+    "/api/v{version}/tecnicos": {
+      "post": {
+        "tags": [
+          "Tecnicos"
+        ],
+        "summary": "Registra a la persona del token como técnico (TEC-01): nace `activo`, sin verificación y con «Disponible hoy» apagado.",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterTechnicianBody"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterTechnicianBody"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterTechnicianBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/tecnicos/{id}": {
+      "get": {
+        "tags": [
+          "Tecnicos"
+        ],
+        "summary": "Perfil de un técnico (TEC-05): sin sesión, solo el resumen; con sesión válida, también el detalle. Un técnico que no existe o está oculto responde\n404 `technician_not_found`.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianProfileResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianProfileResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianProfileResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/tecnicos/autocompletar": {
+      "get": {
+        "tags": [
+          "Tecnicos"
+        ],
+        "summary": "Sugerencias de oficios y negocios mientras se escribe (TEC-03): hasta 8, públicas y sin registrar el texto.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutocompleteResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutocompleteResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutocompleteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/tecnicos/{id}/llega-a-mi-colonia": {
+      "get": {
+        "tags": [
+          "Tecnicos"
+        ],
+        "summary": "Dice si el técnico atiende la colonia de la persona (TEC-06). 404 si el técnico no existe o está oculto; 422 si la colonia no está en el catálogo.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "colonia",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoverageResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoverageResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoverageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/tecnicos/me": {
+      "put": {
+        "tags": [
+          "TecnicosMe"
+        ],
+        "summary": "Edita el perfil público (TEC-08): cambian solo los campos enviados.",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTechnicianBody"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTechnicianBody"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTechnicianBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/tecnicos/me/disponibilidad": {
+      "put": {
+        "tags": [
+          "TecnicosMe"
+        ],
+        "summary": "Enciende o apaga «Disponible hoy» (TEC-09).",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvailabilityBody"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvailabilityBody"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvailabilityBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailabilityResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailabilityResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailabilityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/tecnicos/me/horarios": {
+      "get": {
+        "tags": [
+          "TecnicosMe"
+        ],
+        "summary": "Horarios de los siete días (TEC-10); sin horario guardado, todos cerrados.",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleBody"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleBody"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "TecnicosMe"
+        ],
+        "summary": "Reemplaza los horarios de los siete días (TEC-11).",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleBody"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleBody"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleBody"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleBody"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleBody"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v{version}/visitas/{id}/llegada": {
       "post": {
         "tags": [
@@ -578,6 +1356,91 @@
           },
           "503": {
             "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/solicitudes/{id}/conversacion": {
+      "get": {
+        "tags": [
+          "ConversationPermission"
+        ],
+        "summary": "El permiso del par (solicitud, técnico) para quien pide: el cliente dueño debe mandar `tecnicoId`; el técnico no (se ignora si lo manda). Cualquier otro caso es 404 uniforme.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tecnicoId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermisoConversacion"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermisoConversacion"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermisoConversacion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2032,6 +2895,53 @@
         },
         "description": "Cuerpo de `POST /visitas/{id}/llegada`: `Codigo` son exactamente cuatro dígitos ASCII, con los ceros a la izquierda."
       },
+      "AutocompleteResponse": {
+        "required": [
+          "sugerencias"
+        ],
+        "type": "object",
+        "properties": {
+          "sugerencias": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Suggestion"
+            }
+          }
+        },
+        "description": "Hasta 8 sugerencias."
+      },
+      "AvailabilityBody": {
+        "required": [
+          "disponibleHoy"
+        ],
+        "type": "object",
+        "properties": {
+          "disponibleHoy": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          }
+        },
+        "description": "Cuerpo de `PUT /tecnicos/me/disponibilidad` (spec 046, TEC-09): el interruptor «Disponible hoy»."
+      },
+      "AvailabilityResponse": {
+        "required": [
+          "disponibleHoy",
+          "disponibleHasta"
+        ],
+        "type": "object",
+        "properties": {
+          "disponibleHoy": {
+            "type": "boolean"
+          },
+          "disponibleHasta": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Estado del interruptor: `disponibleHoy` es derivado de `disponibleHasta` (UTC), que con el interruptor encendido es hoy a las 23:59:59 de la ciudad."
+      },
       "ChooseQuoteBody": {
         "required": [
           "cotizacionId"
@@ -2092,6 +3002,18 @@
           }
         },
         "description": "Técnico elegido, con el contacto público que se revela solo después de elegir."
+      },
+      "CoverageResponse": {
+        "required": [
+          "atiende"
+        ],
+        "type": "object",
+        "properties": {
+          "atiende": {
+            "type": "boolean"
+          }
+        },
+        "description": "Respuesta de TEC-06 (R-43)."
       },
       "CreateRequestBody": {
         "required": [
@@ -2159,6 +3081,38 @@
           }
         },
         "description": "Cuerpo de `POST /solicitudes` (spec 020, R-01). El 422 lo da `CreateRequestBodyValidator`; nunca repite el valor recibido."
+      },
+      "DayScheduleDto": {
+        "required": [
+          "dia",
+          "abierto",
+          "franjas"
+        ],
+        "type": "object",
+        "properties": {
+          "dia": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "abierto": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "franjas": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/TimeRangeDto"
+            }
+          }
+        },
+        "description": "Horario de un día (spec 046, R-47): `dia` de `lunes` a `domingo`; abierto con una o dos franjas `HH:mm`, o cerrado sin franjas."
       },
       "NeighborhoodAtPointColoniaResponse": {
         "required": [
@@ -2238,6 +3192,68 @@
           }
         },
         "description": "Oficio activo del catálogo tal como lo ve la app: solo clave, nombre y modalidad (nunca id ni activo)."
+      },
+      "PermisoConversacion": {
+        "required": [
+          "solicitudId",
+          "tecnicoId",
+          "clienteId",
+          "tecnicoUsuarioId",
+          "rol",
+          "abierta",
+          "motivoCierre",
+          "elegido",
+          "visitaId",
+          "servicio",
+          "coloniaNombre",
+          "tecnicoPublico"
+        ],
+        "type": "object",
+        "properties": {
+          "solicitudId": {
+            "type": "string"
+          },
+          "tecnicoId": {
+            "type": "string"
+          },
+          "clienteId": {
+            "type": "string"
+          },
+          "tecnicoUsuarioId": {
+            "type": "string"
+          },
+          "rol": {
+            "type": "string"
+          },
+          "abierta": {
+            "type": "boolean"
+          },
+          "motivoCierre": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "elegido": {
+            "type": "boolean"
+          },
+          "visitaId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "servicio": {
+            "type": "string"
+          },
+          "coloniaNombre": {
+            "type": "string"
+          },
+          "tecnicoPublico": {
+            "$ref": "#/components/schemas/TecnicoPublicoConversacion"
+          }
+        },
+        "description": "Lo que Mercado dice a Mensajería sobre quién puede conversar en el par (solicitud, técnico) y si la conversación está abierta (spec 030, R-02 y R-03). La ruta que lo\ndevuelve no se publica en el gateway: solo la llama Mensajería por la red interna con la sesión de quien pide. string PermisoConversacion.Rol es `cliente` o `tecnico`."
       },
       "ProblemDetails": {
         "type": "object",
@@ -2621,6 +3637,96 @@
         },
         "description": "Técnico que cotizó, tal como lo ve el cliente al comparar (spec 021). Sin teléfono: el contacto solo llega con la visita."
       },
+      "RegisterTechnicianBody": {
+        "required": [
+          "nombre",
+          "oficios",
+          "otroOficio",
+          "atencion",
+          "direccionTaller",
+          "radioKm",
+          "coloniaId",
+          "perfil",
+          "aceptaTerminos"
+        ],
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Nombre y apellido que ven los clientes: de 2 a 80 letras, espacios, punto, apóstrofo o guion."
+          },
+          "oficios": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "Una o más claves de oficios activos del catálogo, sin repetir y sin máximo propio (D-07)."
+          },
+          "otroOficio": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Texto libre opcional («Otro oficio»), de hasta 60 caracteres; no recibe solicitudes."
+          },
+          "atencion": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Una de `taller`, `domicilio` o `ambos`."
+          },
+          "direccionTaller": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "De 8 a 200 caracteres; obligatoria con taller o ambos y no admitida a domicilio. Se guarda cifrada."
+          },
+          "radioKm": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "3, 5, 8 o 12; obligatorio a domicilio o ambos y no admitido solo en taller.",
+            "format": "int32"
+          },
+          "coloniaId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Colonia base del técnico (24 hexadecimales); de ella sale la ubicación aproximada."
+          },
+          "perfil": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "Datos opcionales del perfil público.",
+                "$ref": "#/components/schemas/TechnicianProfileBody"
+              }
+            ]
+          },
+          "aceptaTerminos": {
+            "type": [
+              "null",
+              "boolean"
+            ],
+            "description": "Debe ser `true`."
+          }
+        },
+        "description": "Cuerpo de `POST /tecnicos` (spec 046, TEC-01, R-02 y R-39). El 422 de forma lo da `RegisterTechnicianBodyValidator`; nunca repite el valor recibido."
+      },
       "RequestNeighborhood": {
         "required": [
           "id",
@@ -2840,6 +3946,340 @@
         },
         "description": "Oficio de la solicitud: clave del catálogo y nombre."
       },
+      "ScheduleBody": {
+        "required": [
+          "horarios"
+        ],
+        "type": "object",
+        "properties": {
+          "horarios": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/DayScheduleDto"
+            }
+          }
+        },
+        "description": "Cuerpo de `PUT /tecnicos/me/horarios` y respuesta de `GET` (TEC-10 y TEC-11): los siete días, cada uno una vez."
+      },
+      "Suggestion": {
+        "required": [
+          "tipo",
+          "texto",
+          "clave",
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string"
+          },
+          "texto": {
+            "type": "string"
+          },
+          "clave": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Una sugerencia de TEC-03: `tipo` es `oficio` (con su `clave`) o `negocio` (con el `id` del técnico). Los servicios con precio\n(spec 047) se suman cuando exista su colección."
+      },
+      "TechnicianProfileBody": {
+        "required": [
+          "nombreNegocio",
+          "descripcion",
+          "anios"
+        ],
+        "type": "object",
+        "properties": {
+          "nombreNegocio": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Hasta 60 caracteres."
+          },
+          "descripcion": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Hasta 300 caracteres."
+          },
+          "anios": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "Años de experiencia, de 0 a 60.",
+            "format": "int32"
+          }
+        }
+      },
+      "TechnicianProfileDetail": {
+        "required": [
+          "descripcion",
+          "atencion",
+          "radioKm",
+          "coloniaId",
+          "disponibleHoy"
+        ],
+        "type": "object",
+        "properties": {
+          "descripcion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "atencion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "radioKm": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "coloniaId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "disponibleHoy": {
+            "type": "boolean"
+          }
+        },
+        "description": "Parte del perfil que solo ve una persona con sesión: descripción completa, forma de atención, radio a domicilio (`null` si solo atiende en\ntaller), colonia base y «Disponible hoy». Los servicios con precio (spec 047), las fotos de trabajos (TEC-07) y los horarios (TEC-10) tienen sus propias rutas."
+      },
+      "TechnicianProfileResponse": {
+        "required": [
+          "id",
+          "nombre",
+          "nombreNegocio",
+          "fotoUrl",
+          "verificacion",
+          "calificacion",
+          "anios",
+          "descripcionCorta",
+          "oficios",
+          "detalle"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "nombreNegocio": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "fotoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "verificacion": {
+            "type": "string"
+          },
+          "calificacion": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "anios": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "descripcionCorta": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "oficios": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "detalle": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TechnicianProfileDetail"
+              }
+            ]
+          }
+        },
+        "description": "Perfil público de un técnico (spec 046, TEC-05, R-42). Sin sesión trae solo el resumen y TechnicianProfileDetail? TechnicianProfileResponse.Detalle va en `null`; con sesión\nsuma el detalle. Nunca trae teléfono, dirección del taller ni ubicación. `verificacion` es `ninguno`, `basica` o `completa` (spec 025);\n`calificacion` es el promedio con un decimal o `null`; `descripcionCorta` son hasta 140 caracteres de la descripción."
+      },
+      "TechnicianResponse": {
+        "required": [
+          "id",
+          "nombre",
+          "oficios",
+          "otroOficio",
+          "atencion",
+          "radioKm",
+          "coloniaId",
+          "nombreNegocio",
+          "descripcion",
+          "anios",
+          "estado",
+          "verificacion",
+          "disponibleHoy",
+          "creadoEn"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "oficios": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "otroOficio": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "atencion": {
+            "type": "string"
+          },
+          "radioKm": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "coloniaId": {
+            "type": "string"
+          },
+          "nombreNegocio": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "descripcion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "anios": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "verificacion": {
+            "type": "string"
+          },
+          "disponibleHoy": {
+            "type": "boolean"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Perfil propio recién creado (201). Nunca trae la dirección del taller, el teléfono ni la ubicación."
+      },
+      "TecnicoPublicoConversacion": {
+        "required": [
+          "nombre",
+          "fotoUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string"
+          },
+          "fotoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Datos públicos del técnico de una conversación: solo nombre y foto, nunca contacto (spec 030, R-06)."
+      },
+      "TimeRangeDto": {
+        "required": [
+          "inicio",
+          "fin"
+        ],
+        "type": "object",
+        "properties": {
+          "inicio": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "fin": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Franja de 24 horas en la hora de la ciudad, con inicio anterior al fin."
+      },
       "TrustedTechnician": {
         "required": [
           "tecnicoId",
@@ -2913,6 +4353,93 @@
           }
         },
         "description": "Texto de confianza que prepara `POST /visitas/{id}/aviso` (no envía nada ni guarda contactos). `IncluyeCodigo` e `IncluyeDireccion` son\nsiempre falsos: ni el código ni la dirección viajan en el aviso."
+      },
+      "UpdateTechnicianBody": {
+        "required": [
+          "nombre",
+          "nombreNegocio",
+          "anios",
+          "oficios",
+          "otroOficio",
+          "atencion",
+          "direccionTaller",
+          "radioKm",
+          "descripcion",
+          "fotoUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nombreNegocio": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "anios": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "oficios": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "otroOficio": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "atencion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "direccionTaller": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "radioKm": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "descripcion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "fotoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Cuerpo de `PUT /tecnicos/me` (spec 046, TEC-08, R-45): solo cambian los campos enviados; un campo ausente o en `null` no cambia.\nRigen las reglas del registro más `nombreNegocio` (hasta 60), `descripcion` (hasta 300) y `anios` (0 a 60). `fotoUrl` solo se acepta\nde un host de subida del servidor (`Tecnicos:HostsFoto`)."
       },
       "ValidationProblemDetails": {
         "type": "object",
@@ -3271,6 +4798,9 @@
       "name": "Colonias"
     },
     {
+      "name": "ConversationPermission"
+    },
+    {
       "name": "Cotizaciones"
     },
     {
@@ -3284,6 +4814,12 @@
     },
     {
       "name": "Solicitudes"
+    },
+    {
+      "name": "Tecnicos"
+    },
+    {
+      "name": "TecnicosMe"
     },
     {
       "name": "TrustNotice"

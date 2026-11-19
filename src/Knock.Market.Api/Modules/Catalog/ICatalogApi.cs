@@ -36,4 +36,7 @@ public interface ICatalogApi
     /// </summary>
     /// <exception cref="ArgumentException"><paramref name="coloniaId"/> no son 24 hexadecimales; se lanza antes de consultar.</exception>
     Task<(string Nombre, string Cp)?> FindNeighborhoodAsync(string coloniaId, CancellationToken cancellationToken);
+
+    /// <summary>Clave y nombre de los oficios activos. Solo lectura; lo usa el autocompletado de técnicos (spec 046, TEC-03).</summary>
+    Task<IReadOnlyList<(string Clave, string Nombre)>> ListActiveTradesAsync(CancellationToken cancellationToken);
 }

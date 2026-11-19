@@ -66,6 +66,7 @@ internal static class AuthenticationExtensions
                 };
                 options.Events = new JwtBearerEvents
                 {
+                    OnMessageReceived = AcceptHubTokenFromQuery,
                     OnTokenValidated = RejectRevokedSessionAsync,
 
                     // Mismo 401 para cualquier fallo: sin motivo en el cuerpo ni en WWW-Authenticate.
@@ -88,6 +89,23 @@ internal static class AuthenticationExtensions
             options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
         services.AddHostedService<AuthenticationStartupCheck>();
         return services;
+    }
+
+    /// <summary>
+    /// Spec 026, R-02: el cliente WebSocket no puede mandar el encabezado <c>Authorization</c> en el saludo, así que para el hub (y solo para esa ruta) el token puede venir en la
+    /// consulta <c>access_token</c>. El gateway lo convierte en encabezado y lo quita de la URL; esto cubre llamar al servicio directo en desarrollo. Nunca se registra.
+    /// </summary>
+    private static Task AcceptHubTokenFromQuery(MessageReceivedContext context)
+    {
+        if (string.IsNullOrEmpty(context.Token)
+            && context.HttpContext.Request.Path.StartsWithSegments(Knock.Messaging.Api.Modules.Chat.ChatModuleExtensions.HubPath, StringComparison.OrdinalIgnoreCase)
+            && context.HttpContext.Request.Query.TryGetValue("access_token", out var token)
+            && !string.IsNullOrWhiteSpace(token))
+        {
+            context.Token = token.ToString();
+        }
+
+        return Task.CompletedTask;
     }
 
     /// <summary>Exige <c>sub</c> y <c>sid</c>; si la sesión está cancelada el token se rechaza (401); si Redis no responde también no pasa, pero con 503 (falla cerrada).</summary>
