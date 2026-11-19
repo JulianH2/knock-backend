@@ -1,6 +1,6 @@
 # Spec 055 — Biblioteca técnica compartida (`Knock.Hosting`)
 
-> **Estado:** Borrador · **Repositorio:** knock-backend · **Rector:** `constitution.md` (requiere la enmienda 1.2.0 de este mismo cambio)
+> **Estado:** Aprobada · **Repositorio:** knock-backend · **Rector:** `constitution.md` (requiere la enmienda 1.2.0 de este mismo cambio)
 > **Clave de trabajo:** KNOCK-251 (TT-API-12 · Mover ForwardedHeadersExtensions y el redactor de registros a una biblioteca compartida). La etapa 2 es KNOCK-280 y la etapa 3, KNOCK-281.
 > **Servicio:** gateway y los tres servicios (`Hosting/`); nueva biblioteca `src/Knock.Hosting` · **Colecciones:** ninguna
 > **Sprint:** etapa 1 según decida el Tech Lead; etapa 2 (KNOCK-280) en Sprint 6; etapa 3 (KNOCK-281) según decida el Tech Lead · **Responsable:** Erick (etapas 1 y 2, como asigna Jira)
@@ -230,7 +230,7 @@ Las tomó el agente con el criterio de la constitución. El Tech Lead puede camb
 - **Archivos protegidos (R-15):** sin el cambio de `SHARED`, un PR que solo toque la biblioteca no probaría los servicios. Debe entrar en el mismo PR de la etapa 1 o antes.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Revisor 2 (enmienda a la constitución, §11) — nombre: Alexis ________ fecha: ________
-- [ ] Sin conflicto con la constitución (con la enmienda 1.2.0)
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-19
+- [x] Revisor 2 (enmienda a la constitución, §11) — nombre: Ángel Alexis Blas Castillo fecha: 2026-11-17
+- [x] Sin conflicto con la constitución (con la enmienda 1.2.0)
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Implementada (tras el merge)
