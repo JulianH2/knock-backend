@@ -1,6 +1,6 @@
 # Plan 035 — Redacción de registros con parámetros de consulta y encabezados reenviados
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 Dos frentes que tocan los mismos `Hosting/` y pueden avanzar a la vez si se coordinan por archivo.
