@@ -1,4 +1,8 @@
+extern alias MarketApi;
+
 using System.Globalization;
+using MarketApi::Knock.Market.Api.Common.Crypto;
+using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -48,7 +52,8 @@ internal static class Spec021Host
 
         if (withWorkshop)
         {
-            document.Add("tallerDireccion", WorkshopAddress);
+            // Spec 046, §6: la dirección del taller se guarda cifrada y ligada al documento, como la escribe el registro de técnicos.
+            document.Add("tallerDireccion", WorkshopAddressCipher.Encrypt(host.Services.GetRequiredService<FieldCipher>(), id, WorkshopAddress));
         }
 
         await host.Database.GetCollection<BsonDocument>("tecnicos").InsertOneAsync(document);

@@ -5,6 +5,126 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/v{version}/tecnicos": {
+      "post": {
+        "tags": [
+          "Tecnicos"
+        ],
+        "summary": "Registra a la persona del token como técnico (TEC-01): nace `activo`, sin verificación y con «Disponible hoy» apagado.",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterTechnicianBody"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterTechnicianBody"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterTechnicianBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v{version}/visitas/{id}/llegada": {
       "post": {
         "tags": [
@@ -2333,6 +2453,96 @@
         },
         "description": "Técnico que cotizó, tal como lo ve el cliente al comparar (spec 021). Sin teléfono: el contacto solo llega con la visita."
       },
+      "RegisterTechnicianBody": {
+        "required": [
+          "nombre",
+          "oficios",
+          "otroOficio",
+          "atencion",
+          "direccionTaller",
+          "radioKm",
+          "coloniaId",
+          "perfil",
+          "aceptaTerminos"
+        ],
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Nombre y apellido que ven los clientes: de 2 a 80 letras, espacios, punto, apóstrofo o guion."
+          },
+          "oficios": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "Una o más claves de oficios activos del catálogo, sin repetir y sin máximo propio (D-07)."
+          },
+          "otroOficio": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Texto libre opcional («Otro oficio»), de hasta 60 caracteres; no recibe solicitudes."
+          },
+          "atencion": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Una de `taller`, `domicilio` o `ambos`."
+          },
+          "direccionTaller": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "De 8 a 200 caracteres; obligatoria con taller o ambos y no admitida a domicilio. Se guarda cifrada."
+          },
+          "radioKm": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "3, 5, 8 o 12; obligatorio a domicilio o ambos y no admitido solo en taller.",
+            "format": "int32"
+          },
+          "coloniaId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Colonia base del técnico (24 hexadecimales); de ella sale la ubicación aproximada."
+          },
+          "perfil": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "Datos opcionales del perfil público.",
+                "$ref": "#/components/schemas/TechnicianProfileBody"
+              }
+            ]
+          },
+          "aceptaTerminos": {
+            "type": [
+              "null",
+              "boolean"
+            ],
+            "description": "Debe ser `true`."
+          }
+        },
+        "description": "Cuerpo de `POST /tecnicos` (spec 046, TEC-01, R-02 y R-39). El 422 de forma lo da `RegisterTechnicianBodyValidator`; nunca repite el valor recibido."
+      },
       "RequestNeighborhood": {
         "required": [
           "id",
@@ -2551,6 +2761,129 @@
           }
         },
         "description": "Oficio de la solicitud: clave del catálogo y nombre."
+      },
+      "TechnicianProfileBody": {
+        "required": [
+          "nombreNegocio",
+          "descripcion",
+          "anios"
+        ],
+        "type": "object",
+        "properties": {
+          "nombreNegocio": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Hasta 60 caracteres."
+          },
+          "descripcion": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Hasta 300 caracteres."
+          },
+          "anios": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "Años de experiencia, de 0 a 60.",
+            "format": "int32"
+          }
+        }
+      },
+      "TechnicianResponse": {
+        "required": [
+          "id",
+          "nombre",
+          "oficios",
+          "otroOficio",
+          "atencion",
+          "radioKm",
+          "coloniaId",
+          "nombreNegocio",
+          "descripcion",
+          "anios",
+          "estado",
+          "verificacion",
+          "disponibleHoy",
+          "creadoEn"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "oficios": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "otroOficio": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "atencion": {
+            "type": "string"
+          },
+          "radioKm": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "coloniaId": {
+            "type": "string"
+          },
+          "nombreNegocio": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "descripcion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "anios": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "verificacion": {
+            "type": "string"
+          },
+          "disponibleHoy": {
+            "type": "boolean"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Perfil propio recién creado (201). Nunca trae la dirección del taller, el teléfono ni la ubicación."
       },
       "TrustNotice": {
         "required": [
@@ -2942,6 +3275,9 @@
     },
     {
       "name": "Solicitudes"
+    },
+    {
+      "name": "Tecnicos"
     },
     {
       "name": "TrustNotice"
