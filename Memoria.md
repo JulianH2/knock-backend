@@ -808,3 +808,9 @@
 - **Por qué:** la revisión de pares pidió resolver o aceptar por escrito la escritura en la colección de otro módulo y quitar la dependencia entre servicios de módulos.
 - **Decisiones (con porqué):** (1) Se acepta la escritura de `versionDirecciones` porque es el mecanismo de bloqueo por persona y no cambia otros campos. (2) Se conserva `ProfileService.MarketUnavailableCode` como referencia al valor compartido para no romper sus pruebas.
 - **A evitar:** que un módulo dependa de los servicios de otro solo por un código de error; retirar una versión de llave de cifrado mientras existan datos cifrados con ella.
+## 2026-11-17 · KNOCK-282 · Stryker 5.1.0 con la solución sin proyectos de prueba
+- **Qué cambió:** `stryker-config.json` deja de declarar `test-projects`; queda solo `solution` (`Knock.slnx`) y el filtro `test-case-filter` que limita las pruebas a `Knock.UnitTest`.
+- **Por qué:** dotnet-stryker 5.1.0 (entró con un bump de Dependabot) rechaza declarar a la vez la solución y los proyectos de prueba («Test projects cannot be specified when running Stryker in solution context»), y el job informativo fallaba sin mutar nada. La 5.0.0 lo toleraba.
+- **Decisiones (con porqué):** (1) Opción A de la tarjeta: se conserva la versión nueva y se quita una línea en vez de fijar la 5.0.0 (cambiar la versión pide el visto bueno del Tech Lead). (2) El filtro de casos sigue limitando la ejecución a las pruebas unitarias.
+- **Pendiente:** confirmar que el job corre en este PR, muta y genera reporte, y que la regla R-18 (mutación de `Knock.Hosting`) sigue aplicando.
+- **A evitar:** declarar `solution` y `test-projects` a la vez; subir la versión de dotnet-stryker sin probar el job en un PR.
