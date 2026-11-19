@@ -24,6 +24,7 @@ internal sealed class MarketApiFactory(IReadOnlyDictionary<string, string?> sett
 
     // Clave de firma sintética: 32 bytes aleatorios por proceso, nunca se escriben en disco.
     private static readonly byte[] _signingKey = RandomNumberGenerator.GetBytes(32);
+    private static readonly byte[] _cursorKey = RandomNumberGenerator.GetBytes(32);
 
     /// <summary>Servicios que la prueba sustituye en el host (por ejemplo, un reloj fijo).</summary>
     public Action<IServiceCollection>? ExtraServices { get; private init; }
@@ -99,6 +100,7 @@ internal sealed class MarketApiFactory(IReadOnlyDictionary<string, string?> sett
                 ["Jwt:Issuer"] = "knock-api",
                 ["Jwt:Audience"] = "knock-app",
                 ["Jwt:SigningKey"] = SigningKeyBase64,
+                ["Busqueda:Cursor:Key"] = Convert.ToBase64String(_cursorKey),
                 ["RateLimiting:Global:PermitLimit"] = _highLimit,
                 ["RateLimiting:Auth:PermitLimit"] = _highLimit,
             };

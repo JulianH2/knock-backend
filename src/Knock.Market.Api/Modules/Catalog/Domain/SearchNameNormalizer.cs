@@ -9,6 +9,38 @@ namespace Knock.Market.Api.Modules.Catalog.Domain;
 /// </summary>
 internal static class SearchNameNormalizer
 {
+    public static string NormalizeQuery(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        var result = new StringBuilder(text.Length);
+        var separator = false;
+        foreach (var original in text.Normalize(NormalizationForm.FormC))
+        {
+            var character = char.ToLowerInvariant(original);
+            if (character == 'ñ')
+            {
+                if (separator && result.Length > 0) result.Append(' ');
+                separator = false;
+                result.Append(character);
+                continue;
+            }
+
+            var decomposed = character.ToString().Normalize(NormalizationForm.FormD);
+            var baseCharacter = decomposed[0];
+            if (!char.IsLetterOrDigit(baseCharacter))
+            {
+                separator = true;
+                continue;
+            }
+
+            if (separator && result.Length > 0) result.Append(' ');
+            separator = false;
+            result.Append(baseCharacter);
+        }
+
+        return result.ToString();
+    }
+
     public static string Normalize(string text)
     {
         ArgumentNullException.ThrowIfNull(text);

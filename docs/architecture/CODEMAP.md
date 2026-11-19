@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-19T18:16:16Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-19T18:18:18Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | `Account` | -, controllers, data, domain, dtos, services, validators | 28 | 63 | 60 |
 | `Assistant` | data | 2 | 7 | 5 |
-| `Catalog` | -, controllers, data, domain, dtos, services, validators | 37 | 50 | 81 |
+| `Catalog` | -, controllers, data, domain, dtos, services, validators | 49 | 87 | 113 |
 | `Chat` | -, data, hubs, services | 6 | 18 | 26 |
 | `Conversaciones` | domain | 1 | 2 | 1 |
 | `Knock.Contracts` | - | 9 | 16 | 7 |
@@ -105,6 +105,7 @@
 - `AuthenticationStartupCheck`: `src/Knock.Identity.Api/Hosting/AuthenticationExtensions.cs:89`, `src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs:89`, `src/Knock.Messaging.Api/Hosting/AuthenticationExtensions.cs:138`
 - `AzureMonitorExportStatus`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:39`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:39`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:38`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:39`
 - `AzureMonitorSignalSettings`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:36`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:36`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:35`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:36`
+- `BusquedaStore`: `src/Knock.Market.Api/Modules/Catalog/Data/BusquedaStore.cs:17`, `src/Knock.Market.Api/Modules/Catalog/Data/BusquedaStorePaging.cs:11`
 - `CoordinatePairs`: `src/Knock.Gateway/Hosting/TelemetryRedactor.cs:175`, `src/Knock.Identity.Api/Hosting/TelemetryRedactor.cs:175`, `src/Knock.Market.Api/Hosting/TelemetryRedactor.cs:174`, `src/Knock.Messaging.Api/Hosting/TelemetryRedactor.cs:175`
 - `CorrelationId`: `src/Knock.Contracts/Correlation/CorrelationId.cs:9`, `src/Knock.Identity.Api/Hosting/CorrelationIdMiddleware.cs:8`, `src/Knock.Market.Api/Hosting/CorrelationIdMiddleware.cs:7`
 - `CorrelationIdMiddleware`: `src/Knock.Contracts/Correlation/CorrelationIdMiddleware.cs:11`, `src/Knock.Identity.Api/Hosting/CorrelationIdMiddleware.cs:31`, `src/Knock.Market.Api/Hosting/CorrelationIdMiddleware.cs:30`
@@ -251,13 +252,17 @@
 **-**
 
 - `src/Knock.Market.Api/Modules/Catalog/CatalogModuleExtensions.cs` — class `CatalogModuleExtensions`
-  - `AddCatalogModule()`:15
+  - `AddCatalogModule()`:16
 - `src/Knock.Market.Api/Modules/Catalog/ICatalogApi.cs` — interface `ICatalogApi`
 - `src/Knock.Market.Api/Modules/Catalog/ModelBinders/SingleValueQueryModelBinder.cs` — class `SingleValueQueryModelBinder`, class `SingleValueFromQueryAttribute`
   - `BindModelAsync()`:16
 
 **controllers**
 
+- `src/Knock.Market.Api/Modules/Catalog/Controllers/SearchProblems.cs` — class `SearchProblems`
+  - `WriteAsync()`:9
+- `src/Knock.Market.Api/Modules/Catalog/Controllers/V1/BusquedaController.cs` — class `BusquedaController`
+  - `Get()`:25
 - `src/Knock.Market.Api/Modules/Catalog/Controllers/V1/ColoniaExistsController.cs` — class `ColoniaExistsController`
   - `Exists()`:28
 - `src/Knock.Market.Api/Modules/Catalog/Controllers/V1/ColoniasController.cs` — class `ColoniasController`
@@ -270,8 +275,14 @@
 
 **data**
 
-- `src/Knock.Market.Api/Modules/Catalog/Data/CatalogCache.cs` — interface `ICatalogCache`, class `RedisCatalogCache`, class `DisabledCatalogCache`
-  - `NeighborhoodNamesGenerationKey()`:67, `ColoniaExistsGenerationKey()`:69, `NeighborhoodNamesKey()`:94, `ColoniaExistsKey()`:96, `GetOficiosAsync()`:98, `RemoveOficiosAsync()`:113, `GetOficiosGenerationAsync()`:119, `SetOficiosIfGenerationAsync()`:122, `GetNeighborhoodNamesAsync()`:158, `RemoveNeighborhoodNamesAsync()`:174, `GetNeighborhoodNamesGenerationAsync()`:181, `SetNeighborhoodNamesIfGenerationAsync()`:187, `GetColoniaExistsAsync()`:207, `RemoveColoniaExistsAsync()`:223, `GetColoniaExistsGenerationAsync()`:230, `SetColoniaExistsIfGenerationAsync()`:236, `GetOficiosAsync()`:275, `RemoveOficiosAsync()`:278, `GetOficiosGenerationAsync()`:280, `SetOficiosIfGenerationAsync()`:282, `GetNeighborhoodNamesAsync()`:285, `RemoveNeighborhoodNamesAsync()`:288, `GetNeighborhoodNamesGenerationAsync()`:290, `SetNeighborhoodNamesIfGenerationAsync()`:292, `GetColoniaExistsAsync()`:295 …
+- `src/Knock.Market.Api/Modules/Catalog/Data/BusquedaSource.cs` — class `BusquedaSource`
+  - `GetContextAsync()`:14, `FindPageAsync()`:41, `CountAsync()`:47
+- `src/Knock.Market.Api/Modules/Catalog/Data/BusquedaStore.cs` — record `SearchCandidate`, class `BusquedaStore`
+  - `SearchCandidate()`:10, `FindAsync()`:25, `CountUnmatchedAsync()`:72
+- `src/Knock.Market.Api/Modules/Catalog/Data/BusquedaStorePaging.cs` — record `SearchPageRequest`, record `RankedCandidate`, class `BusquedaStore`
+  - `FindPageAsync()`:13
+- `src/Knock.Market.Api/Modules/Catalog/Data/CatalogCache.cs` — interface `ISearchResponseCache`, interface `ICatalogCache`, class `RedisCatalogCache`, class `DisabledCatalogCache`
+  - `NeighborhoodNamesGenerationKey()`:75, `ColoniaExistsGenerationKey()`:77, `GetSearchGenerationAsync()`:81, `GetSearchAsync()`:83, `SetSearchAsync()`:99, `NeighborhoodNamesKey()`:142, `ColoniaExistsKey()`:144, `GetOficiosAsync()`:146, `RemoveOficiosAsync()`:161, `GetOficiosGenerationAsync()`:167, `SetOficiosIfGenerationAsync()`:170, `GetNeighborhoodNamesAsync()`:206, `RemoveNeighborhoodNamesAsync()`:222, `GetNeighborhoodNamesGenerationAsync()`:229, `SetNeighborhoodNamesIfGenerationAsync()`:235, `GetColoniaExistsAsync()`:255, `RemoveColoniaExistsAsync()`:271, `GetColoniaExistsGenerationAsync()`:278, `SetColoniaExistsIfGenerationAsync()`:284, `GetSearchGenerationAsync()`:323, `GetSearchAsync()`:324, `SetSearchAsync()`:326, `GetOficiosAsync()`:328, `RemoveOficiosAsync()`:331, `GetOficiosGenerationAsync()`:333 …
 - `src/Knock.Market.Api/Modules/Catalog/Data/CatalogCacheOptions.cs` — class `CatalogCacheOptions`, class `CatalogCacheOptionsValidator`
   - `Validate()`:25
 - `src/Knock.Market.Api/Modules/Catalog/Data/CatalogSeeder.cs` — class `CatalogSeeder`, record `ColoniasSnapshot`
@@ -287,15 +298,23 @@
   - `ToPosition()`:7
 - `src/Knock.Market.Api/Modules/Catalog/Domain/Colonia.cs` — record `Colonia`
   - `Colonia()`:7, `IsPostalCode()`:14
+- `src/Knock.Market.Api/Modules/Catalog/Domain/CursorDeBusqueda.cs` — record `SearchQuery`, record `SearchCursorPayload`, class `CursorDeBusqueda`
+  - `Read()`:17, `CreateNext()`:25, `Page()`:42
 - `src/Knock.Market.Api/Modules/Catalog/Domain/GeoPosition.cs` — record struct `GeoPosition`
+- `src/Knock.Market.Api/Modules/Catalog/Domain/InterpretadorDeConsulta.cs` — record `SearchTrade`, record `SearchSynonym`, record `SearchInterpretation`, class `InterpretadorDeConsulta`
+  - `Interpret()`:9
 - `src/Knock.Market.Api/Modules/Catalog/Domain/Oficio.cs` — class `Oficio`
   - `IsValidModalidad()`:10
 - `src/Knock.Market.Api/Modules/Catalog/Domain/OficioListing.cs` — record `OficioListing`
+- `src/Knock.Market.Api/Modules/Catalog/Domain/OrdenDeResultados.cs` — record `SearchRank`, class `OrdenDeResultados`
+  - `Classify()`:8, `Order()`:16, `Compare()`:19
 - `src/Knock.Market.Api/Modules/Catalog/Domain/SearchNameNormalizer.cs` — class `SearchNameNormalizer`
-  - `Normalize()`:12
+  - `NormalizeQuery()`:12, `Normalize()`:44
 
 **dtos**
 
+- `src/Knock.Market.Api/Modules/Catalog/Dtos/BusquedaDtos.cs` — record `BusquedaQuery`, class `BusquedaQueryParameters`, record `BusquedaOficio`, record `BusquedaInterpretacion`, record `BusquedaItem`, record `BusquedaResponse`
+  - `BusquedaQuery()`:9, `Get()`:11, `BusquedaResponse()`:41, `From()`:43
 - `src/Knock.Market.Api/Modules/Catalog/Dtos/NeighborhoodAtPointQuery.cs` — class `NeighborhoodAtPointQuery`
 - `src/Knock.Market.Api/Modules/Catalog/Dtos/NeighborhoodAtPointResponse.cs` — record `NeighborhoodAtPointResponse`, record `NeighborhoodAtPointColoniaResponse`
 - `src/Knock.Market.Api/Modules/Catalog/Dtos/NeighborhoodExists.cs` — class `NeighborhoodExistsQuery`, record `NeighborhoodExistsResponse`
@@ -305,6 +324,8 @@
 
 **services**
 
+- `src/Knock.Market.Api/Modules/Catalog/Services/BusquedaService.cs` — record `SearchContext`, record `SearchInput`, record `PublicSearchItem`, record `SearchResponse`, record `SearchServiceResult`, interface `IBusquedaSource`, class `BusquedaService`
+  - `BusquedaService()`:23, `SearchAsync()`:25
 - `src/Knock.Market.Api/Modules/Catalog/Services/CatalogApi.cs` — class `CatalogApi`
   - `ListActiveTradesAsync()`:12, `FindNeighborhoodCenterAsync()`:15, `FindNeighborhoodAtAsync()`:18, `FindNeighborhoodsByPostalCodeAsync()`:21, `NeighborhoodExistsAsync()`:32, `FindActiveTradeAsync()`:48, `FindNeighborhoodAsync()`:59
 - `src/Knock.Market.Api/Modules/Catalog/Services/INeighborhoodLocator.cs` — interface `INeighborhoodLocator`
@@ -315,6 +336,8 @@
   - `ExistsAsync()`:8
 - `src/Knock.Market.Api/Modules/Catalog/Services/OficioQueries.cs` — class `OficioQueries`
   - `OficioQueries()`:7, `ListActiveAsync()`:14
+- `src/Knock.Market.Api/Modules/Catalog/Services/SearchSafety.cs` — interface `IFiltroDatosPersonales`, class `FiltroDatosPersonalesNoDisponible`, class `SearchCursorOptions`, class `DevelopmentSearchCursorKey`, class `SearchCursorOptionsValidator`
+  - `CanCount()`:14, `PostConfigure()`:28, `Validate()`:49
 - `src/Knock.Market.Api/Modules/Catalog/Services/WaitlistService.cs` — record `WaitlistEntry`, record `WaitlistResult`, interface `IWaitlistStore`, class `WaitlistService`
   - `WaitlistService()`:14, `JoinAsync()`:16
 - `src/Knock.Market.Api/Modules/Catalog/Services/ZonaService.cs` — class `ZonaService`
@@ -322,6 +345,7 @@
 
 **validators**
 
+- `src/Knock.Market.Api/Modules/Catalog/Validators/BusquedaQueryValidator.cs` — class `BusquedaQueryValidator`
 - `src/Knock.Market.Api/Modules/Catalog/Validators/NeighborhoodAtPointQueryValidator.cs` — class `NeighborhoodAtPointQueryValidator`
   - `Parse()`:31
 - `src/Knock.Market.Api/Modules/Catalog/Validators/NeighborhoodExistsQueryValidator.cs` — class `NeighborhoodExistsQueryValidator`

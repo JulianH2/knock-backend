@@ -1,0 +1,19 @@
+[
+  { "_id": { "$oid": "a02700000000000000000001" }, "termino": "boiler", "oficioClave": "plo" },
+  { "_id": { "$oid": "a02700000000000000000002" }, "termino": "calentador", "oficioClave": "plo" },
+  { "_id": { "$oid": "a02700000000000000000003" }, "termino": "fuga", "oficioClave": "plo" },
+  { "_id": { "$oid": "a02700000000000000000004" }, "termino": "tinaco", "oficioClave": "plo" },
+  { "_id": { "$oid": "a02700000000000000000005" }, "termino": "tuberia", "oficioClave": "plo" },
+  { "_id": { "$oid": "a02700000000000000000006" }, "termino": "llave", "oficioClave": "plo" },
+  { "_id": { "$oid": "a02700000000000000000007" }, "termino": "luz", "oficioClave": "ele" },
+  { "_id": { "$oid": "a02700000000000000000008" }, "termino": "apagon", "oficioClave": "ele" },
+  { "_id": { "$oid": "a02700000000000000000009" }, "termino": "contacto", "oficioClave": "ele" },
+  { "_id": { "$oid": "a0270000000000000000000a" }, "termino": "cortocircuito", "oficioClave": "ele" },
+  { "_id": { "$oid": "a0270000000000000000000b" }, "termino": "foco", "oficioClave": "ele" },
+  { "_id": { "$oid": "a0270000000000000000000c" }, "termino": "frenos", "oficioClave": "mec" },
+  { "_id": { "$oid": "a0270000000000000000000d" }, "termino": "auto", "oficioClave": "mec" },
+  { "_id": { "$oid": "a0270000000000000000000e" }, "termino": "carro", "oficioClave": "mec" },
+  { "_id": { "$oid": "a0270000000000000000000f" }, "termino": "motor", "oficioClave": "mec" },
+  { "_id": { "$oid": "a02700000000000000000010" }, "termino": "afinacion", "oficioClave": "mec" },
+  { "_id": { "$oid": "a02700000000000000000011" }, "termino": "llanta", "oficioClave": "mec" }
+]
