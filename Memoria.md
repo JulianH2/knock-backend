@@ -977,3 +977,8 @@
 - **Qué cambió:** `.mcp.json`, `.vscode/mcp.json`, `opencode.json`, `.codex/config.toml` y `docs/mcp.md` apuntan a `https://mcp.atlassian.com/v2/mcp`. Solo cambió la dirección: mismo transporte y mismos permisos (lectura permitida, escritura denegada).
 - **Por qué:** la dirección `/v1/mcp/authv2` está deprecada y Atlassian la retira el 2027-03-01.
 - **A evitar:** dejar direcciones antiguas del conector en configuraciones de agentes; al cambiar de endpoint, revisar los cinco archivos a la vez y no tocar la lista de herramientas.
+## 2026-11-19 · KNOCK-162 · Borrador de la spec 056 (autenticación entre servicios)
+- **Qué cambió:** `specs/056-autenticacion-entre-servicios/` (spec, plan, task, gates) en estado Borrador y su fila en `specs/README.md`. Sin código.
+- **Por qué:** la spec 009 dejó la regla general de llamadas internas para una spec propia; hoy solo existe el esquema HS256 por emisor de las specs 037 y 041 (implementado únicamente en Mercado).
+- **Decisiones (con porqué):** la spec toma ese esquema como base y fija propiedades, sin inventar mecanismo, rotación, replay ni Key Vault/Terraform: quedan como dudas P-01 a P-08 para el líder. Casos CA-NN (convención de specs numeradas, prueba `CA_056_NN`).
+- **A evitar:** dos nombres de secreto para lo mismo (`avisos-key-*` vs `interno-key-identity`) sin decidir convención.
