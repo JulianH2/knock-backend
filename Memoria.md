@@ -977,3 +977,9 @@
 - **Qué cambió:** `.mcp.json`, `.vscode/mcp.json`, `opencode.json`, `.codex/config.toml` y `docs/mcp.md` apuntan a `https://mcp.atlassian.com/v2/mcp`. Solo cambió la dirección: mismo transporte y mismos permisos (lectura permitida, escritura denegada).
 - **Por qué:** la dirección `/v1/mcp/authv2` está deprecada y Atlassian la retira el 2027-03-01.
 - **A evitar:** dejar direcciones antiguas del conector en configuraciones de agentes; al cambiar de endpoint, revisar los cinco archivos a la vez y no tocar la lista de herramientas.
+
+## 2026-11-19 · KNOCK-69 · Enmienda a la spec 020: solicitudes activas primero
+- **Qué cambió:** notas fechadas en R-09, CA-14, §6 y §14 de `specs/020-solicitudes-y-cotizaciones/spec.md`, CA-24 con su prueba prevista y la tarea T-16 (pendiente) en `task.md`. El estado de la spec y las casillas de aprobación no se tocaron.
+- **Por qué:** HU-026 CA1 pide Actividad con lo en curso primero. El Tech Lead eligió la opción A: no hay `/me/actividad`; la app usa `GET /api/v1/solicitudes` y `GET /api/v1/conversaciones`.
+- **Decisiones (con porqué):** (1) Activas: `enviada`, `cotizando`, `cita_confirmada`; terminadas: `terminada`, `calificada`, `cancelada`, `vencida`. (2) Cursor de tres datos (grupo, `creadoEn`, `_id`): cada grupo es una paginación por clave normal, así el cursor sigue estable. (3) Índice `{ clienteId, estado, creadoEn }` de la spec 048, sin borrar el actual. (4) Sin campo guardado de grupo, para no duplicar el estado.
+- **A evitar:** ordenar solo en la app (rompe la paginación) y reutilizar cursores del formato anterior (responden 400 `invalid_cursor`).
