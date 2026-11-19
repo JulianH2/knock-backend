@@ -789,6 +789,17 @@
 - **Pendiente:** fotos de demo con nombre fijo (dependen de la spec 013, OI-2: las solicitudes de demo apuntan a identificadores de foto que no existen en el módulo de archivos, así que el detalle las muestra sin enlaces), transacción verificada en Azure e invalidación de Redis al final de la carga.
 - **A evitar:** cargar datos de demo sin la guarda de host local; escribir fechas como texto.
 
+## 2026-11-17 — KNOCK-45 (HU-003): conciliación de la spec 016
+- **Estado:** la renovación y el cierre de sesión ya estaban hechos con KNOCK-211 (#19) y KNOCK-203; esta tarjeta solo concilia `specs/016/task.md` con el código real. Los diez casos CA-016 tienen prueba (`sdd_lint.py --trace 016`), el contrato está en `docs/endpoints.md` y `docs/openapi.identity.v1.json`, y no queda ninguna prueba omitida de la spec 016.
+- **Decisión:** no se cambia código ni contrato; la tarjeta no necesita otro PR de funcionalidad. La firma de la spec («Implementada») la hace una persona.
+- **Pendiente:** el evento `sesion_revocada { sid }` que pide la spec 037 (R-13) al cerrar una sesión o por reuso se concreta al implementar la 037 (KNOCK-60); la tolerancia a una renovación perdida por la señal se agrega solo si se mide.
+- **A evitar:** abrir trabajo de código para una tarjeta «cubierta por spec» sin comprobar antes con `--trace` y el contrato que de verdad falta algo.
+## 2026-11-17 · KNOCK-287 · Llaves de Identity (cifrado de campos) y de Market (cursor de búsqueda)
+- **Qué cambió:** `deploy/apps/main.tf` declara tres secretos nuevos de Key Vault: `identity-field-encryption-key` (lo lee solo `identity`, con `Security__FieldEncryption__ActiveVersion=1` en su `env`) y `search-cursor-key` (lo lee solo `market`, como `Busqueda__Cursor__Key`) e `interno-key-identity` (la leen `identity`, como `Services__Market__InternalKey`, y `market`, como `Security__InternalTokens__IdentityKey`, para la ruta interna de historial de la spec 041). `up.sh`, su prueba y `deploy/README.md` los listan entre los secretos obligatorios.
+- **Por qué:** Identity necesita su llave para guardar direcciones (spec 040) y sin ella responde 500; Market exige la clave del cursor de búsqueda (KNOCK-66) fuera de Development y no arranca sin ella.
+- **Decisiones (con porqué):** (1) Llave propia de Identity en lugar de reutilizar `field-encryption-key`: un rol por secreto y por servicio, y una llave comprometida no abre los datos del otro servicio. (2) Los valores no pasan por Terraform ni por el repositorio: una persona los crea en Key Vault.
+- **Pendiente:** crear los tres secretos en Key Vault y ejecutar el apply (una persona). Hasta entonces no fusionar los PR que dependen de ellos (direcciones y búsqueda).
+- **A evitar:** pegar el valor de una llave en un chat, un archivo o el historial; fusionar el código que exige una llave antes de que exista el secreto.
 ## 2026-11-17 — Respuestas verificadas para la evaluación y equivalencias del Excel (KNOCK-181)
 - **Decisión:** `docs/EVALUACION.md` reúne las respuestas a las preguntas de evaluación del backend con el archivo donde se comprueba cada una, las cifras de métodos de prueba y las equivalencias entre los IDs del Excel de endpoints y las rutas de las specs.
 - **Porqué:** ocho endpoints del Excel tienen otra ruta en las specs (por ejemplo `COT-04` es `POST /solicitudes/{id}/elegir`); quien cuente rutas del Excel contra las specs los da por «sin spec». `CON-02` se eliminó (spec 042, D-04) y `COL-01` (`GET /colonias`) queda pendiente de decisión.
@@ -815,3 +826,9 @@
 - **Decisiones (con porqué):** (1) Opción A de la tarjeta: se conserva la versión nueva y se quita una línea en vez de fijar la 5.0.0 (cambiar la versión pide el visto bueno del Tech Lead). (2) El filtro de casos sigue limitando la ejecución a las pruebas unitarias.
 - **Pendiente:** confirmar que el job corre en este PR, muta y genera reporte, y que la regla R-18 (mutación de `Knock.Hosting`) sigue aplicando.
 - **A evitar:** declarar `solution` y `test-projects` a la vez; subir la versión de dotnet-stryker sin probar el job en un PR.
+
+## 2026-11-19 · KNOCK-290 · Excepción temporal de Trivy por CVE-2026-97054 (pebble, imagen base)
+- **Qué cambió:** `.trivyignore` acepta CVE-2026-97054 y `security/exceptions.yaml` registra EXC-026 (responsable el Tech Lead, vence el 2026-12-03).
+- **Por qué:** el binario `usr/bin/pebble` de `mcr.microsoft.com/dotnet/aspnet:11.0` (construida el 2026-11-10) trae Go 1.27.3 y Trivy bloquea los PR; Microsoft aún no publica la imagen corregida y el sprint cierra el 2026-11-22.
+- **Decisiones (con porqué):** (1) Excepción en vez de esperar la imagen: no hay fecha de corrección y bloquea la fusión de unos 16 PR. (2) Vencimiento de 14 días y alcance de un solo CVE; los demás hallazgos siguen bloqueando.
+- **A evitar:** dejar la excepción al vencer sin revisar la imagen base; ampliarla a otros CVE sin una EXC propia.
