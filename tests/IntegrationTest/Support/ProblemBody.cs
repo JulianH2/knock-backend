@@ -8,7 +8,7 @@ namespace Knock.IntegrationTest.Support;
 /// </summary>
 internal static class ProblemBody
 {
-    private static readonly string[] RandomIds = ["traceId", "correlationId"];
+    private static readonly string[] _randomIds = ["traceId", "correlationId"];
 
     /// <summary>La sección <c>errors</c> si existe; si no, el cuerpo sin <c>traceId</c> ni <c>correlationId</c> (y el texto tal cual si no es un objeto JSON).</summary>
     public static string Reasons(string raw)
@@ -27,7 +27,7 @@ internal static class ProblemBody
                 return errors.GetRawText();
             }
 
-            var kept = document.RootElement.EnumerateObject().Where(p => !RandomIds.Contains(p.Name, StringComparer.Ordinal));
+            var kept = document.RootElement.EnumerateObject().Where(p => !_randomIds.Contains(p.Name, StringComparer.Ordinal));
             return JsonSerializer.Serialize(kept.ToDictionary(p => p.Name, p => p.Value.Clone(), StringComparer.Ordinal));
         }
         catch (JsonException)
