@@ -5,6 +5,294 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/v{version}/me/tecnicos-confianza": {
+      "get": {
+        "tags": [
+          "TrustedTechnicians"
+        ],
+        "summary": "Los técnicos guardados, del más reciente al más antiguo, con paginación por cursor. Un técnico oculto no aparece.",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor returned as nextCursor by the previous page.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "description": "Page size, 1 to 50. Defaults to 20.",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustedTechnicianPage"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustedTechnicianPage"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustedTechnicianPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/me/tecnicos-confianza/{tecnicoId}": {
+      "put": {
+        "tags": [
+          "TrustedTechnicians"
+        ],
+        "summary": "Guarda al técnico: 201 la primera vez y 200 al repetir, sin duplicar. Un técnico que no existe o está oculto responde 404 `technician_not_found`.",
+        "parameters": [
+          {
+            "name": "tecnicoId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustedTechnician"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustedTechnician"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustedTechnician"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustedTechnician"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustedTechnician"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustedTechnician"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "TrustedTechnicians"
+        ],
+        "summary": "Quita al técnico de la lista: 204; si no estaba, 404 `trusted_technician_not_found`.",
+        "parameters": [
+          {
+            "name": "tecnicoId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v{version}/tecnicos": {
       "post": {
         "tags": [
@@ -2016,6 +2304,193 @@
         }
       }
     },
+    "/api/v{version}/busqueda": {
+      "get": {
+        "tags": [
+          "Busqueda"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Obligatorio; texto normalizado de 2 a 80 caracteres.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "coloniaId",
+            "in": "query",
+            "description": "Obligatorio; ObjectId de la colonia activa.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "oficio",
+            "in": "query",
+            "description": "Clave opcional de un oficio activo.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "soloVerificados",
+            "in": "query",
+            "description": "Booleano opcional true o false; por defecto false.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Cursor opaco de la consulta y versión del diccionario.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Entero de 1 a 20; por defecto 20.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusquedaResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusquedaResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusquedaResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v{version}/colonias/existe": {
       "get": {
         "tags": [
@@ -2653,6 +3128,154 @@
           }
         },
         "description": "Estado del interruptor: `disponibleHoy` es derivado de `disponibleHasta` (UTC), que con el interruptor encendido es hoy a las 23:59:59 de la ciudad."
+      },
+      "BusquedaInterpretacion": {
+        "required": [
+          "estado",
+          "oficioDetectado",
+          "oficiosSugeridos"
+        ],
+        "type": "object",
+        "properties": {
+          "estado": {
+            "type": "string"
+          },
+          "oficioDetectado": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BusquedaOficio"
+              }
+            ]
+          },
+          "oficiosSugeridos": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/BusquedaOficio"
+            }
+          }
+        }
+      },
+      "BusquedaItem": {
+        "required": [
+          "id",
+          "nombre",
+          "oficios",
+          "calificacion",
+          "totalResenas",
+          "verificado",
+          "nivelVerificacion",
+          "coloniaBase",
+          "distanciaKm",
+          "atiendeTuColonia",
+          "fotoUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "oficios": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BusquedaOficio"
+            }
+          },
+          "calificacion": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "totalResenas": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "verificado": {
+            "type": "boolean"
+          },
+          "nivelVerificacion": {
+            "type": "string"
+          },
+          "coloniaBase": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "distanciaKm": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "atiendeTuColonia": {
+            "type": "boolean"
+          },
+          "fotoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "BusquedaOficio": {
+        "required": [
+          "clave",
+          "nombre"
+        ],
+        "type": "object",
+        "properties": {
+          "clave": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          }
+        }
+      },
+      "BusquedaResponse": {
+        "required": [
+          "interpretacion",
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "interpretacion": {
+            "$ref": "#/components/schemas/BusquedaInterpretacion"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BusquedaItem"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
       },
       "ChooseQuoteBody": {
         "required": [
@@ -3992,6 +4615,60 @@
         },
         "description": "Franja de 24 horas en la hora de la ciudad, con inicio anterior al fin."
       },
+      "TrustedTechnician": {
+        "required": [
+          "tecnicoId",
+          "nombre",
+          "fotoUrl",
+          "nivelVerificacion",
+          "guardadoEn"
+        ],
+        "type": "object",
+        "properties": {
+          "tecnicoId": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "fotoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nivelVerificacion": {
+            "type": "string"
+          },
+          "guardadoEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Un técnico guardado como de confianza: solo datos públicos, nunca teléfono, WhatsApp ni dirección (spec 042, R-12)."
+      },
+      "TrustedTechnicianPage": {
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrustedTechnician"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Una página de la lista; `NextCursor` falta en la última."
+      },
       "TrustNotice": {
         "required": [
           "texto",
@@ -4447,6 +5124,9 @@
       "name": "Arrival"
     },
     {
+      "name": "Busqueda"
+    },
+    {
       "name": "ChooseQuote"
     },
     {
@@ -4481,6 +5161,9 @@
     },
     {
       "name": "TrustNotice"
+    },
+    {
+      "name": "TrustedTechnicians"
     },
     {
       "name": "Visitas"
