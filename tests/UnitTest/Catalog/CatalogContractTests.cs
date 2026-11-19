@@ -22,7 +22,9 @@ public class CatalogContractTests
             "NeighborhoodExistsAsync(String, String, CancellationToken) : Task<Boolean>",
             // Spec 020 (KNOCK-59): lectura por clave de oficio y por id de colonia; devuelven tuplas para no sumar tipos públicos.
             "FindActiveTradeAsync(String, CancellationToken) : Task<Nullable<Nullable<ValueTuple`2>>>",
-            "FindNeighborhoodAsync(String, CancellationToken) : Task<Nullable<Nullable<ValueTuple`2>>>");
+            "FindNeighborhoodAsync(String, CancellationToken) : Task<Nullable<Nullable<ValueTuple`2>>>",
+            // Spec 046 (KNOCK-55): oficios activos para el autocompletado de técnicos; solo lectura y devuelve tuplas.
+            "ListActiveTradesAsync(CancellationToken) : Task<IReadOnlyList<ValueTuple`2>>");
         typeof(NeighborhoodLocator).IsPublic.Should().BeFalse("la consulta interna no es contrato entre módulos");
         typeof(ICatalogApi).GetMethods().Should().NotContain(method => method.ReturnType.ToString().Contains("Colonia", StringComparison.Ordinal));
     }
