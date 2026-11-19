@@ -912,3 +912,8 @@
 - **Por qué:** `entrega.js` aplica `db/021-tecnicos-usuario-index.js` (spec 046, índice único `usuarioId_1`, no parcial) y la semilla insertaba técnicos sin `usuarioId`, lo que daba DuplicateKey 11000.
 - **Decisiones (con porqué):** se corrige la semilla y no el índice, porque la unicidad por cuenta es requisito de la spec 046.
 - **A evitar:** sembrar `tecnicos` sin `usuarioId` en pruebas que ejecuten los scripts completos de `db/`.
+
+## 2026-11-19 · KNOCK-66 · Limitadores por persona de Identity usan el limitador compartido
+- **Qué cambió:** en `RateLimitingExtensions` de Identity, las políticas por sujeto y la de recuperación usan `SharedPartition` en lugar del `FixedWindow` que ya no existe.
+- **Por qué:** al unirse #157 y #163 en sprint-05 quedó una llamada a `FixedWindow` inexistente y la solución no compilaba.
+- **A evitar:** fusionar dos PR que tocan el mismo archivo sin compilar el resultado.
