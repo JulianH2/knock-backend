@@ -15,7 +15,7 @@
 
 - Las peticiones a `/auth/*` cuentan en las dos políticas (la estricta y la global).
 - `/health` (sin comprobaciones) es la **única exención** del límite. `/health/ready` hace un ping a MongoDB por petición anónima, así que desde TT-API-06 (KNOCK-138) tiene su propia política por IP (60 por minuto) y no cuenta en la global.
-- La prueba `PublicEndpointsRateLimitTests` (TC-TT-API-06-16), descrita para enumerar los endpoints públicos y exigir 429 salvo en `/health`, no se encuentra en esta rama y no se ha verificado aquí.
+- La prueba `PublicEndpointsRateLimitTests` (TC-TT-API-06-16) enumera los endpoints públicos de la API y exige 429 en todos salvo `/health`; un endpoint público nuevo hace fallar la prueba hasta que se documente. Hoy son `/health`, `/health/ready`, `POST /api/v1/auth/firebase`, `GET /api/v1/oficios` y, solo en Development, `/openapi/v1.json` y `/scalar`.
 - Respuesta al superar el límite: `429` `application/problem+json` con `Retry-After` (segundos); el cuerpo es el mismo de los demás errores (`type`, `title`, `status`, `traceId`, `correlationId`) y **no** revela IP, clave de partición, límite ni contador.
 - Los valores se configuran con `RateLimiting:Global:PermitLimit`, `RateLimiting:Global:Window`, `RateLimiting:Auth:PermitLimit`, `RateLimiting:Auth:Window`, `RateLimiting:Ready:PermitLimit` y `RateLimiting:Ready:Window` (`hh:mm:ss`). No hay valores por defecto en código: sin configuración válida la API no arranca.
 
@@ -41,7 +41,7 @@
 
 ## Crear solicitudes en Mercado (spec 020, KNOCK-59)
 
-`POST /api/v1/solicitudes` tiene además una política por `sub` del JWT de **10 solicitudes por hora**, ventana fija, por proceso (`RateLimitingExtensions.CreateRequestPolicy`); la respuesta 429 incluye `Retry-After`. Como las demás políticas de Mercado vive en la memoria de cada réplica, así que con dos réplicas el límite efectivo se duplica. El cuerpo se limita a 8 KB (413 antes de llegar al servicio). La ruta de creación y las rutas de consulta de solicitudes aún no están configuradas en el gateway. La ruta de cotizaciones sí está configurada y su límite se describe abajo (KNOCK-74).
+`POST /api/v1/solicitudes` tiene además una política por `sub` del JWT de **10 solicitudes por hora**, ventana fija, por proceso (`RateLimitingExtensions.CreateRequestPolicy`); la respuesta 429 incluye `Retry-After`. Como las demás políticas de Mercado vive en la memoria de cada réplica, así que con dos réplicas el límite efectivo se duplica. El cuerpo se limita a 8 KB (413 antes de llegar al servicio). Los límites de cotizar (3 por minuto por técnico) los define el controller de cotizaciones (KNOCK-74).
 
 ## Comparar y elegir cotización en Mercado (spec 021, KNOCK-82)
 
@@ -50,6 +50,16 @@
 ## Visita segura en Mercado (spec 022, KNOCK-85)
 
 `POST /api/v1/visitas/{id}/llegada` tiene una política por `sub` del JWT de **5 peticiones por minuto** por técnico, de ventana fija y por proceso (`RateLimitingExtensions.ArrivalPolicy`); la respuesta 429 incluye `Retry-After`. Como las demás políticas de Mercado vive en la memoria de cada réplica, con dos réplicas el límite efectivo se duplica. El control real contra la fuerza bruta del código de cuatro dígitos no es este límite sino los tres intentos por visita y el bloqueo, guardados en la visita. `GET /api/v1/visitas/{id}` y `POST /api/v1/visitas/{id}/aviso` no tienen política propia (decisión del 2026-11-12 para el aviso): rige solo el límite general. El cuerpo de la llegada se limita a 8 KB (413).
+
+## Técnicos en Mercado (spec 046, KNOCK-48)
+
+`POST /api/v1/tecnicos` tiene una política por `sub` del JWT de **5 peticiones por hora** (`RateLimitingExtensions.RegisterTechnicianPolicy`), ventana fija y por proceso; la respuesta 429 incluye `Retry-After`. Como las demás políticas de Mercado vive en la memoria de cada réplica, así que con dos réplicas el límite efectivo se duplica. El registro solo ocurre una vez por cuenta (índice único de `usuarioId`), así que el límite frena el abuso de validaciones y no los duplicados. El cuerpo se limita a 8 KB (413). Rigen además los límites globales del gateway y el límite por IP de Mercado.
+
+`GET /api/v1/tecnicos/{id}` es pública y no tiene política propia: rigen los límites globales del gateway y el límite por IP de Mercado. La caché de 1 minuto del perfil reduce las lecturas a MongoDB por técnico.
+
+`PUT /api/v1/tecnicos/me`, `PUT /api/v1/tecnicos/me/disponibilidad` y `GET`/`PUT /api/v1/tecnicos/me/horarios` no tienen política propia: solo los usa el propio técnico y cada escritura toca un único documento, así que rigen los límites globales del gateway y el límite por IP de Mercado. Los cuerpos se limitan a 8 KB, 1 KB y 4 KB (413).
+
+`GET /api/v1/tecnicos/autocompletar` es pública: la frena el límite global por IP del gateway y de Mercado (R-41) y la caché de 30 s por texto. `GET /api/v1/tecnicos/{id}/llega-a-mi-colonia` pide sesión y usa los límites globales; su caché de 1 minuto evita repetir la lectura.
 
 ## Lista de espera en Mercado (spec 023, KNOCK-47)
 
@@ -61,17 +71,21 @@
 
 `POST /api/v1/solicitudes/{id}/cotizaciones` añade una ventana fija de **3 peticiones por minuto por `sub`** y por proceso, además de los límites generales. La cuarta responde 429 con `Retry-After`. Con dos réplicas pueden pasar hasta 6 por minuto; el límite compartido queda para KNOCK-247.
 
+## Chat de visita en Mensajería (spec 026, KNOCK-62)
+
+`EnviarMensaje` del hub `/hubs/chat` limita a **30 mensajes por minuto por persona** (`Chat:MensajesPorMinuto`, de 1 a 600), con una ventana fija de 60 segundos y un contador compartido en Redis (`chat:limite:{sub}`) que se incrementa y vence en una sola operación atómica, así que dos copias del servicio comparten el total. Al pasarse, la invocación responde `{ ok: false, codigo: "message_limit", reintentarEnSegundos }` y el mensaje no se retransmite. El saludo del hub (`POST /hubs/chat/negotiate`) y sus reintentos son peticiones HTTP y siguen los límites generales del gateway y del servicio. Si Redis no responde, el saludo responde 503 y no se acepta la conexión.
+
 ## Gateway (spec 009, KNOCK-204)
 
-El gateway limita con contadores de ventana fija en Redis (`ratelimit:ip:*`, `ratelimit:auth:*`, `ratelimit:user:*`), compartidos entre réplicas, a diferencia del limitador en memoria de los servicios.
+El gateway limita con contadores de ventana fija en Redis (`ratelimit:ip:*`, `ratelimit:auth:*`, `ratelimit:user:*`, `ratelimit:busqueda:*`), compartidos entre réplicas, a diferencia del limitador en memoria de los servicios.
 
 | Política | Alcance | Límite (punto de partida) | Ventana | Clave |
 |---|---|---|---|---|
 | IP | Toda ruta salvo `/health`, antes de autenticar | 100 peticiones | 1 minuto | IP del cliente (IPv6 por /64) |
 | Estricta `/auth` | `/api/v{n}/auth/*`, además de la de IP | 10 peticiones | 1 minuto | IP del cliente |
 | Usuario | Peticiones con sesión, después de autenticar | 120 peticiones | 1 minuto | `sub` del JWT |
-| `busqueda` (**propuesta pendiente T-06**, Guillermo; aún no aplicada) | `GET /api/v1/busqueda`, además de IP y usuario | 30 peticiones | 1 minuto | `sub` del JWT |
+| Búsqueda de expertos | `/api/v{n}/busqueda`, además de la de usuario (spec 027, R-14) | 30 peticiones | 1 minuto | `sub` del JWT |
 
-- Configuración: `RateLimiting:Ip`, `RateLimiting:Auth` y `RateLimiting:User` (`PermitLimit` y `Window`), sin valores por defecto en código.
+- Configuración: `RateLimiting:Ip`, `RateLimiting:Auth`, `RateLimiting:User` y `RateLimiting:Search` (`PermitLimit` y `Window`), sin valores por defecto en código.
 - 429 en `application/problem+json` con `Retry-After` en segundos (mínimo 1); el cuerpo no revela IP, clave ni contador.
 - Si Redis no responde, el gateway responde 503 con `Retry-After: 5`: sin contadores no se puede limitar.

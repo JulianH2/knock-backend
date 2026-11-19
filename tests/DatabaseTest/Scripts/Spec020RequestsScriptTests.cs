@@ -51,7 +51,7 @@ public sealed class Spec020RequestsScriptTests
             var script = $"{MongoToolsContainer.DbDirectory}/021-tecnicos-usuario-index.js";
             (await tools.RunAsync("mongosh", "--nodb", "--quiet", "--file", script)).ExitCode.Should().Be(0);
             (await tools.RunAsync("mongosh", "--nodb", "--quiet", "--file", script)).ExitCode.Should().Be(0);
-            (await MongoIndexes.DescribeAsync(client.GetDatabase(name), "tecnicos")).Should().Contain("usuarioId_1 usuarioId:1 - ttl:-");
+            (await MongoIndexes.DescribeAsync(client.GetDatabase(name), "tecnicos")).Should().Contain("usuarioId_1 usuarioId:1 unique ttl:-");
         }
         finally
         {
