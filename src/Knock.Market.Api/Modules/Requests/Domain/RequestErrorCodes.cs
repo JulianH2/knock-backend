@@ -6,8 +6,6 @@ namespace Knock.Market.Api.Modules.Requests.Domain;
 /// </summary>
 internal static class RequestErrorCodes
 {
-    public const string TradeInvalidCode = "trade_invalid";
-    public const string ColoniaNotFoundCode = "colonia_not_found";
     public const string AddressNotApplicableCode = "address_not_applicable";
     public const string PhotoInvalidCode = "photo_invalid";
     public const string ContentRejectedCode = "content_rejected";

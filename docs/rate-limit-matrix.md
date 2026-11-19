@@ -51,6 +51,16 @@
 
 `POST /api/v1/visitas/{id}/llegada` tiene una política por `sub` del JWT de **5 peticiones por minuto** por técnico, de ventana fija y por proceso (`RateLimitingExtensions.ArrivalPolicy`); la respuesta 429 incluye `Retry-After`. Como las demás políticas de Mercado vive en la memoria de cada réplica, con dos réplicas el límite efectivo se duplica. El control real contra la fuerza bruta del código de cuatro dígitos no es este límite sino los tres intentos por visita y el bloqueo, guardados en la visita. `GET /api/v1/visitas/{id}` y `POST /api/v1/visitas/{id}/aviso` no tienen política propia (decisión del 2026-11-12 para el aviso): rige solo el límite general. El cuerpo de la llegada se limita a 8 KB (413).
 
+## Técnicos en Mercado (spec 046, KNOCK-48)
+
+`POST /api/v1/tecnicos` tiene una política por `sub` del JWT de **5 peticiones por hora** (`RateLimitingExtensions.RegisterTechnicianPolicy`), ventana fija y por proceso; la respuesta 429 incluye `Retry-After`. Como las demás políticas de Mercado vive en la memoria de cada réplica, así que con dos réplicas el límite efectivo se duplica. El registro solo ocurre una vez por cuenta (índice único de `usuarioId`), así que el límite frena el abuso de validaciones y no los duplicados. El cuerpo se limita a 8 KB (413). Rigen además los límites globales del gateway y el límite por IP de Mercado.
+
+`GET /api/v1/tecnicos/{id}` es pública y no tiene política propia: rigen los límites globales del gateway y el límite por IP de Mercado. La caché de 1 minuto del perfil reduce las lecturas a MongoDB por técnico.
+
+`PUT /api/v1/tecnicos/me`, `PUT /api/v1/tecnicos/me/disponibilidad` y `GET`/`PUT /api/v1/tecnicos/me/horarios` no tienen política propia: solo los usa el propio técnico y cada escritura toca un único documento, así que rigen los límites globales del gateway y el límite por IP de Mercado. Los cuerpos se limitan a 8 KB, 1 KB y 4 KB (413).
+
+`GET /api/v1/tecnicos/autocompletar` es pública: la frena el límite global por IP del gateway y de Mercado (R-41) y la caché de 30 s por texto. `GET /api/v1/tecnicos/{id}/llega-a-mi-colonia` pide sesión y usa los límites globales; su caché de 1 minuto evita repetir la lectura.
+
 ## Lista de espera en Mercado (spec 023, KNOCK-47)
 
 `GET /api/v1/zonas/cp/{cp}` requiere sesión y usa los límites globales del gateway por IP y usuario y el límite por IP de Mercado; no tiene política específica adicional.
