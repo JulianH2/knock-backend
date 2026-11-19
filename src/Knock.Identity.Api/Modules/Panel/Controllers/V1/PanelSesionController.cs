@@ -1,20 +1,21 @@
 using Asp.Versioning;
 using Knock.Identity.Api.Modules.Panel.Authorization;
+using Knock.Identity.Api.Modules.Panel.Domain;
 using Knock.Identity.Api.Modules.Panel.Dtos;
+using Knock.Identity.Api.Modules.Panel.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Knock.Identity.Api.Modules.Panel.Controllers.V1;
 
 /// <summary>
-/// Sesión del panel interno (spec 033). T-01: contrato publicado con respuestas simuladas para que frontend (spec 023) genere su cliente;
-/// T-06 reemplaza el cuerpo de cada acción por los servicios reales.
+/// Sesión del panel interno (spec 033). Los dos pasos de acceso (T-06) son reales; <c>renovar</c> y <c>cerrar</c> siguen simulados hasta T-07.
 /// </summary>
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/panel/sesion")]
 [PanelSesionEndpoint]
-internal sealed class PanelSesionController : ControllerBase
+internal sealed class PanelSesionController(AccesoPanelService access) : ControllerBase
 {
     /// <summary>Límite del cuerpo del primer paso: 8 KiB (R-04).</summary>
     public const int CelularMaxBodyBytes = 8192;
@@ -34,8 +35,19 @@ internal sealed class PanelSesionController : ControllerBase
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status503ServiceUnavailable)]
-    public IActionResult VerifyPhone([FromBody] PanelCelularRequest request) =>
-        Ok(new PanelCelularResponse(new string('A', 22), true, DateTime.UtcNow.AddMinutes(5)));
+    public async Task<IActionResult> VerifyPhone([FromBody] PanelCelularRequest request, CancellationToken cancellationToken)
+    {
+        // El ValidationFilter ya garantizó que idToken viene y tiene de 1 a 4 096 caracteres.
+        var outcome = await access.VerifyPhoneAsync(request.IdToken ?? string.Empty, PanelHttp.ClientIp(HttpContext), cancellationToken);
+        return outcome switch
+        {
+            PhoneOutcome.Challenge challenge => Ok(new PanelCelularResponse(challenge.ChallengeId, true, challenge.ExpiresAt)),
+            PhoneOutcome.InvalidCredentials => await PanelHttp.ProblemAsync(HttpContext, StatusCodes.Status401Unauthorized, PanelErrorCodes.InvalidCredentialsCode),
+            PhoneOutcome.Locked locked => await PanelHttp.ProblemAsync(HttpContext, StatusCodes.Status429TooManyRequests, PanelErrorCodes.LockedCode, locked.RetryAfter),
+            PhoneOutcome.LimitExceeded limited => await PanelHttp.ProblemAsync(HttpContext, StatusCodes.Status429TooManyRequests, PanelErrorCodes.LimitExceededCode, limited.RetryAfter),
+            _ => await PanelHttp.ProblemAsync(HttpContext, StatusCodes.Status403Forbidden, PanelErrorCodes.NoPanelAccessCode),
+        };
+    }
 
     /// <summary>Segundo paso (R-08 a R-12): valida el TOTP y abre la sesión del panel; la cookie de renovación va en <c>Set-Cookie</c>.</summary>
     [HttpPost("totp")]
@@ -49,8 +61,26 @@ internal sealed class PanelSesionController : ControllerBase
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status503ServiceUnavailable)]
-    public IActionResult VerifyTotp([FromBody] PanelTotpRequest request) =>
-        Ok(new PanelAccesoResponse("simulado", DateTime.UtcNow.AddMinutes(15), [], "Simulado"));
+    public async Task<IActionResult> VerifyTotp([FromBody] PanelTotpRequest request, CancellationToken cancellationToken)
+    {
+        var outcome = await access.VerifyTotpAsync(request.DesafioId ?? string.Empty, request.Codigo ?? string.Empty, PanelHttp.ClientIp(HttpContext), cancellationToken);
+        switch (outcome)
+        {
+            case TotpOutcome.Granted granted:
+                PanelHttp.SetRefreshCookie(Response, granted.Grant.RefreshToken);
+                return Ok(new PanelAccesoResponse(granted.Grant.AccessToken, granted.Grant.ExpiraEn, granted.Grant.Permisos, granted.Grant.Nombre));
+            case TotpOutcome.ChallengeExpired:
+                return await PanelHttp.ProblemAsync(HttpContext, StatusCodes.Status401Unauthorized, PanelErrorCodes.ChallengeExpiredCode);
+            case TotpOutcome.InvalidCode:
+                return await PanelHttp.ProblemAsync(HttpContext, StatusCodes.Status401Unauthorized, PanelErrorCodes.InvalidCodeCode);
+            case TotpOutcome.Locked locked:
+                return await PanelHttp.ProblemAsync(HttpContext, StatusCodes.Status429TooManyRequests, PanelErrorCodes.LockedCode, locked.RetryAfter);
+            case TotpOutcome.LimitExceeded limited:
+                return await PanelHttp.ProblemAsync(HttpContext, StatusCodes.Status429TooManyRequests, PanelErrorCodes.LimitExceededCode, limited.RetryAfter);
+            default:
+                return await PanelHttp.ProblemAsync(HttpContext, StatusCodes.Status403Forbidden, PanelErrorCodes.NoPanelAccessCode);
+        }
+    }
 
     /// <summary>Renovación (R-17 y R-18): sin cuerpo; exige la cookie, <c>X-Knock-Panel: 1</c> y el <c>Origin</c> del panel.</summary>
     [HttpPost("renovar")]

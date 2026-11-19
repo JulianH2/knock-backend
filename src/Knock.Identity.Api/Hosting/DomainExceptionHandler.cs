@@ -1,5 +1,6 @@
 // jscpd:ignore-start -- EXC-015
 using Knock.Identity.Api.Common.Errors;
+using Knock.Identity.Api.Modules.Panel.Domain;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -12,6 +13,8 @@ namespace Knock.Identity.Api.Hosting;
 /// </summary>
 internal sealed class DomainExceptionHandler : IExceptionHandler
 {
+    private const string _retryAfterSeconds = "30";
+
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
@@ -21,6 +24,12 @@ internal sealed class DomainExceptionHandler : IExceptionHandler
         }
 
         var status = DomainErrors.ToStatusCode(domain.Kind);
+        if (domain.Code is PanelErrorCodes.UnavailableCode or PanelErrorCodes.AuditUnavailableCode)
+        {
+            // Spec 033, §5: los 503 del panel llevan Retry-After.
+            httpContext.Response.Headers.RetryAfter = _retryAfterSeconds;
+        }
+
         await ProblemResponses.WriteAsync(httpContext, status, ReasonPhrases.GetReasonPhrase(status), domain.Code);
         return true;
     }

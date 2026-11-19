@@ -30,6 +30,10 @@ public static class PanelModuleExtensions
         services.AddSingleton(CreateTotpKeys);
         services.AddSingleton<TotpService>();
         services.AddSingleton<PanelAdminService>();
+        services.AddSingleton<PanelTokenIssuer>();
+        services.AddSingleton<SesionPanelService>();
+        services.AddSingleton<AccesoPanelService>();
+        services.AddSingleton<ActivacionPanelService>();
         return services;
     }
 
