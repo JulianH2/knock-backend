@@ -789,6 +789,12 @@
 - **Pendiente:** fotos de demo con nombre fijo (dependen de la spec 013, OI-2: las solicitudes de demo apuntan a identificadores de foto que no existen en el módulo de archivos, así que el detalle las muestra sin enlaces), transacción verificada en Azure e invalidación de Redis al final de la carga.
 - **A evitar:** cargar datos de demo sin la guarda de host local; escribir fechas como texto.
 
+## 2026-11-17 · KNOCK-287 · Llaves de Identity (cifrado de campos) y de Market (cursor de búsqueda)
+- **Qué cambió:** `deploy/apps/main.tf` declara tres secretos nuevos de Key Vault: `identity-field-encryption-key` (lo lee solo `identity`, con `Security__FieldEncryption__ActiveVersion=1` en su `env`) y `search-cursor-key` (lo lee solo `market`, como `Busqueda__Cursor__Key`) e `interno-key-identity` (la leen `identity`, como `Services__Market__InternalKey`, y `market`, como `Security__InternalTokens__IdentityKey`, para la ruta interna de historial de la spec 041). `up.sh`, su prueba y `deploy/README.md` los listan entre los secretos obligatorios.
+- **Por qué:** Identity necesita su llave para guardar direcciones (spec 040) y sin ella responde 500; Market exige la clave del cursor de búsqueda (KNOCK-66) fuera de Development y no arranca sin ella.
+- **Decisiones (con porqué):** (1) Llave propia de Identity en lugar de reutilizar `field-encryption-key`: un rol por secreto y por servicio, y una llave comprometida no abre los datos del otro servicio. (2) Los valores no pasan por Terraform ni por el repositorio: una persona los crea en Key Vault.
+- **Pendiente:** crear los tres secretos en Key Vault y ejecutar el apply (una persona). Hasta entonces no fusionar los PR que dependen de ellos (direcciones y búsqueda).
+- **A evitar:** pegar el valor de una llave en un chat, un archivo o el historial; fusionar el código que exige una llave antes de que exista el secreto.
 ## 2026-11-17 — Respuestas verificadas para la evaluación y equivalencias del Excel (KNOCK-181)
 - **Decisión:** `docs/EVALUACION.md` reúne las respuestas a las preguntas de evaluación del backend con el archivo donde se comprueba cada una, las cifras de métodos de prueba y las equivalencias entre los IDs del Excel de endpoints y las rutas de las specs.
 - **Porqué:** ocho endpoints del Excel tienen otra ruta en las specs (por ejemplo `COT-04` es `POST /solicitudes/{id}/elegir`); quien cuente rutas del Excel contra las specs los da por «sin spec». `CON-02` se eliminó (spec 042, D-04) y `COL-01` (`GET /colonias`) queda pendiente de decisión.
