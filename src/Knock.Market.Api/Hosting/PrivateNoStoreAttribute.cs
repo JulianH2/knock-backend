@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Net.Http.Headers;
 
-namespace Knock.Market.Api.Modules.Requests.Controllers;
+namespace Knock.Market.Api.Hosting;
 
 /// <summary>
 /// <c>Cache-Control: private, no-store</c> en toda respuesta del controller (spec 020, R-18): los datos son personales y cambian al crear, y no llevan <c>ETag</c>. Se fija

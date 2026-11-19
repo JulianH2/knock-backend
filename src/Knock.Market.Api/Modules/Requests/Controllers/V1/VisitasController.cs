@@ -14,7 +14,7 @@ namespace Knock.Market.Api.Modules.Requests.Controllers.V1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/visitas")]
 [Authorize]
-[PrivateNoStore]
+[Hosting.PrivateNoStore]
 internal sealed class VisitasController(VisitService service) : BusinessRuleController
 {
     /// <summary>Vista del cliente (con el código cuando corresponde) o del técnico (con la dirección y sin código). Cualquier otra persona recibe 404.</summary>

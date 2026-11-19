@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Knock.Market.Api.Common.Errors;
 using Knock.Market.Api.Modules.Requests.Domain;
 using Knock.Market.Api.Modules.Requests.Dtos;
 using Knock.Market.Api.Modules.Requests.Services;
@@ -16,7 +17,7 @@ namespace Knock.Market.Api.Modules.Requests.Controllers.V1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/visitas/{id}/llegada")]
 [Authorize]
-[PrivateNoStore]
+[Hosting.PrivateNoStore]
 internal sealed class ArrivalController(ArrivalService service) : BusinessRuleController
 {
     /// <summary>
@@ -43,7 +44,7 @@ internal sealed class ArrivalController(ArrivalService service) : BusinessRuleCo
         return outcome.Status switch
         {
             ArrivalStatus.Arrived => Ok(outcome.Visit),
-            ArrivalStatus.NotATechnician => Rule(StatusCodes.Status403Forbidden, VisitErrorCodes.NotATechnicianCode),
+            ArrivalStatus.NotATechnician => Rule(StatusCodes.Status403Forbidden, ErrorCodes.NotATechnicianCode),
             ArrivalStatus.NotFound => NotFound(),
             ArrivalStatus.WrongCode => Rule(StatusCodes.Status422UnprocessableEntity, VisitErrorCodes.WrongCode, "intentosRestantes", outcome.AttemptsLeft),
             ArrivalStatus.CodeUsed => Rule(StatusCodes.Status409Conflict, VisitErrorCodes.CodeUsedCode),

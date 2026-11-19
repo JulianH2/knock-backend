@@ -75,7 +75,7 @@ def identity_environment() -> dict[str, str]:
 
 
 def service_environment(service: str) -> dict[str, str]:
-    return identity_environment() if service == "identity" else {}
+    return identity_environment() if service == "identity" else {"Busqueda__Cursor__Key": random_base64()}
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

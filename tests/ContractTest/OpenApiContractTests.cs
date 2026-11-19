@@ -5,6 +5,22 @@ namespace Knock.ContractTest;
 /// <summary>TT-CI-02 (KNOCK-137): los contratos publicados en <c>docs/</c> son OpenAPI 3.x válidos, todas sus operaciones declaran respuestas y los errores con cuerpo usan ProblemDetails.</summary>
 public sealed class OpenApiContractTests
 {
+    private static readonly string[] _searchParameters = ["coloniaId", "cursor", "limit", "oficio", "q", "soloVerificados"];
+    [Fact]
+    public void Search_Declares_All_Query_Parameters_CA_027_12()
+    {
+        using var document = Load("openapi.v1.json");
+        var operation = document.RootElement.GetProperty("paths").GetProperty("/api/v{version}/busqueda").GetProperty("get");
+        var parameters = operation.GetProperty("parameters").EnumerateArray()
+            .Where(parameter => parameter.GetProperty("in").GetString() == "query").ToArray();
+        Assert.Equal(_searchParameters, parameters.Select(parameter => parameter.GetProperty("name").GetString()).Order(StringComparer.Ordinal));
+        Assert.All(parameters, parameter =>
+        {
+            Assert.False(string.IsNullOrWhiteSpace(parameter.GetProperty("description").GetString()));
+            Assert.Equal("string", parameter.GetProperty("schema").GetProperty("type").GetString());
+        });
+    }
+
     private static readonly HashSet<string> _httpMethods = new(["get", "put", "post", "delete", "options", "head", "patch", "trace"], StringComparer.Ordinal);
 
     private static JsonDocument Load(string fileName)

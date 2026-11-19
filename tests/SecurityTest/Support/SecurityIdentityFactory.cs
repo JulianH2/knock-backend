@@ -2,6 +2,7 @@ extern alias IdentityApi;
 
 using System.Net;
 using System.Security.Cryptography;
+using IdentityApi::Knock.Identity.Api.Modules.Account.Services;
 using IdentityApi::Knock.Identity.Api.Modules.Sesiones.Data;
 using IdentityApi::Knock.Identity.Api.Modules.Sesiones.Services;
 using Knock.Contracts.Colonias;
@@ -43,6 +44,9 @@ internal sealed class SecurityIdentityFactory(IReadOnlyDictionary<string, string
     public FakeFirebaseVerifier Firebase { get; } = new();
 
     public FakeColoniaCatalog Colonias { get; } = new();
+
+    /// <summary>Mercado de mentira para las consultas internas de la cuenta (spec 039): las rutas reales todavía no existen.</summary>
+    public FakeMarketAccountClient MarketAccount { get; } = new();
 
     public IMongoDatabase Database => Services.GetRequiredService<IMongoClient>().GetDatabase(settings["Mongo:Databases:Identity"]!);
 
@@ -118,6 +122,7 @@ internal sealed class SecurityIdentityFactory(IReadOnlyDictionary<string, string
             services.AddSingleton<IStartupFilter>(new RemoteIpStartupFilter());
             services.AddSingleton<IFirebaseIdTokenVerifier>(Firebase);
             services.AddSingleton<IColoniaCatalog>(Colonias);
+            services.AddSingleton<IMarketAccountClient>(MarketAccount);
         });
     }
 }

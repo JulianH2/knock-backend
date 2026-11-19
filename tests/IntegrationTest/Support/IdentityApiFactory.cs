@@ -32,6 +32,7 @@ internal sealed class IdentityApiFactory(IReadOnlyDictionary<string, string?> se
     private static readonly byte[] _signingKey = RandomNumberGenerator.GetBytes(32);
     private static readonly byte[] _phoneEncryptionKey = RandomNumberGenerator.GetBytes(32);
     private static readonly byte[] _phoneHmacKey = RandomNumberGenerator.GetBytes(32);
+    private static readonly byte[] _fieldEncryptionKey = RandomNumberGenerator.GetBytes(32);
 
     /// <summary>Servicios que la prueba sustituye en el host (por ejemplo, el catálogo de colonias de Mercado).</summary>
     public Action<IServiceCollection>? ExtraServices { get; private init; }
@@ -90,6 +91,9 @@ internal sealed class IdentityApiFactory(IReadOnlyDictionary<string, string?> se
                 ["Identity:PhoneProtection:HmacKeys:1"] = Convert.ToBase64String(_phoneHmacKey),
                 ["Identity:PhoneProtection:EncryptionKeyVersion"] = "1",
                 ["Identity:PhoneProtection:HmacKeyVersion"] = "1",
+                // Cifrado de campo de la dirección (spec 040): llave sintética por proceso; en producción llega de Key Vault.
+                ["Security:FieldEncryption:ActiveVersion"] = "1",
+                ["Security:FieldEncryption:Keys:1"] = Convert.ToBase64String(_fieldEncryptionKey),
             };
             foreach (var (key, value) in settings)
             {

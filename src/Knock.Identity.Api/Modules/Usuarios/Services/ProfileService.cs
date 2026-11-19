@@ -17,7 +17,7 @@ internal sealed partial class ProfileService(
     ILogger<ProfileService> logger)
 {
     public const string ColoniaNotFoundCode = "colonia_not_found";
-    public const string MarketUnavailableCode = "market_unavailable";
+    public const string MarketUnavailableCode = CommonErrorCodes.MarketUnavailable;
     public const string DeletionScheduledCode = "deletion_scheduled";
 
     public async Task<UserProfile> GetAsync(string sub, CancellationToken cancellationToken)
