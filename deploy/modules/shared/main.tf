@@ -249,7 +249,7 @@ resource "azurerm_storage_management_policy" "quarantine" {
 
 # ---- Imágenes públicas (spec 032, ADR-007 opción D: sin recurso de CDN) ----
 # Cuenta aparte de la privada: solo recibe imágenes ya procesadas y moderadas, con lectura anónima por blob (sin listado).
-# No hay ningún recurso azurerm_cdn_* ni azurerm_cdn_frontdoor_* (CA-23); la dirección base es configurable para poner una CDN después sin cambiar código.
+# No hay ningún recurso de CDN de Azure ni de Front Door (CA-23); la dirección base es configurable para poner una CDN después sin cambiar código.
 
 resource "azurerm_storage_account" "public_images" {
   #checkov:skip=CKV_AZURE_190: EXC pendiente (spec 032, T-10): la lectura anónima por blob es el diseño de la spec 032 (ADR-007); una persona la registra en security/exceptions.yaml
