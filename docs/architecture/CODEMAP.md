@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-19T18:22:50Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-19T22:00:45Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -19,7 +19,7 @@
 | `Knock.Identity.Api` | -, common, hosting | 33 | 67 | 95 |
 | `Knock.Market.Api` | -, common, hosting | 34 | 68 | 100 |
 | `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
-| `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
+| `Media` | -, data, domain, dtos, services, validators | 21 | 36 | 60 |
 | `Requests` | -, controllers, data, domain, dtos, services, validators | 62 | 134 | 123 |
 | `Safety` | -, controllers, data, domain, dtos, services, validators | 15 | 38 | 33 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 26 | 47 | 54 |
@@ -720,6 +720,10 @@
 - `src/Knock.Market.Api/Modules/Media/IMediaApi.cs` — interface `IMediaApi`
 - `src/Knock.Market.Api/Modules/Media/MediaModuleExtensions.cs` — class `MediaModuleExtensions`, class `UnavailableModerator`
   - `AddMediaModule()`:13, `ReviewTextAsync()`:42, `ReviewImageAsync()`:45
+- `src/Knock.Market.Api/Modules/Media/Options/ImagenesOptions.cs` — class `ImagenesOptions`, class `ImagenesOptionsValidator`
+  - `Validate()`:25, `TryParseBase()`:35
+- `src/Knock.Market.Api/Modules/Media/Options/ImagenesServiceCollectionExtensions.cs` — class `ImagenesServiceCollectionExtensions`
+  - `AddImagenesPublicas()`:10
 
 **data**
 
@@ -732,6 +736,8 @@
 
 **domain**
 
+- `src/Knock.Market.Api/Modules/Media/Domain/ImagenPublica.cs` — enum `PropositoImagen`, class `PropositoImagenExtensions`, record `ImagenPublica`
+  - `Parse()`:8, `ToContractValue()`:15
 - `src/Knock.Market.Api/Modules/Media/Domain/MediaFile.cs` — enum `MediaUsage`, enum `MediaFileState`, enum `ImageFormat`, record `MediaFile`
   - `MediaFile()`:14, `IsReadyFor()`:24, `CreatePending()`:25, `MarkReady()`:28, `MarkRejected()`:33
 - `src/Knock.Market.Api/Modules/Media/Domain/MediaOutcome.cs` — enum `MediaOutcomeStatus`, record `MediaOutcome`, class `MediaRejection`, record `ProcessedImage`
@@ -750,6 +756,8 @@
 - `src/Knock.Market.Api/Modules/Media/Services/IMediaBlobStore.cs` — record `UploadedBlob`, interface `IMediaBlobStore`
 - `src/Knock.Market.Api/Modules/Media/Services/ImageProcessor.cs` — class `ImageProcessor`
   - `ProcessAsync()`:21, `ProcessAsync()`:24, `RunLimitedAsync()`:28, `Dispose()`:42
+- `src/Knock.Market.Api/Modules/Media/Services/ImagenPublicaUrl.cs` — class `ImagenPublicaUrl`
+  - `Build()`:31, `TryParse()`:40
 - `src/Knock.Market.Api/Modules/Media/Services/InMemoryMediaBlobStore.cs` — class `InMemoryMediaBlobStore`
   - `EnsureContainersAsync()`:12, `UploadRaw()`:14, `ContainsQuarantine()`:21, `GetBlob()`:23, `ClearQuarantine()`:26, `GetUploadedAsync()`:28, `DownloadQuarantineAsync()`:33, `UploadFileAsync()`:44, `DeleteQuarantineAsync()`:53
 - `src/Knock.Market.Api/Modules/Media/Services/MediaApi.cs` — class `MediaApi`
