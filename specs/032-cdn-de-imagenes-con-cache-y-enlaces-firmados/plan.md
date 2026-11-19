@@ -1,6 +1,6 @@
 # Plan 032 — CDN de imágenes: entrega con caché y enlaces firmados
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Infraestructura primero: cuenta pública, contenedor de cuarentena con su regla de ciclo de vida, roles de la identidad de Mercado y salidas de Terraform, sin ningún recurso de CDN.

@@ -1,6 +1,6 @@
 # Plan 018 — Sesiones por dispositivo
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Agregar al repositorio de `sesiones` la consulta de sesiones abiertas de una persona y la búsqueda de una sesión por id con su dueña.

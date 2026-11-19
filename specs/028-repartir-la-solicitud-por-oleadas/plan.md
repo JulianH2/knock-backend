@@ -1,6 +1,6 @@
 # Plan 028 — Repartir la solicitud por oleadas
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Script de `db/` con `envios`, el índice único de `tareas_programadas`, el TTL parcial y el índice de elegibilidad de `tecnicos` (§6).

@@ -1,6 +1,6 @@
 # Plan 026 — Mensajería en tiempo real con SignalR y Redis
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Registrar Redis en el arranque de Mensajería (`AddKnockRedis`, contraseña obligatoria) e incluirlo en `/health/ready`.
