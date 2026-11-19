@@ -1,5 +1,7 @@
+using Knock.Identity.Api.Modules.Panel.Authorization;
 using Knock.Identity.Api.Modules.Panel.Data;
 using Knock.Identity.Api.Modules.Panel.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
@@ -34,6 +36,9 @@ public static class PanelModuleExtensions
         services.AddSingleton<SesionPanelService>();
         services.AddSingleton<AccesoPanelService>();
         services.AddSingleton<ActivacionPanelService>();
+        services.AddSingleton<SesionPanelCicloService>();
+        services.AddAuthentication().AddJwtBearer(PanelBearer.Scheme, _ => { });
+        services.AddOptions<JwtBearerOptions>(PanelBearer.Scheme).Configure<PanelSettings>(PanelBearer.Configure);
         return services;
     }
 

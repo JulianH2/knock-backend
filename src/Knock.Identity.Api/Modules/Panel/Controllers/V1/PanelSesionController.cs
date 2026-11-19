@@ -8,9 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Knock.Identity.Api.Modules.Panel.Controllers.V1;
 
-/// <summary>
-/// Sesión del panel interno (spec 033). Los dos pasos de acceso (T-06) son reales; <c>renovar</c> y <c>cerrar</c> siguen simulados hasta T-07.
-/// </summary>
+/// <summary>Acceso al panel interno en dos pasos (spec 033).</summary>
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/panel/sesion")]
@@ -81,24 +79,4 @@ internal sealed class PanelSesionController(AccesoPanelService access) : Control
                 return await PanelHttp.ProblemAsync(HttpContext, StatusCodes.Status403Forbidden, PanelErrorCodes.NoPanelAccessCode);
         }
     }
-
-    /// <summary>Renovación (R-17 y R-18): sin cuerpo; exige la cookie, <c>X-Knock-Panel: 1</c> y el <c>Origin</c> del panel.</summary>
-    [HttpPost("renovar")]
-    [AllowAnonymous]
-    [ProducesResponseType<PanelAccesoResponse>(StatusCodes.Status200OK)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status503ServiceUnavailable)]
-    public IActionResult Renew() =>
-        Ok(new PanelAccesoResponse("simulado", DateTime.UtcNow.AddMinutes(15), [], "Simulado"));
-
-    /// <summary>Cierre (R-19): exige el token del panel y <c>X-Knock-Panel: 1</c>; revoca la sesión y borra la cookie.</summary>
-    [HttpPost("cerrar")]
-    [AllowAnonymous]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
-    public IActionResult Close() => NoContent();
 }

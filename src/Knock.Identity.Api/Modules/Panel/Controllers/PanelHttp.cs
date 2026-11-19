@@ -43,6 +43,13 @@ internal static class PanelHttp
         response.Headers.Append("Set-Cookie", $"{CookieName}={token}{_cookieAttributes}; Max-Age={_cookieMaxAgeSeconds.ToString(CultureInfo.InvariantCulture)}");
     }
 
+    /// <summary>Token de renovación de la cookie, o <c>null</c> si no viene.</summary>
+    public static string? RefreshCookie(HttpRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return request.Cookies[CookieName];
+    }
+
     /// <summary>Borra la cookie: misma ruta y atributos con <c>Max-Age=0</c>.</summary>
     public static void ClearRefreshCookie(HttpResponse response)
     {

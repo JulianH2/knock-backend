@@ -82,6 +82,7 @@ internal sealed class PanelWorld
         SessionService = new SesionPanelService(Sessions, Cancelled, Issuer, Clock, NullLogger<SesionPanelService>.Instance);
         Access = new AccesoPanelService(Verifier, Accounts, AppAccounts, Challenges, Totp, SessionService, Audit, Settings, Clock);
         Activation = new ActivacionPanelService(Invitations, Accounts, Cache, Totp, Audit, Settings, Clock);
+        Lifecycle = new SesionPanelCicloService(Sessions, Accounts, Cancelled, Issuer, Audit, Settings, Clock);
     }
 
     public PanelClock Clock { get; }
@@ -123,6 +124,8 @@ internal sealed class PanelWorld
     public AccesoPanelService Access { get; }
 
     public ActivacionPanelService Activation { get; }
+
+    public SesionPanelCicloService Lifecycle { get; }
 
     /// <summary>Registra un <c>idToken</c> ficticio que el verificador acepta para el <c>uid</c> y el celular dados.</summary>
     public string TokenFor(string uid = Uid, string phone = Phone)

@@ -1729,6 +1729,252 @@
         }
       }
     },
+    "/api/v{version}/panel/sesion/renovar": {
+      "post": {
+        "tags": [
+          "PanelCiclo"
+        ],
+        "summary": "Renovación (R-17 y R-18): sin cuerpo; exige la cookie, `X-Knock-Panel: 1` y el `Origin` del panel.",
+        "parameters": [
+          {
+            "name": "X-Knock-Panel",
+            "in": "header",
+            "description": "Must be 1: it forces a CORS preflight that only the panel origin passes.",
+            "required": true,
+            "schema": {
+              "const": "1",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "Set-Cookie": {
+                "description": "__Secure-knock-panel-rt=<token>; HttpOnly; Secure; SameSite=None; Partitioned; Path=/api/v1/panel/sesion; Max-Age=1200. The refresh token never appears in a body.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PanelAccesoResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PanelAccesoResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PanelAccesoResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v{version}/panel/sesion/cerrar": {
+      "post": {
+        "tags": [
+          "PanelCiclo"
+        ],
+        "summary": "Cierre (R-19): exige el token del panel y `X-Knock-Panel: 1`; revoca la sesión y borra la cookie.",
+        "parameters": [
+          {
+            "name": "X-Knock-Panel",
+            "in": "header",
+            "description": "Must be 1: it forces a CORS preflight that only the panel origin passes.",
+            "required": true,
+            "schema": {
+              "const": "1",
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "headers": {
+              "Set-Cookie": {
+                "description": "__Secure-knock-panel-rt=; HttpOnly; Secure; SameSite=None; Partitioned; Path=/api/v1/panel/sesion; Max-Age=0 (clears the refresh cookie).",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v{version}/panel/sesion/celular": {
       "post": {
         "tags": [
@@ -2116,245 +2362,6 @@
           },
           "503": {
             "description": "Service Unavailable",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v{version}/panel/sesion/renovar": {
-      "post": {
-        "tags": [
-          "PanelSesion"
-        ],
-        "summary": "Renovación (R-17 y R-18): sin cuerpo; exige la cookie, `X-Knock-Panel: 1` y el `Origin` del panel.",
-        "parameters": [
-          {
-            "name": "version",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "X-Knock-Panel",
-            "in": "header",
-            "description": "Must be 1: it forces a CORS preflight that only the panel origin passes.",
-            "required": true,
-            "schema": {
-              "const": "1",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "headers": {
-              "Set-Cookie": {
-                "description": "__Secure-knock-panel-rt=<token>; HttpOnly; Secure; SameSite=None; Partitioned; Path=/api/v1/panel/sesion; Max-Age=1200. The refresh token never appears in a body.",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/PanelAccesoResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PanelAccesoResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PanelAccesoResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Too Many Requests",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Service Unavailable",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v{version}/panel/sesion/cerrar": {
-      "post": {
-        "tags": [
-          "PanelSesion"
-        ],
-        "summary": "Cierre (R-19): exige el token del panel y `X-Knock-Panel: 1`; revoca la sesión y borra la cookie.",
-        "parameters": [
-          {
-            "name": "version",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "X-Knock-Panel",
-            "in": "header",
-            "description": "Must be 1: it forces a CORS preflight that only the panel origin passes.",
-            "required": true,
-            "schema": {
-              "const": "1",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content",
-            "headers": {
-              "Set-Cookie": {
-                "description": "__Secure-knock-panel-rt=; HttpOnly; Secure; SameSite=None; Partitioned; Path=/api/v1/panel/sesion; Max-Age=0 (clears the refresh cookie).",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Too Many Requests",
             "content": {
               "text/plain": {
                 "schema": {
@@ -5965,6 +5972,9 @@
     },
     {
       "name": "PanelActivacion"
+    },
+    {
+      "name": "PanelCiclo"
     },
     {
       "name": "PanelSesion"

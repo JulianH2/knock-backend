@@ -17,6 +17,8 @@ internal static class PanelOpenApi
     private const string _clearCookieDescription =
         CookieName + "=; HttpOnly; Secure; SameSite=None; Partitioned; Path=/api/v1/panel/sesion; Max-Age=0 (clears the refresh cookie).";
 
+    private const string _markerDescription = "Must be 1: it forces a CORS preflight that only the panel origin passes.";
+
     public static void Describe(OpenApiOperation operation, string? relativePath)
     {
         ArgumentNullException.ThrowIfNull(operation);
@@ -36,14 +38,24 @@ internal static class PanelOpenApi
         if (relativePath is "api/v{version}/panel/sesion/renovar" or "api/v{version}/panel/sesion/cerrar")
         {
             operation.Parameters ??= [];
-            operation.Parameters.Add(new OpenApiParameter
+            var existing = operation.Parameters.FirstOrDefault(parameter => string.Equals(parameter.Name, MarkerHeader, StringComparison.OrdinalIgnoreCase));
+            if (existing is OpenApiParameter declared)
             {
-                Name = MarkerHeader,
-                In = ParameterLocation.Header,
-                Required = true,
-                Description = "Must be 1: it forces a CORS preflight that only the panel origin passes.",
-                Schema = new OpenApiSchema { Type = JsonSchemaType.String, Const = "1" },
-            });
+                declared.Required = true;
+                declared.Description = _markerDescription;
+                declared.Schema = new OpenApiSchema { Type = JsonSchemaType.String, Const = "1" };
+            }
+            else
+            {
+                operation.Parameters.Add(new OpenApiParameter
+                {
+                    Name = MarkerHeader,
+                    In = ParameterLocation.Header,
+                    Required = true,
+                    Description = _markerDescription,
+                    Schema = new OpenApiSchema { Type = JsonSchemaType.String, Const = "1" },
+                });
+            }
         }
     }
 
