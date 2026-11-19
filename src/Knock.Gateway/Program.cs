@@ -34,6 +34,7 @@ app.UseSerilogRequestLogging(LoggingExtensions.ConfigureRequestLogging);
 app.UseRouting();
 app.UseCors(CorsExtensions.PolicyName);
 app.UseMiddleware<IpRateLimitMiddleware>();
+app.UseMiddleware<HubQueryTokenMiddleware>();
 app.UseAuthentication();
 app.UseMiddleware<UserRateLimitMiddleware>();
 app.UseAuthorization();
