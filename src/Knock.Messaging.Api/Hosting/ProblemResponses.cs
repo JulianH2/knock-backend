@@ -9,7 +9,9 @@ internal static class ProblemResponses
     public static IServiceCollection AddKnockProblemDetails(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.AddProblemDetails();
+        services.AddProblemDetails(options =>
+            options.CustomizeProblemDetails = context =>
+                context.ProblemDetails.Instance = context.HttpContext.Request.Path);
         return services;
     }
 

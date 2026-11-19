@@ -1,5 +1,21 @@
 # Memoria — knock-backend
 
+## 2026-11-19 — KNOCK-186: HTTP y trazas de T-04
+- **Resultado:** las fábricas existentes prueban `instance` y trazas exportadas en gateway (401), Identidad (400), Mercado (422) y Mensajería (401); el span se espera mediante una señal del exportador, no una pausa. El fallo existente del localizador de Mercado provoca un 500 y comprueba el ProblemDetails y su registro sin consulta.
+- **Pendiente:** no se encontró una ruta existente de Mensajería que produzca 400/422 con ProblemDetails; el 401 no satisface literalmente esa petición. No se halló un mecanismo existente equivalente para provocar 500 en los otros tres hosts. CA-08 sigue para una persona; T-04 queda parcial.
+- **Verificación:** `dotnet test Knock.slnx -c Release --no-restore -m:1 --filter 'FullyQualifiedName~Spec035'`: 2 de integración, 11 de seguridad y 32 unitarias aprobadas. `dotnet format` con `--no-restore --verify-no-changes --include` de los siete archivos C# cambiados pasó; `git diff --check` pasó. Sin commit.
+
+## 2026-11-19 — KNOCK-186: integración parcial de T-04
+- **Resultado:** se amplió `Spec035GatewayRegistrosTests` con una petición HTTP al gateway y un exportador de trazas en memoria conectado al proveedor real. La prueba comprueba los atributos de la traza antes de examinar la respuesta; falla porque la ruta inexistente devuelve 404 sin cuerpo, no ProblemDetails. No se cambió producción ni se declaró hecha T-04.
+- **Pendiente:** comprobar el 500 y su registro y las peticiones y trazas de Identidad, Mercado y Mensajería; sus fábricas dependen de Docker, cuyo daemon no respondió. CA-08 sigue pendiente de una persona (regla Semgrep). El trazador SDD reconoce nombres, no ejecución ni cobertura.
+- **Verificación:** build Release anterior al cambio pasó; 20 pruebas unitarias de `Spec035RedaccionTests` pasaron. La integración nueva falla por el cuerpo vacío; `dotnet format` agotó el tiempo. Sin commit.
+
+## 2026-11-19 — KNOCK-186: avance de T-04 de la spec 035
+- **Cambio:** los cuatro registros de ProblemDetails fijan `instance` a `Request.Path`, incluso cuando ya traía una consulta; sin dependencias nuevas. Se amplió `Spec035RedaccionTests` en lugar de crear otro juego de pruebas.
+- **TDD:** las cuatro variantes de ProblemDetails fallaron antes del cambio y pasaron después; la regresión de trazas comprueba los cuatro procesadores con actividades sintéticas, no una petición HTTP exportada.
+- **Pendiente para el PR:** una persona debe agregar la regla Semgrep para `UseHttpLogging` y `AddHttpLogging` y probar CA-08; faltan la prueba de una petición HTTP con 500 y su registro (CA-07) y una traza exportada de petición real (CA-16). T-04 queda parcial hasta verificarlo; el trazador solo reconoce nombres.
+- **A evitar:** interpretar las pruebas de procesador como prueba del cableado de instrumentación o de exportación real.
+
 ## 2026-11-16 — Spec 055 y enmienda 1.2.0 de la constitución: biblioteca técnica compartida (KNOCK-251)
 - **Decisión:** se redacta en Borrador la spec 055 (`Knock.Hosting`) con la enmienda a la constitución (§4 y estructura del repositorio; versión 1.1.0 → 1.2.0) que permite una biblioteca técnica compartida, como pide EXC-008 («su spec y el cambio de la constitución que la permita»). La spec cubre la biblioteca completa por etapas: la 1 (KNOCK-251) mueve los encabezados reenviados y el redactor de registros y retira EXC-020; la 2 mueve el límite de peticiones (después de KNOCK-247) y retira EXC-025; la 3 mueve el resto del catálogo y retira EXC-007, EXC-008, EXC-015, EXC-016, EXC-018 y EXC-021.
 - **Porqué:** la constitución 1.1.0 solo permitía compartir `Knock.Contracts` sin lógica, y había 8 excepciones vivas de jscpd y codemap por copias de `Hosting/`. El Tech Lead pidió el 2026-11-16 que la spec cubra la biblioteca completa, incluido luego el limitador, y que la apruebe él antes de escribir código.

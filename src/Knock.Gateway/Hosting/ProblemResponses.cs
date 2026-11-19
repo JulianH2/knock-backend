@@ -28,6 +28,7 @@ internal static class ProblemResponses
             options.CustomizeProblemDetails = context =>
             {
                 context.ProblemDetails.Type ??= "about:blank";
+                context.ProblemDetails.Instance = context.HttpContext.Request.Path;
                 if (CorrelationId.Current(context.HttpContext) is { } correlationId)
                 {
                     context.ProblemDetails.Extensions["correlationId"] = correlationId;
