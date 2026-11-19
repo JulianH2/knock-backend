@@ -1,5 +1,6 @@
 using Knock.Contracts.Correlation;
 using Knock.Messaging.Api.Hosting;
+using Knock.Messaging.Api.Modules.Chat;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +21,8 @@ builder.Services.AddKnockLogging(builder.Configuration);
 builder.Services.AddKnockObservability(builder.Configuration, builder.Environment);
 builder.Services.AddKnockForwardedHeaders();
 builder.Services.AddKnockData();
+// Spec 026: chat de visita en tiempo real con SignalR y Redis como puente entre copias.
+builder.Services.AddChatModule().AddKnockChatBridge();
 
 var app = builder.Build();
 
@@ -36,6 +39,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseRateLimiter();
+app.UseKnockChatGate();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -46,6 +50,7 @@ if (app.Environment.IsDevelopment())
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "mensajeria" })).AllowAnonymous();
 app.MapControllers();
+app.MapChatHub();
 app.MapKnockReadiness();
 
 await app.RunAsync();

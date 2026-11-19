@@ -1,6 +1,7 @@
 graph LR
   Assistant["Assistant"]
   Catalog["Catalog"]
+  Chat["Chat"]
   Knock_Contracts["Knock.Contracts"]
   Knock_Gateway["Knock.Gateway"]
   Knock_Identity_Api["Knock.Identity.Api"]
@@ -17,6 +18,7 @@ graph LR
   Knock_Market_Api -->|1| Media
   Knock_Market_Api -->|1| Requests
   Knock_Market_Api -->|1| Tecnicos
+  Knock_Messaging_Api -->|3| Chat
   Requests -->|1| Catalog
   Tecnicos -->|3| Catalog
   Usuarios -->|1| Sesiones
