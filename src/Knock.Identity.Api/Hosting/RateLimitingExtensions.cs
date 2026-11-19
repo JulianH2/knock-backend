@@ -73,7 +73,7 @@ internal static class RateLimitingExtensions
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             options.AddPolicy(PhoneChangeCheckPolicy, SubjectPolicy(PhoneChangeCheckPolicy, 3, TimeSpan.FromHours(1), services));
             options.AddPolicy(PhoneChangeConfirmPolicy, SubjectPolicy(PhoneChangeConfirmPolicy, 5, TimeSpan.FromHours(1), services));
-            options.AddPolicy(AccessRecoveryPolicy, context => SharedPartition($"{AccessRecoveryPolicy}:{ClientKey(context)}", new RateLimitPolicySettings { PermitLimit = 3, Window = TimeSpan.FromHours(1) }, services));
+            options.AddPolicy(AccessRecoveryPolicy, context => SharedPartition($"recuperacion:{ClientKey(context)}", new RateLimitPolicySettings { PermitLimit = 3, Window = TimeSpan.FromHours(1) }, services));
             options.AddPolicy(ExportPolicy, SubjectPolicy(ExportPolicy, 3, TimeSpan.FromHours(1), services));
             options.AddPolicy(DeletionPolicy, SubjectPolicy(DeletionPolicy, 5, TimeSpan.FromHours(1), services));
             options.GlobalLimiter = PartitionedRateLimiter.CreateChained(
@@ -99,7 +99,7 @@ internal static class RateLimitingExtensions
     private static Func<HttpContext, RateLimitPartition<string>> SubjectPolicy(string name, int permitLimit, TimeSpan window, IServiceProvider services) =>
         context => context.User.FindFirst("sub")?.Value is not { Length: > 0 } subject
             ? RateLimitPartition.GetNoLimiter(_unknownClient)
-            : SharedPartition($"persona:{name}:{subject}", new RateLimitPolicySettings { PermitLimit = permitLimit, Window = window }, services);
+            : SharedPartition($"{name}:{subject}", new RateLimitPolicySettings { PermitLimit = permitLimit, Window = window }, services);
 
     /// <summary>Partición del límite general: <c>/health</c> sin límite, <c>/health/ready</c> con el suyo y el resto con el global.</summary>
     private static RateLimitPartition<string> GlobalPartition(HttpContext context, RateLimitPolicySettings global, RateLimitPolicySettings ready, IServiceProvider services)
