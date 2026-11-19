@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-19T18:22:50Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-19T21:56:51Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -20,7 +20,7 @@
 | `Knock.Market.Api` | -, common, hosting | 34 | 68 | 100 |
 | `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
-| `Requests` | -, controllers, data, domain, dtos, services, validators | 62 | 134 | 123 |
+| `Requests` | -, controllers, data, domain, dtos, services, validators | 66 | 140 | 126 |
 | `Safety` | -, controllers, data, domain, dtos, services, validators | 15 | 38 | 33 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 26 | 47 | 54 |
 | `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 22 | 55 | 57 |
@@ -783,6 +783,8 @@
   - `Send()`:35
 - `src/Knock.Market.Api/Modules/Requests/Controllers/V1/InternalHistoryController.cs` — class `InternalHistoryController`
   - `List()`:34
+- `src/Knock.Market.Api/Modules/Requests/Controllers/V1/MyQuotesController.cs` — class `MyQuotesController`
+  - `List()`:22
 - `src/Knock.Market.Api/Modules/Requests/Controllers/V1/QuoteComparisonController.cs` — class `QuoteComparisonController`
   - `Compare()`:33
 - `src/Knock.Market.Api/Modules/Requests/Controllers/V1/SolicitudesController.cs` — class `SolicitudesController`
@@ -811,7 +813,7 @@
 - `src/Knock.Market.Api/Modules/Requests/Data/QuoteReaders.cs` — class `MongoTechnicianDirectory`, class `MongoQuoteRequestReader`
   - `FindBySubAsync()`:16, `FindEligibleAsync()`:19, `ExistsAsync()`:60, `FindAsync()`:74
 - `src/Knock.Market.Api/Modules/Requests/Data/QuoteStore.cs` — class `QuoteStore`
-  - `SaveAsync()`:21, `SaveAsync()`:24
+  - `SaveAsync()`:47, `SaveAsync()`:50
 - `src/Knock.Market.Api/Modules/Requests/Data/RequestsStore.cs` — record `RequestRecord`, record `RequestRecordPage`, class `RequestsStore`
   - `InsertAsync()`:53, `FindAsync()`:67, `CountLiveQuotesAsync()`:103, `HasQuotedAsync()`:119
 - `src/Knock.Market.Api/Modules/Requests/Data/VisitStore.cs` — record `VisitRecord`, record `FailedAttempt`, enum `VisitCloseReason`, class `VisitStore`
@@ -850,6 +852,7 @@
   - `CreateRequestBody()`:13
 - `src/Knock.Market.Api/Modules/Requests/Dtos/InternalHistoryDtos.cs` — class `InternalHistoryQuery`, record `HistoryEntryResponse`
 - `src/Knock.Market.Api/Modules/Requests/Dtos/ListRequestsQuery.cs` — class `ListRequestsQuery`
+- `src/Knock.Market.Api/Modules/Requests/Dtos/MyQuotesQuery.cs` — class `MyQuotesQuery`, record `MyQuote`, record `MyQuotePage`
 - `src/Knock.Market.Api/Modules/Requests/Dtos/QuoteComparisonDtos.cs` — record `QuoteTechnician`, record `QuoteComparisonItem`, record `QuoteComparison`, class `QuoteComparisonQuery`, record `ChooseQuoteBody`, record `ChosenTechnician`, record `AppointmentPlace`, record `Appointment`
   - `ChooseQuoteBody()`:53
 - `src/Knock.Market.Api/Modules/Requests/Dtos/RequestResponses.cs` — record `RequestTrade`, record `RequestNeighborhood`, record `RequestPhoto`, record `RequestResponse`, record `RequestSummary`, record `RequestPage`
@@ -872,6 +875,8 @@
   - `ShouldRun()`:5, `StartAsync()`:7, `StopAsync()`:18
 - `src/Knock.Market.Api/Modules/Requests/Services/HistoryService.cs` — class `HistoryService`
   - `HistoryService()`:14, `ListAsync()`:18
+- `src/Knock.Market.Api/Modules/Requests/Services/MyQuotesService.cs` — class `MyQuotesService`
+  - `MyQuotesService()`:8, `ListAsync()`:10
 - `src/Knock.Market.Api/Modules/Requests/Services/QuoteComparisonService.cs` — class `QuoteComparisonService`
   - `QuoteComparisonService()`:13, `CompareAsync()`:19
 - `src/Knock.Market.Api/Modules/Requests/Services/QuoteService.cs` — record `Technician`, record `QuoteRequestSnapshot`, interface `ITechnicianDirectory`, interface `IQuoteRequestReader`, enum `QuoteCheckResult`, interface `IQuoteWriter`, record `QuoteResponse`, interface `ICreatedQuote`, enum `NoteModerationResult`, interface `INoteModerator`, class `UnavailableNoteModerator`, class `QuoteService`
@@ -893,6 +898,7 @@
 - `src/Knock.Market.Api/Modules/Requests/Validators/CreateRequestBodyValidator.cs` — class `CreateRequestBodyValidator`
 - `src/Knock.Market.Api/Modules/Requests/Validators/InternalHistoryQueryValidator.cs` — class `InternalHistoryQueryValidator`
 - `src/Knock.Market.Api/Modules/Requests/Validators/ListRequestsQueryValidator.cs` — class `ListRequestsQueryValidator`
+- `src/Knock.Market.Api/Modules/Requests/Validators/MyQuotesQueryValidator.cs` — class `MyQuotesQueryValidator`
 - `src/Knock.Market.Api/Modules/Requests/Validators/QuoteChoiceValidators.cs` — class `QuoteComparisonQueryValidator`, class `ChooseQuoteBodyValidator`, class `ArrivalBodyValidator`
 - `src/Knock.Market.Api/Modules/Requests/Validators/QuoteValidator.cs` — record `QuoteValidationInput`, class `QuoteValidator`
 
