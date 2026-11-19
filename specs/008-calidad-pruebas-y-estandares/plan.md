@@ -1,6 +1,6 @@
 # Plan 008 — Calidad, pruebas y estándares
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Agregar `.editorconfig` y `Directory.Build.props`.

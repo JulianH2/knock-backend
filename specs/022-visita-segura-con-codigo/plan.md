@@ -1,6 +1,6 @@
 # Plan 022 — Visita segura con código de 4 dígitos
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Agregar al script de `db/` los índices nuevos de `visitas` (`{ estado, codigoVenceEn }` y `{ tecnicoUsuarioId, estado, dia }`).

@@ -1,6 +1,6 @@
 # Plan 001 — Arquitectura de microservicios y puerta de entrada
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Crear la solución con los cuatro proyectos y la biblioteca de contratos.
