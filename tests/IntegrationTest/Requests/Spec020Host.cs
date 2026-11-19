@@ -92,6 +92,9 @@ internal sealed class Spec020Host : IAsyncDisposable
 
     public IMongoDatabase Database => _factory.Database;
 
+    /// <summary>Servicios del host, para sembrar valores cifrados con la misma llave que usa la API.</summary>
+    public IServiceProvider Services => _factory.Services;
+
     public string ClientSub { get; } = Guid.NewGuid().ToString("D");
 
     public ObjectId ColoniaId { get; private set; }
