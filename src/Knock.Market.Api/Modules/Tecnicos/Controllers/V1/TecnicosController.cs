@@ -1,13 +1,13 @@
 using Asp.Versioning;
 using Knock.Market.Api.Common.Errors;
 using Knock.Market.Api.Hosting;
+using Knock.Market.Api.Modules.Tecnicos.Controllers;
 using Knock.Market.Api.Modules.Tecnicos.Domain;
 using Knock.Market.Api.Modules.Tecnicos.Dtos;
 using Knock.Market.Api.Modules.Tecnicos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.AspNetCore.WebUtilities;
 
 namespace Knock.Market.Api.Modules.Tecnicos.Controllers.V1;
 
@@ -18,9 +18,9 @@ namespace Knock.Market.Api.Modules.Tecnicos.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/tecnicos")]
-internal sealed class TecnicosController(TechnicianRegistrationService registration) : ControllerBase
+internal sealed class TecnicosController(TechnicianRegistrationService registration, TechnicianProfileService profiles) : ControllerBase
 {
-    private const string _problemJson = "application/problem+json";
+    private const string _problemJson = TechnicianProblems.ProblemJson;
 
     /// <summary>Registra a la persona del token como técnico (TEC-01): nace <c>activo</c>, sin verificación y con «Disponible hoy» apagado.</summary>
     [HttpPost]
@@ -53,16 +53,23 @@ internal sealed class TecnicosController(TechnicianRegistrationService registrat
         };
     }
 
-    /// <summary>Regla de negocio en ProblemDetails, con <c>code</c> y, si se nombra un campo, <c>errors</c> con un motivo genérico que nunca repite el valor.</summary>
-    private ObjectResult Rule(int status, string code, string? field = null)
+    /// <summary>
+    /// Perfil de un técnico (TEC-05): sin sesión, solo el resumen; con sesión válida, también el detalle. Un técnico que no existe o está oculto responde
+    /// 404 <c>technician_not_found</c>.
+    /// </summary>
+    [HttpGet("{id}")]
+    [AllowAnonymous]
+    [ProducesResponseType<TechnicianProfileResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, _problemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity, _problemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests, _problemJson)]
+    public async Task<IActionResult> Profile([FromRoute] TechnicianIdRoute route, CancellationToken cancellationToken)
     {
-        var problem = ProblemDetailsFactory.CreateProblemDetails(HttpContext, status, ReasonPhrases.GetReasonPhrase(status));
-        problem.Extensions["code"] = code;
-        if (field is not null)
-        {
-            problem.Extensions["errors"] = new Dictionary<string, string[]> { [field] = [ValidationFilter.GenericReason] };
-        }
-
-        return new ObjectResult(problem) { StatusCode = status, ContentTypes = { _problemJson } };
+        var signedIn = !string.IsNullOrWhiteSpace(User.FindFirst("sub")?.Value);
+        Response.Headers.CacheControl = "private, no-store";
+        var profile = await profiles.GetAsync(MongoDB.Bson.ObjectId.Parse(route.Id), signedIn, cancellationToken);
+        return profile is null ? Rule(StatusCodes.Status404NotFound, TechnicianRules.TechnicianNotFoundCode) : Ok(profile);
     }
+
+    private ObjectResult Rule(int status, string code, string? field = null) => TechnicianProblems.Rule(this, status, code, field);
 }
