@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-19T16:15:17Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-19T16:15:48Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -17,9 +17,10 @@
 | `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
 | `Requests` | -, controllers, data, domain, dtos, services, validators | 53 | 119 | 108 |
+| `Safety` | -, controllers, data, domain, dtos, services, validators | 7 | 13 | 12 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 25 | 46 | 53 |
 | `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 22 | 55 | 57 |
-| `Usuarios` | -, controllers, data, domain, dtos, services | 13 | 25 | 34 |
+| `Usuarios` | -, controllers, data, domain, dtos, services | 15 | 28 | 35 |
 
 ## ⚠️ Código duplicado (misma estructura)
 
@@ -125,7 +126,7 @@
 - `KnockRedisOptionsValidator`: `src/Knock.Gateway/Hosting/RedisExtensions.cs:39`, `src/Knock.Identity.Api/Hosting/RedisExtensions.cs:39`, `src/Knock.Market.Api/Hosting/RedisExtensions.cs:37`, `src/Knock.Messaging.Api/Hosting/RedisExtensions.cs:38`
 - `LogRedactionProcessor`: `src/Knock.Gateway/Hosting/TelemetryRedactor.cs:329`, `src/Knock.Identity.Api/Hosting/TelemetryRedactor.cs:329`, `src/Knock.Market.Api/Hosting/TelemetryRedactor.cs:328`, `src/Knock.Messaging.Api/Hosting/TelemetryRedactor.cs:329`
 - `LoggingExtensions`: `src/Knock.Gateway/Hosting/LoggingExtensions.cs:13`, `src/Knock.Identity.Api/Hosting/LoggingExtensions.cs:13`, `src/Knock.Market.Api/Hosting/LoggingExtensions.cs:12`, `src/Knock.Messaging.Api/Hosting/LoggingExtensions.cs:13`
-- `ModulesExtensions`: `src/Knock.Identity.Api/Hosting/ModulesExtensions.cs:7`, `src/Knock.Market.Api/Hosting/ModulesExtensions.cs:8`
+- `ModulesExtensions`: `src/Knock.Identity.Api/Hosting/ModulesExtensions.cs:8`, `src/Knock.Market.Api/Hosting/ModulesExtensions.cs:8`
 - `MongoExtensions`: `src/Knock.Identity.Api/Hosting/MongoExtensions.cs:138`, `src/Knock.Market.Api/Hosting/MongoExtensions.cs:136`, `src/Knock.Messaging.Api/Hosting/MongoExtensions.cs:138`
 - `MongoReadinessHealthCheck`: `src/Knock.Identity.Api/Hosting/MongoExtensions.cs:227`, `src/Knock.Market.Api/Hosting/MongoExtensions.cs:225`, `src/Knock.Messaging.Api/Hosting/MongoExtensions.cs:227`
 - `ObservabilityExtensions`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:51`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:51`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:50`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:51`
@@ -367,7 +368,7 @@
 - `src/Knock.Identity.Api/Hosting/ModelStateProblems.cs` — class `ModelStateProblems`
   - `AddKnockModelStateProblems()`:13
 - `src/Knock.Identity.Api/Hosting/ModulesExtensions.cs` — class `ModulesExtensions`
-  - `AddKnockModules()`:10
+  - `AddKnockModules()`:11
 - `src/Knock.Identity.Api/Hosting/MongoExtensions.cs` — class `KnockMongoOptions`, class `KnockMongoOptionsValidator`, class `MongoExtensions`, class `MongoReadinessHealthCheck`
   - `Seconds()`:60, `Validate()`:76, `AddKnockMongo()`:149, `AddKnockMongoDatabase()`:171, `CreateSettings()`:185, `CheckHealthAsync()`:229
 - `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs` — class `ObservabilityOptions`, record `AzureMonitorSignalSettings`, class `AzureMonitorExportStatus`, class `ObservabilityExtensions`, class `TelemetryExceptionRecorder`, class `IgnoreIncomingTraceContextPropagator`, class `OpenTelemetryLogSink`, class `SerilogLogState`
@@ -665,6 +666,40 @@
 - `src/Knock.Market.Api/Modules/Requests/Validators/QuoteChoiceValidators.cs` — class `QuoteComparisonQueryValidator`, class `ChooseQuoteBodyValidator`, class `ArrivalBodyValidator`
 - `src/Knock.Market.Api/Modules/Requests/Validators/QuoteValidator.cs` — record `QuoteValidationInput`, class `QuoteValidator`
 
+### Safety
+
+**-**
+
+- `src/Knock.Identity.Api/Modules/Safety/SafetyModuleExtensions.cs` — class `SafetyModuleExtensions`
+  - `AddSafetyModule()`:9
+
+**controllers**
+
+- `src/Knock.Identity.Api/Modules/Safety/Controllers/V1/BloqueosController.cs` — class `BloqueosController`
+  - `Block()`:30, `Unblock()`:48, `List()`:62
+
+**data**
+
+- `src/Knock.Identity.Api/Modules/Safety/Data/BloqueosStore.cs` — record `StoredBlock`, class `BloqueosStore`
+  - `EnsureIndexesAsync()`:31, `AddAsync()`:42, `RemoveAsync()`:68, `ListAsync()`:78
+
+**domain**
+
+- `src/Knock.Identity.Api/Modules/Safety/Domain/SafetyErrorCodes.cs` — class `SafetyErrorCodes`
+
+**dtos**
+
+- `src/Knock.Identity.Api/Modules/Safety/Dtos/BlockDtos.cs` — record `BlockedPerson`, record `BlockedPage`, class `BlocksQuery`, class `BlockRoute`
+
+**services**
+
+- `src/Knock.Identity.Api/Modules/Safety/Services/BlockService.cs` — enum `BlockOutcome`, class `BlockService`
+  - `BlockService()`:22, `BlockAsync()`:27, `UnblockAsync()`:49, `ListAsync()`:58
+
+**validators**
+
+- `src/Knock.Identity.Api/Modules/Safety/Validators/BlockValidators.cs` — class `BlocksQueryValidator`, class `BlockRouteValidator`
+
 ### Sesiones
 
 **-**
@@ -799,6 +834,7 @@
 
 **-**
 
+- `src/Knock.Identity.Api/Modules/Usuarios/IUsuariosApi.cs` — record `PublicUser`, interface `IUsuariosApi`
 - `src/Knock.Identity.Api/Modules/Usuarios/UsuariosModuleExtensions.cs` — class `UsuariosModuleExtensions`
   - `AddUsuariosModule()`:12
 
@@ -839,3 +875,5 @@
   - `ProfileRules()`:19, `Validate()`:36
 - `src/Knock.Identity.Api/Modules/Usuarios/Services/ProfileService.cs` — class `ProfileService`
   - `ProfileService()`:12, `GetAsync()`:23, `UpdateAsync()`:36
+- `src/Knock.Identity.Api/Modules/Usuarios/Services/UsuariosApi.cs` — class `UsuariosApi`
+  - `FindPublicUserAsync()`:8
