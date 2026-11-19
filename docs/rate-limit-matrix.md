@@ -71,6 +71,10 @@
 
 `POST /api/v1/solicitudes/{id}/cotizaciones` añade una ventana fija de **3 peticiones por minuto por `sub`** y por proceso, además de los límites generales. La cuarta responde 429 con `Retry-After`. Con dos réplicas pueden pasar hasta 6 por minuto; el límite compartido queda para KNOCK-247.
 
+## Direcciones del cliente en Identidad (spec 040, KNOCK-285)
+
+`GET` y `POST /api/v1/me/direcciones` y `PUT` y `DELETE /api/v1/me/direcciones/{id}` no tienen política propia: usan la política global por IP de Identidad y los límites del gateway por IP y usuario; la respuesta 429 incluye `Retry-After`. `POST` y `PUT` limitan el cuerpo a 4 KB (413). El tope de 10 direcciones por persona es una regla de negocio (409 `address_limit_reached`), no un límite de peticiones.
+
 ## Técnicos de confianza en Mercado (spec 042, KNOCK-91)
 
 `GET`, `PUT` y `DELETE /api/v1/me/tecnicos-confianza` comparten la política `tecnicos-confianza`: **30 peticiones por minuto por `sub`**, por proceso (ventana fija del limitador de Mercado), además de los límites generales. La 31.ª responde 429 con `Retry-After`. `PUT` y `DELETE` no llevan cuerpo: más de 1 KiB responde 413. Con dos réplicas pueden pasar hasta 60 por minuto; el límite compartido queda para KNOCK-247.

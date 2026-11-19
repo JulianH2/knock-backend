@@ -1,5 +1,6 @@
 graph LR
   Account["Account"]
+  Addresses["Addresses"]
   Assistant["Assistant"]
   Catalog["Catalog"]
   Chat["Chat"]
@@ -19,6 +20,7 @@ graph LR
   Account -->|11| Sesiones
   Account -->|2| Usuarios
   Knock_Identity_Api -->|2| Account
+  Knock_Identity_Api -->|1| Addresses
   Knock_Identity_Api -->|1| Safety
   Knock_Identity_Api -->|2| Sesiones
   Knock_Identity_Api -->|2| Usuarios

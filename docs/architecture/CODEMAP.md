@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-19T18:18:18Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-19T18:20:29Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -8,13 +8,14 @@
 | Módulo | Capas | Archivos | Tipos | Métodos públicos |
 |---|---|---|---|---|
 | `Account` | -, controllers, data, domain, dtos, services, validators | 28 | 63 | 60 |
+| `Addresses` | -, controllers, data, domain, dtos, services, validators | 12 | 25 | 46 |
 | `Assistant` | data | 2 | 7 | 5 |
 | `Catalog` | -, controllers, data, domain, dtos, services, validators | 49 | 87 | 113 |
 | `Chat` | -, data, hubs, services | 6 | 18 | 26 |
 | `Conversaciones` | domain | 1 | 2 | 1 |
 | `Knock.Contracts` | - | 9 | 16 | 7 |
 | `Knock.Gateway` | -, hosting | 15 | 40 | 51 |
-| `Knock.Identity.Api` | -, common, hosting | 31 | 64 | 92 |
+| `Knock.Identity.Api` | -, common, hosting | 33 | 67 | 95 |
 | `Knock.Market.Api` | -, common, hosting | 33 | 67 | 97 |
 | `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
@@ -116,6 +117,8 @@
 - `DomainErrors`: `src/Knock.Identity.Api/Common/Errors/DomainException.cs:56`, `src/Knock.Market.Api/Common/Errors/DomainException.cs:54`
 - `DomainException`: `src/Knock.Identity.Api/Common/Errors/DomainException.cs:19`, `src/Knock.Market.Api/Common/Errors/DomainException.cs:17`
 - `DomainExceptionHandler`: `src/Knock.Identity.Api/Hosting/DomainExceptionHandler.cs:13`, `src/Knock.Market.Api/Hosting/DomainExceptionHandler.cs:12`
+- `FieldCipher`: `src/Knock.Identity.Api/Common/Crypto/FieldCipher.cs:27`, `src/Knock.Market.Api/Common/Crypto/FieldCipher.cs:25`
+- `FieldEncryptionOptions`: `src/Knock.Identity.Api/Common/Crypto/FieldCipher.cs:13`, `src/Knock.Market.Api/Common/Crypto/FieldCipher.cs:12`
 - `ForwardedHeadersExtensions`: `src/Knock.Identity.Api/Hosting/ForwardedHeadersExtensions.cs:7`, `src/Knock.Market.Api/Hosting/ForwardedHeadersExtensions.cs:6`, `src/Knock.Messaging.Api/Hosting/ForwardedHeadersExtensions.cs:7`
 - `HealthExtensions`: `src/Knock.Gateway/Hosting/HealthExtensions.cs:10`, `src/Knock.Identity.Api/Hosting/HealthExtensions.cs:10`, `src/Knock.Market.Api/Hosting/HealthExtensions.cs:5`, `src/Knock.Messaging.Api/Hosting/HealthExtensions.cs:10`
 - `HstsSettings`: `src/Knock.Gateway/Hosting/HstsExtensions.cs:10`, `src/Knock.Identity.Api/Hosting/SecuritySettings.cs:7`, `src/Knock.Market.Api/Hosting/SecuritySettings.cs:6`
@@ -133,13 +136,14 @@
 - `KnockRedisOptionsValidator`: `src/Knock.Gateway/Hosting/RedisExtensions.cs:39`, `src/Knock.Identity.Api/Hosting/RedisExtensions.cs:39`, `src/Knock.Market.Api/Hosting/RedisExtensions.cs:37`, `src/Knock.Messaging.Api/Hosting/RedisExtensions.cs:38`
 - `LogRedactionProcessor`: `src/Knock.Gateway/Hosting/TelemetryRedactor.cs:329`, `src/Knock.Identity.Api/Hosting/TelemetryRedactor.cs:329`, `src/Knock.Market.Api/Hosting/TelemetryRedactor.cs:328`, `src/Knock.Messaging.Api/Hosting/TelemetryRedactor.cs:329`
 - `LoggingExtensions`: `src/Knock.Gateway/Hosting/LoggingExtensions.cs:13`, `src/Knock.Identity.Api/Hosting/LoggingExtensions.cs:13`, `src/Knock.Market.Api/Hosting/LoggingExtensions.cs:12`, `src/Knock.Messaging.Api/Hosting/LoggingExtensions.cs:13`
-- `ModulesExtensions`: `src/Knock.Identity.Api/Hosting/ModulesExtensions.cs:9`, `src/Knock.Market.Api/Hosting/ModulesExtensions.cs:9`
+- `ModulesExtensions`: `src/Knock.Identity.Api/Hosting/ModulesExtensions.cs:10`, `src/Knock.Market.Api/Hosting/ModulesExtensions.cs:9`
 - `MongoExtensions`: `src/Knock.Identity.Api/Hosting/MongoExtensions.cs:138`, `src/Knock.Market.Api/Hosting/MongoExtensions.cs:136`, `src/Knock.Messaging.Api/Hosting/MongoExtensions.cs:138`
 - `MongoReadinessHealthCheck`: `src/Knock.Identity.Api/Hosting/MongoExtensions.cs:227`, `src/Knock.Market.Api/Hosting/MongoExtensions.cs:225`, `src/Knock.Messaging.Api/Hosting/MongoExtensions.cs:227`
 - `ObservabilityExtensions`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:51`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:51`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:50`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:51`
 - `ObservabilityOptions`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:22`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:22`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:21`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:22`
 - `OpenApiExtensions`: `src/Knock.Identity.Api/Hosting/OpenApiExtensions.cs:7`, `src/Knock.Market.Api/Hosting/OpenApiExtensions.cs:5`
 - `OpenTelemetryLogSink`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:215`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:215`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:211`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:215`
+- `PrivateNoStoreAttribute`: `src/Knock.Identity.Api/Modules/Addresses/Controllers/PrivateNoStoreAttribute.cs:10`, `src/Knock.Market.Api/Hosting/PrivateNoStoreAttribute.cs:11`
 - `ProblemDetailsExtensions`: `src/Knock.Identity.Api/Hosting/ProblemDetailsExtensions.cs:6`, `src/Knock.Market.Api/Hosting/ProblemDetailsExtensions.cs:5`
 - `ProblemResponses`: `src/Knock.Gateway/Hosting/ProblemResponses.cs:7`, `src/Knock.Identity.Api/Hosting/RequestBodyLimitMiddleware.cs:8`, `src/Knock.Market.Api/Hosting/RequestBodyLimitMiddleware.cs:9`, `src/Knock.Messaging.Api/Hosting/ProblemResponses.cs:7`
 - `RateLimitPolicySettings`: `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:12`, `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:13`, `src/Knock.Messaging.Api/Hosting/RateLimitingExtensions.cs:12`
@@ -237,6 +241,50 @@
 - `src/Knock.Identity.Api/Modules/Account/Validators/DeleteAccountRequestValidator.cs` — class `DeleteAccountRequestValidator`
 - `src/Knock.Identity.Api/Modules/Account/Validators/PhoneAvailabilityRequestValidator.cs` — class `PhoneAvailabilityRequestValidator`
 - `src/Knock.Identity.Api/Modules/Account/Validators/UpdateConsentRequestValidator.cs` — class `UpdateConsentRequestValidator`
+
+### Addresses
+
+**-**
+
+- `src/Knock.Identity.Api/Modules/Addresses/AddressesModuleExtensions.cs` — class `AddressesModuleExtensions`
+  - `AddAddressesModule()`:11
+
+**controllers**
+
+- `src/Knock.Identity.Api/Modules/Addresses/Controllers/PrivateNoStoreAttribute.cs` — class `PrivateNoStoreAttribute`
+  - `OnResourceExecuting()`:12, `OnResourceExecuted()`:18
+- `src/Knock.Identity.Api/Modules/Addresses/Controllers/V1/MeDireccionesController.cs` — class `MeDireccionesController`
+  - `List()`:31, `Create()`:54, `Update()`:81, `Delete()`:105
+
+**data**
+
+- `src/Knock.Identity.Api/Modules/Addresses/Data/AddressesStore.cs` — interface `IAddressesStore`, class `AddressesStore`
+  - `EnsureIndexesAsync()`:62, `FindUserIdAsync()`:67, `ListAsync()`:76, `ApplyAsync()`:84, `ToDocument()`:149, `ToStored()`:168
+
+**domain**
+
+- `src/Knock.Identity.Api/Modules/Addresses/Domain/AddressesDomain.cs` — record `Address`, record `StoredAddress`, record `AddressChanges`, class `AddressRejections`
+  - `Address()`:9, `ToString()`:12, `StoredAddress()`:19, `ToString()`:22, `AddressChanges()`:29, `Reject()`:31, `ToString()`:33
+
+**dtos**
+
+- `src/Knock.Identity.Api/Modules/Addresses/Dtos/AddressDtos.cs` — record `CreateAddressRequest`, record `AddressResponse`, record `UpdateAddressRequest`, class `AddressRoute`
+
+**services**
+
+- `src/Knock.Identity.Api/Modules/Addresses/Services/AddressCipher.cs` — class `AddressCipher`
+  - `AddressCipher()`:8, `SealStreet()`:10, `SealReferences()`:12, `Edit()`:15, `Open()`:47
+- `src/Knock.Identity.Api/Modules/Addresses/Services/AddressPlanner.cs` — class `AddressPlanner`
+  - `ForCreate()`:16, `ForEdit()`:39, `ForDelete()`:53
+- `src/Knock.Identity.Api/Modules/Addresses/Services/AddressRules.cs` — class `AddressRules`, record `AddressInput`, record `AddressEdit`
+  - `Normalize()`:23, `HasControlCharacters()`:25, `IsColoniaName()`:27, `AddressInput()`:31, `From()`:33, `ToString()`:43, `AddressEdit()`:50, `From()`:52, `ToString()`:62
+- `src/Knock.Identity.Api/Modules/Addresses/Services/AddressService.cs` — class `AddressCrypto`, enum `AddressOutcome`, record `AddressResult`, class `AddressService`
+  - `StreetContext()`:15, `ReferencesContext()`:17, `AddressResult()`:31, `ToString()`:33, `AddressService()`:40, `ListAsync()`:47, `CreateAsync()`:58, `UpdateAsync()`:95, `DeleteAsync()`:134
+
+**validators**
+
+- `src/Knock.Identity.Api/Modules/Addresses/Validators/CreateAddressRequestValidator.cs` — class `CreateAddressRequestValidator`
+- `src/Knock.Identity.Api/Modules/Addresses/Validators/UpdateAddressRequestValidator.cs` — class `UpdateAddressRequestValidator`, class `AddressRouteValidator`
 
 ### Assistant
 
@@ -447,8 +495,11 @@
 
 **common**
 
+- `src/Knock.Identity.Api/Common/Crypto/FieldCipher.cs` — class `FieldEncryptionOptions`, class `FieldCipher`
+  - `FieldCipher()`:27, `Encrypt()`:34, `Decrypt()`:57
 - `src/Knock.Identity.Api/Common/Errors/DomainException.cs` — enum `DomainErrorKind`, class `DomainException`, class `DomainErrors`
   - `ToStatusCode()`:58
+- `src/Knock.Identity.Api/Common/Errors/ErrorCodes.cs` — class `CommonErrorCodes`
 - `src/Knock.Identity.Api/Common/Security/JwtSettings.cs` — record `JwtSettings`
 - `src/Knock.Identity.Api/Common/Security/JwtSettingsFactory.cs` — class `JwtSettingsFactory`
   - `Create()`:15
@@ -480,7 +531,7 @@
 - `src/Knock.Identity.Api/Hosting/ModelStateProblems.cs` — class `ModelStateProblems`
   - `AddKnockModelStateProblems()`:13
 - `src/Knock.Identity.Api/Hosting/ModulesExtensions.cs` — class `ModulesExtensions`
-  - `AddKnockModules()`:12
+  - `AddKnockModules()`:13
 - `src/Knock.Identity.Api/Hosting/MongoExtensions.cs` — class `KnockMongoOptions`, class `KnockMongoOptionsValidator`, class `MongoExtensions`, class `MongoReadinessHealthCheck`
   - `Seconds()`:60, `Validate()`:76, `AddKnockMongo()`:149, `AddKnockMongoDatabase()`:171, `CreateSettings()`:185, `CheckHealthAsync()`:229
 - `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs` — class `ObservabilityOptions`, record `AzureMonitorSignalSettings`, class `AzureMonitorExportStatus`, class `ObservabilityExtensions`, class `TelemetryExceptionRecorder`, class `IgnoreIncomingTraceContextPropagator`, class `OpenTelemetryLogSink`, class `SerilogLogState`
