@@ -219,8 +219,79 @@ resource "azurerm_storage_account" "files" {
 
 resource "azurerm_storage_container" "private" {
   #checkov:skip=CKV2_AZURE_21: EXC-013 el registro de lecturas necesita un diagnóstico con costo; los contenedores son privados
-  for_each              = toset(["imagenes", "respaldos"])
+  # `imagenes-cuarentena` (spec 032, R-01): bytes tal como los subió la app; nunca en la cuenta pública.
+  for_each              = toset(["imagenes", "respaldos", "imagenes-cuarentena"])
   name                  = each.value
   storage_account_id    = azurerm_storage_account.files.id
   container_access_type = "private"
+}
+
+# Una regla de ciclo de vida borra todo blob de `imagenes-cuarentena` con más de un día (spec 032, R-19 y CA-23); la regla corre una vez al día.
+resource "azurerm_storage_management_policy" "quarantine" {
+  storage_account_id = azurerm_storage_account.files.id
+
+  rule {
+    name    = "borrar-cuarentena-de-imagenes"
+    enabled = true
+
+    filters {
+      blob_types   = ["blockBlob"]
+      prefix_match = ["imagenes-cuarentena/"]
+    }
+
+    actions {
+      base_blob {
+        delete_after_days_since_creation_greater_than = 1
+      }
+    }
+  }
+}
+
+# ---- Imágenes públicas (spec 032, ADR-007 opción D: sin recurso de CDN) ----
+# Cuenta aparte de la privada: solo recibe imágenes ya procesadas y moderadas, con lectura anónima por blob (sin listado).
+# No hay ningún recurso azurerm_cdn_* ni azurerm_cdn_frontdoor_* (CA-23); la dirección base es configurable para poner una CDN después sin cambiar código.
+
+resource "azurerm_storage_account" "public_images" {
+  #checkov:skip=CKV_AZURE_190: EXC pendiente (spec 032, T-10): la lectura anónima por blob es el diseño de la spec 032 (ADR-007); una persona la registra en security/exceptions.yaml
+  #checkov:skip=CKV_AZURE_206: EXC pendiente (spec 032, T-10) replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
+  #checkov:skip=CKV_AZURE_33: EXC pendiente (spec 032, T-10) replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
+  #checkov:skip=CKV2_AZURE_21: EXC pendiente (spec 032, T-10) replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
+  #checkov:skip=CKV_AZURE_59: EXC pendiente (spec 032, T-10) replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
+  #checkov:skip=CKV2_AZURE_33: EXC pendiente (spec 032, T-10) replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
+  #checkov:skip=CKV2_AZURE_1: EXC pendiente (spec 032, T-10) replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
+  name                            = "stpub${local.compact}"
+  location                        = var.location
+  resource_group_name             = data.azurerm_resource_group.this.name
+  account_tier                    = "Standard"
+  account_replication_type        = "LRS"
+  account_kind                    = "StorageV2"
+  min_tls_version                 = "TLS1_2"
+  https_traffic_only_enabled      = true
+  allow_nested_items_to_be_public = true # lectura anónima a nivel de cuenta; el contenedor la limita a «blob»
+  # Sin llaves compartidas: las SAS son de delegación de usuario con la identidad administrada (spec 032, R-02).
+  shared_access_key_enabled       = false
+  default_to_oauth_authentication = true
+  tags                            = local.tags
+
+  # Sin bloque cors_rule: ninguna regla de CORS (R-02).
+  blob_properties {
+    delete_retention_policy {
+      days = 7
+    }
+    container_delete_retention_policy {
+      days = 7
+    }
+  }
+
+  sas_policy {
+    expiration_period = "01.00:00:00"
+  }
+}
+
+resource "azurerm_storage_container" "public_images" {
+  #checkov:skip=CKV2_AZURE_21: EXC pendiente (spec 032, T-10) el registro de lecturas necesita un diagnóstico con costo
+  #checkov:skip=CKV_AZURE_34: EXC pendiente (spec 032, T-10): el acceso anónimo de nivel blob es el diseño de la spec 032 (ADR-007); se lee un archivo si se conoce su nombre, no se lista
+  name                  = "imagenes-publicas"
+  storage_account_id    = azurerm_storage_account.public_images.id
+  container_access_type = "blob"
 }
