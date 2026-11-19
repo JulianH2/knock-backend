@@ -977,3 +977,8 @@
 - **Qué cambió:** `.mcp.json`, `.vscode/mcp.json`, `opencode.json`, `.codex/config.toml` y `docs/mcp.md` apuntan a `https://mcp.atlassian.com/v2/mcp`. Solo cambió la dirección: mismo transporte y mismos permisos (lectura permitida, escritura denegada).
 - **Por qué:** la dirección `/v1/mcp/authv2` está deprecada y Atlassian la retira el 2027-03-01.
 - **A evitar:** dejar direcciones antiguas del conector en configuraciones de agentes; al cambiar de endpoint, revisar los cinco archivos a la vez y no tocar la lista de herramientas.
+
+## 2026-11-19 · KNOCK-166 y KNOCK-167 · Spec 010 ligada a sus dos tarjetas
+- **Qué cambió:** el encabezado de la spec 010 lleva las claves KNOCK-166 y KNOCK-167 y su `task.md` indica qué tareas corresponden a cada tarjeta (166: T-01 a T-04 y T-07; 167: T-05 y T-06). Solo documentación.
+- **Por qué:** el líder decidió que la 010 queda como spec madre de las dos tarjetas y no se parte; sin la clave en la spec, las tarjetas no pasaban el paso 0 de `story-workflow`.
+- **A evitar:** abrir una tarjeta técnica sin buscar antes su clave en `specs/`; la spec puede existir con otro número y sin la clave.
