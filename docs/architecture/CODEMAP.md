@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-19T22:00:45Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-19T22:11:25Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -19,7 +19,7 @@
 | `Knock.Identity.Api` | -, common, hosting | 33 | 67 | 95 |
 | `Knock.Market.Api` | -, common, hosting | 34 | 68 | 100 |
 | `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
-| `Media` | -, data, domain, dtos, services, validators | 21 | 36 | 60 |
+| `Media` | -, data, domain, dtos, services, validators | 23 | 40 | 66 |
 | `Requests` | -, controllers, data, domain, dtos, services, validators | 62 | 134 | 123 |
 | `Safety` | -, controllers, data, domain, dtos, services, validators | 15 | 38 | 33 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 26 | 47 | 54 |
@@ -736,6 +736,7 @@
 
 **domain**
 
+- `src/Knock.Market.Api/Modules/Media/Domain/CodigosImagen.cs` — class `CodigosImagen`
 - `src/Knock.Market.Api/Modules/Media/Domain/ImagenPublica.cs` — enum `PropositoImagen`, class `PropositoImagenExtensions`, record `ImagenPublica`
   - `Parse()`:8, `ToContractValue()`:15
 - `src/Knock.Market.Api/Modules/Media/Domain/MediaFile.cs` — enum `MediaUsage`, enum `MediaFileState`, enum `ImageFormat`, record `MediaFile`
@@ -764,6 +765,8 @@
   - `IsReadyAndOwnedByAsync()`:8
 - `src/Knock.Market.Api/Modules/Media/Services/MediaService.cs` — record `UploadTicket`, record `ConfirmedFile`, class `MediaService`
   - `MediaService()`:18, `CreateUploadAsync()`:25, `ConfirmAsync()`:41, `IsReadyAndOwnedByAsync()`:95
+- `src/Knock.Market.Api/Modules/Media/Services/ProcesadorImagen.cs` — record `ImagenProcesada`, record `ResultadoProcesamiento`, class `ProcesadorImagen`
+  - `ResultadoProcesamiento()`:11, `Ok()`:13, `Rechazada()`:15, `ProcesadorImagen()`:25, `LadoMaximo()`:38, `ProcesarAsync()`:41
 
 **validators**
 
