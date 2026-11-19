@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO.Compression;
 using System.Text.Json.Serialization;
+using Knock.Identity.Api.Modules.Account.Dtos;
 using Knock.Identity.Api.Modules.Sesiones.Dtos;
 using Knock.Identity.Api.Modules.Usuarios.Dtos;
 using Microsoft.AspNetCore.Mvc;
@@ -286,6 +287,11 @@ internal sealed class JsonCompressionMiddleware(RequestDelegate next)
 [JsonSerializable(typeof(FirebaseExchangeRequest))]
 [JsonSerializable(typeof(RefreshRequest))]
 [JsonSerializable(typeof(UpdateProfileRequest))]
+[JsonSerializable(typeof(ConsentResponse))]
+[JsonSerializable(typeof(ConsentResponse[]))]
+[JsonSerializable(typeof(UpdateConsentRequest))]
+[JsonSerializable(typeof(PendingResponse))]
+[JsonSerializable(typeof(DeletionScheduledResponse))]
 internal sealed partial class IdentityJsonSerializerContext : JsonSerializerContext
 {
 }

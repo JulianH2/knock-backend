@@ -33,6 +33,21 @@ internal sealed class RateLimitSettings
 
 internal static class RateLimitingExtensions
 {
+    /// <summary>Spec 039: comprobar disponibilidad del número nuevo (USR-03), 3 por hora por persona (R-20).</summary>
+    public const string PhoneChangeCheckPolicy = "cambio-numero-comprobar";
+
+    /// <summary>Spec 039: confirmar el cambio de número (USR-04). Valor propuesto: la spec no fija límite, solo registra el 429.</summary>
+    public const string PhoneChangeConfirmPolicy = "cambio-numero-confirmar";
+
+    /// <summary>Spec 039: recuperación de acceso (USR-05), 3 por hora por IP (R-21); el límite por número lo aplica el servicio.</summary>
+    public const string AccessRecoveryPolicy = "recuperacion-acceso";
+
+    /// <summary>Spec 039: pedir una exportación (USR-06). Valor propuesto: la spec no fija límite, solo registra el 429.</summary>
+    public const string ExportPolicy = "exportaciones";
+
+    /// <summary>Spec 039: programar la eliminación de la cuenta (USR-10). Valor propuesto: la spec no fija límite, solo registra el 429.</summary>
+    public const string DeletionPolicy = "eliminacion";
+
     private const string _healthPath = "/health";
     private const string _readyPath = "/health/ready";
     private const string _unknownClient = "unknown";
@@ -56,6 +71,12 @@ internal static class RateLimitingExtensions
             var auth = settings.Value.Auth;
             var ready = settings.Value.Ready;
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.AddPolicy(PhoneChangeCheckPolicy, SubjectPolicy(3, TimeSpan.FromHours(1)));
+            options.AddPolicy(PhoneChangeConfirmPolicy, SubjectPolicy(5, TimeSpan.FromHours(1)));
+            options.AddPolicy(AccessRecoveryPolicy, context => RateLimitPartition.GetFixedWindowLimiter(
+                $"recuperacion:{ClientKey(context)}", _ => FixedWindow(new RateLimitPolicySettings { PermitLimit = 3, Window = TimeSpan.FromHours(1) })));
+            options.AddPolicy(ExportPolicy, SubjectPolicy(3, TimeSpan.FromHours(1)));
+            options.AddPolicy(DeletionPolicy, SubjectPolicy(5, TimeSpan.FromHours(1)));
             options.GlobalLimiter = PartitionedRateLimiter.CreateChained(
                 PartitionedRateLimiter.Create<HttpContext, string>(context => GlobalPartition(context, global, ready, services)),
                 PartitionedRateLimiter.Create<HttpContext, string>(context =>
@@ -74,6 +95,12 @@ internal static class RateLimitingExtensions
         });
         return services;
     }
+
+    /// <summary>Política por <c>sub</c> del token; sin <c>sub</c> no limita (la autenticación ya respondió).</summary>
+    private static Func<HttpContext, RateLimitPartition<string>> SubjectPolicy(int permitLimit, TimeSpan window) =>
+        context => context.User.FindFirst("sub")?.Value is not { Length: > 0 } subject
+            ? RateLimitPartition.GetNoLimiter(_unknownClient)
+            : RateLimitPartition.GetFixedWindowLimiter($"persona:{subject}", _ => FixedWindow(new RateLimitPolicySettings { PermitLimit = permitLimit, Window = window }));
 
     /// <summary>Partición del límite general: <c>/health</c> sin límite, <c>/health/ready</c> con el suyo y el resto con el global.</summary>
     private static RateLimitPartition<string> GlobalPartition(HttpContext context, RateLimitPolicySettings global, RateLimitPolicySettings ready, IServiceProvider services)
