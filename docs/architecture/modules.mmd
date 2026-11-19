@@ -14,6 +14,7 @@ graph LR
   Safety["Safety"]
   Sesiones["Sesiones"]
   Tecnicos["Tecnicos"]
+  Trust["Trust"]
   Usuarios["Usuarios"]
   Account -->|11| Sesiones
   Account -->|2| Usuarios
@@ -25,6 +26,7 @@ graph LR
   Knock_Market_Api -->|1| Media
   Knock_Market_Api -->|1| Requests
   Knock_Market_Api -->|1| Tecnicos
+  Knock_Market_Api -->|1| Trust
   Knock_Messaging_Api -->|3| Chat
   Requests -->|1| Catalog
   Safety -->|2| Usuarios

@@ -71,12 +71,11 @@ internal static class RateLimitingExtensions
             var auth = settings.Value.Auth;
             var ready = settings.Value.Ready;
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-            options.AddPolicy(PhoneChangeCheckPolicy, SubjectPolicy(3, TimeSpan.FromHours(1), services));
-            options.AddPolicy(PhoneChangeConfirmPolicy, SubjectPolicy(5, TimeSpan.FromHours(1), services));
-            options.AddPolicy(AccessRecoveryPolicy, context => SharedPartition(
-                $"recuperacion:{ClientKey(context)}", new RateLimitPolicySettings { PermitLimit = 3, Window = TimeSpan.FromHours(1) }, services));
-            options.AddPolicy(ExportPolicy, SubjectPolicy(3, TimeSpan.FromHours(1), services));
-            options.AddPolicy(DeletionPolicy, SubjectPolicy(5, TimeSpan.FromHours(1), services));
+            options.AddPolicy(PhoneChangeCheckPolicy, SubjectPolicy(PhoneChangeCheckPolicy, 3, TimeSpan.FromHours(1), services));
+            options.AddPolicy(PhoneChangeConfirmPolicy, SubjectPolicy(PhoneChangeConfirmPolicy, 5, TimeSpan.FromHours(1), services));
+            options.AddPolicy(AccessRecoveryPolicy, context => SharedPartition($"recuperacion:{ClientKey(context)}", new RateLimitPolicySettings { PermitLimit = 3, Window = TimeSpan.FromHours(1) }, services));
+            options.AddPolicy(ExportPolicy, SubjectPolicy(ExportPolicy, 3, TimeSpan.FromHours(1), services));
+            options.AddPolicy(DeletionPolicy, SubjectPolicy(DeletionPolicy, 5, TimeSpan.FromHours(1), services));
             options.GlobalLimiter = PartitionedRateLimiter.CreateChained(
                 PartitionedRateLimiter.Create<HttpContext, string>(context => GlobalPartition(context, global, ready, services)),
                 PartitionedRateLimiter.Create<HttpContext, string>(context =>
@@ -97,10 +96,10 @@ internal static class RateLimitingExtensions
     }
 
     /// <summary>Política por <c>sub</c> del token; sin <c>sub</c> no limita (la autenticación ya respondió).</summary>
-    private static Func<HttpContext, RateLimitPartition<string>> SubjectPolicy(int permitLimit, TimeSpan window, IServiceProvider services) =>
+    private static Func<HttpContext, RateLimitPartition<string>> SubjectPolicy(string name, int permitLimit, TimeSpan window, IServiceProvider services) =>
         context => context.User.FindFirst("sub")?.Value is not { Length: > 0 } subject
             ? RateLimitPartition.GetNoLimiter(_unknownClient)
-            : SharedPartition($"persona:{subject}", new RateLimitPolicySettings { PermitLimit = permitLimit, Window = window }, services);
+            : SharedPartition($"{name}:{subject}", new RateLimitPolicySettings { PermitLimit = permitLimit, Window = window }, services);
 
     /// <summary>Partición del límite general: <c>/health</c> sin límite, <c>/health/ready</c> con el suyo y el resto con el global.</summary>
     private static RateLimitPartition<string> GlobalPartition(HttpContext context, RateLimitPolicySettings global, RateLimitPolicySettings ready, IServiceProvider services)
