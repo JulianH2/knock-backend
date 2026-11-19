@@ -810,3 +810,9 @@
 - **Decisiones (con porqué):** (1) Opción A de la tarjeta: se conserva la versión nueva y se quita una línea en vez de fijar la 5.0.0 (cambiar la versión pide el visto bueno del Tech Lead). (2) El filtro de casos sigue limitando la ejecución a las pruebas unitarias.
 - **Pendiente:** confirmar que el job corre en este PR, muta y genera reporte, y que la regla R-18 (mutación de `Knock.Hosting`) sigue aplicando.
 - **A evitar:** declarar `solution` y `test-projects` a la vez; subir la versión de dotnet-stryker sin probar el job en un PR.
+
+## 2026-11-19 · KNOCK-290 · Excepción temporal de Trivy por CVE-2026-97054 (pebble, imagen base)
+- **Qué cambió:** `.trivyignore` acepta CVE-2026-97054 y `security/exceptions.yaml` registra EXC-026 (responsable el Tech Lead, vence el 2026-12-03).
+- **Por qué:** el binario `usr/bin/pebble` de `mcr.microsoft.com/dotnet/aspnet:11.0` (construida el 2026-11-10) trae Go 1.27.3 y Trivy bloquea los PR; Microsoft aún no publica la imagen corregida y el sprint cierra el 2026-11-22.
+- **Decisiones (con porqué):** (1) Excepción en vez de esperar la imagen: no hay fecha de corrección y bloquea la fusión de unos 16 PR. (2) Vencimiento de 14 días y alcance de un solo CVE; los demás hallazgos siguen bloqueando.
+- **A evitar:** dejar la excepción al vencer sin revisar la imagen base; ampliarla a otros CVE sin una EXC propia.
