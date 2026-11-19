@@ -37,7 +37,7 @@ public sealed class Spec046PropioHttpTests
     };
 
     [Fact]
-    public async Task Sin_Token_Responde_401_En_Todas_Las_Rutas_Propias_CA_046_32()
+    public async Task Sin_Token_Responde_401_En_Todas_Las_Rutas_Propias_CA_046_32_CA_046_37_CA_046_41_CA_046_44()
     {
         await using var host = await Spec020Host.StartAsync();
         foreach (var (method, path) in new[]
@@ -129,7 +129,7 @@ public sealed class Spec046PropioHttpTests
     }
 
     [Fact]
-    public async Task Cambiar_La_Descripcion_Se_Ve_En_El_Perfil_Al_Instante_CA_046_61()
+    public async Task Cambiar_La_Descripcion_Se_Ve_En_El_Perfil_Al_Instante_CA_046_61_CA_046_31()
     {
         await using var host = await Spec020Host.StartAsync();
         var (sub, id) = await RegisterAsync(host);
@@ -156,7 +156,7 @@ public sealed class Spec046PropioHttpTests
     }
 
     [Fact]
-    public async Task Cuerpo_Ilegible_Responde_400_CA_046_47()
+    public async Task Cuerpo_Ilegible_Responde_400_CA_046_47_CA_046_35()
     {
         await using var host = await Spec020Host.StartAsync();
         var (sub, _) = await RegisterAsync(host);
