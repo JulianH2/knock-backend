@@ -15,7 +15,7 @@ namespace Knock.Market.Api.Modules.Requests.Controllers.V1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/visitas/{id}/aviso")]
 [Authorize]
-[PrivateNoStore]
+[Hosting.PrivateNoStore]
 internal sealed class TrustNoticeController(TrustNoticeService service) : BusinessRuleController
 {
     /// <summary>El cliente dueño obtiene el texto para compartir con alguien de confianza. Solo con la visita <c>confirmada</c> o <c>en_curso</c>.</summary>

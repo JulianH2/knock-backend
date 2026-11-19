@@ -51,6 +51,7 @@ internal sealed class MarketApiFactory(IReadOnlyDictionary<string, string?> sett
             ["ConnectionStrings:KnockRedis"] = redis.ConnectionString,
             ["Mongo:Databases:Catalog"] = database,
             ["Mongo:Databases:Requests"] = database,
+            ["Mongo:Databases:Trust"] = database,
             ["Mongo:Databases:Tecnicos"] = database,
         };
         var factory = new MarketApiFactory(Merge(values, overrides)) { ExtraServices = configureServices };
@@ -71,6 +72,7 @@ internal sealed class MarketApiFactory(IReadOnlyDictionary<string, string?> sett
             ["ConnectionStrings:KnockRedis"] = GatewayTestSupport.DummyRedisConnectionString,
             ["Mongo:Databases:Catalog"] = "market_offline",
             ["Mongo:Databases:Requests"] = "market_offline",
+            ["Mongo:Databases:Trust"] = "market_offline",
             ["Mongo:Databases:Tecnicos"] = "market_offline",
         };
         return new MarketApiFactory(Merge(values, overrides)) { ExtraServices = configureServices };
@@ -126,6 +128,11 @@ internal sealed class MarketApiFactory(IReadOnlyDictionary<string, string?> sett
             Index("solicitudId_1_tecnicoId_1", new BsonDocument { ["solicitudId"] = 1, ["tecnicoId"] = 1 }, unique: true),
             Index("solicitudId_1_estado_1_creadoEn_1", new BsonDocument { ["solicitudId"] = 1, ["estado"] = 1, ["creadoEn"] = 1 }),
             Index("tecnicoUsuarioId_1_creadoEn_-1", new BsonDocument { ["tecnicoUsuarioId"] = 1, ["creadoEn"] = -1 }),
+        ]);
+        // Spec 042 (db/042-tecnicos-de-confianza.js): un técnico guardado una sola vez por persona.
+        await database.GetCollection<BsonDocument>("tecnicos_confianza").Indexes.CreateManyAsync(
+        [
+            Index("clienteId_1_tecnicoId_1", new BsonDocument { ["clienteId"] = 1, ["tecnicoId"] = 1 }, unique: true),
         ]);
         // Spec 021 (db/022-visitas.js): una cita por solicitud.
         await database.GetCollection<BsonDocument>("visitas").Indexes.CreateManyAsync(
