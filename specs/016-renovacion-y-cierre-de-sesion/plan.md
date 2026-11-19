@@ -1,6 +1,6 @@
 # Plan 016 — Renovación y cierre de sesión
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Agregar al repositorio de `sesiones` la rotación atómica (una operación condicionada a la huella vigente) y la revocación de todas las sesiones de una cuenta.

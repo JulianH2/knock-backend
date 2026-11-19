@@ -1,6 +1,6 @@
 # Plan 038 — Semillas de demo de clientes
 
-> **Jira:** KNOCK-40 · **Estado:** Borrador · **Servicio:** Identidad y confianza. Plan propuesto, sujeto a la aprobación humana de la spec y resolución de sus dudas.
+> **Jira:** KNOCK-40 · **Estado:** Aprobada · **Servicio:** Identidad y confianza. Plan de la spec aprobada.
 
 ## Enfoque
 1. Resolver la frontera de datos antes de implementar y aplicar las decisiones de `spec.md` §9; aplicar las decisiones de Julián de §8.

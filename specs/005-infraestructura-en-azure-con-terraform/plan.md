@@ -1,6 +1,6 @@
 # Plan 005 — Infraestructura en Azure con Terraform
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Crear la estructura `deploy/` con el módulo compartido y un módulo por servicio.

@@ -1,6 +1,6 @@
 # Plan 002 — Estructura interna de cada servicio y estilo de la API
 
-> Parte de `spec.md` (estado Borrador). Este plan se confirma cuando la spec esté Aprobada.
+> Parte de `spec.md` (estado Aprobada). Este plan se confirmó con la aprobación de la spec.
 
 ## Enfoque
 1. Definir la plantilla de módulo y crear un módulo vacío de ejemplo.
