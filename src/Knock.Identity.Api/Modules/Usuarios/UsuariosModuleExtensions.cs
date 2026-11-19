@@ -18,6 +18,7 @@ public static class UsuariosModuleExtensions
         services.AddSingleton<IValidateOptions<ProfileCacheOptions>, ProfileCacheOptionsValidator>();
         services.AddSingleton<UsuariosStore>();
         services.AddSingleton<IUsuariosStore>(provider => provider.GetRequiredService<UsuariosStore>());
+        services.AddSingleton<IUsuariosApi, UsuariosApi>();
         services.AddSingleton<DemoClientSeeder>();
         services.AddHostedService<DemoSeedStartup>();
         services.AddSingleton<IProfileCache, RedisProfileCache>();

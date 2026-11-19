@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Knock.Market.Api.Common.Errors;
 using Knock.Market.Api.Hosting;
 using Knock.Market.Api.Modules.Requests.Domain;
 using Knock.Market.Api.Modules.Requests.Dtos;
@@ -40,8 +41,8 @@ internal sealed class SolicitudesController(SolicitudService service) : Controll
         return outcome.Status switch
         {
             CreateRequestStatus.Created => Created(new Uri($"/api/v1/solicitudes/{outcome.Request!.Id}", UriKind.Relative), outcome.Request),
-            CreateRequestStatus.TradeInvalid => Rule(StatusCodes.Status422UnprocessableEntity, RequestErrorCodes.TradeInvalidCode, "oficioClave"),
-            CreateRequestStatus.ColoniaNotFound => Rule(StatusCodes.Status422UnprocessableEntity, RequestErrorCodes.ColoniaNotFoundCode, "coloniaId"),
+            CreateRequestStatus.TradeInvalid => Rule(StatusCodes.Status422UnprocessableEntity, ErrorCodes.TradeInvalidCode, "oficioClave"),
+            CreateRequestStatus.ColoniaNotFound => Rule(StatusCodes.Status422UnprocessableEntity, ErrorCodes.ColoniaNotFoundCode, "coloniaId"),
             CreateRequestStatus.AddressRequired => Rule(StatusCodes.Status422UnprocessableEntity, code: null, "direccion"),
             CreateRequestStatus.AddressNotApplicable => Rule(StatusCodes.Status422UnprocessableEntity, RequestErrorCodes.AddressNotApplicableCode, "direccion"),
             CreateRequestStatus.PhotoInvalid => Rule(StatusCodes.Status422UnprocessableEntity, RequestErrorCodes.PhotoInvalidCode),
