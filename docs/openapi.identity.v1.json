@@ -1175,7 +1175,7 @@
         "tags": [
           "Reportes"
         ],
-        "summary": "Crea un reporte (`abierto`). 201 la primera vez y 200 si ya había uno abierto igual; 422 con `errors.&lt;campo&gt;` si un valor no es válido, si es contra uno mismo o contra alguien\nque no existe, o `content_rejected`; 503 `moderation_unavailable` si la moderación no responde. Con motivo de peligro la respuesta lleva el aviso de llamar al 911.",
+        "summary": "Crea un reporte (`abierto`). 201 la primera vez y 200 si ya había uno abierto igual; 422 con `errors.&lt;campo&gt;` si un valor no es válido, si es contra uno mismo o contra alguien\nque no existe, o `report_content_rejected`; 503 `report_moderation_unavailable` si la moderación no responde. Con motivo de peligro la respuesta lleva el aviso de llamar al 911.",
         "parameters": [
           {
             "name": "version",
