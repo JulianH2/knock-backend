@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-19T16:18:25Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-19T16:18:51Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -18,7 +18,7 @@
 | `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
 | `Requests` | -, controllers, data, domain, dtos, services, validators | 57 | 126 | 118 |
-| `Safety` | -, controllers, data, domain, dtos, services, validators | 7 | 13 | 12 |
+| `Safety` | -, controllers, data, domain, dtos, services, validators | 15 | 38 | 33 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 25 | 46 | 53 |
 | `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 22 | 55 | 57 |
 | `Usuarios` | -, controllers, data, domain, dtos, services | 15 | 28 | 35 |
@@ -153,6 +153,7 @@
 - `TelemetryExceptionRecorder`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:175`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:175`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:171`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:175`
 - `TelemetryRedactionProcessor`: `src/Knock.Gateway/Hosting/TelemetryRedactor.cs:293`, `src/Knock.Identity.Api/Hosting/TelemetryRedactor.cs:293`, `src/Knock.Market.Api/Hosting/TelemetryRedactor.cs:292`, `src/Knock.Messaging.Api/Hosting/TelemetryRedactor.cs:293`
 - `TelemetryRedactor`: `src/Knock.Gateway/Hosting/TelemetryRedactor.cs:25`, `src/Knock.Identity.Api/Hosting/TelemetryRedactor.cs:25`, `src/Knock.Market.Api/Hosting/TelemetryRedactor.cs:24`, `src/Knock.Messaging.Api/Hosting/TelemetryRedactor.cs:25`
+- `UnavailableContentModerator`: `src/Knock.Identity.Api/Modules/Safety/Services/UnavailableContentModerator.cs:9`, `src/Knock.Market.Api/Modules/Requests/Services/RequestPorts.cs:29`
 - `ValidationExtensions`: `src/Knock.Identity.Api/Hosting/ValidationExtensions.cs:9`, `src/Knock.Market.Api/Hosting/ValidationExtensions.cs:9`
 - `ValidationFilter`: `src/Knock.Identity.Api/Hosting/ValidationExtensions.cs:25`, `src/Knock.Market.Api/Hosting/ValidationExtensions.cs:24`
 
@@ -688,34 +689,48 @@
 **-**
 
 - `src/Knock.Identity.Api/Modules/Safety/SafetyModuleExtensions.cs` — class `SafetyModuleExtensions`
-  - `AddSafetyModule()`:9
+  - `AddSafetyModule()`:11
 
 **controllers**
 
 - `src/Knock.Identity.Api/Modules/Safety/Controllers/V1/BloqueosController.cs` — class `BloqueosController`
   - `Block()`:30, `Unblock()`:48, `List()`:62
+- `src/Knock.Identity.Api/Modules/Safety/Controllers/V1/ReportesController.cs` — class `ReportesController`
+  - `Create()`:35, `List()`:54, `Appeal()`:71
 
 **data**
 
 - `src/Knock.Identity.Api/Modules/Safety/Data/BloqueosStore.cs` — record `StoredBlock`, class `BloqueosStore`
   - `EnsureIndexesAsync()`:31, `AddAsync()`:42, `RemoveAsync()`:68, `ListAsync()`:78
+- `src/Knock.Identity.Api/Modules/Safety/Data/ReportesStore.cs` — record `StoredReport`, record `NewReport`, class `ReportesStore`
+  - `EnsureIndexesAsync()`:36, `FindOpenDuplicateAsync()`:46, `InsertAsync()`:55, `ListByReporterAsync()`:78, `FindAsync()`:91, `AppealAsync()`:100
 
 **domain**
 
+- `src/Knock.Identity.Api/Modules/Safety/Domain/ReportRules.cs` — class `ReportStates`, class `ReportReferenceKinds`, class `ReportRules`
+  - `NoticeFor()`:37, `IsValidText()`:40, `CanBeAppealed()`:46
+- `src/Knock.Identity.Api/Modules/Safety/Domain/SafetyCursor.cs` — class `SafetyCursor`
+  - `Parse()`:12
 - `src/Knock.Identity.Api/Modules/Safety/Domain/SafetyErrorCodes.cs` — class `SafetyErrorCodes`
 
 **dtos**
 
 - `src/Knock.Identity.Api/Modules/Safety/Dtos/BlockDtos.cs` — record `BlockedPerson`, record `BlockedPage`, class `BlocksQuery`, class `BlockRoute`
+- `src/Knock.Identity.Api/Modules/Safety/Dtos/ReportDtos.cs` — class `ReportReferenceBody`, class `CreateReportBody`, class `AppealBody`, class `ReportRoute`, class `ReportsQuery`, record `ReportCreated`, record `ReportSummary`, record `ReportPage`, record `AppealResult`
 
 **services**
 
 - `src/Knock.Identity.Api/Modules/Safety/Services/BlockService.cs` — enum `BlockOutcome`, class `BlockService`
-  - `BlockService()`:22, `BlockAsync()`:27, `UnblockAsync()`:49, `ListAsync()`:58
+  - `BlockService()`:21, `BlockAsync()`:26, `UnblockAsync()`:48, `ListAsync()`:57
+- `src/Knock.Identity.Api/Modules/Safety/Services/ReportService.cs` — enum `ReportOutcome`, record `ReportCreation`, class `ReportService`
+  - `ReportCreation()`:20, `ToString()`:22, `ReportService()`:30, `CreateAsync()`:36, `ListAsync()`:70, `AppealAsync()`:84
+- `src/Knock.Identity.Api/Modules/Safety/Services/UnavailableContentModerator.cs` — class `UnavailableContentModerator`
+  - `ReviewTextAsync()`:13, `ReviewImageAsync()`:15
 
 **validators**
 
 - `src/Knock.Identity.Api/Modules/Safety/Validators/BlockValidators.cs` — class `BlocksQueryValidator`, class `BlockRouteValidator`
+- `src/Knock.Identity.Api/Modules/Safety/Validators/ReportValidators.cs` — class `CreateReportBodyValidator`, class `ReportsQueryValidator`, class `AppealRequestValidator`, class `AppealBodyValidator`
 
 ### Sesiones
 
