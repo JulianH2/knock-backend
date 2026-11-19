@@ -62,4 +62,55 @@ public class Spec033ArquitecturaTests
         cli.ShouldNot().HaveDependencyOnAny("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel", "Microsoft.AspNetCore.Mvc", "Microsoft.AspNetCore.Builder")
             .GetResult().IsSuccessful.Should().BeTrue();
     }
+
+    private static bool HasAttribute(MemberInfo member, string name) =>
+        member.GetCustomAttributes(inherit: true).Any(attribute => attribute.GetType().Name == name);
+
+    /// <summary>Controllers bajo <c>/api/v1/panel/</c> que ni son de sesión ni declaran un permiso en cada acción (R-20).</summary>
+    private static List<string> PanelControllersWithoutPermission(IEnumerable<Type> types) =>
+        [.. types
+            .Where(type => type.IsClass && type.Name.EndsWith("Controller", StringComparison.Ordinal))
+            .Where(type => type.GetCustomAttributes(inherit: true).Any(attribute => attribute.GetType().Name == "RouteAttribute"
+                && attribute.GetType().GetProperty("Template")?.GetValue(attribute) is string template
+                && template.Contains("/panel", StringComparison.OrdinalIgnoreCase)))
+            .Where(type => !HasAttribute(type, "PanelSesionEndpointAttribute"))
+            .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
+                .Where(method => method.GetCustomAttributes(inherit: true).Any(attribute => attribute.GetType().Name.StartsWith("Http", StringComparison.Ordinal) && attribute.GetType().Name.EndsWith("Attribute", StringComparison.Ordinal)))
+                .Where(method => !HasAttribute(method, "RequierePermisoAttribute") && !HasAttribute(type, "RequierePermisoAttribute"))
+                .Select(method => $"{type.FullName}.{method.Name}"))];
+
+    [Fact]
+    public void Todo_Endpoint_Declara_Permiso_CA_033_20()
+    {
+        var panelControllers = Identity.GetTypes().Where(type => type.Name.EndsWith("Controller", StringComparison.Ordinal) && type.Namespace?.StartsWith(_panel, StringComparison.Ordinal) == true).ToList();
+
+        panelControllers.Should().HaveCountGreaterThanOrEqualTo(3, "si no hay controllers la regla pasaría en vacío");
+        PanelControllersWithoutPermission(Identity.GetTypes()).Should().BeEmpty("los de sesión llevan PanelSesionEndpoint y el resto debe declarar RequierePermiso");
+    }
+
+    [Fact]
+    public void La_Regla_Puede_Fallar_Para_Un_Controller_Del_Panel_Sin_Permiso_CA_033_20()
+    {
+        PanelControllersWithoutPermission([typeof(SinPermisoController), typeof(ConPermisoController)])
+            .Should().ContainSingle().Which.Should().Contain(nameof(SinPermisoController));
+    }
+
+    // Controllers de muestra: solo se inspeccionan por reflexión, nunca se crean.
+    [Microsoft.AspNetCore.Mvc.Route("api/v1/panel/prueba")]
+    private static class SinPermisoController
+    {
+        [Microsoft.AspNetCore.Mvc.HttpGet]
+        public static void Leer() => throw new NotSupportedException();
+    }
+
+    [Microsoft.AspNetCore.Mvc.Route("api/v1/panel/prueba")]
+    private static class ConPermisoController
+    {
+        [Microsoft.AspNetCore.Mvc.HttpGet]
+        [RequierePermiso]
+        public static void Leer() => throw new NotSupportedException();
+    }
+
+    [AttributeUsage(AttributeTargets.Method)]
+    private sealed class RequierePermisoAttribute : Attribute;
 }
