@@ -1,5 +1,21 @@
 # Memoria — knock-backend
 
+## 2026-11-16 — Spec 055 y enmienda 1.2.0 de la constitución: biblioteca técnica compartida (KNOCK-251)
+- **Decisión:** se redacta en Borrador la spec 055 (`Knock.Hosting`) con la enmienda a la constitución (§4 y estructura del repositorio; versión 1.1.0 → 1.2.0) que permite una biblioteca técnica compartida, como pide EXC-008 («su spec y el cambio de la constitución que la permita»). La spec cubre la biblioteca completa por etapas: la 1 (KNOCK-251) mueve los encabezados reenviados y el redactor de registros y retira EXC-020; la 2 mueve el límite de peticiones (después de KNOCK-247) y retira EXC-025; la 3 mueve el resto del catálogo y retira EXC-007, EXC-008, EXC-015, EXC-016, EXC-018 y EXC-021.
+- **Porqué:** la constitución 1.1.0 solo permitía compartir `Knock.Contracts` sin lógica, y había 8 excepciones vivas de jscpd y codemap por copias de `Hosting/`. El Tech Lead pidió el 2026-11-16 que la spec cubra la biblioteca completa, incluido luego el limitador, y que la apruebe él antes de escribir código.
+- **Decisiones del Tech Lead (2026-11-16, auditoría del PR #145):**
+  - el nombre `Knock.Hosting` se queda;
+  - el gateway entra en la etapa 1;
+  - los puntos son al menos `-1` por servicio afectado;
+  - ampliar el catálogo pide las dos aprobaciones de una enmienda;
+  - en la etapa 3 el gateway no carga MongoDB.Driver, porque la parte de MongoDB va a `Knock.Hosting.Data`;
+  - Stryker incluye `src/Knock.Hosting`;
+  - la etapa 2 es KNOCK-280 (Sprint 6) y la etapa 3 es KNOCK-281;
+  - el Tech Lead renueva EXC-015, EXC-016 y EXC-018 (vencen el 2026-12-04) y EXC-020 y EXC-021 (2026-12-15), ligadas a su etapa.
+
+  Se actualizaron la spec 001 (R-01 y R-04) y la ADR-001 para nombrar la biblioteca técnica.
+- **Pendiente:** la aprobación del Tech Lead y de Alexis (§11). Los cambios de `ci-pr.yml`, `ci-deploy.yml` y `CODEOWNERS` son de una persona.
+- **A evitar:** escribir código de la biblioteca antes de que la spec esté Aprobada y la enmienda fusionada; cambiar el comportamiento de una pieza en el mismo PR que la mueve.
 ## 2026-11-16 — KNOCK-66: verificación tras merge de sprint-04
 - **Resultado:** build Release con warnings como errores sin avisos; OpenAPI de Market regenerado sin cambios. Se corrigieron las filas de solicitudes en `docs/endpoints.md` y se aclaró que el gateway aún no enruta búsqueda ni solicitudes generales; la ruta de cotizaciones sí existe. El límite de búsqueda de 30/min sigue propuesto, no implementado. `PublicEndpointsRateLimitTests` no se encontró en esta rama.
 - **Pruebas:** Spec027: 46 unitarias, 5 integración y 3 seguridad aprobadas; en una ejecución paralela la prueba de rendimiento de base falló con p95 953 ms y la ejecución agotó el tiempo. Después DatabaseTest completo pasó 160/160, incluida esa prueba. ContractTest 7/7, UnitTest 1187/1187 y SecurityTest 320/320. Formato y codemap correctos.
