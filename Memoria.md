@@ -789,6 +789,11 @@
 - **Pendiente:** fotos de demo con nombre fijo (dependen de la spec 013, OI-2: las solicitudes de demo apuntan a identificadores de foto que no existen en el módulo de archivos, así que el detalle las muestra sin enlaces), transacción verificada en Azure e invalidación de Redis al final de la carga.
 - **A evitar:** cargar datos de demo sin la guarda de host local; escribir fechas como texto.
 
+## 2026-11-17 — KNOCK-45 (HU-003): conciliación de la spec 016
+- **Estado:** la renovación y el cierre de sesión ya estaban hechos con KNOCK-211 (#19) y KNOCK-203; esta tarjeta solo concilia `specs/016/task.md` con el código real. Los diez casos CA-016 tienen prueba (`sdd_lint.py --trace 016`), el contrato está en `docs/endpoints.md` y `docs/openapi.identity.v1.json`, y no queda ninguna prueba omitida de la spec 016.
+- **Decisión:** no se cambia código ni contrato; la tarjeta no necesita otro PR de funcionalidad. La firma de la spec («Implementada») la hace una persona.
+- **Pendiente:** el evento `sesion_revocada { sid }` que pide la spec 037 (R-13) al cerrar una sesión o por reuso se concreta al implementar la 037 (KNOCK-60); la tolerancia a una renovación perdida por la señal se agrega solo si se mide.
+- **A evitar:** abrir trabajo de código para una tarjeta «cubierta por spec» sin comprobar antes con `--trace` y el contrato que de verdad falta algo.
 ## 2026-11-17 · KNOCK-287 · Llaves de Identity (cifrado de campos) y de Market (cursor de búsqueda)
 - **Qué cambió:** `deploy/apps/main.tf` declara tres secretos nuevos de Key Vault: `identity-field-encryption-key` (lo lee solo `identity`, con `Security__FieldEncryption__ActiveVersion=1` en su `env`) y `search-cursor-key` (lo lee solo `market`, como `Busqueda__Cursor__Key`) e `interno-key-identity` (la leen `identity`, como `Services__Market__InternalKey`, y `market`, como `Security__InternalTokens__IdentityKey`, para la ruta interna de historial de la spec 041). `up.sh`, su prueba y `deploy/README.md` los listan entre los secretos obligatorios.
 - **Por qué:** Identity necesita su llave para guardar direcciones (spec 040) y sin ella responde 500; Market exige la clave del cursor de búsqueda (KNOCK-66) fuera de Development y no arranca sin ella.
