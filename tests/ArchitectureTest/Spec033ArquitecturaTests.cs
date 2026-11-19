@@ -52,4 +52,14 @@ public class Spec033ArquitecturaTests
         types.GetTypes().Should().ContainSingle();
         types.ShouldNot().HaveDependencyOnAny("Microsoft.AspNetCore", "MongoDB.Driver", "StackExchange.Redis").GetResult().IsSuccessful.Should().BeTrue();
     }
+
+    [Fact]
+    public void La_Herramienta_Interna_No_Registra_Kestrel_Ni_Controllers_Spec033_Seccion7()
+    {
+        var cli = Types.InAssembly(Identity).That().ResideInNamespace($"{_panel}.Cli");
+
+        cli.GetTypes().Should().NotBeEmpty("si no hay tipos la regla pasaría en vacío");
+        cli.ShouldNot().HaveDependencyOnAny("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel", "Microsoft.AspNetCore.Mvc", "Microsoft.AspNetCore.Builder")
+            .GetResult().IsSuccessful.Should().BeTrue();
+    }
 }
