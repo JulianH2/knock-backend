@@ -794,6 +794,10 @@
 - **Decisión:** se conservan las seis políticas por sujeto de sprint-05 con sus límites y ventana fija por réplica; global, auth y readiness usan el limitador Redis con respaldo local de KNOCK-247. En particular lista de espera y cotizaciones dejan de ser compartidas por sujeto en esta resolución. Identity conserva el marcador EXC-015; los demás archivos del alcance usan EXC-025, sin anidarlos.
 - **Verificación:** codemap actualizó la línea base; build Release y formato pasaron con `--no-restore`. Los comandos con restauración agotaron cinco minutos; las pruebas filtradas sin restauración fallaron en integración porque Testcontainers no pudo conectar con Docker. Queda pendiente verificarlas con Docker y restauración disponibles.
 
+## 2026-11-19 — KNOCK-247: el limitador compartido no espera a Redis caído
+- **Causa:** el job «API» fallaba al exportar el contrato de Identity: con Redis sin respuesta, cada petición esperaba el tiempo de espera del cliente (5 s) antes de caer al límite por copia, y la exportación (respuesta en menos de 5 s por intento) nunca recibía contestación. Lo mismo ocurriría en producción durante una caída de Redis.
+- **Decisión:** si `IConnectionMultiplexer.IsConnected` es falso el limitador usa de inmediato el límite por copia (misma decisión del Tech Lead, sin cambio de comportamiento con Redis sano). Se cambió en las dos copias (EXC-025) y se actualizó una huella de la línea base de duplicados; pruebas `Spec006SharedRateLimiterTests` con Redis inalcanzable.
+
 ## 2026-11-17 — Respuestas verificadas para la evaluación y equivalencias del Excel (KNOCK-181)
 - **Decisión:** `docs/EVALUACION.md` reúne las respuestas a las preguntas de evaluación del backend con el archivo donde se comprueba cada una, las cifras de métodos de prueba y las equivalencias entre los IDs del Excel de endpoints y las rutas de las specs.
 - **Porqué:** ocho endpoints del Excel tienen otra ruta en las specs (por ejemplo `COT-04` es `POST /solicitudes/{id}/elegir`); quien cuente rutas del Excel contra las specs los da por «sin spec». `CON-02` se eliminó (spec 042, D-04) y `COL-01` (`GET /colonias`) queda pendiente de decisión.

@@ -42,7 +42,7 @@ internal sealed class SharedRateLimiter : RateLimiter
         try
         {
             var redis = _services.GetService<IConnectionMultiplexer>();
-            if (redis is null)
+            if (redis is null || !redis.IsConnected)
             {
                 return await _fallback.AcquireAsync(permitCount, cancellationToken);
             }
