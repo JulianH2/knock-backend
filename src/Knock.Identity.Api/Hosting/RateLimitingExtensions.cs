@@ -97,9 +97,9 @@ internal static class RateLimitingExtensions
 
     /// <summary>Política por <c>sub</c> del token; sin <c>sub</c> no limita (la autenticación ya respondió).</summary>
     private static Func<HttpContext, RateLimitPartition<string>> SubjectPolicy(string name, int permitLimit, TimeSpan window, IServiceProvider services) =>
-        context => context.User.FindFirst("sub")?.Value is { Length: > 0 } subject
-            ? SharedPartition($"{name}:{subject}", new RateLimitPolicySettings { PermitLimit = permitLimit, Window = window }, services)
-            : RateLimitPartition.GetNoLimiter(_unknownClient);
+        context => context.User.FindFirst("sub")?.Value is not { Length: > 0 } subject
+            ? RateLimitPartition.GetNoLimiter(_unknownClient)
+            : SharedPartition($"{name}:{subject}", new RateLimitPolicySettings { PermitLimit = permitLimit, Window = window }, services);
 
     /// <summary>Partición del límite general: <c>/health</c> sin límite, <c>/health/ready</c> con el suyo y el resto con el global.</summary>
     private static RateLimitPartition<string> GlobalPartition(HttpContext context, RateLimitPolicySettings global, RateLimitPolicySettings ready, IServiceProvider services)
