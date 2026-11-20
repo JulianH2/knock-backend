@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-20T16:22:10Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-20T17:17:08Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -20,7 +20,7 @@
 | `Knock.Market.Api` | -, common, hosting | 34 | 68 | 100 |
 | `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
-| `Requests` | -, controllers, data, domain, dtos, services, validators | 62 | 134 | 124 |
+| `Requests` | -, controllers, data, domain, dtos, services, validators | 63 | 135 | 126 |
 | `Safety` | -, controllers, data, domain, dtos, services, validators | 15 | 38 | 33 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 26 | 47 | 54 |
 | `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 26 | 67 | 68 |
@@ -846,6 +846,8 @@
   - `ToStored()`:35, `ToStored()`:47, `ParseRequest()`:56, `ParseQuote()`:68
 - `src/Knock.Market.Api/Modules/Requests/Domain/SeleccionDeOleada.cs` — record `WaveCandidate`, record `WaveSelection`, class `SeleccionDeOleada`
   - `Select()`:12
+- `src/Knock.Market.Api/Modules/Requests/Domain/TransicionesDeSolicitud.cs` — class `TransicionesDeSolicitud`
+  - `CanClose()`:6, `CancellationError()`:9
 - `src/Knock.Market.Api/Modules/Requests/Domain/VisitRules.cs` — class `VisitErrorCodes`, enum `ArrivalBlock`, record `VisitState`, class `VisitRules`
   - `WindowStart()`:48, `CanArrive()`:55, `TechnicianMaySeeAddress()`:68, `CanNotify()`:71, `CodeHiddenReason()`:76, `BlockForArrival()`:100, `SafetyRule()`:136, `TrustNotice()`:143
 

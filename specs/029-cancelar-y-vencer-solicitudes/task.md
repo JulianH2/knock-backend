@@ -5,7 +5,7 @@
 
 | Tarea | Qué se hace | Cubre | Depende de | En paralelo con | Responsable sugerido | Estado |
 |---|---|---|---|---|---|---|
-| T-01 | `TransicionesDeSolicitud` pura con unitarias y mutación | R-01, R-05 · CA-02, CA-11 | — | T-02, T-05 | Erick | pendiente |
+| T-01 | `TransicionesDeSolicitud` pura con unitarias y mutación | R-01, R-05 · CA-02, CA-11 | — | T-02, T-05 | Alexis | hecha |
 | T-02 | `CierreDeSolicitudService`: cascada transaccional (solicitud, cotizaciones, envíos, evento) | R-03, R-07, R-09 · CA-01, CA-06, CA-15 | T-01; specs 020, 021 y 028 (envíos) | T-05 | Guillermo | pendiente |
 | T-03 | Ruta de cancelación: controller, validador, idempotencia, `no-store`, límite de 10 por hora | R-02, R-04, R-06, R-14, R-15 · CA-03, CA-04, CA-05, CA-12, CA-13 | T-02 | T-04 | Erick | pendiente |
 | T-04 | Manejadores `VencerSolicitud` y `BarrerVencidas`; programación en la creación; opciones del plazo validadas | R-08, R-10, R-11 · CA-06, CA-07, CA-08, CA-09, CA-14 | T-02; ejecutor (T-02 de la 028) | T-03 | Guillermo | pendiente |
