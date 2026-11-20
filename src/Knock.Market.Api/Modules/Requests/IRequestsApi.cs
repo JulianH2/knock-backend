@@ -4,4 +4,6 @@ namespace Knock.Market.Api.Modules.Requests;
 public interface IRequestsApi
 {
     string ModuleName { get; }
+
+    bool CanArrive(string state, string modality, string day, bool blocked, bool codeUsed, DateTime? expiresAtUtc, DateTime nowUtc);
 }

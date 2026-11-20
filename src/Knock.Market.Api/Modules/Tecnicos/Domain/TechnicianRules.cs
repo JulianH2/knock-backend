@@ -30,6 +30,8 @@ internal static class TechnicianRules
     public static bool IsVisible(string estado, bool oculto, DateTime? ocultoHasta, DateTime nowUtc) =>
         estado == ActiveState && !oculto && (ocultoHasta is null || ocultoHasta <= nowUtc);
 
+    public static bool IsAvailable(DateTime? availableUntilUtc, DateTime nowUtc) => availableUntilUtc > nowUtc;
+
     public static bool IsKnownAttention(string? attention) => attention is Taller or Domicilio or Ambos;
 
     public static bool UsesWorkshop(string? attention) => attention is Taller or Ambos;

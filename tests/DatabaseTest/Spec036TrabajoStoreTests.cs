@@ -10,6 +10,36 @@ namespace Knock.DatabaseTest;
 
 public sealed class Spec036TrabajoStoreTests
 {
+    [Fact]
+    public async Task Terminadas_Usa_Respaldo_Y_Cursor_CA_036_03()
+    {
+        var fixture = await DocumentDbFixture.SharedAsync();
+        using var client = new MongoClient(fixture.ConnectionString);
+        var name = "work_" + Guid.NewGuid().ToString("N");
+        var database = client.GetDatabase(name);
+        try
+        {
+            var old = new DateTime(2026, 11, 10, 0, 0, 0, DateTimeKind.Utc);
+            var recent = old.AddDays(1);
+            var firstId = ObjectId.GenerateNewId();
+            var secondId = ObjectId.GenerateNewId();
+            await database.GetCollection<BsonDocument>("visitas").InsertManyAsync([
+                new BsonDocument { ["_id"] = firstId, ["tecnicoUsuarioId"] = "synthetic-sub", ["estado"] = "terminada", ["actualizadoEn"] = recent },
+                new BsonDocument { ["_id"] = secondId, ["tecnicoUsuarioId"] = "synthetic-sub", ["estado"] = "terminada", ["terminadaEn"] = old, ["actualizadoEn"] = recent.AddDays(1) },
+                new BsonDocument { ["tecnicoUsuarioId"] = "other", ["estado"] = "terminada", ["terminadaEn"] = recent.AddDays(2) },
+            ]);
+            var store = new TrabajoStore(database, Options.Create(new KnockMongoOptions()));
+            var first = await store.ReadFinishedAsync("synthetic-sub", null, 1, CancellationToken.None);
+            Assert.Equal(firstId, first[0]["_id"].AsObjectId);
+            Assert.Equal(recent, first[0]["fechaTrabajo"].ToUniversalTime());
+            var second = await store.ReadFinishedAsync("synthetic-sub", (recent, firstId), 1, CancellationToken.None);
+            Assert.Single(second);
+            Assert.Equal(secondId, second[0]["_id"].AsObjectId);
+            Assert.Equal(old, second[0]["fechaTrabajo"].ToUniversalTime());
+        }
+        finally { await client.DropDatabaseAsync(name); }
+    }
+
     [Theory]
     [InlineData("ninguno", "sin_verificar")]
     [InlineData("basica", "verificada")]
