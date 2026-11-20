@@ -1,5 +1,30 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — KNOCK-68: pruebas iniciales de T-08 bloqueadas por T-07
+- **Estado:** se agregaron pruebas iniciales de bandeja, descarte, autenticación y carrera en `tests/IntegrationTest/Requests/Spec028BandejaTests.cs`; T-08 sigue pendiente. No se implementaron rutas ni cambios de producción.
+- **Bloqueo:** en esta rama T-07 figura pendiente y `QuoteStore` no consulta ni cambia el envío al cotizar. Una prueba con envío ya descartado recibió 201 y guardó una cotización, por lo que no se puede garantizar que gane solo una de las operaciones sin modificar la transacción de cotización de T-07. T-08 se pidió como paso único.
+- **Verificación:** build Release con `--no-restore` pasó sin avisos; las cinco pruebas iniciales fallaron, incluida la regresión de cotizar un envío descartado y las rutas aún ausentes. Formato del archivo nuevo correcto. Las pruebas de límite 30/h y los demás casos de T-08 aún faltan; no se generó contrato ni se hizo commit.
+
+## 2026-11-19 — KNOCK-68: manejadores de reparto (T-06)
+- **Estado:** creación programa la primera oleada en su transacción cuando está habilitada; `RepartoService` registra los dos manejadores, confirma la reserva en la transacción y usa el avance condicionado de oleada, envíos, tareas y `MongoOutbox`. La revisión cuenta cotizaciones vivas y programa la siguiente. La última oleada sin ningún envío escribe `SolicitudSinTecnicos`; sus datos y los de envío solo contienen identificadores y número de oleada.
+- **Decisiones:** la tarea se programa con upsert por tipo y clave de negocio para tolerar una repetición tras el commit; el índice único de la spec debe estar aplicado. Una revisión escribe `revisionOleada` en la solicitud dentro de su transacción para competir con cambios concurrentes; no tiene significado de negocio.
+- **Verificación:** build Release `--no-restore` sin errores ni advertencias y 13 pruebas de integración `Spec028` pasaron. El caso concurrente prueba dos ejecutores que compiten por una tarea, no dos manejadores con el mismo token ni una carrera de retoma transaccional. CA-01 aún no verifica el motivo cercano; CA-09 solo cubre cancelación antes de repartir. Esas brechas siguen pendientes; tampoco se verificó el clúster de Azure.
+- **A evitar:** habilitar las oleadas como control de acceso antes de T-07: esa tarea todavía debe exigir envío al cotizar. El despachador de notificaciones no forma parte de este cambio.
+
+## 2026-11-19 — KNOCK-68: pruebas iniciales de reparto (T-06)
+- **Estado:** se añadieron pruebas iniciales de integración en `tests/IntegrationTest/Requests/Spec028RepartoTests.cs`; T-06 sigue pendiente. No se implementaron los manejadores ni se conectó la programación al crear solicitudes.
+- **Rojo:** la primera ejecución de `dotnet test tests/IntegrationTest -c Release --no-restore --filter FullyQualifiedName~Spec028Reparto` tuvo 6 fallos y 1 prueba aprobada; faltan la tarea inicial y los manejadores. Después se corrigió la expectativa de la prueba concurrente para permitir que solo un ejecutor reserve la tarea; esa modificación no se volvió a ejecutar.
+- **Pendiente:** completar la prueba CA-01 con distancias conocidas y motivo `cercano`, los casos vencidos y de revisión cerrada de CA-09, y una carrera de dos manejadores con el mismo `reservaId` que compruebe la transacción, además de implementar y verificar T-06.
+
+## 2026-11-19 — KNOCK-68: candidatos y envíos (T-05)
+- **Estado:** `CandidatosStore` filtra disponibilidad, oficio, estado, ocultamiento, cliente y envíos previos; usa `$geoNear` y radio, e incluye técnicos sin ubicación de la colonia base. `EnviosStore` permite insertar con o sin sesión y consultar destinatarios previos. Se reutiliza `WaveCandidate`, ampliado con el usuario del técnico, y el índice único definido por la 028; no se agregaron dependencias.
+- **Verificación:** las pruebas nuevas no compilaban antes de crear los almacenes. Después, build Release sin restauración pasó sin avisos y 3 pruebas `Spec028Candidatos` pasaron sobre documentdb-local. El índice único se construye en la prueba con la misma definición del script; la ejecución del script se cubre aparte en DatabaseTest.
+- **Límites:** el reparto y la escritura transaccional completa son T-06, no se implementaron. No se verificó la consulta contra Azure ni se obtuvo un `explain`; la consulta geográfica exige un índice `2dsphere` sobre `ubicacionBase`. Sin centro solo se usa la colonia base.
+
+## 2026-11-19 — KNOCK-68: revisión inicial de T-05 y T-06
+- **Estado:** Alexis figura como responsable de T-05 y T-06; ambas siguen pendientes. No se implementaron los almacenes ni el reparto y no se escribieron pruebas nuevas.
+- **Verificación:** `dotnet test tests/IntegrationTest -c Release --no-restore --filter FullyQualifiedName~Spec028` pasó 3 pruebas existentes del ejecutor; no cubren las tareas pendientes.
+- **A evitar:** considerar que la reserva por sí sola impide dos manejadores simultáneos; la confirmación de `reservaId` debe ocurrir en la transacción de negocio, junto con el avance condicionado y el buzón.
 ## 2026-11-19 — KNOCK-186: plantilla de ruta en ProblemDetails
 - **Decisión:** R-06 de la spec 035 se cumple con la plantilla de la ruta del endpoint, sin consulta y con `/` inicial, para no repetir valores recibidos y respetar CA-046-17 y CA-023-03. Sin endpoint se conserva la ruta de la petición sin consulta.
 - **Límite:** la ruta de respaldo puede contener valores cuando no hay endpoint; no se interpreta como una plantilla.
@@ -1131,3 +1156,8 @@
 - **Qué cambió:** `specs/README.md` agrega la fila 059 (Suspensión preventiva en casos críticos, Borrador), que el PR #182 había dejado fuera.
 - **Por qué:** el índice debe listar toda spec del repositorio; una persona o una herramienta que lea primero el índice no veía la 059.
 - **A evitar:** agregar una carpeta de spec sin su fila en el índice en el mismo cambio.
+
+## 2026-11-20 · KNOCK-87 · Spec 057: dudas redactadas como decisiones sí/no
+- **Qué cambió:** `specs/057-borrado-de-fotos-de-verificacion/spec.md` §8: las nueve dudas pasan a ocho decisiones sí/no (D-01 a D-08) con contexto, alternativa y recomendación, y una nota de dependencias. Solo documentación.
+- **Por qué:** la spec seguía con preguntas abiertas sin recomendación; ninguna impide aprobarla, pero D-07 (formato de casos) afecta al trazado `sdd_lint --trace 057`.
+- **A evitar:** redactar una duda sin dar la alternativa y qué cambia si la respuesta es «no».
