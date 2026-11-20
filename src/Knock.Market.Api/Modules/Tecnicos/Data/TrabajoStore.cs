@@ -9,6 +9,25 @@ internal sealed record TrabajoVerification(string? ErrorCode, string? Estado, st
 
 internal sealed class TrabajoStore(IMongoDatabase database, IOptions<KnockMongoOptions> options)
 {
+    public async Task<IReadOnlyList<BsonDocument>> ReadFinishedAsync(
+        string sub, (DateTime Date, ObjectId Id)? after, int limit, CancellationToken cancellationToken)
+    {
+        var match = new BsonDocument { ["tecnicoUsuarioId"] = sub, ["estado"] = "terminada" };
+        var pipeline = database.GetCollection<BsonDocument>("visitas").Aggregate(new AggregateOptions { MaxTime = options.Value.QueryMaxTime })
+            .Match(match)
+            .AppendStage<BsonDocument>(new BsonDocument("$addFields", new BsonDocument("fechaTrabajo",
+                new BsonDocument("$ifNull", new BsonArray { "$terminadaEn", "$actualizadoEn" }))));
+        if (after is { } cursor)
+        {
+            var filter = Builders<BsonDocument>.Filter;
+            pipeline = pipeline.Match(filter.Lt("fechaTrabajo", cursor.Date)
+                | (filter.Eq("fechaTrabajo", cursor.Date) & filter.Lt("_id", cursor.Id)));
+        }
+
+        return await pipeline.Sort(Builders<BsonDocument>.Sort.Descending("fechaTrabajo").Descending("_id"))
+            .Limit(limit + 1).ToListAsync(cancellationToken);
+    }
+
     public async Task<TrabajoVerification?> ReadVerificationAsync(string sub, CancellationToken cancellationToken)
     {
         try

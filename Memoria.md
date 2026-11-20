@@ -1,5 +1,20 @@
 # Memoria — knock-backend
 
+## 2026-11-19 — KNOCK-67: verificación parcial de terminación
+- **Decisión de Alexis:** al cerrar una visita terminada se guarda `terminadaEn` en UTC en la misma actualización; para documentos viejos de prueba o demo sin ese campo, la lectura usa `actualizadoEn` como aproximación tanto para el orden como para el cursor.
+- **Verificación:** build Release sin restauración y 11 pruebas filtradas `Spec036` pasaron, incluidas las pruebas del cierre y del respaldo; formato de los archivos afectados y `codemap.py --check` pasaron. `sdd_lint.py --trace 036` señala CA-01, CA-02, CA-04, CA-06 y CA-09 pendientes; reconocer un nombre no prueba por sí solo el criterio completo.
+- **Pendiente:** T-02, T-04, T-05 y T-07 no están terminadas; la exportación OpenAPI agotó 240 segundos sin respuesta. No se ha demostrado que el índice cubra el orden calculado con respaldo.
+
+## 2026-11-19 — KNOCK-67: índices del resumen de trabajo (T-01)
+- **Estado:** `db/036-resumen-trabajo.js` agrega el índice de visitas por técnico, estado, fecha de terminación e identificador; reutiliza la definición existente de cotizaciones por técnico y `creadoEn`. La prueba ejecuta el script dos veces en DocumentDB local y comprueba índices y conservación de documentos.
+- **Decisión:** el contrato llama `enviadaEn` a la fecha, pero `QuoteStore` la persiste como `creadoEn`; indexar `enviadaEn` no serviría para los documentos existentes.
+- **Pendiente:** T-02 parcial y siguientes; no se implementó ningún endpoint.
+
+### Dudas y decisiones — 2026-11-19
+- **Disponibilidad (Alexis, con autorización del líder):** `disponibleHoy` se calcula como `disponibleHasta > ahora` UTC, conforme a la spec 046; si falta, es `false`. El resumen no escribe el campo. `TechnicianRules.IsAvailable` reúne el cálculo que antes repetían el perfil propio y el público; falta conectarlo al resumen.
+- **Fecha de envío (Alexis, con autorización del líder):** la respuesta usa `enviadaEn`, mapeada desde `creadoEn` de `QuoteStore`; no se renombra el campo MongoDB. Falta implementar y verificar ese mapeo HTTP.
+- **Fecha de terminación (Alexis):** al terminar, `VisitStore.CloseAsync` guarda `terminadaEn` en UTC en la misma actualización del estado. Para documentos viejos de prueba o demo sin ese campo, `TrabajoStore.ReadFinishedAsync` usa `actualizadoEn` como aproximación tanto para ordenar como para el cursor. La consulta ordena por un campo calculado y no se ha demostrado que el índice de fecha cubra ese orden; queda pendiente medirla y conectarla al servicio.
+
 ## 2026-11-16 — Spec 055 y enmienda 1.2.0 de la constitución: biblioteca técnica compartida (KNOCK-251)
 - **Decisión:** se redacta en Borrador la spec 055 (`Knock.Hosting`) con la enmienda a la constitución (§4 y estructura del repositorio; versión 1.1.0 → 1.2.0) que permite una biblioteca técnica compartida, como pide EXC-008 («su spec y el cambio de la constitución que la permita»). La spec cubre la biblioteca completa por etapas: la 1 (KNOCK-251) mueve los encabezados reenviados y el redactor de registros y retira EXC-020; la 2 mueve el límite de peticiones (después de KNOCK-247) y retira EXC-025; la 3 mueve el resto del catálogo y retira EXC-007, EXC-008, EXC-015, EXC-016, EXC-018 y EXC-021.
 - **Porqué:** la constitución 1.1.0 solo permitía compartir `Knock.Contracts` sin lógica, y había 8 excepciones vivas de jscpd y codemap por copias de `Hosting/`. El Tech Lead pidió el 2026-11-16 que la spec cubra la biblioteca completa, incluido luego el limitador, y que la apruebe él antes de escribir código.
