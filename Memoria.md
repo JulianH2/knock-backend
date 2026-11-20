@@ -1175,6 +1175,10 @@
 - **Qué cambió:** `specs/README.md` agrega la fila 059 (Suspensión preventiva en casos críticos, Borrador), que el PR #182 había dejado fuera.
 - **Por qué:** el índice debe listar toda spec del repositorio; una persona o una herramienta que lea primero el índice no veía la 059.
 - **A evitar:** agregar una carpeta de spec sin su fila en el índice en el mismo cambio.
+## 2026-11-20 · KNOCK-294 · Pruebas de concurrencia: causa del 500 y mensajes con diagnóstico
+- **Qué cambió:** en `CA_042_19` y `CA_043_37` las respuestas se resumen con `ResponseSummary` (códigos y motivos sin traceId), y la ráfaga se repite con la colección vacía si el emulador devolvió el 500 «Could not acquire lock for operation due to deadlock»; los conteos exactos (1 creado, 4 respuestas restantes, 1 documento) no cambian. `R_006_05` calienta cada copia con otra IP y captura el evento 247 (`CapturingLoggerProvider`); el mensaje trae conteos y si hubo respaldo por copia.
+- **Por qué:** se reprodujo: documentdb-local contesta 500 por bloqueo mutuo (no 11000) cuando varias escrituras chocan en el mismo índice único; era un artefacto del emulador, no un fallo de producción. `R_006_05` no se reprodujo; el calentamiento y el log dejan claro si fue el respaldo local por copia.
+- **A evitar:** debilitar los conteos para absorber el 500, o reintentar cualquier 500: solo se repite el bloqueo mutuo del emulador; otro 500 falla con su cuerpo en el mensaje.
 
 ## 2026-11-20 · KNOCK-238 · BUG-001: decisiones pendientes y TC-01 sin rama fija
 - **Qué cambió:** `specs/BUG-001-job-dast-no-se-ejecuta/spec.md`: tres decisiones sí/no (B-01 a B-03), TC-01 deja de nombrar `sprint-04` y el tiempo del runner pasa a criterio de implementación. Solo documentación.
