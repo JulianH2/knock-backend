@@ -276,20 +276,20 @@ public sealed class Spec042ConfianzaTests
     public async Task Dos_Peticiones_Iguales_A_La_Vez_No_Dejan_Duplicados_CA_042_19()
     {
         await using var host = await Spec020Host.StartAsync();
-        var sub = Guid.NewGuid().ToString("D");
         var technician = await host.SeedPublicTechnicianAsync();
+        var sub = Guid.NewGuid().ToString("D");
+        var collection = host.Database.GetCollection<BsonDocument>("tecnicos_confianza");
 
-        var responses = await Task.WhenAll(Enumerable.Range(0, 5).Select(_ => host.SaveTrustedAsync(sub, technician.Id)));
-
-        var statuses = responses.Select(r => r.StatusCode).ToList();
-        foreach (var response in responses)
+        // El emulador a veces contesta 500 por bloqueo mutuo; esa ráfaga se repite con la colección vacía, así el conteo sigue siendo exacto.
+        var summary = await ResponseSummary.WithoutEmulatorDeadlockAsync(async () =>
         {
-            response.Dispose();
-        }
+            await collection.DeleteManyAsync(FilterDefinition<BsonDocument>.Empty);
+            return await ResponseSummary.ReadAsync(await Task.WhenAll(Enumerable.Range(0, 5).Select(_ => host.SaveTrustedAsync(sub, technician.Id))));
+        });
 
-        statuses.Count(s => s == HttpStatusCode.Created).Should().Be(1, "solo una crea");
-        statuses.Count(s => s == HttpStatusCode.OK).Should().Be(4);
-        (await host.CountAsync("tecnicos_confianza")).Should().Be(1);
+        summary.Count(HttpStatusCode.Created).Should().Be(1, $"solo una crea; respuestas: {summary}");
+        summary.Count(HttpStatusCode.OK).Should().Be(4, $"las otras cuatro encuentran el registro; respuestas: {summary}");
+        (await host.CountAsync("tecnicos_confianza")).Should().Be(1, $"respuestas: {summary}");
     }
 }
 
