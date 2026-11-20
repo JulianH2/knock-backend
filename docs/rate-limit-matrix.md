@@ -10,8 +10,11 @@
 | Global | Cualquier ruta salvo `/health` y `/health/ready` | 100 peticiones | 1 minuto (fija) | IP del cliente |
 | Propia `/health/ready` | Solo `/health/ready` (TT-API-06) | 60 peticiones | 1 minuto (fija) | IP del cliente |
 | Estricta `/auth` | `/api/v{n}/auth/*` | 10 peticiones | 1 minuto (fija) | IP del cliente |
+| Estricta del panel (spec 033) | `/api/v{n}/panel/sesion/*` y `/api/v{n}/panel/activacion` | 10 peticiones | 1 minuto (fija) | IP del cliente (contador propio `ratelimit:panel-sesion:{ip}` en el gateway) |
 
 **Mensajería** (`Knock.Messaging.Api`, BUG-004 / KNOCK-241) aplica el mismo mecanismo por IP con dos políticas, sin la estricta de `/auth` (no tiene rutas de sesión): **Global** 100 peticiones por minuto (cualquier ruta salvo `/health` y `/health/ready`) y **propia de `/health/ready`** 60 por minuto, configuradas en `RateLimiting:Global` y `RateLimiting:Ready` de su `appsettings.json`. Responde `429` con `Retry-After`. El chat de 30 mensajes por minuto por persona lo define la spec 026. **Límite conocido (aceptado):** el limitador vive en la memoria de cada réplica, así que con 2 réplicas el límite efectivo se duplica, igual que en Identidad y Mercado (se mueve a Redis en el Sprint 5). Además, la IP del cliente solo es la real cuando `ForwardedHeaders` confía en la red del ingreso (`ForwardedHeaders:KnownNetworks`, del #61, KNOCK-201, que Mensajería ya usa): si el despliegue no la fija, Mensajería ve la IP del proxy y el límite se comparte entre todos los clientes. La prueba de «otra IP no se ve afectada» (TC-BUG-004-04) fija la IP con un encabezado de prueba, no de punta a punta.
+
+**Panel interno (spec 033, KNOCK-75).** Los cinco endpoints de sesión y activación del panel llevan la política estricta por IP de arriba, con la misma configuración (`RateLimiting:Auth`) y contador aparte del de `/auth`. El resto de `/api/v{n}/panel/**` lleva la política por usuario del gateway (`RateLimiting:User`) con el `sub` del token del panel (contador propio `ratelimit:panel-user:{sub}`). Aparte de ellos, los fallos de TOTP se cuentan por IP en Redis (`panel:fallos-ip:{ip}`: 10 en 15 minutos dan 429 `limit_exceeded`) y por cuenta en MongoDB (5 en 15 minutos dan 429 `locked`); ver la spec 033, R-11.
 
 - Las peticiones a `/auth/*` cuentan en las dos políticas (la estricta y la global).
 - `/health` (sin comprobaciones) es la **única exención** del límite. `/health/ready` hace un ping a MongoDB por petición anónima, así que desde TT-API-06 (KNOCK-138) tiene su propia política por IP (60 por minuto) y no cuenta en la global.
@@ -57,7 +60,7 @@
 
 `GET /api/v1/tecnicos/{id}` es pública y no tiene política propia: rigen los límites globales del gateway y el límite por IP de Mercado. La caché de 1 minuto del perfil reduce las lecturas a MongoDB por técnico.
 
-`PUT /api/v1/tecnicos/me`, `PUT /api/v1/tecnicos/me/disponibilidad` y `GET`/`PUT /api/v1/tecnicos/me/horarios` no tienen política propia: solo los usa el propio técnico y cada escritura toca un único documento, así que rigen los límites globales del gateway y el límite por IP de Mercado. Los cuerpos se limitan a 8 KB, 1 KB y 4 KB (413).
+`PUT /api/v1/tecnicos/me`, `PUT /api/v1/tecnicos/me/disponibilidad`, `GET`/`PUT /api/v1/tecnicos/me/horarios` y `GET /api/v1/tecnicos/me/trabajo` no tienen política propia: rigen los límites globales del gateway y el límite por IP de Mercado. Los cuerpos de las escrituras se limitan a 8 KB, 1 KB y 4 KB (413).
 
 `GET /api/v1/tecnicos/autocompletar` es pública: la frena el límite global por IP del gateway y de Mercado (R-41) y la caché de 30 s por texto. `GET /api/v1/tecnicos/{id}/llega-a-mi-colonia` pide sesión y usa los límites globales; su caché de 1 minuto evita repetir la lectura.
 

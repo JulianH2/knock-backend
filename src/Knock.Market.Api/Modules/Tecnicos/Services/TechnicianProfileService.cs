@@ -62,7 +62,7 @@ internal sealed class TechnicianProfileService(ITechnicianProfileReader reader, 
         }
 
         var detail = withDetail
-            ? new TechnicianProfileDetail(record.Descripcion, record.Atencion, record.RadioKm, record.ColoniaId, record.DisponibleHasta > now)
+            ? new TechnicianProfileDetail(record.Descripcion, record.Atencion, record.RadioKm, record.ColoniaId, TechnicianRules.IsAvailable(record.DisponibleHasta, now))
             : null;
         return new TechnicianProfileResponse(record.Id.ToString(), record.Nombre, record.NombreNegocio, record.FotoUrl, record.Verificacion,
             record.Calificacion is { } rating ? Math.Round(rating, 1, MidpointRounding.AwayFromZero) : null, record.Anios, Shorten(record.Descripcion),

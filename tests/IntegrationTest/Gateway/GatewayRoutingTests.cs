@@ -27,6 +27,16 @@ public sealed class GatewayRoutingTests : IAsyncLifetime, IDisposable
     private GatewayTestHost? _host;
     private HttpClient? _client;
 
+    [Fact]
+    public async Task MyQuotes_UsesAuthenticatedMarketRoute_CA_048_12()
+    {
+        const string path = "/api/v1/tecnicos/me/cotizaciones";
+        using var response = await _client!.GetAsync(new Uri(path, UriKind.Relative));
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Headers.GetValues("X-Servicio").Should().ContainSingle().Which.Should().Be("mercado");
+        _requestsSeen.Should().ContainSingle().Which.Path.Should().Be(path);
+    }
+
     public async Task InitializeAsync()
     {
         foreach (var name in new[] { "identidad", "mercado", "mensajeria" })
