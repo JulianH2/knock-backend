@@ -1,6 +1,6 @@
 # Spec 057 — Borrado de fotos de verificación
 
-> **Estado:** Borrador · **Repositorio:** knock-backend · **Rector:** `constitution.md`
+> **Estado:** Aprobada · **Repositorio:** knock-backend · **Rector:** `constitution.md`
 > **Jira:** KNOCK-87 (HU-068 · Borrar fotos de verificación al decidir o a los 7 días, alerta a las 24 h) · **Épica:** EP-12 Panel interno · **Módulo:** `Trust` (Identidad) · **Capas:** Back + BD · **Puntos:** 3
 > **Responsable:** José Julián Hernández Hernández (según la ficha) · **Sprint:** el que decida el Tech Lead (la ficha dice Sprint 4)
 > **Servicio:** Identidad (`Knock.Identity.Api`) · **Colecciones:** `verificaciones` (spec 025, campos nuevos), `tareas_programadas` y `outbox` (spec 054), `panel_auditoria` (spec 033)
@@ -143,6 +143,6 @@ Dato biométrico (INE y selfie): aplican `security-core` #7, #8, #9, #15 y la co
 **Dependencias (no son decisiones):** esta historia no se puede cerrar sin la spec 025 (T-01, T-03, T-04, T-06), la 054 (ejecutor de Identidad) y la 053 (decisión).
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-20
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
