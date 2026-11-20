@@ -24,6 +24,21 @@ public sealed class Spec020ElegibilidadTests
         var suspended = await SeedAsync(host, "suspendido", false, Spec020Host.Plumbing, host.ColoniaId);
         var hidden = await SeedAsync(host, "activo", true, Spec020Host.Plumbing, host.ColoniaId);
 
+        if (oleadas)
+        {
+            foreach (var sub in new[] { eligible, otherTrade, otherZone, suspended, hidden })
+            {
+                var technician = await host.Database.GetCollection<BsonDocument>("tecnicos").Find(new BsonDocument("usuarioId", sub)).SingleAsync();
+                await host.Database.GetCollection<BsonDocument>("envios").InsertOneAsync(new BsonDocument
+                {
+                    ["solicitudId"] = ObjectId.Parse(id),
+                    ["tecnicoId"] = technician["_id"],
+                    ["tecnicoUsuarioId"] = sub,
+                    ["estado"] = "activo",
+                });
+            }
+        }
+
         var results = new List<(string Name, HttpStatusCode Detail, HttpStatusCode Quote)>();
         foreach (var (name, sub) in new[] { ("elegible", eligible), ("otro oficio", otherTrade), ("otra zona", otherZone), ("suspendido", suspended), ("oculto", hidden) })
         {
