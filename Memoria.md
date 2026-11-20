@@ -1127,3 +1127,8 @@
 - **Qué cambió:** `specs/README.md` agrega la fila 059 (Suspensión preventiva en casos críticos, Borrador), que el PR #182 había dejado fuera.
 - **Por qué:** el índice debe listar toda spec del repositorio; una persona o una herramienta que lea primero el índice no veía la 059.
 - **A evitar:** agregar una carpeta de spec sin su fila en el índice en el mismo cambio.
+
+## 2026-11-20 · KNOCK-238 · BUG-001: decisiones pendientes y TC-01 sin rama fija
+- **Qué cambió:** `specs/BUG-001-job-dast-no-se-ejecuta/spec.md`: tres decisiones sí/no (B-01 a B-03), TC-01 deja de nombrar `sprint-04` y el tiempo del runner pasa a criterio de implementación. Solo documentación.
+- **Por qué:** la spec seguía mencionando `sprint-04`, una duda de configuración sin propuesta y la revisión de par de Erick sin cerrar tras sus cuatro puntos atendidos.
+- **A evitar:** fijar una rama de sprint en un caso de prueba.
