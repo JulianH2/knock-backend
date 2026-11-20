@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-20T00:27:11Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-20T02:19:03Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -559,7 +559,7 @@
 - `src/Knock.Identity.Api/Hosting/DataExtensions.cs` — class `DataExtensions`
   - `AddKnockData()`:12
 - `src/Knock.Identity.Api/Hosting/DomainExceptionHandler.cs` — class `DomainExceptionHandler`
-  - `TryHandleAsync()`:17
+  - `TryHandleAsync()`:18
 - `src/Knock.Identity.Api/Hosting/ForwardedHeadersExtensions.cs` — class `ForwardedHeadersExtensions`
   - `AddKnockForwardedHeaders()`:16
 - `src/Knock.Identity.Api/Hosting/HealthExtensions.cs` — class `HealthExtensions`

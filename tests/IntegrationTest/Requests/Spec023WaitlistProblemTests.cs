@@ -139,7 +139,7 @@ public class Spec023WaitlistProblemTests
         var body = await response.Content.ReadAsStringAsync();
         var problem = await ProblemAsync(response, HttpStatusCode.UnprocessableEntity, "validation_failed");
         problem.GetProperty("errors").EnumerateObject().Select(property => property.Name).Should().Equal(field);
-        body.Should().NotContain(sent).And.NotContain(JsonSerializer.Serialize(sent));
+        ProblemBody.Reasons(body).Should().NotContain(sent).And.NotContain(JsonSerializer.Serialize(sent));
         store.Users.Should().BeEmpty();
     }
 

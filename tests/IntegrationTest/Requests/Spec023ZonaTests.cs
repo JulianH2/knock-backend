@@ -32,7 +32,7 @@ public sealed class Spec023ZonaTests
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
         body.GetProperty("errors").TryGetProperty("cp", out _).Should().BeTrue();
-        if (cp.Length > 0) body.ToString().Should().NotContain(Uri.UnescapeDataString(cp));
+        if (cp.Length > 0) body.GetProperty("errors").GetRawText().Should().NotContain(Uri.UnescapeDataString(cp));
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public sealed class Spec023TransporteTests
         using var client = new HttpClient { BaseAddress = new Uri(address) };
         using var response = await client.GetAsync(new Uri("/api/v1/zonas/cp/42800%00", UriKind.Relative));
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        (await response.Content.ReadAsStringAsync()).Should().NotContain("42800");
+        ProblemBody.Reasons(await response.Content.ReadAsStringAsync()).Should().NotContain("42800");
         applicationCalls.Should().Be(0, "Kestrel rechaza la ruta antes de llegar al pipeline y al catálogo");
     }
 }

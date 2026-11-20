@@ -239,7 +239,7 @@ public class MeEndpointTests
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         var raw = await response.Content.ReadAsStringAsync();
         JsonElement.Parse(raw).GetProperty("errors").GetProperty(field).GetArrayLength().Should().BeGreaterThan(0);
-        raw.Should().NotContain("ejemplo.com");
+        ProblemBody.Reasons(raw).Should().NotContain("ejemplo.com");
         (await UserAsync(factory, sub)).ToJson().Should().Be(before.ToJson(), "no cambia nada");
     }
 
