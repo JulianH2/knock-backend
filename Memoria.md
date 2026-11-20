@@ -1,5 +1,10 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — KNOCK-68: pruebas iniciales de T-08 bloqueadas por T-07
+- **Estado:** se agregaron pruebas iniciales de bandeja, descarte, autenticación y carrera en `tests/IntegrationTest/Requests/Spec028BandejaTests.cs`; T-08 sigue pendiente. No se implementaron rutas ni cambios de producción.
+- **Bloqueo:** en esta rama T-07 figura pendiente y `QuoteStore` no consulta ni cambia el envío al cotizar. Una prueba con envío ya descartado recibió 201 y guardó una cotización, por lo que no se puede garantizar que gane solo una de las operaciones sin modificar la transacción de cotización de T-07. T-08 se pidió como paso único.
+- **Verificación:** build Release con `--no-restore` pasó sin avisos; las cinco pruebas iniciales fallaron, incluida la regresión de cotizar un envío descartado y las rutas aún ausentes. Formato del archivo nuevo correcto. Las pruebas de límite 30/h y los demás casos de T-08 aún faltan; no se generó contrato ni se hizo commit.
+
 ## 2026-11-19 — KNOCK-68: manejadores de reparto (T-06)
 - **Estado:** creación programa la primera oleada en su transacción cuando está habilitada; `RepartoService` registra los dos manejadores, confirma la reserva en la transacción y usa el avance condicionado de oleada, envíos, tareas y `MongoOutbox`. La revisión cuenta cotizaciones vivas y programa la siguiente. La última oleada sin ningún envío escribe `SolicitudSinTecnicos`; sus datos y los de envío solo contienen identificadores y número de oleada.
 - **Decisiones:** la tarea se programa con upsert por tipo y clave de negocio para tolerar una repetición tras el commit; el índice único de la spec debe estar aplicado. Una revisión escribe `revisionOleada` en la solicitud dentro de su transacción para competir con cambios concurrentes; no tiene significado de negocio.
