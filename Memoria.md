@@ -1175,6 +1175,12 @@
 - **Qué cambió:** `specs/README.md` agrega la fila 059 (Suspensión preventiva en casos críticos, Borrador), que el PR #182 había dejado fuera.
 - **Por qué:** el índice debe listar toda spec del repositorio; una persona o una herramienta que lea primero el índice no veía la 059.
 - **A evitar:** agregar una carpeta de spec sin su fila en el índice en el mismo cambio.
+
+## 2026-11-20 · KNOCK-98 · HU-049 Mis datos: auditoría del backend y prueba del criterio 3
+- **Qué cambió:** auditoría de HU-049 contra sprint-05: el backend ya cubre los cuatro criterios con `GET`/`PUT /api/v1/me` (spec 017) y `/api/v1/me/direcciones` (spec 040). Se agrega una prueba de integración, `OwnerEditsTheAddress_AConfirmedAppointmentKeepsItsPreviousCopy_HU_049_03`, que comprueba que editar la dirección propia la guarda cifrada y no cambia la copia de una cita confirmada.
+- **Por qué:** la spec 040 solo probaba el caso de borrar; editar era el hueco del criterio 3.
+- **Pendiente de decisión (no se inventó):** no existe una ruta pública para subir la foto de perfil (el módulo Media de Mercado no expone HTTP), así que la foto solo puede fijarse con una `fotoUrl` ya subida a un host permitido. Requiere spec y decisión del líder.
+- **A evitar:** abrir endpoints nuevos para HU-049; reutilizar los de las specs 017 y 040.
 ## 2026-11-20 · KNOCK-294 · Pruebas de concurrencia: causa del 500 y mensajes con diagnóstico
 - **Qué cambió:** en `CA_042_19` y `CA_043_37` las respuestas se resumen con `ResponseSummary` (códigos y motivos sin traceId), y la ráfaga se repite con la colección vacía si el emulador devolvió el 500 «Could not acquire lock for operation due to deadlock»; los conteos exactos (1 creado, 4 respuestas restantes, 1 documento) no cambian. `R_006_05` calienta cada copia con otra IP y captura el evento 247 (`CapturingLoggerProvider`); el mensaje trae conteos y si hubo respaldo por copia.
 - **Por qué:** se reprodujo: documentdb-local contesta 500 por bloqueo mutuo (no 11000) cuando varias escrituras chocan en el mismo índice único; era un artefacto del emulador, no un fallo de producción. `R_006_05` no se reprodujo; el calentamiento y el log dejan claro si fue el respaldo local por copia.
