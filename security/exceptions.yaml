@@ -343,3 +343,16 @@ excepciones:
     creada: 2026-11-20
     vence: 2027-02-18
     plan: mover la configuración a Knock.Hosting en la etapa 3 (KNOCK-281), quitar los marcadores y retirar esta excepción antes de vencer.
+  - id: EXC-029
+    herramienta: checkov
+    regla: CKV2_AZURE_47, CKV_AZURE_34, CKV_AZURE_190 (lectura anónima por blob) y, para la cuenta pública, CKV_AZURE_206, CKV_AZURE_33, CKV2_AZURE_21, CKV_AZURE_59, CKV2_AZURE_33 y CKV2_AZURE_1
+    alcance: deploy/modules/shared/main.tf, solo los recursos azurerm_storage_account.public_images y azurerm_storage_container.public_images; la cuenta privada sigue cubierta por EXC-013
+    justificacion: >-
+      Spec 032 y ADR-007 opción D (KNOCK-172): las imágenes públicas ya procesadas y moderadas se sirven por lectura anónima a nivel de blob, sin listado y sin CDN; se lee un archivo solo si se conoce su nombre.
+      Es una cuenta aparte de la privada, sin llaves compartidas (las SAS son de delegación de usuario con la identidad administrada), con TLS 1.2, solo HTTPS y sin reglas de CORS.
+      Replicación geográfica, endpoints privados, llaves administradas por el cliente y diagnóstico de lecturas tienen costo y no aplican a contenido público. El diseño fue aprobado por el líder técnico;
+      la regla CKV2_AZURE_47 es la que hacía fallar el chequeo de Checkov del PR #187.
+    responsable: José Julián Hernández Hernández
+    creada: 2026-11-20
+    vence: 2027-02-18
+    plan: cuando exista una CDN o Front Door (ADR-007), servir las imágenes por ahí y cerrar el acceso anónimo directo, o renovar con decisión del líder; retirar los #checkov:skip de esa cuenta y de ese contenedor y esta excepción.
