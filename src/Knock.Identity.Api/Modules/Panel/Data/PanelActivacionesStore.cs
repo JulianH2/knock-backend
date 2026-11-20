@@ -129,7 +129,7 @@ internal sealed class PanelActivacionesStore(
             catch (MongoCommandException exception) when (exception.Code == MongoWriteErrors.WriteConflictCode && attempt < _maxWriteConflictAttempts)
             {
                 // Otro consumo de la misma invitación no confirma todavía: al reintentar ya la ve consumida y responde inválida.
-                await Task.Delay(TimeSpan.FromMilliseconds(50 * attempt), cancellationToken);
+                await Task.Delay(MongoWriteErrors.WriteConflictBackoff(attempt), cancellationToken);
             }
         }
     }

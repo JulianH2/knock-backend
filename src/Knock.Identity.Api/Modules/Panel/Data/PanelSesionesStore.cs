@@ -84,7 +84,7 @@ internal sealed class PanelSesionesStore(
             }
             catch (MongoCommandException exception) when (exception.Code == MongoWriteErrors.WriteConflictCode && attempt < _maxWriteConflictAttempts)
             {
-                await Task.Delay(TimeSpan.FromMilliseconds(50 * attempt), cancellationToken);
+                await Task.Delay(MongoWriteErrors.WriteConflictBackoff(attempt), cancellationToken);
             }
         }
     }
