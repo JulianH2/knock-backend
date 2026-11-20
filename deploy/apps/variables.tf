@@ -26,6 +26,12 @@ variable "image_tag" {
   type        = string
 }
 
+variable "panel_origin" {
+  description = "Origen exacto del panel interno para CORS (spec 033, R-27): `https://host[:puerto]` sin ruta ni barra final. Vacío = ningún origen permitido. No es un secreto."
+  type        = string
+  default     = ""
+}
+
 variable "replicas" {
   description = <<-EOT
     Réplicas por servicio (ADR-006, spec 006 R-01 y R-06). Por defecto una réplica por servicio, sin autoescalado, para cuidar
