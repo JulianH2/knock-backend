@@ -1065,7 +1065,10 @@
       "knock.messaging.api": {
         "type": "Project",
         "dependencies": {
+          "Asp.Versioning.Mvc": "[10.2.1, )",
           "Azure.Monitor.OpenTelemetry.Exporter": "[1.10.0, )",
+          "FluentValidation": "[12.1.1, )",
+          "FluentValidation.DependencyInjectionExtensions": "[12.1.1, )",
           "Knock.Contracts": "[1.0.0, )",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[11.0.0, )",
           "Microsoft.AspNetCore.OpenApi": "[11.0.0, )",
