@@ -1,5 +1,10 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — Spec 043 T-01: prueba de scripts de BD (Alexis)
+- **Avance:** `Spec043SafetyScriptTests` prepara una base aislada y comprueba los índices de ambos scripts 043, el rechazo de un bloqueo duplicado y la conservación de índices y documentos al reaplicarlos. Se reutilizan `MongoToolsContainer` y `MongoIndexes`; no se cambiaron los scripts ni se agregaron dependencias. La §6 no exige TTL.
+- **Verificación tras restaurar paquetes:** build Release con advertencias como errores, prueba de BD 043 (1/1), ArchitectureTest (25/25) y `dotnet format --verify-no-changes` pasaron. UnitTest: 1909/1912; fallaron las mediciones de tiempo del filtro de la spec 024 y de dos casos del redactor de la spec 011. Una corrida anterior tuvo 1911/1912, con fallo de la misma prueba 024. No se modificaron sus umbrales.
+- **Límite:** CA-37 se comprueba aquí solo para la unicidad en base de bloqueos, no para el flujo HTTP ni la deduplicación de reportes. CI y revisión humana pendientes.
+
 ## 2026-11-19 — Spec 048 T-01 y T-04: índices y cotizaciones propias (KNOCK-266)
 - **Decisión y duda documental:** Alexis, con autorización del líder, confirmó que R-18 y D-03 prevalecen sobre §6: no agregar el campo ni índices únicos `idempotencyKey`; la repetición se controla por estado y el índice único `(solicitudId, tecnicoId)`. La spec no se editó y §6 aún debe conciliarse.
 - **Implementación:** el script 048 agrega únicamente índices adicionales respecto de 020/021; la consulta usa `QuoteStore`, filtra por `tecnicoUsuarioId` del token, pagina por fecha e identificador y el gateway enruta el GET autenticado. Se reutilizan `RequestCursor`, el directorio de técnicos y el filtro de validación.
