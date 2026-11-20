@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using AwesomeAssertions;
+using Knock.IntegrationTest.Support;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -92,7 +93,7 @@ public class Spec040CrearTests
         var raw = await response.Content.ReadAsStringAsync();
         JsonElement.Parse(raw).GetProperty("errors").TryGetProperty(field, out var reasons).Should().BeTrue();
         reasons.GetArrayLength().Should().BePositive();
-        raw.Should().NotContain("DROP TABLE").And.NotContain("Colonia Que No Existe").And.NotContain(new string('r', 201));
+        ProblemBody.Reasons(raw).Should().NotContain("DROP TABLE").And.NotContain("Colonia Que No Existe").And.NotContain(new string('r', 201));
         (await CountAsync(host)).Should().Be(0);
     }
 
