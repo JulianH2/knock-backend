@@ -92,7 +92,8 @@ public sealed class Spec020QuoteStoreTests
             var id = ObjectId.GenerateNewId();
             var now = DateTimeOffset.UtcNow;
             await db.GetCollection<BsonDocument>("solicitudes").InsertOneAsync(new BsonDocument { ["_id"] = id, ["estado"] = "enviada", ["venceEn"] = now.AddHours(1).UtcDateTime });
-            var store = new QuoteStore(db, Options.Create(new KnockMongoOptions()), Options.Create(new QuotePricingOptions()));
+            var store = new QuoteStore(db, Options.Create(new KnockMongoOptions()), Options.Create(new QuotePricingOptions()),
+                Options.Create(new OleadasOptions()), new EnviosStore(db));
             var body = new QuoteValidationInput("fijo", 100, null, null, DateOnly.FromDateTime(now.UtcDateTime), "12:00", null, DateOnly.FromDateTime(now.UtcDateTime));
             var technician = ObjectId.GenerateNewId();
             (await store.SaveAsync(id, technician, "sub", "plo", body, now, CancellationToken.None)).Should().Be(QuoteCheckResult.Created);
