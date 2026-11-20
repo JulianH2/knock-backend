@@ -1,4 +1,5 @@
 // jscpd:ignore-start -- EXC-015
+using Knock.Identity.Api.Modules.Panel;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 
@@ -13,6 +14,7 @@ internal static class OpenApiExtensions
             options.AddOperationTransformer((operation, context, _) =>
             {
                 var description = context.Description;
+                PanelOpenApi.Describe(operation, description?.RelativePath);
                 if (description?.HttpMethod == "GET"
                     && description.RelativePath == "api/v{version}/me/sesiones"
                     && operation.Responses is { } responses

@@ -19,7 +19,8 @@ builder.Services
     .AddKnockGatewayCors(builder.Configuration)
     .AddKnockData()
     .AddKnockGatewayRateLimiting()
-    .AddKnockGatewayAuthentication();
+    .AddKnockGatewayAuthentication()
+    .AddKnockGatewayPanel();
 // Spec 011: Serilog estructurado y OpenTelemetry con redacción; Azure Monitor solo si hay APPLICATIONINSIGHTS_CONNECTION_STRING.
 builder.Services.AddKnockLogging(builder.Configuration);
 builder.Services.AddKnockObservability(builder.Configuration, builder.Environment);
@@ -36,6 +37,7 @@ app.UseCors(CorsExtensions.PolicyName);
 app.UseMiddleware<IpRateLimitMiddleware>();
 app.UseMiddleware<HubQueryTokenMiddleware>();
 app.UseAuthentication();
+app.UseMiddleware<PanelTokenMiddleware>();
 app.UseMiddleware<UserRateLimitMiddleware>();
 app.UseAuthorization();
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "gateway" })).AllowAnonymous();
