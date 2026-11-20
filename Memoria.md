@@ -1152,3 +1152,8 @@
 - **Qué cambió:** `specs/README.md` agrega la fila 059 (Suspensión preventiva en casos críticos, Borrador), que el PR #182 había dejado fuera.
 - **Por qué:** el índice debe listar toda spec del repositorio; una persona o una herramienta que lea primero el índice no veía la 059.
 - **A evitar:** agregar una carpeta de spec sin su fila en el índice en el mismo cambio.
+
+## 2026-11-20 · KNOCK-87 · Spec 057: dudas redactadas como decisiones sí/no
+- **Qué cambió:** `specs/057-borrado-de-fotos-de-verificacion/spec.md` §8: las nueve dudas pasan a ocho decisiones sí/no (D-01 a D-08) con contexto, alternativa y recomendación, y una nota de dependencias. Solo documentación.
+- **Por qué:** la spec seguía con preguntas abiertas sin recomendación; ninguna impide aprobarla, pero D-07 (formato de casos) afecta al trazado `sdd_lint --trace 057`.
+- **A evitar:** redactar una duda sin dar la alternativa y qué cambia si la respuesta es «no».
