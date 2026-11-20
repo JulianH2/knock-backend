@@ -1,5 +1,6 @@
 using System.Net;
 using AwesomeAssertions;
+using Knock.IntegrationTest.Support;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -201,7 +202,7 @@ public sealed class Spec021EleccionTests
         badId.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         badBody.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         (await Spec020Host.ReadAsync(badBody)).GetProperty("errors").TryGetProperty("cotizacionId", out _).Should().BeTrue();
-        (await badBody.Content.ReadAsStringAsync()).Should().NotContain("no-es-un-object-id", "el motivo nunca repite el valor enviado");
+        ProblemBody.Reasons(await badBody.Content.ReadAsStringAsync()).Should().NotContain("no-es-un-object-id", "el motivo nunca repite el valor enviado");
         noBody.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
 

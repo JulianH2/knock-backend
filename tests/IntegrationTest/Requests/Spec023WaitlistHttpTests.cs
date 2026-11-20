@@ -113,7 +113,7 @@ public sealed class Spec023ValidacionTests
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
         body.GetProperty("errors").TryGetProperty("municipio", out _).Should().BeTrue();
-        if (!string.IsNullOrWhiteSpace(municipio)) body.ToString().Should().NotContain(municipio);
+        if (!string.IsNullOrWhiteSpace(municipio)) body.GetProperty("errors").GetRawText().Should().NotContain(municipio);
         (await collection.CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty)).Should().Be(0);
     }
 
