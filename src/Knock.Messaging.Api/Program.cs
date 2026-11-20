@@ -26,7 +26,7 @@ builder.Services.AddKnockForwardedHeaders();
 builder.Services.AddKnockData();
 // Spec 026: chat de visita en tiempo real con SignalR y Redis como puente entre copias.
 builder.Services.AddChatModule().AddKnockChatBridge();
-// Spec 030: errores de dominio de Conversaciones como ProblemDetails (las rutas llegan con T-05 a T-07).
+// Spec 030: errores de dominio de Conversaciones como ProblemDetails y cliente del permiso de Mercado con caché de 60 s (usa Services:Market que valida AddChatModule).
 builder.Services.AddConversacionesModule();
 
 var app = builder.Build();
