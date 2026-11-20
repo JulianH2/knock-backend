@@ -199,7 +199,7 @@ public sealed class Spec043BloqueosTests
 
         foreach (var response in new[] { notFound, notBlocked, invalid })
         {
-            var body = await response.Content.ReadAsStringAsync();
+            var body = ProblemBody.Reasons(await response.Content.ReadAsStringAsync());
             body.Should().NotContain(scenario.Caller).And.NotContain(target).And.NotContain("Demo Privado Nombre");
         }
     }
