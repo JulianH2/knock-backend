@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO.Compression;
 using System.Text.Json.Serialization;
 using Knock.Identity.Api.Modules.Account.Dtos;
+using Knock.Identity.Api.Modules.Panel.Dtos;
 using Knock.Identity.Api.Modules.Sesiones.Dtos;
 using Knock.Identity.Api.Modules.Usuarios.Dtos;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +13,7 @@ namespace Knock.Identity.Api.Hosting;
 /// <summary>
 /// Compresión de JSON superior a 1 KB (spec 010, R-09 y CA-04): la compresión estándar de ASP.NET Core no garantiza umbral, así que este
 /// middleware comprime solo respuestas <c>application/json</c> 200 con más de <see cref="MinimumBytes"/> bytes y <c>Accept-Encoding</c>
-/// compatible (<c>br</c> preferido, luego <c>gzip</c>). Nunca comprime rutas de autenticación (llevan tokens; amenaza BREACH/CRIME), ni
+/// compatible (<c>br</c> preferido, luego <c>gzip</c>). Nunca comprime rutas de autenticación ni del panel (llevan tokens, spec 033 R-22; amenaza BREACH/CRIME), ni
 /// 304/204 ni respuestas sin cuerpo, ni respuestas pequeñas ni las que ya llegan codificadas. Conserva <c>ETag</c> y <c>Cache-Control</c>
 /// y agrega <c>Vary: Accept-Encoding</c> a toda respuesta JSON 200 y a los 304, se compriman o no, para que una caché pública no
 /// entregue una variante a quien pidió otra. El Gateway no comprime (deja pasar el <c>Content-Encoding</c> tal cual).
@@ -67,7 +68,8 @@ internal sealed class JsonCompressionMiddleware(RequestDelegate next)
 
     // Sin Accept-Encoding compatible la respuesta también pasa por el búfer: así lleva Vary igual que la variante comprimida.
     private static bool ShouldSkipRequest(HttpContext context) =>
-        context.Request.Path.StartsWithSegments("/api/v1/auth", StringComparison.OrdinalIgnoreCase);
+        context.Request.Path.StartsWithSegments("/api/v1/auth", StringComparison.OrdinalIgnoreCase)
+        || context.Request.Path.StartsWithSegments("/api/v1/panel", StringComparison.OrdinalIgnoreCase);
 
     private static string? PickEncoding(HttpContext context)
     {
@@ -292,6 +294,12 @@ internal sealed class JsonCompressionMiddleware(RequestDelegate next)
 [JsonSerializable(typeof(UpdateConsentRequest))]
 [JsonSerializable(typeof(PendingResponse))]
 [JsonSerializable(typeof(DeletionScheduledResponse))]
+[JsonSerializable(typeof(PanelCelularRequest))]
+[JsonSerializable(typeof(PanelCelularResponse))]
+[JsonSerializable(typeof(PanelTotpRequest))]
+[JsonSerializable(typeof(PanelAccesoResponse))]
+[JsonSerializable(typeof(PanelActivacionRequest))]
+[JsonSerializable(typeof(PanelActivacionResponse))]
 internal sealed partial class IdentityJsonSerializerContext : JsonSerializerContext
 {
 }
