@@ -78,7 +78,12 @@ locals {
     # BUG-004 (KNOCK-241): Mensajería valida el JWT de Knock y lee la lista de sesiones canceladas en Redis; sin estos dos secretos no arranca.
     messaging = {
       external = false
-      env      = local.forwarded
+      # Chat de visita (spec 026): `Chat:Habilitado` no tiene valor por omisión y sin él Mensajería no arranca (KNOCK-291).
+      # `Services:Market:BaseUrl` es la dirección interna de Mercado (solo host) para consultar si una conversación está permitida.
+      env = merge(local.forwarded, {
+        Chat__Habilitado          = "true"
+        Services__Market__BaseUrl = local.cluster_address.market
+      })
       secret_env = merge(local.redis_secret, {
         ConnectionStrings__KnockMongo = "mongo-messaging"
         Jwt__SigningKey               = "jwt-signing-key"

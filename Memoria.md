@@ -973,6 +973,11 @@
 - **Decisiones (con porqué):** (1) Mismas claves de partición (`recuperacion:` y `<política>:<sub>`) y mismos límites, para no cambiar el comportamiento. (2) Arreglo mínimo en un PR aparte para destrabar al resto.
 - **A evitar:** fusionar un PR sincronizado sin su CI cuando otro PR cambió una API que él usa; fusiones sin conflicto de texto pueden romper la compilación.
 
+## 2026-11-19 · KNOCK-291 · Variables de Mensajería en Terraform
+- **Qué cambió:** el bloque `messaging` de `deploy/apps/main.tf` declara `Chat__Habilitado = "true"` y `Services__Market__BaseUrl` (dirección interna de Mercado).
+- **Por qué:** `Chat:Habilitado` no tiene valor por omisión (spec 026) y sin él Mensajería no arranca con el código del chat; `Services:Market:BaseUrl` es la dirección que usa para consultar a Mercado.
+- **Decisiones (con porqué):** (1) `true` en el despliegue: el chat es parte de la entrega del sprint 5; apagarlo es cambiar este valor. (2) Solo valores no secretos; ninguna llave nueva.
+- **A evitar:** agregar una opción obligatoria al servicio sin declararla en Terraform en el mismo cambio; el plan lo habría mostrado antes de promover.
 ## 2026-11-19 · KNOCK-292 · Conector de Atlassian migrado a /v2/mcp
 - **Qué cambió:** `.mcp.json`, `.vscode/mcp.json`, `opencode.json`, `.codex/config.toml` y `docs/mcp.md` apuntan a `https://mcp.atlassian.com/v2/mcp`. Solo cambió la dirección: mismo transporte y mismos permisos (lectura permitida, escritura denegada).
 - **Por qué:** la dirección `/v1/mcp/authv2` está deprecada y Atlassian la retira el 2027-03-01.
@@ -999,3 +1004,9 @@
 - **Por qué:** `traceId` y `correlationId` son aleatorios y a veces contienen el valor buscado ("123", "hi", un cursor); la prueba fallaba de forma intermitente y tumbaba el `gate` de PR ajenos.
 - **Decisiones (con porqué):** (1) Un solo ayudante en vez de copiar el patrón, para no crear clones (jscpd, `codemap.py --check`). (2) No se quitó ninguna aserción: el valor se sigue negando, ahora donde puede aparecer de verdad (los motivos).
 - **A evitar:** comparar un valor contra el cuerpo completo de una respuesta con identificadores aleatorios.
+
+## 2026-11-19 · KNOCK-75 · Excepción EXC-027 de Gitleaks por cadenas de prueba del panel
+- **Qué cambió:** `.gitleaksignore` acepta cinco huellas de los commits de la rama del panel (cadena de conexión de MongoDB inventada en `PanelFakes.cs` y `Spec033AuditoriaTests.cs`, y el secreto de ejemplo del estándar TOTP en `Spec033TotpDominioTests.cs`), y `security/exceptions.yaml` registra EXC-027 (responsable el Tech Lead, vence el 2027-02-17).
+- **Por qué:** Gitleaks revisa todas las ramas con `fetch-depth: 0`; al empujar la rama del panel, el check de secretos se puso en rojo en todos los PR hacia sprint-05, incluida la promoción a develop. Son valores sintéticos, no credenciales.
+- **Decisiones (con porqué):** (1) Huellas y excepción, como EXC-004, 023 y 024, en vez de reescribir la historia de la rama o borrarla: se conservan los commits por tarea. (2) Alcance de cinco líneas exactas; las reglas siguen activas para lo demás.
+- **A evitar:** escribir en una prueba o en un documento una cadena de conexión completa con usuario y clave (arma la cadena sin ese formato); reescribir o volver a empujar la rama del panel con otros hashes (las huellas dejan de coincidir).
