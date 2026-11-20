@@ -973,6 +973,11 @@
 - **Decisiones (con porqué):** (1) Mismas claves de partición (`recuperacion:` y `<política>:<sub>`) y mismos límites, para no cambiar el comportamiento. (2) Arreglo mínimo en un PR aparte para destrabar al resto.
 - **A evitar:** fusionar un PR sincronizado sin su CI cuando otro PR cambió una API que él usa; fusiones sin conflicto de texto pueden romper la compilación.
 
+## 2026-11-19 · KNOCK-291 · Variables de Mensajería en Terraform
+- **Qué cambió:** el bloque `messaging` de `deploy/apps/main.tf` declara `Chat__Habilitado = "true"` y `Services__Market__BaseUrl` (dirección interna de Mercado).
+- **Por qué:** `Chat:Habilitado` no tiene valor por omisión (spec 026) y sin él Mensajería no arranca con el código del chat; `Services:Market:BaseUrl` es la dirección que usa para consultar a Mercado.
+- **Decisiones (con porqué):** (1) `true` en el despliegue: el chat es parte de la entrega del sprint 5; apagarlo es cambiar este valor. (2) Solo valores no secretos; ninguna llave nueva.
+- **A evitar:** agregar una opción obligatoria al servicio sin declararla en Terraform en el mismo cambio; el plan lo habría mostrado antes de promover.
 ## 2026-11-19 · KNOCK-292 · Conector de Atlassian migrado a /v2/mcp
 - **Qué cambió:** `.mcp.json`, `.vscode/mcp.json`, `opencode.json`, `.codex/config.toml` y `docs/mcp.md` apuntan a `https://mcp.atlassian.com/v2/mcp`. Solo cambió la dirección: mismo transporte y mismos permisos (lectura permitida, escritura denegada).
 - **Por qué:** la dirección `/v1/mcp/authv2` está deprecada y Atlassian la retira el 2027-03-01.
