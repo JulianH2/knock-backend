@@ -1,6 +1,6 @@
 # Plan 059 — Suspensión preventiva en casos críticos
 
-> Parte de `spec.md` (estado Borrador). Este plan no se activa hasta que una persona apruebe la spec y resuelva las dudas de su §15 que bloquean el código (1 a 6).
+> Parte de `spec.md` (estado Borrador). Este plan no se activa hasta que una persona apruebe la spec y conteste las decisiones sí/no de su §15 que condicionan el código (1 a 6).
 
 ## 1. Enfoque
 1. Contrato: documentar `CuentaSuspendida` y `CuentaReactivada` en `docs/events.md` y la nota de efecto de REP-05 en `docs/endpoints.md`; pedir las enmiendas a las specs 037 (tipo de aviso) y 054 (catálogo de `tipo` de `outbox`).

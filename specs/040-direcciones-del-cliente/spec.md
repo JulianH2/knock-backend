@@ -54,13 +54,13 @@ Definir y especificar los endpoints DIR-01, DIR-02, DIR-03, DIR-04 del Excel de 
 - **CA-06:** Dado un cuerpo que no se puede leer, cuando llama `POST /api/v1/me/direcciones`, entonces responde 400 y no guarda nada.
 - **CA-07:** Dado el rol «persona con sesión que sea dueña del recurso», cuando llama `PUT /api/v1/me/direcciones/{id}` con datos válidos, entonces responde 200 con lo descrito en §5.
 - **CA-08:** Dada una petición sin token o con token vencido, cuando llama `PUT /api/v1/me/direcciones/{id}`, entonces responde 401 y no ejecuta la operación.
-- **CA-09:** Dada una persona que no cumple el rol «persona con sesión que sea dueña del recurso», cuando llama `PUT /api/v1/me/direcciones/{id}`, entonces responde 403 y no cambia nada.
+- **CA-09:** Dada una persona que no cumple el rol «persona con sesión que sea dueña del recurso», cuando llama `PUT /api/v1/me/direcciones/{id}`, entonces responde 404 (sin revelar que la dirección existe) y no cambia nada.
 - **CA-10:** Dado un valor inválido según las reglas de §6, cuando llama `PUT /api/v1/me/direcciones/{id}`, entonces responde 422 con `errors.<campo>`, no repite el valor y no guarda nada.
 - **CA-11:** Dado un cuerpo que no se puede leer, cuando llama `PUT /api/v1/me/direcciones/{id}`, entonces responde 400 y no guarda nada.
 - **CA-12:** Dado el caso «recurso no disponible», cuando llama `PUT /api/v1/me/direcciones/{id}`, entonces responde 404 con ProblemDetails y no cambia el estado.
 - **CA-13:** Dado el rol «persona con sesión que sea dueña del recurso», cuando llama `DELETE /api/v1/me/direcciones/{id}` con datos válidos, entonces responde 204 con lo descrito en §5.
 - **CA-14:** Dada una petición sin token o con token vencido, cuando llama `DELETE /api/v1/me/direcciones/{id}`, entonces responde 401 y no ejecuta la operación.
-- **CA-15:** Dada una persona que no cumple el rol «persona con sesión que sea dueña del recurso», cuando llama `DELETE /api/v1/me/direcciones/{id}`, entonces responde 403 y no cambia nada.
+- **CA-15:** Dada una persona que no cumple el rol «persona con sesión que sea dueña del recurso», cuando llama `DELETE /api/v1/me/direcciones/{id}`, entonces responde 404 (sin revelar que la dirección existe) y no cambia nada.
 - **CA-16:** Dado un valor inválido según las reglas de §6, cuando llama `DELETE /api/v1/me/direcciones/{id}`, entonces responde 422 con `errors.<campo>`, no repite el valor y no guarda nada.
 - **CA-17:** Dado el caso «recurso no disponible», cuando llama `DELETE /api/v1/me/direcciones/{id}`, entonces responde 404 con ProblemDetails y no cambia el estado.
 - **CA-18:** Dada una dirección con calle de menos de 8 caracteres, una colonia inexistente o referencias de más de 200, cuando se guarda, entonces responde 422 y no se guarda.
@@ -160,7 +160,7 @@ Definir y especificar los endpoints DIR-01, DIR-02, DIR-03, DIR-04 del Excel de 
 ## 9. Amenazas y controles
 | Amenaza | Control | Casos que lo prueban |
 |---|---|---|
-| Acceso a datos de otra persona (IDOR) | Toda consulta y escritura filtra por el `sub` del token; ajeno responde 403 o 404 | CA-09, CA-15, CA-23 |
+| Acceso a datos de otra persona (IDOR) | Toda consulta y escritura filtra por el `sub` del token; ajeno responde 404 | CA-09, CA-15, CA-23 |
 | Asignación masiva o identificador ajeno en el cuerpo | El DTO no acepta identificadores de persona; se ignoran | CA-09, CA-15, CA-23 |
 | Inyección en filtros y parámetros | Parámetros tipados con validador; nada se concatena en consultas | CA-05 a CA-06, CA-10 a CA-11, CA-16 |
 | Ruta sin sesión | JWT obligatorio salvo las públicas | CA-02, CA-04, CA-08, CA-14 |
@@ -207,7 +207,7 @@ Las pruebas citan el caso como `CA_040_NN` en el nombre (para `python scripts/sd
 
 ## 15. Riesgos y dudas abiertas
 - Sin dudas abiertas: todas las decisiones de esta spec quedaron resueltas en el cierre del 2026-11-13.
-- Implementación (KNOCK-285): CA-09 y CA-15 piden 403 para quien no es dueña, pero R-14 y CA-22 piden 404 sin revelar que la dirección existe; se implementó 404 y queda por decidir si se corrige la spec.
+- Decisión del Tech Lead (2026-11-20, KNOCK-54): CA-09 y CA-15 se corrigen a 404, igual que R-14 y CA-22, para no revelar que la dirección ajena existe; el código ya respondía 404. La solicitud conserva su propia copia cifrada de la dirección (spec 020, decisión 5), sin `direccionId` ni consulta interna a Identidad.
 - Implementación: `principal: false` sobre la única principal responde 422 (`errors.principal`) y una creación repetida (misma colonia y calle) responde 409 `address_duplicate`; ninguno está definido en la spec.
 - Implementación: Identidad lee la llave `Security:FieldEncryption`; hoy el despliegue solo se la da a Mercado.
 - Dependencias: catálogo de colonias de la spec 017 y la copia de la dirección en la visita de la spec 022.
