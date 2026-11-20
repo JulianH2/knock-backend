@@ -2,6 +2,7 @@ using System.Globalization;
 using Knock.Market.Api.Common.Errors;
 using Knock.Market.Api.Hosting;
 using Knock.Market.Api.Modules.Requests.Domain;
+using Knock.Market.Api.Modules.Requests.Dtos;
 using Knock.Market.Api.Modules.Requests.Services;
 using Knock.Market.Api.Modules.Requests.Validators;
 using Microsoft.Extensions.Options;
@@ -20,6 +21,31 @@ internal sealed class QuoteStore(
     public QuoteResponse? CreatedQuote { get; private set; }
     private static readonly string[] _openStates = ["enviada", "cotizando"];
     private static readonly string[] _liveStates = ["enviada", "aceptada"];
+
+    public async Task<MyQuotePage> ListAsync(string subject, string? state, (DateTime CreatedAtUtc, ObjectId Id)? after, int limit, CancellationToken cancellationToken)
+    {
+        var filter = Builders<BsonDocument>.Filter;
+        var conditions = new List<FilterDefinition<BsonDocument>> { filter.Eq("tecnicoUsuarioId", subject) };
+        if (state is not null) conditions.Add(filter.Eq("estado", state));
+        if (after is { } cursor)
+            conditions.Add(filter.Or(filter.Lt("creadoEn", cursor.CreatedAtUtc),
+                filter.And(filter.Eq("creadoEn", cursor.CreatedAtUtc), filter.Lt("_id", cursor.Id))));
+        var documents = await database.GetCollection<BsonDocument>("cotizaciones")
+            .Find(filter.And(conditions), new FindOptions { MaxTime = options.Value.QueryMaxTime })
+            .Sort(Builders<BsonDocument>.Sort.Descending("creadoEn").Descending("_id"))
+            .Limit(limit + 1).ToListAsync(cancellationToken);
+        var items = documents.Take(limit).Select(ToMyQuote).ToList();
+        var next = documents.Count > limit ? RequestCursor.Encode(documents[limit - 1]["creadoEn"].ToUniversalTime(), documents[limit - 1]["_id"].AsObjectId) : null;
+        return new MyQuotePage(items, next);
+    }
+
+    private static MyQuote ToMyQuote(BsonDocument document)
+    {
+        static int? Amount(BsonDocument doc, string field) => doc.TryGetValue(field, out var value) && !value.IsBsonNull ? value.ToInt32() : null;
+        return new MyQuote(document["_id"].ToString()!, document["solicitudId"].ToString()!, document["estado"].AsString,
+            document["tipoPrecio"].AsString, Amount(document, "precio"), Amount(document, "precioMin"), Amount(document, "precioMax"),
+            document["tope"].ToInt32(), document["dia"].AsString, document["hora"].AsString, document["creadoEn"].ToUniversalTime());
+    }
     public Task<QuoteCheckResult> SaveAsync(string requestId, string technicianId, string sub, string trade, QuoteValidationInput body, DateTimeOffset now, CancellationToken cancellationToken) =>
         SaveAsync(ObjectId.Parse(requestId), ObjectId.Parse(technicianId), sub, trade, body, now, cancellationToken);
 
