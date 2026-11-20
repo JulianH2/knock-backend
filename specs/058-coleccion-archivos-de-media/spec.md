@@ -1,6 +1,6 @@
 # Spec 058 — Colección `archivos` de Media: registro de archivos privados en MongoDB y tope de subidas pendientes
 
-> **Estado:** Borrador · **Repositorio:** knock-backend · **Rector:** `constitution.md`
+> **Estado:** Aprobada · **Repositorio:** knock-backend · **Rector:** `constitution.md`
 > **Clave de trabajo:** KNOCK-185 (TT-BD-10 · Colección archivos de Media) · **Relacionadas:** spec 013 (archivos y moderación, Aprobada), spec 032 (imágenes públicas, Aprobada), spec 020 (solicitudes, consume el flujo privado), spec 003 (bases MongoDB y Redis) y la spec histórica TT-API-05 (`specs/_legacy/TT-API-05-servicio-de-fotos-privadas-blob-sas/`)
 > **Servicio:** Mercado (módulo `Media`) · **Colecciones:** `archivos` (nueva, base `market`) · **Sale:** contenedor privado `registros-temporales` y `BlobMediaFileStore`
 > **Sprint:** 5 · **Responsable sugerido:** Alexis (dueña de la tarjeta; Jira la etiqueta `resp-angel`, `area-bd`, `sprint-5`) · **Puntos:** los de la tarjeta
@@ -278,6 +278,6 @@ Las ocho se contestaron «sí» con la recomendación del autor y ya están apli
 - **`uso` acepta hoy `perfil`, `solicitud` y `trabajo` en el flujo privado**, aunque la spec 032 manda perfil y trabajo al flujo público; restringirlo a `solicitud` no se hace aquí.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-20
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Implementada (tras el merge)
