@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-20T03:45:12Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-20T16:22:10Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | `Account` | -, controllers, data, domain, dtos, services, validators | 28 | 63 | 60 |
 | `Addresses` | -, controllers, data, domain, dtos, services, validators | 12 | 25 | 46 |
-| `Assistant` | data | 2 | 7 | 5 |
+| `Assistant` | data, services | 3 | 13 | 8 |
 | `Catalog` | -, controllers, data, domain, dtos, services, validators | 49 | 87 | 113 |
 | `Chat` | -, data, hubs, services | 6 | 18 | 26 |
 | `Conversaciones` | domain | 1 | 2 | 1 |
@@ -295,6 +295,11 @@
   - `ConsumoIaStore()`:13, `ReserveAsync()`:44, `AdjustAsync()`:68
 - `src/Knock.Market.Api/Modules/Assistant/Data/UsoIaStore.cs` — record `UsageRecord`, class `UsoIaStore`
   - `UsoIaStore()`:8, `SaveAsync()`:10
+
+**services**
+
+- `src/Knock.Market.Api/Modules/Assistant/Services/FiltroDatosPersonales.cs` — enum `PersonalDataKind`, record struct `CensorshipEntry`, record `FilterResult`, class `FiltroDatosPersonales`, record struct `Range`, class `View`
+  - `Censurar()`:59, `Name()`:78, `Build()`:263
 
 ### Catalog
 
