@@ -1,4 +1,4 @@
-using Knock.Identity.Api.Modules.Sesiones.Data;
+using Knock.Identity.Api.Hosting;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -8,7 +8,7 @@ namespace Knock.Identity.Api.Modules.Panel.Data;
 /// <c>panel_auditoria</c> (spec 033, §6, R-23): de solo inserción para el servicio. Esta clase no expone lectura, actualización ni borrado, y una prueba de
 /// arquitectura lo vigila. Los documentos vencen a los 365 días (índice TTL). Solo se escriben los campos de <see cref="PanelAuditEntry"/>.
 /// </summary>
-internal sealed class PanelAuditoriaStore([FromKeyedServices(SesionesDataExtensions.ModuleKey)] IMongoDatabase database) : IPanelAuditoriaStore
+internal sealed class PanelAuditoriaStore([FromKeyedServices(DataExtensions.DatabaseKey)] IMongoDatabase database) : IPanelAuditoriaStore
 {
     public const string Collection = "panel_auditoria";
 

@@ -1,10 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
 using Knock.Identity.Api.Common.Errors;
+using Knock.Identity.Api.Modules.Panel.Data;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using MongoDB.Driver;
-using StackExchange.Redis;
 
 namespace Knock.Identity.Api.Modules.Panel.Services;
 
@@ -93,6 +92,6 @@ internal static class PanelInfra
         new(DomainErrorKind.ServiceUnavailable, "A dependency of the panel is not available.", Domain.PanelErrorCodes.UnavailableCode);
 
     internal static bool IsInfrastructure(Exception exception) =>
-        exception is MongoException or RedisException or TimeoutException or HttpRequestException or IOException
-        || exception is FirebaseAdmin.Auth.FirebaseAuthException;
+        PanelStoreFailures.IsStoreFailure(exception)
+        || exception is TimeoutException or HttpRequestException or IOException or FirebaseAdmin.Auth.FirebaseAuthException;
 }

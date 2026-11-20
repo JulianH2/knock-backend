@@ -1,8 +1,7 @@
 using System.Security.Cryptography;
 using Knock.Identity.Api.Modules.Panel.Data;
 using Knock.Identity.Api.Modules.Panel.Domain;
-using Knock.Identity.Api.Modules.Sesiones.Data;
-using Knock.Identity.Api.Modules.Sesiones.Domain;
+using Knock.Identity.Api.Modules.Sesiones;
 using Knock.Identity.Api.Modules.Sesiones.Services;
 using Microsoft.IdentityModel.Tokens;
 using OtpNet;
@@ -46,9 +45,8 @@ internal sealed class PanelAdminService(
     IPanelSesionesStore sessions,
     IPanelActivacionesStore invitations,
     IPanelCuentaCache cache,
-    ISesionesStore appAccounts,
-    ISesionCancelada cancelled,
-    PhoneProtector phones,
+    ISesionesApi appAccounts,
+    IPanelSidCanceller cancelled,
     TotpService totp,
     AuditoriaPanel audit,
     TimeProvider timeProvider)
@@ -186,13 +184,13 @@ internal sealed class PanelAdminService(
 
     private async Task<(string? Value, PanelAdminError? Error)> ResolveSubAsync(string phone, CancellationToken cancellationToken)
     {
-        if (!PhoneNumberPolicy.IsValid(phone))
+        if (!PhoneNumbers.IsValid(phone))
         {
             return (null, PanelAdminError.InvalidPhone);
         }
 
-        var account = await appAccounts.FindByPhoneHashAsync(phones.Hash(phone).Value, cancellationToken);
-        return account is null ? (null, PanelAdminError.AppAccountNotFound) : (account.Sub, null);
+        var sub = await appAccounts.FindSubByPhoneAsync(phone, cancellationToken);
+        return sub is null ? (null, PanelAdminError.AppAccountNotFound) : (sub, null);
     }
 
     private static byte[]? TryDecodeBase32(string value)

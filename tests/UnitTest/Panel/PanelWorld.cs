@@ -77,10 +77,11 @@ internal sealed class PanelWorld
         Settings = new PanelSettings("knock-api", PanelSettings.DefaultAudience, new SymmetricSecurityKey(RandomNumberGenerator.GetBytes(32)), Origin, true);
         AppAccounts.Users.Add(new UserAccount("665f1b2c3d4e5f6071829301", AppSub, AccountState.Active, true, Phones.Hash(Phone).Value));
         Audit = new AuditoriaPanel(AuditStore, new PanelIpHasher(PhoneProtectionTestKeys.Keys()), new NoHttpContext(), Clock, NullLogger<AuditoriaPanel>.Instance);
-        Admin = new PanelAdminService(Accounts, Sessions, Invitations, Cache, AppAccounts, Cancelled, Phones, Totp, Audit, Clock);
+        AppApi = new SesionesApi(AppAccounts, Phones);
+        Admin = new PanelAdminService(Accounts, Sessions, Invitations, Cache, AppApi, Cancelled, Totp, Audit, Clock);
         Issuer = new PanelTokenIssuer(Settings, Clock);
         SessionService = new SesionPanelService(Sessions, Cancelled, Issuer, Clock, NullLogger<SesionPanelService>.Instance);
-        Access = new AccesoPanelService(Verifier, Accounts, AppAccounts, Challenges, Totp, SessionService, Audit, Settings, Clock);
+        Access = new AccesoPanelService(Verifier, Accounts, AppApi, Challenges, Totp, SessionService, Audit, Settings, Clock);
         Activation = new ActivacionPanelService(Invitations, Accounts, Cache, Totp, Audit, Settings, Clock);
         Lifecycle = new SesionPanelCicloService(Sessions, Accounts, Cancelled, Issuer, Audit, Settings, Clock);
     }
@@ -112,6 +113,8 @@ internal sealed class PanelWorld
     public FakePanelCancelled Cancelled { get; } = new();
 
     public AuditoriaPanel Audit { get; }
+
+    public SesionesApi AppApi { get; }
 
     public PanelAdminService Admin { get; }
 

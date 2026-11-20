@@ -485,7 +485,7 @@ internal sealed class FakePanelCache : IPanelCuentaCache
     }
 }
 
-internal sealed class FakePanelCancelled : ISesionCancelada
+internal sealed class FakePanelCancelled : IPanelSidCanceller
 {
     public List<(string SessionId, TimeSpan Lifetime)> Entries { get; } = [];
 
@@ -494,4 +494,6 @@ internal sealed class FakePanelCancelled : ISesionCancelada
         Entries.Add((sessionId, lifetime));
         return Task.CompletedTask;
     }
+
+    public Task<bool> IsCancelledAsync(string sessionId, CancellationToken cancellationToken) => Task.FromResult(Entries.Exists(entry => entry.SessionId == sessionId));
 }

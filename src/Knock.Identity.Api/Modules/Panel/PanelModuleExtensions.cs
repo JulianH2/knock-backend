@@ -25,12 +25,13 @@ public static class PanelModuleExtensions
         services.AddSingleton<IPanelAuditoriaStore>(provider => provider.GetRequiredService<PanelAuditoriaStore>());
         services.AddSingleton<IPanelDesafios, RedisPanelDesafios>();
         services.AddSingleton<IPanelCuentaCache, RedisPanelCuentaCache>();
+        services.AddSingleton<IPanelSidCanceller, RedisPanelSidCanceller>();
         services.AddHttpContextAccessor();
         services.AddSingleton<PanelIpHasher>();
         services.AddSingleton<AuditoriaPanel>();
         services.AddSingleton(provider => PanelSettings.Create(provider.GetRequiredService<IConfiguration>(), provider.GetRequiredService<IHostEnvironment>()));
         services.AddOptions<PanelTotpOptions>().BindConfiguration(PanelTotpOptions.SectionName);
-        services.AddSingleton(CreateTotpKeys);
+        services.AddSingleton(provider => PanelTotpKeys.CreateOrThrow(provider.GetRequiredService<IOptions<PanelTotpOptions>>().Value));
         services.AddSingleton<TotpService>();
         services.AddSingleton<PanelAdminService>();
         services.AddSingleton<PanelTokenIssuer>();
@@ -44,14 +45,5 @@ public static class PanelModuleExtensions
         services.AddAuthentication().AddJwtBearer(PanelBearer.Scheme, _ => { });
         services.AddOptions<JwtBearerOptions>(PanelBearer.Scheme).Configure<PanelSettings>(PanelBearer.Configure);
         return services;
-    }
-
-    // Se validan al crear el servicio y no al arrancar: una API desplegada sin la llave nueva sigue arrancando y solo falla el panel. El mensaje nombra
-    // la clave de configuración y jamás su valor.
-    private static PanelTotpKeys CreateTotpKeys(IServiceProvider provider)
-    {
-        var options = provider.GetRequiredService<IOptions<PanelTotpOptions>>().Value;
-        return PanelTotpKeys.TryCreate(options, out var errors)
-            ?? throw new OptionsValidationException(Options.DefaultName, typeof(PanelTotpOptions), errors);
     }
 }

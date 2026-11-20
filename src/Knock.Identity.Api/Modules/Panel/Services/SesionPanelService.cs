@@ -1,6 +1,5 @@
 using Knock.Identity.Api.Modules.Panel.Data;
 using Knock.Identity.Api.Modules.Panel.Domain;
-using Knock.Identity.Api.Modules.Sesiones.Data;
 
 namespace Knock.Identity.Api.Modules.Panel.Services;
 
@@ -11,7 +10,7 @@ namespace Knock.Identity.Api.Modules.Panel.Services;
 /// </summary>
 internal sealed partial class SesionPanelService(
     IPanelSesionesStore sessions,
-    ISesionCancelada cancelled,
+    IPanelSidCanceller cancelled,
     PanelTokenIssuer issuer,
     TimeProvider timeProvider,
     ILogger<SesionPanelService> logger)

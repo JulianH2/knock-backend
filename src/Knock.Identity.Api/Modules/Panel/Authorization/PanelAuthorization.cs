@@ -2,7 +2,6 @@ using Knock.Identity.Api.Hosting;
 using Knock.Identity.Api.Modules.Panel.Data;
 using Knock.Identity.Api.Modules.Panel.Domain;
 using Knock.Identity.Api.Modules.Panel.Services;
-using Knock.Identity.Api.Modules.Sesiones.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Routing;
@@ -71,7 +70,7 @@ internal sealed class PermisoPanelHandler(
     IPanelCuentaCache cache,
     IPanelCuentasStore accounts,
     IPanelSesionesStore sessions,
-    ISesionCancelada cancelled,
+    IPanelSidCanceller cancelled,
     AuditoriaPanel audit,
     IHttpContextAccessor accessor) : AuthorizationHandler<PermisoPanelRequirement>
 {

@@ -1,8 +1,8 @@
 using Knock.Identity.Api.Hosting;
+using Knock.Identity.Api.Modules.Panel.Data;
 using Knock.Identity.Api.Modules.Panel.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using StackExchange.Redis;
 
 namespace Knock.Identity.Api.Modules.Panel.Authorization;
 
@@ -58,13 +58,13 @@ internal static class PanelBearer
 
         try
         {
-            var redis = context.HttpContext.RequestServices.GetRequiredService<IConnectionMultiplexer>();
-            if (await redis.GetDatabase().KeyExistsAsync("sesion-cancelada:" + sid))
+            var cancelled = context.HttpContext.RequestServices.GetRequiredService<IPanelSidCanceller>();
+            if (await cancelled.IsCancelledAsync(sid, context.HttpContext.RequestAborted))
             {
                 context.Fail("cancelled");
             }
         }
-        catch (RedisException)
+        catch (Exception exception) when (PanelInfra.IsInfrastructure(exception))
         {
             throw PanelInfra.Unavailable();
         }

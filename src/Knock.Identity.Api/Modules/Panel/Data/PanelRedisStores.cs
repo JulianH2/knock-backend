@@ -127,3 +127,23 @@ internal sealed class RedisPanelCuentaCache(IConnectionMultiplexer redis) : IPan
         await redis.GetDatabase().KeyDeleteAsync(Key(sub));
     }
 }
+
+/// <summary>Escribe <c>sesion-cancelada:{sid}</c> con tiempo de vida: la lista nunca crece más de lo que se emite en 15 minutos.</summary>
+internal sealed class RedisPanelSidCanceller(IConnectionMultiplexer redis) : IPanelSidCanceller
+{
+    public const string KeyPrefix = "sesion-cancelada:";
+
+    public async Task CancelAsync(string sessionId, TimeSpan lifetime, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sessionId);
+        cancellationToken.ThrowIfCancellationRequested();
+        await redis.GetDatabase().StringSetAsync(KeyPrefix + sessionId, "1", lifetime);
+    }
+
+    public async Task<bool> IsCancelledAsync(string sessionId, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sessionId);
+        cancellationToken.ThrowIfCancellationRequested();
+        return await redis.GetDatabase().KeyExistsAsync(KeyPrefix + sessionId);
+    }
+}

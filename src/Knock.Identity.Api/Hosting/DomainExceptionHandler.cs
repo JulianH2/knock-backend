@@ -1,6 +1,5 @@
 // jscpd:ignore-start -- EXC-015
 using Knock.Identity.Api.Common.Errors;
-using Knock.Identity.Api.Modules.Panel.Domain;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -24,9 +23,9 @@ internal sealed class DomainExceptionHandler : IExceptionHandler
         }
 
         var status = DomainErrors.ToStatusCode(domain.Kind);
-        if (domain.Code is PanelErrorCodes.UnavailableCode or PanelErrorCodes.AuditUnavailableCode)
+        if (domain.Kind == DomainErrorKind.ServiceUnavailable)
         {
-            // Spec 033, §5: los 503 del panel llevan Retry-After.
+            // Cada 503 de dominio lleva Retry-After (spec 033, §5: los del panel; spec 013: la moderación no disponible).
             httpContext.Response.Headers.RetryAfter = _retryAfterSeconds;
         }
 

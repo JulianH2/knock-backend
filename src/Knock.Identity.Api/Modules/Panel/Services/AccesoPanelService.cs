@@ -1,7 +1,6 @@
 using Knock.Identity.Api.Modules.Panel.Data;
 using Knock.Identity.Api.Modules.Panel.Domain;
-using Knock.Identity.Api.Modules.Sesiones.Data;
-using Knock.Identity.Api.Modules.Sesiones.Domain;
+using Knock.Identity.Api.Modules.Sesiones;
 using Knock.Identity.Api.Modules.Sesiones.Services;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
@@ -69,7 +68,7 @@ internal abstract record TotpOutcome
 internal sealed class AccesoPanelService(
     IFirebaseIdTokenVerifier verifier,
     IPanelCuentasStore accounts,
-    ISesionesStore appAccounts,
+    ISesionesApi appAccounts,
     IPanelDesafios challenges,
     TotpService totp,
     SesionPanelService sessions,
@@ -203,8 +202,8 @@ internal sealed class AccesoPanelService(
             return false;
         }
 
-        var appAccount = await appAccounts.FindBySubAsync(sub, cancellationToken);
-        return appAccount is not null && appAccount.State != AccountState.Suspended;
+        var appAccount = await appAccounts.FindAccountBySubAsync(sub, cancellationToken);
+        return appAccount is not null && !appAccount.IsSuspended;
     }
 
     private void EnsureEnabled()

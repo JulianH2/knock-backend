@@ -1,6 +1,5 @@
 using Knock.Identity.Api.Hosting;
 using Knock.Identity.Api.Modules.Panel.Domain;
-using Knock.Identity.Api.Modules.Sesiones.Data;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -12,7 +11,7 @@ namespace Knock.Identity.Api.Modules.Panel.Data;
 /// rotación condicionada a la huella vigente. Es el único punto del módulo con esta colección.
 /// </summary>
 internal sealed class PanelSesionesStore(
-    [FromKeyedServices(SesionesDataExtensions.ModuleKey)] IMongoDatabase database,
+    [FromKeyedServices(DataExtensions.DatabaseKey)] IMongoDatabase database,
     IMongoClient client,
     IOptions<KnockMongoOptions> mongoOptions,
     TimeProvider timeProvider) : IPanelSesionesStore
@@ -83,7 +82,7 @@ internal sealed class PanelSesionesStore(
                     },
                     cancellationToken: cancellationToken);
             }
-            catch (MongoCommandException exception) when (exception.Code == SesionesStore.WriteConflictCode && attempt < _maxWriteConflictAttempts)
+            catch (MongoCommandException exception) when (exception.Code == MongoWriteErrors.WriteConflictCode && attempt < _maxWriteConflictAttempts)
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(50 * attempt), cancellationToken);
             }

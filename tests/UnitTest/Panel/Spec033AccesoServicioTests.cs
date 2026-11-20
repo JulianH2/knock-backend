@@ -379,7 +379,7 @@ public class Spec033AccesoServicioTests
         var world = new PanelWorld();
         world.SeedAccount(secret: _secret);
         var off = new PanelSettings("knock-api", "knock-panel", world.Settings.SigningKey, PanelWorld.Origin, false);
-        var access = new AccesoPanelService(world.Verifier, world.Accounts, world.AppAccounts, world.Challenges, world.Totp, world.SessionService, world.Audit, off, world.Clock);
+        var access = new AccesoPanelService(world.Verifier, world.Accounts, world.AppApi, world.Challenges, world.Totp, world.SessionService, world.Audit, off, world.Clock);
 
         var thrown = await FluentActions.Awaiting(() => access.VerifyPhoneAsync(world.TokenFor(), _ip, CancellationToken.None)).Should().ThrowAsync<DomainException>();
 

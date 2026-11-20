@@ -184,3 +184,18 @@ internal interface IPanelCuentaCache
 
     Task DeleteAsync(string sub, CancellationToken cancellationToken);
 }
+
+/// <summary>Cancela el <c>sid</c> de una sesión del panel en Redis (<c>sesion-cancelada:{sid}</c>, spec 009): el gateway rechaza cualquier JWT cuyo <c>sid</c> esté ahí.</summary>
+internal interface IPanelSidCanceller
+{
+    Task CancelAsync(string sessionId, TimeSpan lifetime, CancellationToken cancellationToken);
+
+    /// <summary>La sesión está cancelada (existe <c>sesion-cancelada:{sid}</c>).</summary>
+    Task<bool> IsCancelledAsync(string sessionId, CancellationToken cancellationToken);
+}
+
+/// <summary>Distingue una caída de MongoDB o de Redis de un error de programación; solo la capa de datos conoce los tipos de excepción de los clientes.</summary>
+internal static class PanelStoreFailures
+{
+    public static bool IsStoreFailure(Exception exception) => exception is MongoDB.Driver.MongoException or StackExchange.Redis.RedisException;
+}

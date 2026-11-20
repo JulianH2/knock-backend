@@ -1,6 +1,5 @@
 using Knock.Identity.Api.Modules.Panel.Data;
 using Knock.Identity.Api.Modules.Panel.Domain;
-using Knock.Identity.Api.Modules.Sesiones.Data;
 
 namespace Knock.Identity.Api.Modules.Panel.Services;
 
@@ -33,7 +32,7 @@ internal abstract record RenewOutcome
 internal sealed class SesionPanelCicloService(
     IPanelSesionesStore sessions,
     IPanelCuentasStore accounts,
-    ISesionCancelada cancelled,
+    IPanelSidCanceller cancelled,
     PanelTokenIssuer issuer,
     AuditoriaPanel audit,
     PanelSettings settings,

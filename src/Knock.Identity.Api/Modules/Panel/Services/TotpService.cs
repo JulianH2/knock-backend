@@ -34,6 +34,13 @@ internal sealed class PanelTotpKeys
 
     public int CurrentVersion { get; }
 
+    /// <summary>
+    /// Como <see cref="TryCreate"/>, pero lanza si la configuración no es válida. Se llama al crear el servicio y no al arrancar: una API desplegada sin la llave
+    /// nueva sigue arrancando y solo falla el panel. El mensaje nombra la clave de configuración y jamás su valor.
+    /// </summary>
+    public static PanelTotpKeys CreateOrThrow(PanelTotpOptions options) =>
+        TryCreate(options, out var errors) ?? throw new Microsoft.Extensions.Options.OptionsValidationException(Microsoft.Extensions.Options.Options.DefaultName, typeof(PanelTotpOptions), errors);
+
     /// <summary>Valida la configuración. Los mensajes nombran la clave de configuración y nunca su valor.</summary>
     public static PanelTotpKeys? TryCreate(PanelTotpOptions options, out IReadOnlyList<string> errors)
     {

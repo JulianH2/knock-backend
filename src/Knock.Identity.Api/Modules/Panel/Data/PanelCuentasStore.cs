@@ -1,6 +1,5 @@
 using Knock.Identity.Api.Hosting;
 using Knock.Identity.Api.Modules.Panel.Domain;
-using Knock.Identity.Api.Modules.Sesiones.Data;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -12,7 +11,7 @@ namespace Knock.Identity.Api.Modules.Panel.Data;
 /// contador de fallos usa <c>$inc</c> atómico en MongoDB (persistente y compartido entre réplicas, R-11). Nada de la colección se imprime.
 /// </summary>
 internal sealed class PanelCuentasStore(
-    [FromKeyedServices(SesionesDataExtensions.ModuleKey)] IMongoDatabase database,
+    [FromKeyedServices(DataExtensions.DatabaseKey)] IMongoDatabase database,
     IOptions<KnockMongoOptions> mongoOptions) : IPanelCuentasStore
 {
     public const string Collection = "panel_cuentas";
@@ -77,7 +76,7 @@ internal sealed class PanelCuentasStore(
             await Accounts.InsertOneAsync(document, cancellationToken: cancellationToken);
             return true;
         }
-        catch (Exception exception) when (SesionesStore.IsDuplicateKey(exception))
+        catch (Exception exception) when (MongoWriteErrors.IsDuplicateKey(exception))
         {
             return false;
         }
