@@ -1,5 +1,9 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — KNOCK-68: documentación de oleadas (T-10)
+- **Estado:** `docs/events.md` documenta los eventos de reparto y las tareas `RepartirOleada` y `RevisarOleada`, su programación y la forma de `tareas_programadas`; distingue `VencerSolicitud`, mencionada por la spec 029. Los nombres y campos de reparto se contrastaron con el código; no se agregaron ejemplos con datos personales.
+- **Verificación:** `docs/endpoints.md` ya incluye bandeja y descarte; ambas rutas figuran en `docs/openapi.v1.json` con `/api/v{version}`. No se regeneró OpenAPI en esta tarea exclusivamente documental ni se ejecutaron pruebas. T-09 y CA-17 siguen pendientes; no se hizo commit.
+
 ## 2026-11-20 — KNOCK-68: bandeja y descarte (T-08, verificación parcial)
 - **Estado:** bandeja paginada y descarte para técnicos; el cambio de `activo` a `descartado` compite en la misma colección con la transacción de cotización. Un envío cotizado da 409 `request_not_dismissable` y uno descartado 204. Gateway enruta ambas operaciones y limita el descarte por `sub` a 30/h en Redis. Contrato exportado y matrices actualizadas; sin dependencias nuevas.
 - **Verificación:** build Release sin restauración pasó sin avisos; integración Spec028 y Spec020 85/85, incluidas bandeja, paginación, carrera y límite del gateway con Redis; formato de archivos tocados y 19 pruebas de arquitectura pasaron. `codemap.py` y `--check` pasaron. `sdd_lint.py --trace 028` marca CA-17 pendiente de T-09 y devuelve error; la traza reconoce el resto por nombre, no demuestra por sí sola cobertura completa.
