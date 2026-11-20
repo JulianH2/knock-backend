@@ -15,6 +15,9 @@ internal sealed class EnviosStore([FromKeyedServices(RequestsModuleExtensions.Mo
             .Select(x => x["tecnicoId"].AsObjectId).ToArray();
     }
 
+    public async Task<bool> AnyAsync(IClientSessionHandle session, ObjectId requestId, CancellationToken cancellationToken) =>
+        await Collection.Find(session, Builders<BsonDocument>.Filter.Eq("solicitudId", requestId)).AnyAsync(cancellationToken);
+
     public Task InsertAsync(ObjectId requestId, ObjectId technicianId, string technicianUserId, int wave, string reason,
         DateTime now, CancellationToken cancellationToken) =>
         Collection.InsertOneAsync(Document(requestId, technicianId, technicianUserId, wave, reason, now), cancellationToken: cancellationToken);

@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-20T05:02:44Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-20T05:19:27Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -20,7 +20,7 @@
 | `Knock.Market.Api` | -, common, hosting | 37 | 74 | 103 |
 | `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
-| `Requests` | -, controllers, data, domain, dtos, services, validators | 65 | 137 | 131 |
+| `Requests` | -, controllers, data, domain, dtos, services, validators | 67 | 141 | 141 |
 | `Safety` | -, controllers, data, domain, dtos, services, validators | 15 | 38 | 33 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 26 | 47 | 54 |
 | `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 22 | 55 | 57 |
@@ -812,7 +812,7 @@
 - `src/Knock.Market.Api/Modules/Requests/Data/DemoTechnicianStore.cs` — class `DemoTechnicianStore`
   - `ValidateAsync()`:14, `SaveAsync()`:17
 - `src/Knock.Market.Api/Modules/Requests/Data/EnviosStore.cs` — class `EnviosStore`
-  - `FindTechniciansAsync()`:10, `InsertAsync()`:18, `InsertAsync()`:22
+  - `FindTechniciansAsync()`:10, `AnyAsync()`:18, `InsertAsync()`:21, `InsertAsync()`:25
 - `src/Knock.Market.Api/Modules/Requests/Data/HistoryStore.cs` — record `HistoryVisit`, record `HistoryVisitPage`, class `HistoryStore`
   - `FindLinkedTradesAsync()`:34
 - `src/Knock.Market.Api/Modules/Requests/Data/MongoOutbox.cs` — record `OutboxMessage`, interface `IOutbox`, class `MongoOutbox`
@@ -821,10 +821,12 @@
   - `FindBySubAsync()`:16, `FindEligibleAsync()`:19, `ExistsAsync()`:60, `FindAsync()`:74
 - `src/Knock.Market.Api/Modules/Requests/Data/QuoteStore.cs` — class `QuoteStore`
   - `SaveAsync()`:21, `SaveAsync()`:24
+- `src/Knock.Market.Api/Modules/Requests/Data/RepartoStore.cs` — class `RepartoStore`
+  - `FindAsync()`:19, `DistributeAsync()`:22, `ReviewAsync()`:51
 - `src/Knock.Market.Api/Modules/Requests/Data/RequestsStore.cs` — record `RequestRecord`, record `RequestRecordPage`, class `RequestsStore`
-  - `InsertAsync()`:53, `FindAsync()`:67, `CountLiveQuotesAsync()`:103, `HasQuotedAsync()`:119
+  - `InsertAsync()`:54, `FindAsync()`:72, `CountLiveQuotesAsync()`:108, `HasQuotedAsync()`:124
 - `src/Knock.Market.Api/Modules/Requests/Data/TareasProgramadasStore.cs` — class `TareasProgramadasStore`
-  - `ReserveAsync()`:11, `CompleteAsync()`:30, `FailAsync()`:34, `ConfirmLeaseAsync()`:50
+  - `ScheduleAsync()`:11, `ReserveAsync()`:19, `CompleteAsync()`:38, `FailAsync()`:42, `ConfirmLeaseAsync()`:58
 - `src/Knock.Market.Api/Modules/Requests/Data/VisitStore.cs` — record `VisitRecord`, record `FailedAttempt`, enum `VisitCloseReason`, class `VisitStore`
   - `VisitRecord()`:10, `FindAsync()`:65, `MarkArrivedAsync()`:75, `RegisterFailedAttemptAsync()`:99, `CloseAsync()`:133, `CountNoticeAsync()`:162
 
@@ -887,6 +889,8 @@
   - `QuoteComparisonService()`:13, `CompareAsync()`:19
 - `src/Knock.Market.Api/Modules/Requests/Services/QuoteService.cs` — record `Technician`, record `QuoteRequestSnapshot`, interface `ITechnicianDirectory`, interface `IQuoteRequestReader`, enum `QuoteCheckResult`, interface `IQuoteWriter`, record `QuoteResponse`, interface `ICreatedQuote`, enum `NoteModerationResult`, interface `INoteModerator`, class `UnavailableNoteModerator`, class `QuoteService`
   - `ModerateAsync()`:48, `QuoteService()`:51, `SendAsync()`:55, `Covers()`:83
+- `src/Knock.Market.Api/Modules/Requests/Services/RepartoService.cs` — class `RepartoService`, class `RepartirOleada`, class `RevisarOleada`
+  - `RepartoService()`:10, `DistributeAsync()`:17, `ReviewAsync()`:31, `HandleAsync()`:49, `HandleAsync()`:55
 - `src/Knock.Market.Api/Modules/Requests/Services/RequestPorts.cs` — interface `IRequestPhotos`, class `UnavailableRequestPhotos`, class `UnavailableContentModerator`
   - `AreReadyForAsync()`:22, `ReadLinksAsync()`:24, `ReviewTextAsync()`:31, `ReviewImageAsync()`:34
 - `src/Knock.Market.Api/Modules/Requests/Services/RequestsApi.cs` — class `RequestsApi`
