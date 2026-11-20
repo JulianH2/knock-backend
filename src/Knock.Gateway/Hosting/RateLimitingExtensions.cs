@@ -29,6 +29,8 @@ internal sealed class RateLimitSettings
     public RateLimitPolicy User { get; set; } = new();
 
     public RateLimitPolicy Search { get; set; } = new();
+
+    public RateLimitPolicy Discard { get; set; } = new() { PermitLimit = 30, Window = TimeSpan.FromHours(1) };
 }
 
 /// <summary>Contador de ventana fija compartido entre réplicas. Existe para probar el límite con dobles sin Redis.</summary>
@@ -70,7 +72,7 @@ internal static class RateLimitingExtensions
         services.AddOptions<RateLimitSettings>()
             .BindConfiguration(RateLimitSettings.SectionName)
             .Validate(
-                s => s.Ip.IsValid && s.Auth.IsValid && s.User.IsValid && s.Search.IsValid,
+                s => s.Ip.IsValid && s.Auth.IsValid && s.User.IsValid && s.Search.IsValid && s.Discard.IsValid,
                 "RateLimiting:Ip, RateLimiting:Auth, RateLimiting:User and RateLimiting:Search need a PermitLimit > 0 and a Window > 0.")
             .ValidateOnStart();
         services.AddSingleton<IRequestCounter, RedisRequestCounter>();
@@ -168,12 +170,23 @@ internal sealed class UserRateLimitMiddleware(RequestDelegate next, IRequestCoun
         var sub = context.User.Identity?.IsAuthenticated == true ? context.User.FindFirst("sub")?.Value : null;
         if (sub is not null
             && (await RateLimitCheck.RejectedAsync(context, counter, RateLimitingExtensions.IsApiPath(context.Request.Path, "panel") ? $"ratelimit:panel-user:{sub}" : $"ratelimit:user:{sub}", options.Value.User)
-                || (RateLimitingExtensions.IsApiPath(context.Request.Path, "busqueda") && await RateLimitCheck.RejectedAsync(context, counter, $"ratelimit:busqueda:{sub}", options.Value.Search))))
+                || (RateLimitingExtensions.IsApiPath(context.Request.Path, "busqueda") && await RateLimitCheck.RejectedAsync(context, counter, $"ratelimit:busqueda:{sub}", options.Value.Search))
+                || (IsDiscard(context.Request) && await RateLimitCheck.RejectedAsync(context, counter, $"ratelimit:descarte:{sub}", options.Value.Discard))))
         {
             return;
         }
 
         await next(context);
+    }
+
+    private static bool IsDiscard(HttpRequest request)
+    {
+        var segments = request.Path.Value?.Split('/', StringSplitOptions.RemoveEmptyEntries) ?? [];
+        return HttpMethods.IsPost(request.Method) && segments.Length == 5
+            && segments[0].Equals("api", StringComparison.OrdinalIgnoreCase)
+            && segments[1].Equals("v1", StringComparison.OrdinalIgnoreCase)
+            && segments[2].Equals("solicitudes", StringComparison.OrdinalIgnoreCase)
+            && segments[4].Equals("descartar", StringComparison.OrdinalIgnoreCase);
     }
 }
 
