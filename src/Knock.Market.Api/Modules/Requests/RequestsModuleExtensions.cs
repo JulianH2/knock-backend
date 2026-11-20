@@ -30,6 +30,8 @@ public static class RequestsModuleExtensions
         services.AddScoped<QuoteValidator>();
         services.AddScoped<INoteModerator, UnavailableNoteModerator>();
         services.AddScoped<IQuoteWriter, QuoteStore>();
+        services.AddScoped<QuoteStore>();
+        services.AddScoped<MyQuotesService>();
         services.AddScoped<QuoteService>();
         services.AddOptions<FieldEncryptionOptions>().BindConfiguration(FieldEncryptionOptions.SectionName);
         services.AddSingleton<FieldCipher>();
