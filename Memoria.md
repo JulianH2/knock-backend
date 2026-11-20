@@ -982,3 +982,9 @@
 - **Por qué:** la spec 009 dejó la regla general de llamadas internas para una spec propia; hoy solo existe el esquema HS256 por emisor de las specs 037 y 041 (implementado únicamente en Mercado).
 - **Decisiones (con porqué):** la spec toma ese esquema como base y fija propiedades, sin inventar mecanismo, rotación, replay ni Key Vault/Terraform: quedan como dudas P-01 a P-08 para el líder. Casos CA-NN (convención de specs numeradas, prueba `CA_056_NN`).
 - **A evitar:** dos nombres de secreto para lo mismo (`avisos-key-*` vs `interno-key-identity`) sin decidir convención.
+
+## 2026-11-19 · KNOCK-294 · Pruebas de errores: comprobar solo los motivos, no el traceId
+- **Qué cambió:** nuevo ayudante `ProblemBody.Reasons(raw)` en `tests/IntegrationTest/Support` (la sección `errors` del ProblemDetails; si no la hay, el cuerpo sin `traceId` ni `correlationId`). Las pruebas que comprobaban «el motivo nunca repite el valor enviado» sobre el cuerpo completo (specs 015, 017, 020, 021, 022, 023, 040, 041, 043, 046) ahora niegan sobre `Reasons`. `SecureHttp.AssertProblemAsync` (SecurityTest) busca los textos prohibidos sin `traceId`/`correlationId`.
+- **Por qué:** `traceId` y `correlationId` son aleatorios y a veces contienen el valor buscado ("123", "hi", un cursor); la prueba fallaba de forma intermitente y tumbaba el `gate` de PR ajenos.
+- **Decisiones (con porqué):** (1) Un solo ayudante en vez de copiar el patrón, para no crear clones (jscpd, `codemap.py --check`). (2) No se quitó ninguna aserción: el valor se sigue negando, ahora donde puede aparecer de verdad (los motivos).
+- **A evitar:** comparar un valor contra el cuerpo completo de una respuesta con identificadores aleatorios.

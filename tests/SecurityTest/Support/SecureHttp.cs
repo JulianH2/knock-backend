@@ -66,7 +66,7 @@ internal static class SecureHttp
 
     /// <summary>
     /// Forma de un error: <c>application/problem+json</c> con <c>status</c> igual al código, sin pila, sin motivos internos y sin los textos
-    /// indicados (celular, tokens…).
+    /// indicados (celular, tokens…). Los textos se buscan sin el <c>traceId</c> ni el <c>correlationId</c>, aleatorios, que a veces los contienen.
     /// </summary>
     public static async Task<string> AssertProblemAsync(HttpResponseMessage response, HttpStatusCode status, params string[] mustNotContain)
     {
@@ -78,9 +78,10 @@ internal static class SecureHttp
         body.GetProperty("status").GetInt32().Should().Be((int)status);
         body.GetProperty("title").GetString().Should().NotBeNullOrWhiteSpace();
         body.TryGetProperty("stackTrace", out _).Should().BeFalse("un error nunca lleva la pila");
+        var comparable = WithoutCorrelationId(raw);
         foreach (var forbidden in ForbiddenInErrors.Concat(mustNotContain).Where(s => s.Length > 0))
         {
-            raw.Should().NotContain(forbidden, $"el error no debe revelar '{forbidden}'");
+            comparable.Should().NotContain(forbidden, $"el error no debe revelar '{forbidden}'");
         }
 
         foreach (var header in LeakyHeaders)

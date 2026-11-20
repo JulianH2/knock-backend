@@ -70,7 +70,7 @@ public sealed class Spec020SolicitudesSeguridadTests
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         var raw = await response.Content.ReadAsStringAsync();
         System.Text.Json.JsonElement.Parse(raw).GetProperty("code").GetString().Should().Be("photo_invalid");
-        raw.Should().NotContain(photo, "no dice cuál foto ni cuál condición falló");
+        ProblemBody.Reasons(raw).Should().NotContain(photo, "no dice cuál foto ni cuál condición falló");
         (await host.CountRequestsAsync()).Should().Be(0);
     }
 
