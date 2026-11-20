@@ -5,6 +5,7 @@ using Knock.Market.Api.Modules.Catalog;
 using Knock.Market.Api.Modules.Requests.Data;
 using Knock.Market.Api.Modules.Requests.Domain;
 using Knock.Market.Api.Modules.Requests.Dtos;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 
 namespace Knock.Market.Api.Modules.Requests.Services;
@@ -37,7 +38,9 @@ internal sealed class SolicitudService(
     ChoiceStore choices,
     ITechnicianDirectory technicians,
     IQuoteRequestReader quoteRequests,
-    TimeProvider clock)
+    TimeProvider clock,
+    EnviosStore? sends = null,
+    IOptions<OleadasOptions>? waves = null)
 {
     private const string _domicile = "domicilio";
     private const string _workshop = "taller";
@@ -169,6 +172,15 @@ internal sealed class SolicitudService(
         if (technician is null || technician.Estado != "activo" || technician.Oculto)
         {
             return false;
+        }
+
+        if (waves?.Value.Habilitado == true)
+        {
+            var eligible = await quoteRequests.FindAsync(record.Id.ToString(), cancellationToken);
+            return sends is not null && ObjectId.TryParse(technician.Id, out var technicianId)
+                && eligible is not null && technician.Oficios.Contains(eligible.Trade, StringComparer.Ordinal)
+                && QuoteService.Covers(technician, eligible)
+                && await sends.CanViewAsync(record.Id, technicianId, cancellationToken);
         }
 
         if (await store.HasQuotedAsync(sub, record.Id, cancellationToken))

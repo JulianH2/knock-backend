@@ -1,5 +1,15 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — KNOCK-68: bandeja y descarte (T-08, verificación parcial)
+- **Estado:** bandeja paginada y descarte para técnicos; el cambio de `activo` a `descartado` compite en la misma colección con la transacción de cotización. Un envío cotizado da 409 `request_not_dismissable` y uno descartado 204. Gateway enruta ambas operaciones y limita el descarte por `sub` a 30/h en Redis. Contrato exportado y matrices actualizadas; sin dependencias nuevas.
+- **Verificación:** build Release sin restauración pasó sin avisos; integración Spec028 y Spec020 85/85, incluidas bandeja, paginación, carrera y límite del gateway con Redis; formato de archivos tocados y 19 pruebas de arquitectura pasaron. `codemap.py` y `--check` pasaron. `sdd_lint.py --trace 028` marca CA-17 pendiente de T-09 y devuelve error; la traza reconoce el resto por nombre, no demuestra por sí sola cobertura completa.
+- **Pendiente:** T-08 no se marca hecha mientras la verificación de traza solicitada no pase; CA-17 y revisión de registros corresponden a T-09. La prueba concurrente no fuerza ambos órdenes de la carrera. No se probó en Azure ni se hizo commit.
+
+## 2026-11-20 — KNOCK-68: cotización y detalle por envío (T-07)
+- **Estado:** con oleadas activas, cotizar requiere envío activo, que pasa a cotizado en la transacción; el detalle exige envío activo o cotizado y mantiene la elegibilidad base. El contador de cotizaciones activas se incrementa con filtro condicionado en la misma transacción que envío, cotización y buzón; el límite usa `Oleadas:MaximoCotizaciones`. La bandera apagada conserva la elegibilidad base.
+- **Decisión:** solicitudes antiguas sin contador o con contador cero se inicializan contando cotizaciones vivas dentro de la transacción antes del incremento condicionado; la versión anterior podía crear cotizaciones dejando cero. Un contador no cero desactualizado no se repara automáticamente; el retiro futuro debe decrementarlo transaccionalmente.
+- **Verificación:** las pruebas nuevas dieron 7 fallos y 3 aprobadas antes del cambio. Build Release sin restauración pasó sin avisos; integración filtrada Spec028 y Spec020 pasó 77/77. Se ajustó la preparación de CA-020-23 para entregar envíos también a técnicos inelegibles con oleadas activas, conservando las aserciones de elegibilidad. No se verificó Azure ni una carrera real contra descarte (T-08 aún no existe).
+- **Pendiente:** el formato global señala diferencias previas en `Spec028RepartoTests.cs`, ajeno a T-07. OpenAPI y documentos de rutas son T-10; no se creó commit.
 ## 2026-11-20 — KNOCK-68: pruebas iniciales de T-08 bloqueadas por T-07
 - **Estado:** se agregaron pruebas iniciales de bandeja, descarte, autenticación y carrera en `tests/IntegrationTest/Requests/Spec028BandejaTests.cs`; T-08 sigue pendiente. No se implementaron rutas ni cambios de producción.
 - **Bloqueo:** en esta rama T-07 figura pendiente y `QuoteStore` no consulta ni cambia el envío al cotizar. Una prueba con envío ya descartado recibió 201 y guardó una cotización, por lo que no se puede garantizar que gane solo una de las operaciones sin modificar la transacción de cotización de T-07. T-08 se pidió como paso único.
@@ -25,6 +35,30 @@
 - **Estado:** Alexis figura como responsable de T-05 y T-06; ambas siguen pendientes. No se implementaron los almacenes ni el reparto y no se escribieron pruebas nuevas.
 - **Verificación:** `dotnet test tests/IntegrationTest -c Release --no-restore --filter FullyQualifiedName~Spec028` pasó 3 pruebas existentes del ejecutor; no cubren las tareas pendientes.
 - **A evitar:** considerar que la reserva por sí sola impide dos manejadores simultáneos; la confirmación de `reservaId` debe ocurrir en la transacción de negocio, junto con el avance condicionado y el buzón.
+## 2026-11-19 — KNOCK-186: plantilla de ruta en ProblemDetails
+- **Decisión:** R-06 de la spec 035 se cumple con la plantilla de la ruta del endpoint, sin consulta y con `/` inicial, para no repetir valores recibidos y respetar CA-046-17 y CA-023-03. Sin endpoint se conserva la ruta de la petición sin consulta.
+- **Límite:** la ruta de respaldo puede contener valores cuando no hay endpoint; no se interpreta como una plantilla.
+- **Verificación:** build Release sin restaurar sin advertencias; filtro solicitado: 36 unitarias, 11 de seguridad y 15 de integración aprobadas. Formato de los archivos afectados y codemap actualizados y verificados.
+
+## 2026-11-19 — KNOCK-186: soporte compartido de trazas de la spec 035
+- **Cambio:** `QueryTraceCapture` reúne el exportador en memoria y las aserciones de consulta ausente en `tests/IntegrationTest/Support/QueryLeakDetector.cs`, archivo ya enlazado por SecurityTest; no se agregó referencia entre proyectos ni dependencia. Se conservan las comprobaciones y el plazo de espera.
+- **Verificación:** build Release sin restaurar y formato de los tres archivos C# correctos; codemap actualizado y `--check` correcto. jscpd acotado ya no muestra los dos clones de la spec 035, pero devuelve error por un clon entre `CorrelationAcrossServicesTests.cs` y `GatewayRoutingTests.cs`. No se ejecutaron pruebas de integración por instrucción.
+
+## 2026-11-19 — KNOCK-186: HTTP y trazas de T-04
+- **Resultado:** las fábricas existentes prueban `instance` y trazas exportadas en gateway (401), Identidad (400), Mercado (422) y Mensajería (401); el span se espera mediante una señal del exportador, no una pausa. El fallo existente del localizador de Mercado provoca un 500 y comprueba el ProblemDetails y su registro sin consulta.
+- **Pendiente:** no se encontró una ruta existente de Mensajería que produzca 400/422 con ProblemDetails; el 401 no satisface literalmente esa petición. No se halló un mecanismo existente equivalente para provocar 500 en los otros tres hosts. CA-08 sigue para una persona; T-04 queda parcial.
+- **Verificación:** `dotnet test Knock.slnx -c Release --no-restore -m:1 --filter 'FullyQualifiedName~Spec035'`: 2 de integración, 11 de seguridad y 32 unitarias aprobadas. `dotnet format` con `--no-restore --verify-no-changes --include` de los siete archivos C# cambiados pasó; `git diff --check` pasó. Sin commit.
+
+## 2026-11-19 — KNOCK-186: integración parcial de T-04
+- **Resultado:** se amplió `Spec035GatewayRegistrosTests` con una petición HTTP al gateway y un exportador de trazas en memoria conectado al proveedor real. La prueba comprueba los atributos de la traza antes de examinar la respuesta; falla porque la ruta inexistente devuelve 404 sin cuerpo, no ProblemDetails. No se cambió producción ni se declaró hecha T-04.
+- **Pendiente:** comprobar el 500 y su registro y las peticiones y trazas de Identidad, Mercado y Mensajería; sus fábricas dependen de Docker, cuyo daemon no respondió. CA-08 sigue pendiente de una persona (regla Semgrep). El trazador SDD reconoce nombres, no ejecución ni cobertura.
+- **Verificación:** build Release anterior al cambio pasó; 20 pruebas unitarias de `Spec035RedaccionTests` pasaron. La integración nueva falla por el cuerpo vacío; `dotnet format` agotó el tiempo. Sin commit.
+
+## 2026-11-19 — KNOCK-186: avance de T-04 de la spec 035
+- **Cambio:** los cuatro registros de ProblemDetails fijan `instance` a `Request.Path`, incluso cuando ya traía una consulta; sin dependencias nuevas. Se amplió `Spec035RedaccionTests` en lugar de crear otro juego de pruebas.
+- **TDD:** las cuatro variantes de ProblemDetails fallaron antes del cambio y pasaron después; la regresión de trazas comprueba los cuatro procesadores con actividades sintéticas, no una petición HTTP exportada.
+- **Pendiente para el PR:** una persona debe agregar la regla Semgrep para `UseHttpLogging` y `AddHttpLogging` y probar CA-08; faltan la prueba de una petición HTTP con 500 y su registro (CA-07) y una traza exportada de petición real (CA-16). T-04 queda parcial hasta verificarlo; el trazador solo reconoce nombres.
+- **A evitar:** interpretar las pruebas de procesador como prueba del cableado de instrumentación o de exportación real.
 ## 2026-11-19 — Spec 048 T-01 y T-04: índices y cotizaciones propias (KNOCK-266)
 - **Decisión y duda documental:** Alexis, con autorización del líder, confirmó que R-18 y D-03 prevalecen sobre §6: no agregar el campo ni índices únicos `idempotencyKey`; la repetición se controla por estado y el índice único `(solicitudId, tecnicoId)`. La spec no se editó y §6 aún debe conciliarse.
 - **Implementación:** el script 048 agrega únicamente índices adicionales respecto de 020/021; la consulta usa `QuoteStore`, filtra por `tecnicoUsuarioId` del token, pagina por fecha e identificador y el gateway enruta el GET autenticado. Se reutilizan `RequestCursor`, el directorio de técnicos y el filtro de validación.

@@ -167,7 +167,7 @@ internal sealed class RequestsStore(
         return document;
     }
 
-    private static RequestRecord ToRecord(BsonDocument document) => new(
+    internal static RequestRecord ToRecord(BsonDocument document) => new(
         document["_id"].AsObjectId,
         document["clienteId"].AsString,
         document["oficioClave"].AsString,

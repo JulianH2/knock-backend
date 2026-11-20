@@ -11,8 +11,8 @@
 | T-04 | `OleadasOptions` validadas al arrancar e interruptor | R-08 · CA-16 | — | T-01 a T-03 | Alexis | hecha (opciones y validación); comportamiento del interruptor depende de T-06 |
 | T-05 | `CandidatosStore` y `EnviosStore` con integración (`$geoNear`, filtros) | R-02, R-05 · CA-04 | T-01 | T-06 | Alexis | hecha (almacenes; reparto transaccional corresponde a T-06) |
 | T-06 | `RepartoService`: manejadores `RepartirOleada` y `RevisarOleada`, transacción, eventos y `SolicitudSinTecnicos`; programación en la creación (020) | R-01, R-05, R-06, R-07, R-16 · CA-01, CA-02, CA-03, CA-09, CA-10 | T-02, T-03, T-05 | T-07 | Alexis | hecha (pruebas Spec028 verdes; cobertura de concurrencia y CA-09 por ampliar en T-09) |
-| T-07 | Cotizar exige envío y tope de 5 con contador condicionado; vista del destinatario en el detalle | R-11, R-12, R-15 · CA-06, CA-11, CA-14 | T-05 | T-06, T-08 | Guillermo | pendiente |
-| T-08 | Bandeja y descarte (controllers, validadores, límite de 30 por hora) | R-13, R-14 · CA-12, CA-13, CA-18 | T-05 | T-07 | Alexis | pendiente |
+| T-07 | Cotizar exige envío y tope de 5 con contador condicionado; vista del destinatario en el detalle | R-11, R-12, R-15 · CA-06, CA-11, CA-14 | T-05 | T-06, T-08 | Alexis | hecha (integración Spec028 y regresión Spec020) |
+| T-08 | Bandeja y descarte (controllers, validadores, límite de 30 por hora) | R-13, R-14 · CA-12, CA-13, CA-18 | T-05 | T-07 | Alexis | hecha (CA-17 en la T-09) |
 | T-09 | Seguridad negativa, registros y eventos sin datos personales; regresión de la 020 con el interruptor apagado | R-11, R-13, R-14, R-17 · CA-11, CA-12, CA-16, CA-17, CA-18 | T-06, T-07, T-08 | T-10 | Alexis | pendiente |
 | T-10 | OpenAPI regenerado, `docs/endpoints.md`, `docs/events.md` y `Memoria.md` | R-16 | T-07, T-08 | T-09 | Guillermo | pendiente |
 
