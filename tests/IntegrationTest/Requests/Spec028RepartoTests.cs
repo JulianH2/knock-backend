@@ -143,9 +143,14 @@ public sealed class Spec028RepartoTests
 
     private static BsonDocument Technician(Spec020Host host, TestClock clock, int i) => new()
     {
-        ["_id"] = ObjectId.GenerateNewId(), ["usuarioId"] = Guid.NewGuid().ToString(), ["estado"] = "activo", ["oculto"] = false,
-        ["oficios"] = new BsonArray { Spec020Host.Plumbing }, ["coloniaBaseId"] = host.ColoniaId.ToString(),
-        ["disponibleHasta"] = clock.GetUtcNow().UtcDateTime.AddDays(1), ["calificacion"] = 10 - i,
+        ["_id"] = ObjectId.GenerateNewId(),
+        ["usuarioId"] = Guid.NewGuid().ToString(),
+        ["estado"] = "activo",
+        ["oculto"] = false,
+        ["oficios"] = new BsonArray { Spec020Host.Plumbing },
+        ["coloniaBaseId"] = host.ColoniaId.ToString(),
+        ["disponibleHasta"] = clock.GetUtcNow().UtcDateTime.AddDays(1),
+        ["calificacion"] = 10 - i,
         ["trabajosTerminados"] = i == 4 ? 0 : 5,
     };
 
