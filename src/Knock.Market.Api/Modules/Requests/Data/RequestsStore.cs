@@ -36,7 +36,8 @@ internal sealed record RequestRecordPage(IReadOnlyList<RequestRecord> Items, str
 internal sealed class RequestsStore(
     [FromKeyedServices(RequestsModuleExtensions.ModuleKey)] IMongoDatabase database,
     IOptions<KnockMongoOptions> mongoOptions,
-    IOutbox outbox)
+    IOutbox outbox,
+    IOptions<OleadasOptions>? waves = null)
 {
     public const string RequestsCollection = "solicitudes";
     public const string QuotesCollection = "cotizaciones";
@@ -59,6 +60,10 @@ internal sealed class RequestsStore(
             {
                 await Requests.InsertOneAsync(transaction, ToDocument(record), cancellationToken: token);
                 await outbox.AddAsync(transaction, message, token);
+                if (waves?.Value.Habilitado == true)
+                {
+                    await new TareasProgramadasStore(database).ScheduleAsync(transaction, "RepartirOleada", record.Id, 1, record.CreadoEnUtc, record.CreadoEnUtc, token);
+                }
                 return true;
             },
             cancellationToken: cancellationToken);
@@ -154,13 +159,15 @@ internal sealed class RequestsStore(
         }
 
         document.Add("estado", RequestStates.ToStored(record.Estado));
+        document.Add("oleadaActual", 0);
+        document.Add("cotizacionesActivas", 0);
         document.Add("venceEn", record.VenceEnUtc);
         document.Add("creadoEn", record.CreadoEnUtc);
         document.Add("actualizadoEn", record.CreadoEnUtc);
         return document;
     }
 
-    private static RequestRecord ToRecord(BsonDocument document) => new(
+    internal static RequestRecord ToRecord(BsonDocument document) => new(
         document["_id"].AsObjectId,
         document["clienteId"].AsString,
         document["oficioClave"].AsString,
