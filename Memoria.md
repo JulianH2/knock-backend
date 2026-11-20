@@ -982,3 +982,8 @@
 - **Qué cambió:** el encabezado de la spec 010 lleva las claves KNOCK-166 y KNOCK-167 y su `task.md` indica qué tareas corresponden a cada tarjeta (166: T-01 a T-04 y T-07; 167: T-05 y T-06). Solo documentación.
 - **Por qué:** el líder decidió que la 010 queda como spec madre de las dos tarjetas y no se parte; sin la clave en la spec, las tarjetas no pasaban el paso 0 de `story-workflow`.
 - **A evitar:** abrir una tarjeta técnica sin buscar antes su clave en `specs/`; la spec puede existir con otro número y sin la clave.
+## 2026-11-19 · KNOCK-294 · Pruebas de errores: comprobar solo los motivos, no el traceId
+- **Qué cambió:** nuevo ayudante `ProblemBody.Reasons(raw)` en `tests/IntegrationTest/Support` (la sección `errors` del ProblemDetails; si no la hay, el cuerpo sin `traceId` ni `correlationId`). Las pruebas que comprobaban «el motivo nunca repite el valor enviado» sobre el cuerpo completo (specs 015, 017, 020, 021, 022, 023, 040, 041, 043, 046) ahora niegan sobre `Reasons`. `SecureHttp.AssertProblemAsync` (SecurityTest) busca los textos prohibidos sin `traceId`/`correlationId`.
+- **Por qué:** `traceId` y `correlationId` son aleatorios y a veces contienen el valor buscado ("123", "hi", un cursor); la prueba fallaba de forma intermitente y tumbaba el `gate` de PR ajenos.
+- **Decisiones (con porqué):** (1) Un solo ayudante en vez de copiar el patrón, para no crear clones (jscpd, `codemap.py --check`). (2) No se quitó ninguna aserción: el valor se sigue negando, ahora donde puede aparecer de verdad (los motivos).
+- **A evitar:** comparar un valor contra el cuerpo completo de una respuesta con identificadores aleatorios.
