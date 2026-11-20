@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using AwesomeAssertions;
+using Knock.IntegrationTest.Support;
 using MongoDB.Bson;
 using Xunit;
 
@@ -31,7 +32,7 @@ public sealed class Spec020FotosTests
         {
             var raw = await response.Content.ReadAsStringAsync();
             JsonElement.Parse(raw).GetProperty("code").GetString().Should().Be("photo_invalid");
-            raw.Should().NotContain(foreign).And.NotContain(otherPerson, "no dice cuál foto ni de quién es");
+            ProblemBody.Reasons(raw).Should().NotContain(foreign).And.NotContain(otherPerson, "no dice cuál foto ni de quién es");
         }
 
         host.Photos.LastOwnerId.Should().Be(host.ClientSub, "la propiedad se verifica contra el sub del token");

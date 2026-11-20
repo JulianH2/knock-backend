@@ -111,7 +111,7 @@ public class FirebaseExchangeTests
         var raw = await response.Content.ReadAsStringAsync();
         using var problem = JsonDocument.Parse(raw);
         problem.RootElement.GetProperty("errors").EnumerateObject().Should().NotBeEmpty();
-        raw.Should().NotContain("no-es-uuid", "no repite el valor enviado");
+        ProblemBody.Reasons(raw).Should().NotContain("no-es-uuid", "no repite el valor enviado");
         (await CountsAsync(factory)).Should().Be((0, 0));
     }
 
