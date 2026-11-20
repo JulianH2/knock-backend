@@ -29,6 +29,8 @@ public static class TecnicosModuleExtensions
         services.AddScoped<MyTechnicianService>();
         services.AddScoped<ITechnicianLookupReader, TechnicianLookupStore>();
         services.AddScoped<TechnicianLookupService>();
+        services.AddScoped<TrabajoStore>();
+        services.AddScoped<TecnicoTrabajoService>();
         return services;
     }
 }

@@ -40,6 +40,12 @@ Que una persona describa su problema con fotos y reciba cotizaciones de técnico
 - **R-07:** La creación de una solicitud no usa `Idempotency-Key` por ahora (ver §15): cada petición válida crea una solicitud y responde 201.
 - **R-08:** `GET /api/v1/solicitudes/{id}` exige JWT. Responde la **vista del cliente** solo al cliente dueño (incluye la dirección descifrada). Responde la **vista del técnico** a un técnico activo que ya cotizó esa solicitud, o a un técnico que cumple la elegibilidad base (R-23) mientras esta sea cotizable (`enviada` o `cotizando`, no vencida), y el detalle la vuelve a verificar en cada petición; la vista del técnico trae oficio, colonia, descripción, fotos, día y franja, y **nunca** la dirección, el nombre ni el teléfono del cliente, ni siquiera después de ser elegido (después de elegir, el lugar se consulta en la visita, spec 022). Cualquier otra persona recibe 404 uniforme. Un `id` que no es `ObjectId` responde 400.
 - **R-09:** `GET /api/v1/solicitudes` devuelve solo las solicitudes del `sub` del token, de la más reciente a la más antigua (`creadoEn` descendente y `_id` descendente como desempate), con paginación por cursor (spec 002): `limit` de 1 a 50 (20 por omisión), `cursor` opaco (Base64url de `creadoEn` y `_id` de la última fila) y filtro opcional `estado` con uno de los valores de §6. La respuesta es `{ items, nextCursor }`; `nextCursor` es `null` en la última página. `limit` o `estado` fuera de rango responde 422 con `errors`; un cursor que no se puede decodificar responde 400 `invalid_cursor`. No se cachea.
+- **Enmienda (2026-11-19, KNOCK-69):** el orden de R-09 pasa a «activas primero» cuando no hay filtro `estado`; con filtro rige el orden anterior dentro de ese estado. R-09 queda así (el texto de arriba se conserva como historial):
+  - **Grupos.** *Activas* (siguen en curso): `enviada`, `cotizando` y `cita_confirmada`. *Terminadas*: `terminada`, `calificada`, `cancelada` y `vencida`. La pertenencia sale de `estado` (§6) y no se guarda en otro campo.
+  - **Orden.** Primero todas las activas y después todas las terminadas; dentro de cada grupo, `creadoEn` descendente y `_id` descendente como desempate. Con `estado=<valor>` solo hay un grupo y el orden es el de siempre.
+  - **Cursor.** Sigue siendo opaco (Base64url) y ahora lleva tres datos: el grupo de la última fila (`0` activas, `1` terminadas), su `creadoEn` en milisegundos UTC y su `_id`. La página siguiente continúa en ese grupo con la condición `creadoEn < c` o (`creadoEn = c` y `_id < id`); cuando el grupo `0` se agota, la misma página se completa con las primeras filas del grupo `1` (sin repetir ni saltar filas) y el cursor pasa a `1`. `nextCursor` es `null` cuando no quedan filas en ninguno de los dos grupos. Un cursor de dos datos (el formato anterior), con un grupo distinto de `0` o `1`, o que no se pueda decodificar responde 400 `invalid_cursor`.
+  - **Consulta.** Dos lecturas acotadas por `clienteId` y por el grupo (`estado` en la lista del grupo), con `limit + 1` filas en total; el índice `{ clienteId: 1, estado: 1, creadoEn: -1 }` (spec 048, §6, «Lista Actividad del cliente») las sirve sin recorrer solicitudes de otro cliente. No cambian la forma de la respuesta `{ items, nextCursor }`, `limit`, la validación de `estado` ni «no se cachea».
+  - **Estabilidad.** Dentro de un grupo el orden no cambia entre páginas. Si una solicitud cambia de grupo mientras la persona pagina (por ejemplo, de `cita_confirmada` a `terminada`), puede verse una vez en cada grupo o no verse en esa recorrida; la app la corrige al refrescar la lista. No se garantiza una instantánea.
 - **R-10:** `POST /api/v1/solicitudes/{id}/cotizaciones` exige JWT de técnico y cuerpo `{ tipoPrecio, precio, precioMin?, precioMax?, dia, hora, nota? }`; responde 201 con la cotización en estado `enviada`.
 - **R-11:** El técnico se resuelve por el `sub` del token en la colección `tecnicos`. Si no es técnico responde 403 `not_a_technician`; si no cumple la elegibilidad base (R-23: oficio, zona y estado), 404 (no se confirma que la solicitud exista).
 - **R-12:** Solo se cotiza una solicitud en estado `enviada` o `cotizando`, no vencida y no cancelada. Cualquier otro estado responde 409 `request_not_quotable`. Una segunda cotización del mismo técnico en la misma solicitud responde 409 `quote_duplicate`.
@@ -72,6 +78,7 @@ Que una persona describa su problema con fotos y reciba cotizaciones de técnico
 - **CA-12:** Dada una solicitud de otra persona, cuando la pide un cliente que no es el dueño, entonces responde 404; cuando la pide un técnico de otro oficio, o uno del mismo oficio con la solicitud vencida o cancelada sin haberla cotizado, también 404.
 - **CA-13:** Dado un técnico que cumple la elegibilidad base (R-23) con una solicitud cotizable, o uno que ya la cotizó (elegido o no), cuando pide el detalle, entonces ve oficio, colonia, descripción, fotos con enlaces de 5 minutos, día y franja, y la respuesta no contiene la dirección ni el nombre ni el teléfono del cliente.
 - **CA-14:** Dado un cliente con 25 solicitudes, cuando pide la lista, entonces recibe 20, ordenadas de la más reciente a la más antigua, con `nextCursor`; con `limit=50` recibe hasta 50.
+- **Enmienda (2026-11-19, KNOCK-69):** CA-14 sigue valiendo para el tamaño de página y `limit`; el orden «de la más reciente a la más antigua» rige dentro de cada grupo y el orden entre grupos lo fija CA-24.
 - **CA-15:** Dado el servicio de moderación caído, cuando se crea una solicitud, entonces responde 503 y no se guarda; si el texto se marca como inapropiado, responde 422.
 - **CA-16:** Dada una petición sin token, cuando se llama cualquier ruta, entonces responde 401; con un token de cliente en la ruta de cotizar, 403.
 - **CA-17:** Dado el registro de una creación o cotización, cuando se inspecciona, entonces no contiene descripción, dirección, identificadores de fotos, enlaces firmados ni nombre.
@@ -80,6 +87,7 @@ Que una persona describa su problema con fotos y reciba cotizaciones de técnico
 - **CA-21:** Dado un cursor alterado o un `limit` de 0 o 51, cuando se pide la lista, entonces responde 400 `invalid_cursor` o 422 con `errors.limit`, respectivamente.
 - **CA-22:** Dado un cuerpo JSON de más de 8 KB, cuando se envía a cualquier `POST` de esta spec, entonces responde 413 y no llega al servicio.
 - **CA-23:** Dados un técnico activo con el oficio que atiende la colonia, otro de otro oficio, otro que no atiende la colonia, otro suspendido y otro oculto, cuando cada uno pide el detalle de una solicitud cotizable y cuando intenta cotizarla, entonces solo el primero accede y los demás reciben 404; el resultado es idéntico con `Oleadas:Habilitado` encendida y apagada.
+- **CA-24 (agregado el 2026-11-19, KNOCK-69, HU-026 CA1):** Dado un cliente con solicitudes `terminada` y `cancelada` más recientes que otras `enviada`, `cotizando` y `cita_confirmada`, cuando pide la lista sin filtro, entonces primero vienen las activas y después las terminadas, cada grupo de la más reciente a la más antigua; con `limit` menor que el número de activas, el `nextCursor` de la primera página lleva a las activas que faltan y luego a las terminadas, sin repetir ni omitir ninguna; un cursor del formato anterior responde 400 `invalid_cursor`; con `estado=terminada` el orden es el de CA-14.
 
 **4.1 Criterio → prueba prevista**
 
@@ -106,6 +114,7 @@ Que una persona describa su problema con fotos y reciba cotizaciones de técnico
 | CA-21 | `Spec020ListadoTests.Cursor_Y_Limite_Invalidos_CA_020_21` |
 | CA-22 | `Spec020SeguridadTests.Cuerpo_Demasiado_Grande_CA_020_22` |
 | CA-23 | `Spec020ElegibilidadTests.Base_Con_Y_Sin_Oleadas_CA_020_23` |
+| CA-24 | `Spec020ListadoTests.Activas_Primero_Y_Cursor_Estable_CA_020_24` |
 
 ## 5. Contrato
 | Método y ruta | Quién | Cuerpo / consulta | Respuestas |
@@ -147,6 +156,8 @@ Que una persona describa su problema con fotos y reciba cotizaciones de técnico
 | `venceEn`, `creadoEn`, `actualizadoEn` | date | UTC |
 
 Índices: `{ clienteId: 1, creadoEn: -1 }`; `{ estado: 1, venceEn: 1 }` (para HU-028); `{ oficioClave: 1, estado: 1 }`.
+**Enmienda (2026-11-19, KNOCK-69):** se agrega el índice `{ clienteId: 1, estado: 1, creadoEn: -1 }` a `solicitudes`, el que la spec 048 (§6, «Lista Actividad del cliente») ya prevé; el de `{ clienteId: 1, creadoEn: -1 }` se conserva (no se borra ni cambia). El script `db/` lo crea de forma idempotente (tarea T-16).
+
 
 **`cotizaciones`**
 | Campo | Tipo | Nota |
@@ -280,6 +291,10 @@ Se tomaron de noche, con el criterio de la constitución; quien apruebe puede ca
 13. **Códigos de negocio en inglés y `snake_case`** (`request_not_quotable`), como las specs 015 a 018 (`account_conflict`) y la regla R-08 de la spec 002 (KNOCK-253). El borrador los tenía en español; las pantallas de frontend deben usar los mismos nombres.
 14. **Retirada:** ya no hay clave de idempotencia que vencer ni huella del cuerpo; ver la decisión 2.
 
+**Agregada el 2026-11-19 (KNOCK-69, HU-026)**
+
+15. **El listado del cliente ordena las solicitudes activas primero (enmienda a R-09, CA-14 y §6).** El Tech Lead decidió la opción A de KNOCK-69: no se crea `/me/actividad`; la app arma «Actividad» con `GET /api/v1/solicitudes` y `GET /api/v1/conversaciones` (spec 030). Activas: `enviada`, `cotizando`, `cita_confirmada`; terminadas: `terminada`, `calificada`, `cancelada`, `vencida`. Alternativas: ordenar en la app (rompe la paginación: las activas antiguas quedarían en páginas lejanas); un campo `grupo` guardado (duplica el estado y hay que mantenerlo en cada transición).
+
 ## 15. Riesgos y dudas abiertas
 - **Las oleadas (HU-025) no existen:** puede cotizar cualquier técnico que cumpla la elegibilidad base (R-23: activo, con el oficio y en la zona) si conoce el identificador. El riesgo se acota con esa regla y el límite de 3 por minuto, pero no es el reparto previsto. Un identificador `ObjectId` no es secreto: la zona y el estado se verifican siempre.
 - **El vencimiento de 48 h no se ejecuta:** `venceEn` se guarda y se valida al cotizar y al elegir, pero la tarea programada que cambia el estado es HU-028. Una solicitud vencida puede quedarse en `enviada` hasta que alguien la toque.
@@ -295,4 +310,5 @@ Se tomaron de noche, con el criterio de la constitución; quien apruebe puede ca
 ## Aprobación
 - [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-12
 - [x] Sin conflicto con la constitución
+- [x] Enmienda KNOCK-69 (R-09, CA-24 e índice) aprobada — nombre: José Julián Hernández Hernández fecha: 2026-11-19
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Implementada (tras el merge)

@@ -11,3 +11,10 @@ de1c61af882345e0a8b75cf1afbce7213e245b22:tests/SecurityTest/Observability/SpanPr
 72c27e461e54a21c103df1253d1daff22949a54a:tests/DatabaseTest/Demo/DemoSeedGuardTests.cs:knock-mongodb-connection-string:40
 # EXC-024: cadena sintética de la prueba de la guarda del cargador de técnicos demo (KNOCK-246) en el commit ee6477c de la rama feature/KNOCK-246-demo-requests-quotes; la excepción vence el 2026-12-04.
 ee6477cfda5c5555f39dc615b6be79ef38139249:tests/DatabaseTest/Demo/DemoTechnicianLoaderTests.cs:knock-mongodb-connection-string:110
+# EXC-027: cadenas sintéticas de las pruebas del panel (spec 033, KNOCK-75) en los commits 2827324 y e0b8aac, y la cadena de ejemplo citada en la entrada de Memoria.md del commit d4e6580 de la rama feature/KNOCK-75-panel-2fa-permissions y el secreto de ejemplo del estándar TOTP (RFC 6238) en be3f8c9; no son credenciales de ningún servicio.
+28273243e79a874c99d33e23fe3a8e7d38b04767:tests/UnitTest/Panel/PanelFakes.cs:knock-mongodb-connection-string:160
+28273243e79a874c99d33e23fe3a8e7d38b04767:tests/UnitTest/Panel/PanelFakes.cs:knock-mongodb-connection-string:280
+28273243e79a874c99d33e23fe3a8e7d38b04767:tests/UnitTest/Panel/PanelFakes.cs:knock-mongodb-connection-string:348
+e0b8aac104197397959eadc41fe4398d5254c744:tests/UnitTest/Panel/Spec033AuditoriaTests.cs:knock-mongodb-connection-string:27
+be3f8c97688c131b8b210782800200772d2adb77:tests/UnitTest/Panel/Spec033TotpDominioTests.cs:generic-api-key:160
+d4e6580e5e320bb5f16d04102e7f673e6d41f265:Memoria.md:knock-mongodb-connection-string:991

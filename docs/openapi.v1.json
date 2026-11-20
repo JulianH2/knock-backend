@@ -1071,6 +1071,185 @@
         }
       }
     },
+    "/api/v{version}/tecnicos/me/trabajo": {
+      "get": {
+        "tags": [
+          "Trabajo"
+        ],
+        "parameters": [
+          {
+            "name": "cursorTerminadas",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 20
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrabajoResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrabajoResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrabajoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v{version}/visitas/{id}/llegada": {
       "post": {
         "tags": [
@@ -4793,6 +4972,296 @@
         },
         "description": "Franja de 24 horas en la hora de la ciudad, con inicio anterior al fin."
       },
+      "TrabajoClient": {
+        "required": [
+          "colonia"
+        ],
+        "type": "object",
+        "properties": {
+          "colonia": {
+            "type": "string"
+          }
+        }
+      },
+      "TrabajoFinishedItem": {
+        "required": [
+          "solicitudId",
+          "oficioNombre",
+          "terminadaEn",
+          "precio",
+          "calificacion"
+        ],
+        "type": "object",
+        "properties": {
+          "solicitudId": {
+            "type": "string"
+          },
+          "oficioNombre": {
+            "type": "string"
+          },
+          "terminadaEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "precio": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "calificacion": {}
+        }
+      },
+      "TrabajoFinishedPage": {
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrabajoFinishedItem"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "TrabajoPlace": {
+        "required": [
+          "tipo",
+          "direccion"
+        ],
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string"
+          },
+          "direccion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "TrabajoQuoteResponse": {
+        "required": [
+          "cotizacionId",
+          "solicitudId",
+          "oficioNombre",
+          "tipoPrecio",
+          "precio",
+          "precioMin",
+          "precioMax",
+          "tope",
+          "estado",
+          "motivoRechazo",
+          "enviadaEn"
+        ],
+        "type": "object",
+        "properties": {
+          "cotizacionId": {
+            "type": "string"
+          },
+          "solicitudId": {
+            "type": "string"
+          },
+          "oficioNombre": {
+            "type": "string"
+          },
+          "tipoPrecio": {
+            "type": "string"
+          },
+          "precio": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "precioMin": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "precioMax": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "tope": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "motivoRechazo": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "enviadaEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "TrabajoResponse": {
+        "required": [
+          "disponibleHoy",
+          "verificacion",
+          "nivel",
+          "proximasVisitas",
+          "cotizacionesEnviadas",
+          "terminadas",
+          "resumen"
+        ],
+        "type": "object",
+        "properties": {
+          "disponibleHoy": {
+            "type": "boolean"
+          },
+          "verificacion": {
+            "$ref": "#/components/schemas/TrabajoVerificationResponse"
+          },
+          "nivel": {},
+          "proximasVisitas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrabajoVisitResponse"
+            }
+          },
+          "cotizacionesEnviadas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrabajoQuoteResponse"
+            }
+          },
+          "terminadas": {
+            "$ref": "#/components/schemas/TrabajoFinishedPage"
+          },
+          "resumen": {
+            "$ref": "#/components/schemas/TrabajoSummary"
+          }
+        }
+      },
+      "TrabajoSummary": {
+        "required": [
+          "trabajosTerminados",
+          "calificacion"
+        ],
+        "type": "object",
+        "properties": {
+          "trabajosTerminados": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "calificacion": {}
+        }
+      },
+      "TrabajoVerificationResponse": {
+        "required": [
+          "estado"
+        ],
+        "type": "object",
+        "properties": {
+          "estado": {
+            "type": "string"
+          }
+        }
+      },
+      "TrabajoVisitResponse": {
+        "required": [
+          "visitaId",
+          "solicitudId",
+          "dia",
+          "hora",
+          "modalidad",
+          "cliente",
+          "lugar",
+          "precio",
+          "tope",
+          "estado",
+          "puedeLlegar"
+        ],
+        "type": "object",
+        "properties": {
+          "visitaId": {
+            "type": "string"
+          },
+          "solicitudId": {
+            "type": "string"
+          },
+          "dia": {
+            "type": "string"
+          },
+          "hora": {
+            "type": "string"
+          },
+          "modalidad": {
+            "type": "string"
+          },
+          "cliente": {
+            "$ref": "#/components/schemas/TrabajoClient"
+          },
+          "lugar": {
+            "$ref": "#/components/schemas/TrabajoPlace"
+          },
+          "precio": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "tope": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "puedeLlegar": {
+            "type": "boolean"
+          }
+        }
+      },
       "TrustedTechnician": {
         "required": [
           "tecnicoId",
@@ -5339,6 +5808,9 @@
     },
     {
       "name": "TecnicosMe"
+    },
+    {
+      "name": "Trabajo"
     },
     {
       "name": "TrustNotice"

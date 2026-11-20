@@ -53,7 +53,7 @@ internal sealed class TechnicianSelfStore(
             Int(d, "anios"),
             Text(d, "estado") ?? string.Empty,
             Text(d, "nivelVerificacion") ?? TechnicianRules.NoVerification,
-            until > clock.GetUtcNow().UtcDateTime,
+            TechnicianRules.IsAvailable(until, clock.GetUtcNow().UtcDateTime),
             d.TryGetValue("creadoEn", out var created) && created.IsValidDateTime ? created.ToUniversalTime() : DateTime.MinValue);
     }
 
