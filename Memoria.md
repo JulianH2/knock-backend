@@ -981,3 +981,9 @@
 - **Qué cambió:** `specs/057-borrado-de-fotos-de-verificacion/` (spec, plan, task y gates) en estado Borrador y su fila en `specs/README.md`. Sin código.
 - **Decisiones (con porqué):** (1) usa los tipos de tarea `AvisarAlVerificador` y `BorrarFotosDeVerificacion` de la spec 054, no los nombres de la ficha, para no duplicar el catálogo. (2) La llave se destruye antes que los blobs, así lo que falte queda ilegible. (3) Incluye la baja de cuenta porque la spec 025 §2.3 la difiere a HU-068. (4) Casos `TC-HU-068-KK` de la ficha; `sdd_lint.py --trace` de las specs numeradas solo reconoce `CA-NN`.
 - **A evitar:** implementar antes de aprobar y de tener la spec 025 (almacén cifrado), 053 y 054 en Identidad; dudas abiertas en §8 (correo, llave en Key Vault, respaldos).
+
+## 2026-11-19 · KNOCK-294 · Pruebas de errores: comprobar solo los motivos, no el traceId
+- **Qué cambió:** nuevo ayudante `ProblemBody.Reasons(raw)` en `tests/IntegrationTest/Support` (la sección `errors` del ProblemDetails; si no la hay, el cuerpo sin `traceId` ni `correlationId`). Las pruebas que comprobaban «el motivo nunca repite el valor enviado» sobre el cuerpo completo (specs 015, 017, 020, 021, 022, 023, 040, 041, 043, 046) ahora niegan sobre `Reasons`. `SecureHttp.AssertProblemAsync` (SecurityTest) busca los textos prohibidos sin `traceId`/`correlationId`.
+- **Por qué:** `traceId` y `correlationId` son aleatorios y a veces contienen el valor buscado ("123", "hi", un cursor); la prueba fallaba de forma intermitente y tumbaba el `gate` de PR ajenos.
+- **Decisiones (con porqué):** (1) Un solo ayudante en vez de copiar el patrón, para no crear clones (jscpd, `codemap.py --check`). (2) No se quitó ninguna aserción: el valor se sigue negando, ahora donde puede aparecer de verdad (los motivos).
+- **A evitar:** comparar un valor contra el cuerpo completo de una respuesta con identificadores aleatorios.
