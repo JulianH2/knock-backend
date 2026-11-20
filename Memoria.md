@@ -983,6 +983,10 @@
 - **Por qué:** la dirección `/v1/mcp/authv2` está deprecada y Atlassian la retira el 2027-03-01.
 - **A evitar:** dejar direcciones antiguas del conector en configuraciones de agentes; al cambiar de endpoint, revisar los cinco archivos a la vez y no tocar la lista de herramientas.
 
+## 2026-11-19 · KNOCK-166 y KNOCK-167 · Spec 010 ligada a sus dos tarjetas
+- **Qué cambió:** el encabezado de la spec 010 lleva las claves KNOCK-166 y KNOCK-167 y su `task.md` indica qué tareas corresponden a cada tarjeta (166: T-01 a T-04 y T-07; 167: T-05 y T-06). Solo documentación.
+- **Por qué:** el líder decidió que la 010 queda como spec madre de las dos tarjetas y no se parte; sin la clave en la spec, las tarjetas no pasaban el paso 0 de `story-workflow`.
+- **A evitar:** abrir una tarjeta técnica sin buscar antes su clave en `specs/`; la spec puede existir con otro número y sin la clave.
 ## 2026-11-19 · KNOCK-294 · Pruebas de errores: comprobar solo los motivos, no el traceId
 - **Qué cambió:** nuevo ayudante `ProblemBody.Reasons(raw)` en `tests/IntegrationTest/Support` (la sección `errors` del ProblemDetails; si no la hay, el cuerpo sin `traceId` ni `correlationId`). Las pruebas que comprobaban «el motivo nunca repite el valor enviado» sobre el cuerpo completo (specs 015, 017, 020, 021, 022, 023, 040, 041, 043, 046) ahora niegan sobre `Reasons`. `SecureHttp.AssertProblemAsync` (SecurityTest) busca los textos prohibidos sin `traceId`/`correlationId`.
 - **Por qué:** `traceId` y `correlationId` son aleatorios y a veces contienen el valor buscado ("123", "hi", un cursor); la prueba fallaba de forma intermitente y tumbaba el `gate` de PR ajenos.
