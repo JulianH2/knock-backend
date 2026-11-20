@@ -33,6 +33,10 @@ locals {
   kv           = { redis = "redis-password", redis_cs = "redis-connection-string" }
   redis_secret = { ConnectionStrings__KnockRedis = local.kv.redis_cs }
 
+  # Imágenes públicas (spec 032, R-03): la dirección base sale de la infraestructura compartida; el host se pasa a las specs consumidoras (017: Perfil:HostsFoto).
+  images_base_url = local.infra.public_images_base_url
+  images_host     = split("/", local.infra.public_images_base_url)[2]
+
   # Red de confianza para X-Forwarded-For (gateway, Identity, Market y Messaging; spec 009 R-04 y spec 006 R-03).
   forwarded = { ForwardedHeaders__KnownNetworks__0 = var.container_apps_subnet_cidr }
 
@@ -57,6 +61,8 @@ locals {
         Security__FieldEncryption__ActiveVersion = "1"
         # Dirección interna de Mercado: Identity valida la colonia del perfil con GET /api/v1/colonias/existe (spec 017, R-06). Sin esto, PUT /me con colonia da 503.
         Services__Market__BaseUrl = local.cluster_address.market
+        # Host permitido de la foto de perfil (spec 017, R-05): el mismo de las imágenes públicas (spec 032, R-03).
+        Perfil__HostsFoto__0 = local.images_host
       })
       secret_env = merge(local.redis_secret, {
         ConnectionStrings__KnockMongo                = "mongo-identity"
@@ -88,6 +94,8 @@ locals {
       # Cifrado de campos (specs 020 y 022; FieldCipher, sección Security:FieldEncryption): la versión vigente no es secreta y la llave sí.
       env = merge(local.forwarded, {
         Security__FieldEncryption__ActiveVersion = "1"
+        # Dirección base pública de las imágenes (spec 032, R-03); el módulo de imágenes la exige al arrancar.
+        Imagenes__BaseUrlPublica = local.images_base_url
       })
       # Market usa Redis para la caché del catálogo (spec 010, R-01/R-02): el módulo Catalog registra el cliente al arrancar.
       # `field-encryption-key` solo la lee Market (un rol por secreto y por servicio) y es distinta de `pii-encryption-key`, que es de Identity.
@@ -152,4 +160,25 @@ module "service" {
 
   # Con la sonda de disponibilidad, un servicio que usa Redis no pasa a «listo» hasta que Redis responde: Redis primero.
   depends_on = [module.redis]
+}
+
+# Permisos de la identidad de Mercado sobre las imágenes (spec 032, §7): escribe solo en `imagenes-publicas` y `imagenes-cuarentena`
+# y firma enlaces de delegación de usuario con `Storage Blob Delegator` en las dos cuentas. Sin llaves compartidas.
+resource "azurerm_role_assignment" "market_public_images" {
+  scope                = local.infra.public_images_container_id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = module.service["market"].identity_principal_id
+}
+
+resource "azurerm_role_assignment" "market_quarantine" {
+  scope                = local.infra.quarantine_container_id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = module.service["market"].identity_principal_id
+}
+
+resource "azurerm_role_assignment" "market_delegator" {
+  for_each             = { privada = local.infra.storage_account_id, publica = local.infra.public_images_account_id }
+  scope                = each.value
+  role_definition_name = "Storage Blob Delegator"
+  principal_id         = module.service["market"].identity_principal_id
 }
