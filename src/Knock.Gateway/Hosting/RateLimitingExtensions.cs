@@ -87,6 +87,15 @@ internal static class RateLimitingExtensions
             && segments[2].Equals(segment, StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>Spec 033, R-27: <c>/api/v{n}/panel/sesion/*</c> y <c>/api/v{n}/panel/activacion</c>, los endpoints de sesión del panel que llevan el límite estricto por IP.</summary>
+    internal static bool IsPanelSessionPath(PathString path)
+    {
+        var segments = path.Value?.Split('/', StringSplitOptions.RemoveEmptyEntries) ?? [];
+        return IsApiPath(path, "panel")
+            && segments.Length >= 4
+            && (segments[3].Equals("sesion", StringComparison.OrdinalIgnoreCase) || segments[3].Equals("activacion", StringComparison.OrdinalIgnoreCase));
+    }
+
     /// <summary>IP del cliente: la de la conexión (ya sustituida por la reenviada solo si viene de un proxy de confianza). IPv4 mapeada se normaliza y las IPv6 se agrupan por /64.</summary>
     internal static string ClientKey(HttpContext context)
     {
@@ -132,7 +141,8 @@ internal sealed class IpRateLimitMiddleware(RequestDelegate next, IRequestCounte
         var settings = options.Value;
         var client = RateLimitingExtensions.ClientKey(context);
         if (await RateLimitCheck.RejectedAsync(context, counter, $"ratelimit:ip:{client}", settings.Ip)
-            || (IsAuthPath(context.Request.Path) && await RateLimitCheck.RejectedAsync(context, counter, $"ratelimit:auth:{client}", settings.Auth)))
+            || (IsAuthPath(context.Request.Path) && await RateLimitCheck.RejectedAsync(context, counter, $"ratelimit:auth:{client}", settings.Auth))
+            || (RateLimitingExtensions.IsPanelSessionPath(context.Request.Path) && await RateLimitCheck.RejectedAsync(context, counter, $"ratelimit:panel-sesion:{client}", settings.Auth)))
         {
             return;
         }
@@ -157,7 +167,7 @@ internal sealed class UserRateLimitMiddleware(RequestDelegate next, IRequestCoun
         ArgumentNullException.ThrowIfNull(context);
         var sub = context.User.Identity?.IsAuthenticated == true ? context.User.FindFirst("sub")?.Value : null;
         if (sub is not null
-            && (await RateLimitCheck.RejectedAsync(context, counter, $"ratelimit:user:{sub}", options.Value.User)
+            && (await RateLimitCheck.RejectedAsync(context, counter, RateLimitingExtensions.IsApiPath(context.Request.Path, "panel") ? $"ratelimit:panel-user:{sub}" : $"ratelimit:user:{sub}", options.Value.User)
                 || (RateLimitingExtensions.IsApiPath(context.Request.Path, "busqueda") && await RateLimitCheck.RejectedAsync(context, counter, $"ratelimit:busqueda:{sub}", options.Value.Search))))
         {
             return;

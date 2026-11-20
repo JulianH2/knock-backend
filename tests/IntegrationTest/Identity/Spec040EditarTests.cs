@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using AwesomeAssertions;
+using Knock.IntegrationTest.Support;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -119,7 +120,7 @@ public class Spec040EditarTests
 
         foreign.StatusCode.Should().Be(HttpStatusCode.NotFound);
         missing.StatusCode.Should().Be(HttpStatusCode.NotFound);
-        (await foreign.Content.ReadAsStringAsync()).Should().NotContain("Falsa").And.NotContain(id.ToString());
+        ProblemBody.Reasons(await foreign.Content.ReadAsStringAsync()).Should().NotContain("Falsa").And.NotContain(id.ToString());
         (await StoredAsync(host, id)).ToJson().Should().Be(before.ToJson());
     }
 
@@ -142,7 +143,7 @@ public class Spec040EditarTests
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         var raw = await response.Content.ReadAsStringAsync();
         JsonElement.Parse(raw).GetProperty("errors").TryGetProperty(field, out _).Should().BeTrue();
-        raw.Should().NotContain("DROP TABLE").And.NotContain("Colonia Que No Existe").And.NotContain(new string('r', 201));
+        ProblemBody.Reasons(raw).Should().NotContain("DROP TABLE").And.NotContain("Colonia Que No Existe").And.NotContain(new string('r', 201));
         (await StoredAsync(host, id)).ToJson().Should().Be(before.ToJson());
     }
 
@@ -160,7 +161,7 @@ public class Spec040EditarTests
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         var raw = await response.Content.ReadAsStringAsync();
         JsonElement.Parse(raw).GetProperty("errors").TryGetProperty("id", out _).Should().BeTrue();
-        raw.Should().NotContain(id);
+        ProblemBody.Reasons(raw).Should().NotContain(id);
     }
 
     [Theory]

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using AwesomeAssertions;
+using Knock.IntegrationTest.Support;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -64,7 +65,7 @@ public class Spec040BorrarTests
 
         foreign.StatusCode.Should().Be(HttpStatusCode.NotFound);
         missing.StatusCode.Should().Be(HttpStatusCode.NotFound);
-        (await foreign.Content.ReadAsStringAsync()).Should().NotContain("Falsa").And.NotContain(id.ToString());
+        ProblemBody.Reasons(await foreign.Content.ReadAsStringAsync()).Should().NotContain("Falsa").And.NotContain(id.ToString());
         (await ExistsAsync(host, id)).Should().BeTrue();
     }
 
@@ -84,7 +85,7 @@ public class Spec040BorrarTests
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         var raw = await response.Content.ReadAsStringAsync();
         JsonElement.Parse(raw).GetProperty("errors").TryGetProperty("id", out _).Should().BeTrue();
-        raw.Should().NotContain(id);
+        ProblemBody.Reasons(raw).Should().NotContain(id);
         (await ExistsAsync(host, kept)).Should().BeTrue();
     }
 

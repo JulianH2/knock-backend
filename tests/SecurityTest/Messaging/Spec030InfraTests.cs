@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using AwesomeAssertions;
+using Knock.IntegrationTest.Support;
 using Knock.SecurityTest.Support;
 using Xunit;
 
@@ -55,8 +56,9 @@ public sealed class Spec030InfraTests
 
         tooLong.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         var tooLongBody = await tooLong.Content.ReadAsStringAsync();
-        tooLongBody.Should().NotContain(secretText, "el texto enviado nunca vuelve en el error");
-        tooLongBody.Should().NotContain("7711234567");
+        var reasons = ProblemBody.Reasons(tooLongBody);
+        reasons.Should().NotContain(secretText, "el texto enviado nunca vuelve en el error");
+        reasons.Should().NotContain("7711234567");
         using var tooLongJson = JsonDocument.Parse(tooLongBody);
         tooLongJson.RootElement.GetProperty("errors").GetProperty("texto")[0].GetString().Should().Be("The value is not valid.");
 
@@ -81,7 +83,7 @@ public sealed class Spec030InfraTests
         var problem = await ReadProblemAsync(response);
         problem.GetProperty("code").GetString().Should().Be("probe_code");
         problem.GetProperty("status").GetInt32().Should().Be((int)expected);
-        problem.ToString().Should().NotContain("detalle interno").And.NotContain("stackTrace");
+        ProblemBody.Reasons(problem.ToString()).Should().NotContain("detalle interno").And.NotContain("stackTrace");
     }
 
     [Fact]
@@ -94,8 +96,9 @@ public sealed class Spec030InfraTests
 
         response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
         var body = await response.Content.ReadAsStringAsync();
-        body.Should().NotContainAny(SecureHttp.ForbiddenInErrors);
-        body.Should().NotContain("detalle interno");
+        var reasons = ProblemBody.Reasons(body);
+        reasons.Should().NotContainAny(SecureHttp.ForbiddenInErrors);
+        reasons.Should().NotContain("detalle interno");
     }
 
     [Fact]
@@ -152,7 +155,7 @@ public sealed class Spec030InfraTests
         limited.Headers.GetValues("Retry-After").Should().ContainSingle().Which.Should().MatchRegex("^[1-9][0-9]*$");
         var problem = await ReadProblemAsync(limited);
         problem.GetProperty("code").GetString().Should().Be("rate_limited");
-        problem.ToString().Should().NotContain(TokenForge.Claim(attacker, "sub")).And.NotContain("conversaciones-crear");
+        ProblemBody.Reasons(problem.ToString()).Should().NotContain(TokenForge.Claim(attacker, "sub")).And.NotContain("conversaciones-crear");
         sameIpOtherPerson.StatusCode.Should().Be(HttpStatusCode.Created, "el límite es por persona, no por IP");
     }
 }

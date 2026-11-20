@@ -117,6 +117,23 @@ public sealed class Spec022SeguridadTests
     }
 
     [Fact]
+    public async Task Spec036_Cierre_Guarda_Fecha_Terminada_CA_036_03()
+    {
+        await using var host = await Spec020Host.StartAsync();
+        var visit = await host.ConfirmedVisitAsync();
+        await host.SetVisitAsync(visit.VisitId, Builders<BsonDocument>.Update.Set("estado", "en_curso"));
+        var store = new VisitStore(host.Database, Options.Create(new KnockMongoOptions()), new MongoOutbox(host.Database));
+        var record = (await store.FindAsync(visit.VisitId, CancellationToken.None))!;
+        var now = new DateTime(2026, 11, 19, 12, 34, 56, DateTimeKind.Utc);
+
+        (await store.CloseAsync(record, VisitCloseReason.Finished, now, CancellationToken.None)).Should().BeTrue();
+        var stored = await host.VisitDocAsync(visit.VisitId);
+        stored["estado"].AsString.Should().Be("terminada");
+        stored["terminadaEn"].ToUniversalTime().Should().Be(now);
+        stored["actualizadoEn"].ToUniversalTime().Should().Be(now);
+    }
+
+    [Fact]
     public async Task Cierre_Emite_VisitaCerrada_CA_022_19()
     {
         await using var host = await Spec020Host.StartAsync();

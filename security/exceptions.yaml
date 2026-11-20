@@ -318,3 +318,28 @@ excepciones:
     creada: 2026-11-19
     vence: 2026-12-03
     plan: cuando Microsoft publique una aspnet:11.0 con Go 1.27.4 o superior, volver a correr el CI, quitar la línea de .trivyignore y retirar esta excepción (KNOCK-290); si no hay imagen corregida antes de vencer, se revisa o se renueva con la decisión del líder.
+  - id: EXC-027
+    herramienta: gitleaks
+    regla: knock-mongodb-connection-string y generic-api-key
+    alcance: las huellas 28273243e79a874c99d33e23fe3a8e7d38b04767:tests/UnitTest/Panel/PanelFakes.cs:knock-mongodb-connection-string:160, :280 y :348, e0b8aac104197397959eadc41fe4398d5254c744:tests/UnitTest/Panel/Spec033AuditoriaTests.cs:knock-mongodb-connection-string:27 be3f8c97688c131b8b210782800200772d2adb77:tests/UnitTest/Panel/Spec033TotpDominioTests.cs:generic-api-key:160 y d4e6580e5e320bb5f16d04102e7f673e6d41f265:Memoria.md:knock-mongodb-connection-string:991 (la cadena de ejemplo citada en la entrada de Memoria.md de esta misma excepción) en .gitleaksignore (commits de la rama feature/KNOCK-75-panel-2fa-permissions; solo esas líneas de esos archivos en esos commits)
+    justificacion: >-
+      Falso positivo. PanelFakes y Spec033AuditoriaTests lanzan una excepción con una cadena de conexión de MongoDB inventada (usuario, clave y host de ejemplo) para comprobar que el servicio del panel nunca deja salir el texto de un error de la base de datos (spec 033); no es una credencial de ningún servicio.
+      La línea 160 de Spec033TotpDominioTests usa el secreto de ejemplo publicado en el estándar TOTP (RFC 6238) para comprobar el enlace otpauth; es un valor público de prueba.
+      Los commits quedan en el historial y Gitleaks revisa todas las ramas, por lo que marca todos los PR del repositorio. No se reescribe el historial. Las reglas siguen activas para cualquier otro archivo.
+      Evidencia: hallazgo de Gitleaks 8.30.1 sobre todas las ramas del 2026-11-19 (reglas knock-mongodb-connection-string y generic-api-key, esos archivos y esas líneas), que puso en rojo el check de secretos de los PR #179 a #194 y los de Alexis.
+    responsable: José Julián Hernández Hernández
+    creada: 2026-11-19
+    vence: 2027-02-17
+    plan: en un commit posterior de la rama del panel las cadenas de prueba se arman sin el formato completo de conexión (sin usuario:clave@host) y el secreto TOTP se lee de una constante de prueba que no parezca una llave; las huellas se quedan mientras esos commits existan en el historial y la excepción se renueva si vence antes de que deje de analizarse.
+  - id: EXC-028
+    herramienta: jscpd, codemap
+    regla: código duplicado (jscpd:ignore)
+    alcance: solo el bloque de TokenValidationParameters del token del panel (de «options.MapInboundClaims = false;» hasta el cierre de «new TokenValidationParameters {...};»), entre «// jscpd:ignore-start -- EXC-028» y «// jscpd:ignore-end», en src/Knock.Gateway/Hosting/PanelGatewayExtensions.cs, src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs y src/Knock.Identity.Api/Modules/Panel/Authorization/PanelBearer.cs (3 archivos, un bloque en cada uno); no se amplía
+    justificacion: >-
+      KNOCK-75 (spec 033): la configuración de validación del token del panel en Gateway e Identidad es la misma del esquema de Market (emisor, audiencia, llave, algoritmo HS256 y cero holgura de reloj).
+      La constitución no permite compartir código entre servicios y aún no existe la biblioteca compartida Knock.Hosting (spec 055, etapa 3, KNOCK-281), por lo que el bloque se copia. Cada servicio lo prueba por separado.
+      Decisión del Tech Lead del 2026-11-20: aceptar la copia temporal con excepción ligada a KNOCK-281 en lugar de disfrazarla.
+    responsable: José Julián Hernández Hernández
+    creada: 2026-11-20
+    vence: 2027-02-18
+    plan: mover la configuración a Knock.Hosting en la etapa 3 (KNOCK-281), quitar los marcadores y retirar esta excepción antes de vencer.

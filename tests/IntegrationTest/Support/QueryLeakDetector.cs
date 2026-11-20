@@ -1,4 +1,10 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
+using AwesomeAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 
 namespace Knock.IntegrationTest.Support;
 
@@ -47,4 +53,45 @@ internal static partial class QueryLeakDetector
 
     [GeneratedRegex(@"(?<![A-Za-z0-9_])(lat|lon|q|cp|token)=", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 500)]
     private static partial Regex ParameterName();
+}
+
+internal sealed class QueryTraceCapture
+{
+    private readonly ConcurrentBag<Dictionary<string, object?>> _traces = [];
+    private readonly TaskCompletionSource _exported = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    public void Configure(IServiceCollection services) =>
+        services.ConfigureOpenTelemetryTracerProvider(tracing =>
+            tracing.AddProcessor(new SimpleActivityExportProcessor(new TraceExporter(_traces, _exported))));
+
+    public async Task AssertNoQueryAsync()
+    {
+        await _exported.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        var span = _traces.Should().ContainSingle().Which;
+        span.Should().NotContainKey("url.query");
+        foreach (var key in new[] { "url.full", "http.target" })
+        {
+            if (span.TryGetValue(key, out var value))
+            {
+                value?.ToString().Should().NotContain("?").And.NotContain("secreto").And.NotContain("token=x");
+            }
+        }
+    }
+
+    private sealed class TraceExporter(ConcurrentBag<Dictionary<string, object?>> traces, TaskCompletionSource exported) : BaseExporter<Activity>
+    {
+        public override ExportResult Export(in Batch<Activity> batch)
+        {
+            foreach (var activity in batch)
+            {
+                if (activity.Kind == ActivityKind.Server)
+                {
+                    traces.Add(activity.TagObjects.ToDictionary(tag => tag.Key, tag => tag.Value, StringComparer.Ordinal));
+                    exported.TrySetResult();
+                }
+            }
+
+            return ExportResult.Success;
+        }
+    }
 }

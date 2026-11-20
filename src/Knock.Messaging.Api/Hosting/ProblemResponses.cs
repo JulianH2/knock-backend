@@ -2,6 +2,7 @@
 using Knock.Contracts.Correlation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace Knock.Messaging.Api.Hosting;
 
@@ -20,6 +21,10 @@ internal static class ProblemResponses
             {
                 // Sin «type» propio, «about:blank»: todos los errores (401, 429, 422…) tienen la misma forma.
                 context.ProblemDetails.Type ??= "about:blank";
+                // «instance» es la plantilla de la ruta, nunca la ruta con los identificadores de la petición.
+                context.ProblemDetails.Instance = context.HttpContext.GetEndpoint() is RouteEndpoint { RoutePattern.RawText: { } route }
+                    ? "/" + route.TrimStart('/')
+                    : context.HttpContext.Request.Path;
                 context.ProblemDetails.Extensions["traceId"] = System.Diagnostics.Activity.Current?.TraceId.ToString() ?? context.HttpContext.TraceIdentifier;
                 if (CorrelationId.Current(context.HttpContext) is { } correlationId)
                 {

@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using AwesomeAssertions;
 using Knock.IntegrationTest.Requests;
+using Knock.IntegrationTest.Support;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -119,7 +120,7 @@ public sealed class Spec042ConfianzaTests
 
         save.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         remove.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity, "CA-11");
-        (await save.Content.ReadAsStringAsync()).Should().NotContain(invalid, "no repite el valor");
+        ProblemBody.Reasons(await save.Content.ReadAsStringAsync()).Should().NotContain(invalid, "no repite el valor");
         (await host.CountAsync("tecnicos_confianza")).Should().Be(0);
     }
 
@@ -245,7 +246,7 @@ public sealed class Spec042ConfianzaTests
 
         foreach (var response in new[] { notFound, notSaved, invalid })
         {
-            var body = await response.Content.ReadAsStringAsync();
+            var body = ProblemBody.Reasons(await response.Content.ReadAsStringAsync());
             body.Should().NotContain(sub).And.NotContain(unknown.ToString()).And.NotContain(technician.Id.ToString()).And.NotContain("Demo Privado");
         }
     }

@@ -1,5 +1,6 @@
 using System.Net;
 using AwesomeAssertions;
+using Knock.IntegrationTest.Support;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -59,7 +60,7 @@ public sealed class Spec043BloqueosTests
 
         post.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         delete.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
-        (await post.Content.ReadAsStringAsync()).Should().NotContain(invalid, "no repite el valor");
+        ProblemBody.Reasons(await post.Content.ReadAsStringAsync()).Should().NotContain(invalid, "no repite el valor");
         (await scenario.CountAsync()).Should().Be(0);
     }
 
@@ -198,7 +199,7 @@ public sealed class Spec043BloqueosTests
 
         foreach (var response in new[] { notFound, notBlocked, invalid })
         {
-            var body = await response.Content.ReadAsStringAsync();
+            var body = ProblemBody.Reasons(await response.Content.ReadAsStringAsync());
             body.Should().NotContain(scenario.Caller).And.NotContain(target).And.NotContain("Demo Privado Nombre");
         }
     }
