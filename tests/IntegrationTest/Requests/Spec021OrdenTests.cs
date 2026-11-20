@@ -1,5 +1,6 @@
 using System.Net;
 using AwesomeAssertions;
+using Knock.IntegrationTest.Support;
 using Xunit;
 
 namespace Knock.IntegrationTest.Requests;
@@ -68,7 +69,7 @@ public sealed class Spec021OrdenTests
 
         badOrder.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         (await Spec020Host.ReadAsync(badOrder)).GetProperty("errors").TryGetProperty("orden", out _).Should().BeTrue();
-        (await badOrder.Content.ReadAsStringAsync()).Should().NotContain("barato", "el motivo nunca repite el valor enviado");
+        ProblemBody.Reasons(await badOrder.Content.ReadAsStringAsync()).Should().NotContain("barato", "el motivo nunca repite el valor enviado");
         badId.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }
