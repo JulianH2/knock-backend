@@ -23,7 +23,7 @@ Cada carpeta tiene `spec.md`, `plan.md` y `task.md`. Estados: Borrador → Aprob
 | 017 | Perfil de la persona (USR-01, USR-02) | Aprobada | [`017-perfil-de-la-persona`](017-perfil-de-la-persona/spec.md) |
 | 018 | Sesiones por dispositivo (SES-04, SES-05) | Aprobada | [`018-sesiones-por-dispositivo`](018-sesiones-por-dispositivo/spec.md) |
 | 019 | MCP del proyecto | Aprobada | [`019-mcp-del-proyecto`](019-mcp-del-proyecto/spec.md) |
-| BUG-001 | El job `dast` del CI nunca se ejecuta (KNOCK-238) | Borrador | [`BUG-001-job-dast-no-se-ejecuta`](BUG-001-job-dast-no-se-ejecuta/spec.md) |
+| BUG-001 | El job `dast` del CI nunca se ejecuta (KNOCK-238) | Aprobada | [`BUG-001-job-dast-no-se-ejecuta`](BUG-001-job-dast-no-se-ejecuta/spec.md) |
 | BUG-005 | Market sin redacción de registros de consola (KNOCK-255) | Implementada | [`BUG-005-market-sin-redaccion-de-registros`](BUG-005-market-sin-redaccion-de-registros/spec.md) |
 | 020 | Solicitudes y cotizaciones (pedir y enviar) | Aprobada | [`020-solicitudes-y-cotizaciones`](020-solicitudes-y-cotizaciones/spec.md) |
 | 021 | Comparar y elegir cotización | Aprobada | [`021-comparar-y-elegir-cotizacion`](021-comparar-y-elegir-cotizacion/spec.md) |
@@ -62,6 +62,9 @@ Cada carpeta tiene `spec.md`, `plan.md` y `task.md`. Estados: Borrador → Aprob
 | 054 | Bandeja de salida y tareas programadas (INT-01) | Aprobada | [`054-bandeja-de-salida-y-tareas-programadas`](054-bandeja-de-salida-y-tareas-programadas/spec.md) |
 | 055 | Biblioteca técnica compartida `Knock.Hosting` (KNOCK-251) | Aprobada | [`055-biblioteca-tecnica-compartida`](055-biblioteca-tecnica-compartida/spec.md) |
 | 056 | Autenticación entre servicios (KNOCK-162) | Borrador | [`056-autenticacion-entre-servicios`](056-autenticacion-entre-servicios/spec.md) |
+| 057 | Borrado de fotos de verificación (KNOCK-87) | Borrador | [`057-borrado-de-fotos-de-verificacion`](057-borrado-de-fotos-de-verificacion/spec.md) |
+| 058 | Colección `archivos` de Media y tope de subidas pendientes (KNOCK-185) | Aprobada | [`058-coleccion-archivos-de-media`](058-coleccion-archivos-de-media/spec.md) |
+| 059 | Suspensión preventiva en casos críticos (KNOCK-97) | Aprobada | [`059-suspension-preventiva`](059-suspension-preventiva/spec.md) |
 | 057 | Borrado de fotos de verificación (KNOCK-87) | Aprobada | [`057-borrado-de-fotos-de-verificacion`](057-borrado-de-fotos-de-verificacion/spec.md) |
 | 059 | Suspensión preventiva en casos críticos (KNOCK-97) | Borrador | [`059-suspension-preventiva`](059-suspension-preventiva/spec.md) |
 | BUG-002 | Falta Strict-Transport-Security en el gateway (KNOCK-239) | Aprobada | [`BUG-002-falta-strict-transport-security-en-el-gateway`](BUG-002-falta-strict-transport-security-en-el-gateway/spec.md) |
