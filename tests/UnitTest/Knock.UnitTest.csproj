@@ -23,5 +23,6 @@
     <ProjectReference Include="..\..\src\Knock.Messaging.Api\Knock.Messaging.Api.csproj" Aliases="messaging" />
     <ProjectReference Include="..\..\src\Knock.Gateway\Knock.Gateway.csproj" Aliases="gateway" />
     <ProjectReference Include="..\..\src\Knock.Contracts\Knock.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Knock.Hosting\Knock.Hosting.csproj" />
   </ItemGroup>
 </Project>

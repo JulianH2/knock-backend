@@ -1,7 +1,6 @@
-extern alias messaging;
 using System.Net;
 using AwesomeAssertions;
-using messaging::Knock.Messaging.Api.Hosting;
+using Knock.Hosting.ForwardedHeaders;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;

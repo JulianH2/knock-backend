@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Knock.Hosting</RootNamespace>
+  </PropertyGroup>
+
+  <!-- Spec 055: piezas técnicas compartidas por el gateway y los tres servicios, sin lógica de negocio (R-03). Solo los paquetes que ya usan los servicios (R-07). -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.21.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Knock.UnitTest" />
+    <InternalsVisibleTo Include="Knock.IntegrationTest" />
+    <InternalsVisibleTo Include="Knock.SecurityTest" />
+  </ItemGroup>
+
+</Project>

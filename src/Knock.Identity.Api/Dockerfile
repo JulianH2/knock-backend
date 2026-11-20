@@ -7,9 +7,11 @@ FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 WORKDIR /src
 COPY global.json Directory.Build.props .editorconfig ./
 COPY src/Knock.Contracts/Knock.Contracts.csproj src/Knock.Contracts/packages.lock.json src/Knock.Contracts/
+COPY src/Knock.Hosting/Knock.Hosting.csproj src/Knock.Hosting/packages.lock.json src/Knock.Hosting/
 COPY src/Knock.Identity.Api/Knock.Identity.Api.csproj src/Knock.Identity.Api/packages.lock.json src/Knock.Identity.Api/
 RUN dotnet restore src/Knock.Identity.Api/Knock.Identity.Api.csproj --locked-mode
 COPY src/Knock.Contracts/ src/Knock.Contracts/
+COPY src/Knock.Hosting/ src/Knock.Hosting/
 COPY src/Knock.Identity.Api/ src/Knock.Identity.Api/
 COPY db/seeds/demo/identity/usuarios.json db/seeds/demo/identity/usuarios.json
 RUN dotnet publish src/Knock.Identity.Api/Knock.Identity.Api.csproj -c Release --no-restore -o /app/publish /p:UseAppHost=false

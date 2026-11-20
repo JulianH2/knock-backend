@@ -1,5 +1,14 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — Spec 055, etapa 1: biblioteca técnica compartida `Knock.Hosting` (KNOCK-251)
+- **Qué se movió:** nuevo `src/Knock.Hosting` (net11.0; solo `OpenTelemetry.Extensions.Hosting` 1.21.0 y `Serilog.AspNetCore` 10.0.0, las mismas versiones de los servicios). Tiene `ForwardedHeaders/ForwardedHeadersExtensions` y `Logging/TelemetryRedactor` (con `CoordinatePairs`, los dos procesadores y `RedactingJsonFormatter`). Se borraron las 7 copias de los servicios y `AddKnockGatewayForwardedHeaders` de `CorsExtensions`; el gateway ahora llama a `AddKnockForwardedHeaders`.
+- **Sin cambio de comportamiento:** las copias eran idénticas salvo el espacio de nombres (comparadas antes de mover). Solo cambió la visibilidad: es pública solo la API que usan los servicios (`ExceptionEvent`, los procesadores y el formateador); `Redact`, `RedactUrl` y demás quedan `internal`, visibles para las pruebas (R-06). El enum `ForwardedHeaders` de ASP.NET se usa con el alias `ForwardedHeaderFlags`, porque choca con el espacio de nombres `Knock.Hosting.ForwardedHeaders`.
+- **Pruebas:** las que recorrían las cuatro copias ahora apuntan a la implementación compartida, sin borrar ningún caso. Nueva `HostingLibraryBoundaryTests` (CA-01 a CA-03). Stryker incluye `**/Knock.Hosting/**/*.cs` (R-18). Se regeneró `clones-baseline.json`.
+- **Pendiente de una persona (archivos protegidos):**
+  - borrar EXC-020 y quitar `TelemetryRedactor` del alcance de EXC-007 en `security/exceptions.yaml` (R-13);
+  - agregar `^src/Knock\.Hosting/` a `SHARED` en `ci-pr.yml` y `ci-deploy.yml`, y `/src/Knock.Hosting/` a `CODEOWNERS` (R-15).
+- **A evitar:** copiar de nuevo una pieza del catálogo en un servicio (R-09); la prueba de arquitectura de la etapa 1 falla si reaparece.
+
 ## 2026-11-19 — KNOCK-186: plantilla de ruta en ProblemDetails
 - **Decisión:** R-06 de la spec 035 se cumple con la plantilla de la ruta del endpoint, sin consulta y con `/` inicial, para no repetir valores recibidos y respetar CA-046-17 y CA-023-03. Sin endpoint se conserva la ruta de la petición sin consulta.
 - **Límite:** la ruta de respaldo puede contener valores cuando no hay endpoint; no se interpreta como una plantilla.
