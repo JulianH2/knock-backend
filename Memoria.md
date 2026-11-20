@@ -1158,3 +1158,7 @@
 - **Decisión:** `task.md` de la 040 queda conciliado: T-09 hecha (revisión de pares del PR #159 resuelta el 2026-11-18) y T-00 parcial, porque la copia de la dirección en la visita ya existe y solo falta que una persona cree el secreto `identity-field-encryption-key` en Key Vault y haga el apply.
 - **Decidido (José, 2026-11-20):** (1) se mantiene la copia cifrada por solicitud (spec 020, decisión 5); no se agrega `direccionId` ni consulta interna a Identidad, y la app guarda la dirección en Identidad antes de pedir. (2) CA-09 y CA-15 de la spec 040 se corrigen a 404, igual que R-14 y CA-22, para no revelar que una dirección ajena existe; el código ya respondía 404. Ya no queda decisión pendiente en la spec 040 §15.
 - **A evitar:** abrir código para esta tarjeta sin comprobar antes con `--trace` y el contrato lo que ya existe; fusionar el código de direcciones antes de que exista el secreto de Identidad.
+## 2026-11-20 · KNOCK-87 · Spec 057: dudas redactadas como decisiones sí/no
+- **Qué cambió:** `specs/057-borrado-de-fotos-de-verificacion/spec.md` §8: las nueve dudas pasan a ocho decisiones sí/no (D-01 a D-08) con contexto, alternativa y recomendación, y una nota de dependencias. Solo documentación.
+- **Por qué:** la spec seguía con preguntas abiertas sin recomendación; ninguna impide aprobarla, pero D-07 (formato de casos) afecta al trazado `sdd_lint --trace 057`.
+- **A evitar:** redactar una duda sin dar la alternativa y qué cambia si la respuesta es «no».
