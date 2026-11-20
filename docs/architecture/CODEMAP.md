@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-19T22:38:22Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-20T16:19:09Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -23,7 +23,7 @@
 | `Requests` | -, controllers, data, domain, dtos, services, validators | 62 | 134 | 123 |
 | `Safety` | -, controllers, data, domain, dtos, services, validators | 15 | 38 | 33 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 26 | 47 | 54 |
-| `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 22 | 55 | 57 |
+| `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 22 | 55 | 58 |
 | `Trust` | -, controllers, data, domain, dtos, services, validators | 7 | 17 | 16 |
 | `Usuarios` | -, controllers, data, domain, dtos, services | 16 | 29 | 37 |
 
@@ -1045,14 +1045,14 @@
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TechnicianSelfStore.cs` — class `TechnicianSelfStore`
   - `FindOwnAsync()`:26, `ReadOwnAsync()`:37, `SetAvailableUntilAsync()`:60, `ReadScheduleAsync()`:63, `SetScheduleAsync()`:71, `UpdateAsync()`:82
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TrabajoStore.cs` — record `TrabajoVerification`, class `TrabajoStore`
-  - `TrabajoStore()`:10, `ReadVerificationAsync()`:12
+  - `TrabajoStore()`:10, `ReadVerificationAsync()`:31
 
 **domain**
 
 - `src/Knock.Market.Api/Modules/Tecnicos/Domain/ScheduleRules.cs` — class `ScheduleRules`
   - `EndOfCityDayUtc()`:14, `AllClosed()`:23, `TryParseTime()`:25, `IsValid()`:31, `Normalize()`:61
 - `src/Knock.Market.Api/Modules/Tecnicos/Domain/TechnicianRules.cs` — class `TechnicianRules`
-  - `IsVisible()`:30, `IsKnownAttention()`:33, `UsesWorkshop()`:35, `VisitsHomes()`:37
+  - `IsVisible()`:30, `IsAvailable()`:33, `IsKnownAttention()`:35, `UsesWorkshop()`:37, `VisitsHomes()`:39
 
 **dtos**
 
