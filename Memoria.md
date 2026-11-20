@@ -9,6 +9,66 @@
   - agregar `^src/Knock\.Hosting/` a `SHARED` en `ci-pr.yml` y `ci-deploy.yml`, y `/src/Knock.Hosting/` a `CODEOWNERS` (R-15).
 - **A evitar:** copiar de nuevo una pieza del catálogo en un servicio (R-09); la prueba de arquitectura de la etapa 1 falla si reaparece.
 
+## 2026-11-20 — KNOCK-53: auditoría de la exploración sin cuenta (HU-005)
+- **Estado:** el backend ya cubre lo público: `GET /api/v1/oficios`, `GET /api/v1/tecnicos/autocompletar` y `GET /api/v1/tecnicos/{id}` son anónimos en el gateway y en Mercado, con caché y sin datos privados. Se agregaron pruebas TC-HU-005-01, -02, -04 y -05 y una nota en `docs/rate-limit-matrix.md`; no hay código de producción nuevo.
+- **Pendiente de decisión:** CA4 pide 429 tras 60 peticiones por minuto por IP y el límite global vigente es 100. Búsqueda y zonas siguen con sesión (specs 027 y 023). `GET /api/v1/explorar` (spec 046, T-14) no existe todavía. «Continuar donde me quedé» (CA3) es de la app: el backend no guarda acción pendiente.
+- **A evitar:** subir un límite más estricto solo para las rutas públicas sin acordarlo, porque cambia la spec 009.
+
+## 2026-11-20 — Spec 029: cascada T-02 parcial (Alexis)
+- **Avance:** `CierreDeSolicitudService` usa `TransicionesDeSolicitud` y una transacción de MongoDB para solicitud, cotizaciones, envíos y outbox; no modifica visitas. Las pruebas con DocumentDB local cubren cancelación y vencimiento con un envío y una cotización, y reversión al fallar el buzón. El evento solo lleva los campos previstos; el vencimiento incluye `clienteId`.
+- **Verificación:** prueba roja de compilación por servicio inexistente antes del código; integración 029 3/3; build Release sin restaurar 0 errores y advertencias; ArchitectureTest 25/25; formato correcto. UnitTest 1911/1912: falló una prueba de tiempo del redactor de Mensajería (1,403 ms frente a 1 ms).
+- **Pendiente:** T-02 queda parcial: falta comprobar la integración con los envíos reales de la 028, más casos de atomicidad, concurrencia y registros; CA-01 y CA-06 requieren los flujos HTTP/ejecutor de T-03/T-04 y CA-15 también exige revisar registros. T-03 y T-05 no implementadas; no se generó contrato.
+
+## 2026-11-20 — Spec 029: T-02 bloqueada por dependencias locales
+- **Alcance confirmado:** la cascada cierra solicitud, cotizaciones y envíos; no modifica visitas. Una solicitud con cita no se cancela, conforme a R-05.
+- **Estado:** se escribió una prueba inicial de integración para la cascada de cancelación y vencimiento en `Spec029CierreTests`; no compila ni se ha verificado, y el servicio aún no existe. T-02 parcial; T-03 y T-05 pendientes, respetando el orden solicitado.
+- **Bloqueo:** build y pruebas con `--no-restore` fallan con NU1101 por `Otp.NET` y `QRCoder` ausentes en la caché local. Formato agotó 180 s. No se cambió NuGetAudit ni se restauraron paquetes. No se exportó OpenAPI con binarios anteriores.
+- **Pendiente:** disponer de los paquetes y assets restaurados externamente, ejecutar la prueba roja y completar T-02 antes de T-03 y T-05. La prueba inicial no demuestra CA-01 ni CA-06 completos.
+
+## 2026-11-20 — KNOCK-185: borrador de la spec 058, colección `archivos` de Media
+- **Decisión:** el registro de archivos privados pasa a la colección `archivos` (`_id` ObjectId, `archivoId` UUID v7 único) y el tope de 10 subidas pendientes se cuenta en MongoDB insertando y verificando, no con un contador aparte. Queda en Borrador; el Tech Lead contestó «sí» a D1 a D8 con la recomendación del autor (2026-11-20) y se aplicaron en la spec: tope 10, 30 minutos y 7 días, `limit_exceeded`, `archivoId` de 32 hexadecimales (spec 020 R-04 enmendada, tarea T-08 para validador y OpenAPI), migración solo si Azure tiene JSON, colecciones separadas, índice compuesto y regla de 1 día en `cuarentena` (R-19, la aplica una persona).
+- **Porqué:** la constitución y la spec 003 prohíben dato de negocio en Blob; insertar y verificar no depende de transacciones ni de índices parciales y nunca deja más pendientes que el tope aunque rechace alguna de más.
+- **A evitar:** mezclar `archivos` con `subidas_imagen` (spec 032); contar y luego insertar; borrar el contenedor `registros-temporales` sin revisar antes si tiene registros (no hay inventario de Azure en el repositorio); dejar el validador de `fotos` de la solicitud en 24 hexadecimales cuando se implemente la 058 (T-08).
+
+## 2026-11-20 — KNOCK-68: documentación de oleadas (T-10)
+- **Estado:** `docs/events.md` documenta los eventos de reparto y las tareas `RepartirOleada` y `RevisarOleada`, su programación y la forma de `tareas_programadas`; distingue `VencerSolicitud`, mencionada por la spec 029. Los nombres y campos de reparto se contrastaron con el código; no se agregaron ejemplos con datos personales.
+- **Verificación:** `docs/endpoints.md` ya incluye bandeja y descarte; ambas rutas figuran en `docs/openapi.v1.json` con `/api/v{version}`. No se regeneró OpenAPI en esta tarea exclusivamente documental ni se ejecutaron pruebas. T-09 y CA-17 siguen pendientes; no se hizo commit.
+
+## 2026-11-20 — KNOCK-68: bandeja y descarte (T-08, verificación parcial)
+- **Estado:** bandeja paginada y descarte para técnicos; el cambio de `activo` a `descartado` compite en la misma colección con la transacción de cotización. Un envío cotizado da 409 `request_not_dismissable` y uno descartado 204. Gateway enruta ambas operaciones y limita el descarte por `sub` a 30/h en Redis. Contrato exportado y matrices actualizadas; sin dependencias nuevas.
+- **Verificación:** build Release sin restauración pasó sin avisos; integración Spec028 y Spec020 85/85, incluidas bandeja, paginación, carrera y límite del gateway con Redis; formato de archivos tocados y 19 pruebas de arquitectura pasaron. `codemap.py` y `--check` pasaron. `sdd_lint.py --trace 028` marca CA-17 pendiente de T-09 y devuelve error; la traza reconoce el resto por nombre, no demuestra por sí sola cobertura completa.
+- **Pendiente:** T-08 no se marca hecha mientras la verificación de traza solicitada no pase; CA-17 y revisión de registros corresponden a T-09. La prueba concurrente no fuerza ambos órdenes de la carrera. No se probó en Azure ni se hizo commit.
+
+## 2026-11-20 — KNOCK-68: cotización y detalle por envío (T-07)
+- **Estado:** con oleadas activas, cotizar requiere envío activo, que pasa a cotizado en la transacción; el detalle exige envío activo o cotizado y mantiene la elegibilidad base. El contador de cotizaciones activas se incrementa con filtro condicionado en la misma transacción que envío, cotización y buzón; el límite usa `Oleadas:MaximoCotizaciones`. La bandera apagada conserva la elegibilidad base.
+- **Decisión:** solicitudes antiguas sin contador o con contador cero se inicializan contando cotizaciones vivas dentro de la transacción antes del incremento condicionado; la versión anterior podía crear cotizaciones dejando cero. Un contador no cero desactualizado no se repara automáticamente; el retiro futuro debe decrementarlo transaccionalmente.
+- **Verificación:** las pruebas nuevas dieron 7 fallos y 3 aprobadas antes del cambio. Build Release sin restauración pasó sin avisos; integración filtrada Spec028 y Spec020 pasó 77/77. Se ajustó la preparación de CA-020-23 para entregar envíos también a técnicos inelegibles con oleadas activas, conservando las aserciones de elegibilidad. No se verificó Azure ni una carrera real contra descarte (T-08 aún no existe).
+- **Pendiente:** el formato global señala diferencias previas en `Spec028RepartoTests.cs`, ajeno a T-07. OpenAPI y documentos de rutas son T-10; no se creó commit.
+## 2026-11-20 — KNOCK-68: pruebas iniciales de T-08 bloqueadas por T-07
+- **Estado:** se agregaron pruebas iniciales de bandeja, descarte, autenticación y carrera en `tests/IntegrationTest/Requests/Spec028BandejaTests.cs`; T-08 sigue pendiente. No se implementaron rutas ni cambios de producción.
+- **Bloqueo:** en esta rama T-07 figura pendiente y `QuoteStore` no consulta ni cambia el envío al cotizar. Una prueba con envío ya descartado recibió 201 y guardó una cotización, por lo que no se puede garantizar que gane solo una de las operaciones sin modificar la transacción de cotización de T-07. T-08 se pidió como paso único.
+- **Verificación:** build Release con `--no-restore` pasó sin avisos; las cinco pruebas iniciales fallaron, incluida la regresión de cotizar un envío descartado y las rutas aún ausentes. Formato del archivo nuevo correcto. Las pruebas de límite 30/h y los demás casos de T-08 aún faltan; no se generó contrato ni se hizo commit.
+
+## 2026-11-19 — KNOCK-68: manejadores de reparto (T-06)
+- **Estado:** creación programa la primera oleada en su transacción cuando está habilitada; `RepartoService` registra los dos manejadores, confirma la reserva en la transacción y usa el avance condicionado de oleada, envíos, tareas y `MongoOutbox`. La revisión cuenta cotizaciones vivas y programa la siguiente. La última oleada sin ningún envío escribe `SolicitudSinTecnicos`; sus datos y los de envío solo contienen identificadores y número de oleada.
+- **Decisiones:** la tarea se programa con upsert por tipo y clave de negocio para tolerar una repetición tras el commit; el índice único de la spec debe estar aplicado. Una revisión escribe `revisionOleada` en la solicitud dentro de su transacción para competir con cambios concurrentes; no tiene significado de negocio.
+- **Verificación:** build Release `--no-restore` sin errores ni advertencias y 13 pruebas de integración `Spec028` pasaron. El caso concurrente prueba dos ejecutores que compiten por una tarea, no dos manejadores con el mismo token ni una carrera de retoma transaccional. CA-01 aún no verifica el motivo cercano; CA-09 solo cubre cancelación antes de repartir. Esas brechas siguen pendientes; tampoco se verificó el clúster de Azure.
+- **A evitar:** habilitar las oleadas como control de acceso antes de T-07: esa tarea todavía debe exigir envío al cotizar. El despachador de notificaciones no forma parte de este cambio.
+
+## 2026-11-19 — KNOCK-68: pruebas iniciales de reparto (T-06)
+- **Estado:** se añadieron pruebas iniciales de integración en `tests/IntegrationTest/Requests/Spec028RepartoTests.cs`; T-06 sigue pendiente. No se implementaron los manejadores ni se conectó la programación al crear solicitudes.
+- **Rojo:** la primera ejecución de `dotnet test tests/IntegrationTest -c Release --no-restore --filter FullyQualifiedName~Spec028Reparto` tuvo 6 fallos y 1 prueba aprobada; faltan la tarea inicial y los manejadores. Después se corrigió la expectativa de la prueba concurrente para permitir que solo un ejecutor reserve la tarea; esa modificación no se volvió a ejecutar.
+- **Pendiente:** completar la prueba CA-01 con distancias conocidas y motivo `cercano`, los casos vencidos y de revisión cerrada de CA-09, y una carrera de dos manejadores con el mismo `reservaId` que compruebe la transacción, además de implementar y verificar T-06.
+
+## 2026-11-19 — KNOCK-68: candidatos y envíos (T-05)
+- **Estado:** `CandidatosStore` filtra disponibilidad, oficio, estado, ocultamiento, cliente y envíos previos; usa `$geoNear` y radio, e incluye técnicos sin ubicación de la colonia base. `EnviosStore` permite insertar con o sin sesión y consultar destinatarios previos. Se reutiliza `WaveCandidate`, ampliado con el usuario del técnico, y el índice único definido por la 028; no se agregaron dependencias.
+- **Verificación:** las pruebas nuevas no compilaban antes de crear los almacenes. Después, build Release sin restauración pasó sin avisos y 3 pruebas `Spec028Candidatos` pasaron sobre documentdb-local. El índice único se construye en la prueba con la misma definición del script; la ejecución del script se cubre aparte en DatabaseTest.
+- **Límites:** el reparto y la escritura transaccional completa son T-06, no se implementaron. No se verificó la consulta contra Azure ni se obtuvo un `explain`; la consulta geográfica exige un índice `2dsphere` sobre `ubicacionBase`. Sin centro solo se usa la colonia base.
+
+## 2026-11-19 — KNOCK-68: revisión inicial de T-05 y T-06
+- **Estado:** Alexis figura como responsable de T-05 y T-06; ambas siguen pendientes. No se implementaron los almacenes ni el reparto y no se escribieron pruebas nuevas.
+- **Verificación:** `dotnet test tests/IntegrationTest -c Release --no-restore --filter FullyQualifiedName~Spec028` pasó 3 pruebas existentes del ejecutor; no cubren las tareas pendientes.
+- **A evitar:** considerar que la reserva por sí sola impide dos manejadores simultáneos; la confirmación de `reservaId` debe ocurrir en la transacción de negocio, junto con el avance condicionado y el buzón.
 ## 2026-11-19 — KNOCK-186: plantilla de ruta en ProblemDetails
 - **Decisión:** R-06 de la spec 035 se cumple con la plantilla de la ruta del endpoint, sin consulta y con `/` inicial, para no repetir valores recibidos y respetar CA-046-17 y CA-023-03. Sin endpoint se conserva la ruta de la petición sin consulta.
 - **Límite:** la ruta de respaldo puede contener valores cuando no hay endpoint; no se interpreta como una plantilla.
@@ -1076,6 +1136,10 @@
 - **Decisiones (con porqué):** (1) usa los tipos de tarea `AvisarAlVerificador` y `BorrarFotosDeVerificacion` de la spec 054, no los nombres de la ficha, para no duplicar el catálogo. (2) La llave se destruye antes que los blobs, así lo que falte queda ilegible. (3) Incluye la baja de cuenta porque la spec 025 §2.3 la difiere a HU-068. (4) Casos `TC-HU-068-KK` de la ficha; `sdd_lint.py --trace` de las specs numeradas solo reconoce `CA-NN`.
 - **A evitar:** implementar antes de aprobar y de tener la spec 025 (almacén cifrado), 053 y 054 en Identidad; dudas abiertas en §8 (correo, llave en Key Vault, respaldos).
 
+## 2026-11-19 · KNOCK-73 · Spec 030 T-02: colecciones de conversaciones y mensajes
+- **Qué cambió:** `db/030-conversaciones.js` crea `conversaciones` y `mensajes` en `messaging` (variable `KNOCK_DB_MESSAGING`) con los índices de spec 030 §6: par `(solicitudId, tecnicoId)` único, listas por `clienteId` y `tecnicoUsuarioId` con `ultimoMensajeEn`, cursor de mensajes y TTL de 180 días sobre `creadoEn`. Prueba de base de datos: `tests/DatabaseTest/Scripts/Spec030RetencionTests.cs` (CA-19).
+- **Por qué:** los stores de T-05 a T-07 necesitan las colecciones e índices; el TTL (15 552 000 s) cumple R-21 sin trabajos de limpieza.
+- **A evitar:** editar este script una vez fusionado (un cambio de índice va en un script nuevo); los nombres de índice deben coincidir con los que cree el `EnsureIndexesAsync` de T-05 para que no choquen.
 ## 2026-11-19 · KNOCK-172 · Spec 032, T-03: opciones de imágenes, dirección pública y script de `db/`
 - **Qué cambió:** `ImagenesOptions` (`Imagenes:BaseUrlPublica`, sin valor por omisión en código) con su validador, `ImagenPublicaUrl` (R-13) en `Modules/Media` y `db/044-market-subidas-imagen.js` (`subidas_imagen` con índice de pendientes y TTL sobre `expiraEn`; `accesos_privados` con TTL de 180 días). El flujo de la spec 013 no se tocó (opción A del Tech Lead: la 032 se construye al lado).
 - **Decisión:** `AddImagenesPublicas()` existe pero **todavía no se llama desde `AddMediaModule`**. Registrarlo haría que Mercado no arrancara sin `Imagenes__BaseUrlPublica`, y `scripts/export_openapi.py` (archivo protegido) arranca Mercado sin esa llave. Se conecta cuando entre el módulo (T-06) junto con el cambio de esa herramienta y del CI, que hace una persona. `ImagenPublicaUrl` es una instancia (no estática como dice §5) porque la regla depende de la dirección base configurada.
@@ -1136,3 +1200,35 @@
 - **Qué cambió:** `specs/README.md` agrega la fila 059 (Suspensión preventiva en casos críticos, Borrador), que el PR #182 había dejado fuera.
 - **Por qué:** el índice debe listar toda spec del repositorio; una persona o una herramienta que lea primero el índice no veía la 059.
 - **A evitar:** agregar una carpeta de spec sin su fila en el índice en el mismo cambio.
+
+## 2026-11-20 · KNOCK-75 · Terraform conecta los secretos del panel interno
+- **Qué cambió:** `deploy/apps/main.tf` pasa `PanelJwt__SigningKey` (secreto `panel-jwt-signing-key`) al gateway y a Identity, y `PanelTotp__Keys__1` (secreto `panel-totp-key`) con `PanelTotp__KeyVersion = 1` solo a Identity; `Cors__Panel__Origen` sale de la variable `panel_origin` (vacía por omisión, no es secreto). `deploy/up.sh`, su prueba y `deploy/README.md` agregan los dos nombres a la lista de secretos requeridos.
+- **Por qué:** sin estos valores el panel responde 503 (spec 033, R-13, R-26 y R-27). Los secretos existían en la spec pero ningún servicio los recibía, así que crearlos en Key Vault no bastaba.
+- **A evitar:** generar las llaves con `RandomNumberGenerator::Fill` en PowerShell 5.1 (no existe y deja 32 bytes en cero: dos secretos se guardaron así el 2026-11-20 y hay que sobrescribirlos); reusar `jwt-signing-key` para el panel; fijar `panel_origin` a algo que no sea `https://host` sin ruta; aplicar sin crear antes los dos secretos (`up.sh` lo detiene).
+## 2026-11-20 · KNOCK-98 · HU-049 Mis datos: auditoría del backend y prueba del criterio 3
+- **Qué cambió:** auditoría de HU-049 contra sprint-05: el backend ya cubre los cuatro criterios con `GET`/`PUT /api/v1/me` (spec 017) y `/api/v1/me/direcciones` (spec 040). Se agrega una prueba de integración, `OwnerEditsTheAddress_AConfirmedAppointmentKeepsItsPreviousCopy_HU_049_03`, que comprueba que editar la dirección propia la guarda cifrada y no cambia la copia de una cita confirmada.
+- **Por qué:** la spec 040 solo probaba el caso de borrar; editar era el hueco del criterio 3.
+- **Pendiente de decisión (no se inventó):** no existe una ruta pública para subir la foto de perfil (el módulo Media de Mercado no expone HTTP), así que la foto solo puede fijarse con una `fotoUrl` ya subida a un host permitido. Requiere spec y decisión del líder.
+- **A evitar:** abrir endpoints nuevos para HU-049; reutilizar los de las specs 017 y 040.
+## 2026-11-20 · KNOCK-294 · Pruebas de concurrencia: causa del 500 y mensajes con diagnóstico
+- **Qué cambió:** en `CA_042_19` y `CA_043_37` las respuestas se resumen con `ResponseSummary` (códigos y motivos sin traceId), y la ráfaga se repite con la colección vacía si el emulador devolvió el 500 «Could not acquire lock for operation due to deadlock»; los conteos exactos (1 creado, 4 respuestas restantes, 1 documento) no cambian. `R_006_05` calienta cada copia con otra IP y captura el evento 247 (`CapturingLoggerProvider`); el mensaje trae conteos y si hubo respaldo por copia.
+- **Por qué:** se reprodujo: documentdb-local contesta 500 por bloqueo mutuo (no 11000) cuando varias escrituras chocan en el mismo índice único; era un artefacto del emulador, no un fallo de producción. `R_006_05` no se reprodujo; el calentamiento y el log dejan claro si fue el respaldo local por copia.
+- **A evitar:** debilitar los conteos para absorber el 500, o reintentar cualquier 500: solo se repite el bloqueo mutuo del emulador; otro 500 falla con su cuerpo en el mensaje.
+
+## 2026-11-20 · KNOCK-238 · BUG-001: decisiones pendientes y TC-01 sin rama fija
+- **Qué cambió:** `specs/BUG-001-job-dast-no-se-ejecuta/spec.md`: tres decisiones sí/no (B-01 a B-03), TC-01 deja de nombrar `sprint-04` y el tiempo del runner pasa a criterio de implementación. Solo documentación.
+- **Por qué:** la spec seguía mencionando `sprint-04`, una duda de configuración sin propuesta y la revisión de par de Erick sin cerrar tras sus cuatro puntos atendidos.
+- **A evitar:** fijar una rama de sprint en un caso de prueba.
+## 2026-11-20 · KNOCK-97 · Spec 059: dudas redactadas como decisiones sí/no
+- **Qué cambió:** `specs/059-suspension-preventiva/spec.md` §15: las doce dudas pasan a trece decisiones sí/no con contexto, alternativa y recomendación (la 11 se cerró: 059 ya está en `sprint-05` con su fila del índice). Solo documentación.
+- **Por qué:** la spec pedía respuestas sin dar una propuesta concreta; algunas (5, 6) condicionan tareas de código, el resto no.
+- **A evitar:** dejar una duda sin recomendación del autor.
+## 2026-11-20 — KNOCK-54 (HU-010): conciliación con la spec 040
+- **Estado:** la tarjeta no pide código nuevo. Los seis criterios de HU-010 ya están cubiertos: CA1 a CA4 por las direcciones de la spec 040 (`GET/POST/PUT/DELETE /me/direcciones`, cifradas, 422 con `errors.<campo>` si falta calle) y por `direccion` obligatoria en `POST /solicitudes` a domicilio (spec 020); CA5 por la vista del técnico sin dirección (spec 020 CA-013); CA6 por `address_not_applicable` en taller (spec 020 CA-005). `sdd_lint --trace 040` no deja faltantes. La ruta `PUT /me/direccion` de la ficha la reemplaza la colección `/me/direcciones` de la spec 040 (una principal, hasta 10).
+- **Decisión:** `task.md` de la 040 queda conciliado: T-09 hecha (revisión de pares del PR #159 resuelta el 2026-11-18) y T-00 parcial, porque la copia de la dirección en la visita ya existe y solo falta que una persona cree el secreto `identity-field-encryption-key` en Key Vault y haga el apply.
+- **Decidido (José, 2026-11-20):** (1) se mantiene la copia cifrada por solicitud (spec 020, decisión 5); no se agrega `direccionId` ni consulta interna a Identidad, y la app guarda la dirección en Identidad antes de pedir. (2) CA-09 y CA-15 de la spec 040 se corrigen a 404, igual que R-14 y CA-22, para no revelar que una dirección ajena existe; el código ya respondía 404. Ya no queda decisión pendiente en la spec 040 §15.
+- **A evitar:** abrir código para esta tarjeta sin comprobar antes con `--trace` y el contrato lo que ya existe; fusionar el código de direcciones antes de que exista el secreto de Identidad.
+## 2026-11-20 · KNOCK-87 · Spec 057: dudas redactadas como decisiones sí/no
+- **Qué cambió:** `specs/057-borrado-de-fotos-de-verificacion/spec.md` §8: las nueve dudas pasan a ocho decisiones sí/no (D-01 a D-08) con contexto, alternativa y recomendación, y una nota de dependencias. Solo documentación.
+- **Por qué:** la spec seguía con preguntas abiertas sin recomendación; ninguna impide aprobarla, pero D-07 (formato de casos) afecta al trazado `sdd_lint --trace 057`.
+- **A evitar:** redactar una duda sin dar la alternativa y qué cambia si la respuesta es «no».

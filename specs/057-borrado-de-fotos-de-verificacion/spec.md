@@ -1,6 +1,6 @@
 # Spec 057 — Borrado de fotos de verificación
 
-> **Estado:** Borrador · **Repositorio:** knock-backend · **Rector:** `constitution.md`
+> **Estado:** Aprobada · **Repositorio:** knock-backend · **Rector:** `constitution.md`
 > **Jira:** KNOCK-87 (HU-068 · Borrar fotos de verificación al decidir o a los 7 días, alerta a las 24 h) · **Épica:** EP-12 Panel interno · **Módulo:** `Trust` (Identidad) · **Capas:** Back + BD · **Puntos:** 3
 > **Responsable:** José Julián Hernández Hernández (según la ficha) · **Sprint:** el que decida el Tech Lead (la ficha dice Sprint 4)
 > **Servicio:** Identidad (`Knock.Identity.Api`) · **Colecciones:** `verificaciones` (spec 025, campos nuevos), `tareas_programadas` y `outbox` (spec 054), `panel_auditoria` (spec 033)
@@ -127,18 +127,22 @@ Dato biométrico (INE y selfie): aplican `security-core` #7, #8, #9, #15 y la co
 
 **Gates:** `AGENTS.md §5`. `python scripts/sdd_lint.py --trace 057` no reconoce este formato de casos (ver §8-7).
 
-**Límites y dudas abiertas** (para quien apruebe; no se resolvieron inventando):
-1. **Correo del verificador:** la ficha pide que «el panel y el correo del verificador» reciban la alerta, pero no hay proveedor ni canal de correo en el repositorio. ¿Se agrega (spec y paquete nuevos) o la alerta es solo del panel y un aviso por el canal que defina la spec 053? Esta spec solo emite el evento y marca la cola.
-2. **«Destruir la llave en Key Vault» (ficha) contra «borrar la llave envuelta del documento» (spec 025 R-11 y R-16):** en la 025 la llave de cada verificación está envuelta con la llave maestra y guardada en MongoDB; no hay una llave por verificación en Key Vault. Esta spec sigue la 025. ¿Se debe además deshabilitar una llave propia por verificación en Key Vault? Cambiaría la spec 025 y el costo.
-3. **Purga en toda decisión:** la 025 R-17 purga al decidir `no_verificada` o a los 7 días; la ficha y la spec 053 R-18 piden destruir la llave en cualquier decisión. Esta spec purga siempre («nunca se conservan fotos después de la decisión»). Confirmar.
-4. **Respaldos:** un respaldo de MongoDB anterior a la purga conserva la llave envuelta, y un respaldo de Blob conserva el blob. ¿Cuál es la retención de respaldos de `verificaciones` y de las cuentas de almacenamiento (spec 005)? Sin eso, «cualquier copia queda ilegible» no se puede garantizar.
-5. **Cancelación por la persona:** la spec 025 R-17 menciona purgar cuando la persona cancela, pero no define endpoint de cancelación (solo la cancela una nueva creación). ¿Se purga también la captura abandonada (`capturaVenceEn`, 24 h)? Esta spec no lo incluye.
-6. **Auditoría de purgas del sistema:** `panel_auditoria` está pensada para acciones del personal (spec 033). ¿Se usa también para el vencimiento y la baja con `sub: sistema`, o se crea otra colección? Esta spec supone la misma.
-7. **Formato de casos y trazabilidad:** las specs numeradas usan «CA-NN» y `sdd_lint.py --trace NNN` solo reconoce ese formato y nombres `CA_057_KK`; esta spec usa los `TC-HU-068-KK` de la ficha y pide `_TC_HU_068_KK`. Hay que decidir uno antes de aprobar; si se elige el de las specs numeradas se renombran los casos (aún no hay código).
-8. **Alcance de la ficha:** la ficha no menciona la baja de cuenta; los casos 11 y 13 son decisión de esta spec porque la 025 §2.3 difiere el borrado por baja a HU-068. Quitarlos si no se desea.
-9. **Dependencias sin implementar:** spec 025 (T-01, T-03, T-04, T-06), spec 054 (ejecutor de Identidad) y spec 053 (decisión). Sin ellas esta historia no puede cerrarse.
+**Decisiones pendientes del Tech Lead (sí/no).** Cada una se contesta sí o no sobre la recomendación del autor; responder «sí» la deja decidida tal como está escrita y «no» obliga a ajustar la spec antes de aprobar. Ninguna se inventó como bloqueo: se anota qué parte del trabajo depende de ella.
+
+| N.º | Decisión (recomendación del autor: sí) | Contexto y alternativa | Si es «no» |
+|---|---|---|---|
+| D-01 | **La alerta de 24 h es solo del panel (cola de la spec 053 marcada) más el evento `VerificacionSinRevisarAlertada`; no se envía correo.** | La ficha pide «panel y correo del verificador», pero el repositorio no tiene proveedor ni canal de correo. Agregarlo es una spec y un paquete nuevos. | Se abre una spec aparte del canal de correo y esta HU emite el evento sin consumidor de correo hasta entonces. |
+| D-02 | **Se sigue la spec 025 (R-11, R-16): «destruir la llave» es borrar la llave envuelta del documento; no se crea una llave por verificación en Key Vault.** | La 025 está Aprobada y guarda la llave envuelta con la llave maestra en MongoDB. Una llave por verificación en Key Vault cambiaría la 025 y el costo. | Se enmienda la 025 y se agrega la deshabilitación de una llave por verificación en Key Vault (más puntos). |
+| D-03 | **Se purga en toda decisión (`aprobada` o `rechazada`) y a los 7 días.** | La ficha y la spec 053 R-18 piden destruir la llave en cualquier decisión; la 025 R-17 solo nombra `no_verificada`. Esta spec toma la lectura de la ficha y la 053. | Se purga solo al rechazar y a los 7 días, y se cambian TC-HU-068-01 y 05. |
+| D-04 | **Se acepta como límite documentado que un respaldo anterior a la purga conserva la llave envuelta o el blob hasta que venza su retención, y se pide fijar una retención de respaldos de `verificaciones` y del almacenamiento de fotos no mayor a 7 días.** | «Cualquier copia queda ilegible» no se puede garantizar sin esto; no se verificó que la spec 005 fije hoy esa retención. El 7 es igual al plazo de las fotos (valor propuesto, el Tech Lead puede indicar otro). | Se indica otra retención o se acepta sin límite y se anota el riesgo en §6. |
+| D-05 | **Quedan fuera de esta HU la cancelación por la persona y la limpieza de la captura abandonada (`capturaVenceEn`, 24 h).** | La 025 R-07 ya cancela la captura viva al crear una nueva y no define endpoint de cancelación. | Se agrega un caso y una tarea para purgar la captura abandonada. |
+| D-06 | **Las purgas del sistema (vencimiento y baja de cuenta) se auditan en `panel_auditoria` con `sub: sistema`.** | Evita una colección nueva; la 033 la pensó para acciones del personal pero su documento admite `sub`. | Se crea una colección de auditoría de sistema y su script. |
+| D-07 | **Los casos pasan a `CA-NN` y las pruebas a `CA_057_KK`** (como las specs 056, 058 y 059), con una equivalencia a `TC-HU-068-KK` en una columna. | `sdd_lint.py --trace 057` solo reconoce `CA_057_KK`; con `TC-HU-068-KK` el trazado no corre. Aún no hay código, el renombre es solo de texto. | Se mantienen `TC-HU-068-KK` y se acepta que `--trace 057` no sirva. |
+| D-08 | **Se conservan los casos 11 (baja de cuenta) y 13 (programación al enviar).** | La ficha no menciona la baja de cuenta; la 025 §2.3 difiere el borrado por baja a esta HU. | Se quitan ambos casos y la baja de cuenta queda sin purga de fotos. |
+
+**Dependencias (no son decisiones):** esta historia no se puede cerrar sin la spec 025 (T-01, T-03, T-04, T-06), la 054 (ejecutor de Identidad) y la 053 (decisión).
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-20
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)

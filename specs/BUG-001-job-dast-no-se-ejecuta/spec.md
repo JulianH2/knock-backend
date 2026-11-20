@@ -6,7 +6,7 @@
 > **Relacionadas:** spec 007 (CI y despliegue; deja ZAP fuera de su alcance hasta tener un servicio desplegable), KNOCK-233 (comprobaciones obligatorias de los rulesets, spec 007 T-05), KNOCK-239 y KNOCK-240 (encabezados del gateway, de otra persona).
 > **Fuentes:** `.github/workflows/ci-pr.yml` (jobs `detect`, `dast` y `gate`) · `docs/QA_DEVSECOPS.md` (filas DAST y Smoke) · `docs/modelo-de-amenazas.md` · `deploy/docker-compose.local.yml` · `src/*/Dockerfile` · `security/exceptions.yaml`
 > **Skills:** story-workflow, spec-first-writing, foundation-backend, security-core, testing-strategy-backend, reuse-before-create
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Que el escaneo dinámico (ZAP baseline) y la prueba de humo que `docs/QA_DEVSECOPS.md` promete en cada PR **se ejecuten de verdad**. La pila de servicios corre dentro del runner, sin costo y sin Azure. Si el escaneo deja de poder ejecutarse, el `gate` debe fallar en vez de darlo por bueno.
@@ -18,7 +18,7 @@ Que el escaneo dinámico (ZAP baseline) y la prueba de humo que `docs/QA_DEVSECO
 
 | Caso | Criterio (Dado / Cuando / Entonces) | Verificación |
 |---|---|---|
-| TC-BUG-001-01 | Dado un PR contra `sprint-04` que toca `src/`, cuando corre `ci-pr`, entonces `detect` da `dast=true` y el job «Smoke + DAST (ZAP baseline)» termina en `success` o `failure`, nunca en `skipped`. | (comando) `gh run view <id> --json jobs`; la salida va en el PR |
+| TC-BUG-001-01 | Dado un PR contra la rama de sprint vigente (hoy `sprint-05`) que toca `src/`, cuando corre `ci-pr`, entonces `detect` da `dast=true` y el job «Smoke + DAST (ZAP baseline)» termina en `success` o `failure`, nunca en `skipped`. | (comando) `gh run view <id> --json jobs`; la salida va en el PR |
 | TC-BUG-001-02 | Dado `deploy/docker-compose.ci.yml` con credenciales efímeras del job, cuando se levanta en el runner, entonces el gateway, Identidad, Mercado, Mensajería, `documentdb-local`, Redis y Azurite arrancan, y `GET /health/ready` de cada uno de los cuatro servicios responde 200 en 120 s o menos; los servicios internos se comprueban con `docker compose exec` o por la red interna. | (comando) paso «Levantar» del job; la salida va en el PR |
 | TC-BUG-001-03 | Dada la pila levantada, cuando corre `tests/smoke/smoke.sh <url>`, entonces comprueba que `/health` responde 200, que una ruta protegida sin token responde 401 con `application/problem+json`, que están `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` y `Content-Security-Policy`, y que no se envía `Server: Kestrel`; termina con 0 solo si todo se cumple. HSTS no se exige en este smoke HTTP local. | (comando) paso «Smoke» del job |
 | TC-BUG-001-04 | Dado un servidor de prueba que omite por separado cada uno de `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` y `Content-Security-Policy`, o envía `Server: Kestrel`, o responde 200 sin token, cuando corre `smoke.sh` contra él, entonces termina con un código distinto de 0 y nombra la comprobación que falló, sin imprimir cuerpos ni encabezados con valores sensibles. | `tests/smoke/smoke_test.sh` → `TC-BUG-001-04` |
@@ -83,14 +83,22 @@ No aplica: la pila del CI arranca con bases vacías y se destruye con `down -v` 
 
 **Gates:** ver `AGENTS.md` (Definición de terminado); además, una ejecución real del job en un PR de prueba con la salida en el PR.
 
-**Límites y dudas abiertas:**
+**Límites:**
 - **Archivos protegidos:** los cambios a `.github/workflows/ci-pr.yml` (TC-06 y los nombres de los pasos) los aplica una persona. Sin ellos, TC-06 no se puede cerrar.
 - **HSTS y `Server`:** HSTS no se exige en el smoke del CI: corre por `http://localhost` y ASP.NET Core no envía `Strict-Transport-Security` por HTTP ni a localhost. Se comprueba en el smoke posterior al despliegue por HTTPS real cuando BUG-002 esté desplegado. KNOCK-240 ya está fusionado: el smoke sí exige que no se envíe `Server: Kestrel`. Las alertas de ZAP se tratan conforme a TC-05.
-- **Configuración mínima de cada servicio en el CI:** hay que confirmar con qué valores sintéticos arrancan Identidad (Firebase: emulador o verificación desactivada solo en el perfil `Ci`), Mercado (contenedores de Azurite) y Mensajería. No se agrega ningún modo inseguro que pueda activarse fuera del CI.
+- **Configuración mínima de cada servicio en el CI:** decisión B-01 de abajo. No se agrega ningún modo inseguro que pueda activarse fuera del CI.
 - **Readiness:** `/health/ready` del gateway existe, pero su única comprobación `ready` es Redis; no demuestra que los demás servicios arrancaron. TC-02 espera también la ruta de cada servicio interno.
-- **Tiempo del runner:** construir cuatro imágenes puede acercarse a los 25 minutos. Si pasa, se reutilizan las imágenes del job `container` en lugar de volver a construirlas.
+- **Tiempo del runner:** se construyen las cuatro imágenes y se mide en el primer PR de prueba; si la duración supera 20 minutos de los 25 del `timeout-minutes`, se reutilizan las imágenes del job `container`. Es un criterio de implementación, no una decisión.
+
+**Decisiones pendientes del Tech Lead (sí/no).** Cada una se contesta sí o no sobre la recomendación del autor; responder «sí» la deja decidida tal como está escrita y «no» obliga a ajustar la spec antes de aprobar. Ninguna se inventó como bloqueo: se anota qué parte del trabajo depende de ella.
+
+| N.º | Decisión (recomendación del autor: sí) | Contexto y alternativa | Si es «no» |
+|---|---|---|---|
+| B-01 | **No se modifica `src/`: Identidad, Mercado y Mensajería arrancan en el CI con valores sintéticos por variables `CI_*` (por ejemplo un `ProjectId` de Firebase inventado), sin perfil `Ci` ni banderas que desactiven controles.** El smoke solo prueba rutas sin token (401), que no necesitan llamar a Firebase. | Identidad ya lee `FIREBASE_AUTH_EMULATOR_HOST`. Si el arranque de T1 demuestra que algún servicio no arranca sin un valor real, se vuelve con ese dato y la corrección se pide en una spec propia. | Se autoriza un perfil `Ci` en `src/` acotado (más puntos y revisión de seguridad). |
+| B-02 | **Los cambios a `.github/workflows/ci-pr.yml` (TC-01 y TC-06, nombres de los pasos) los aplica Julián (Tech Lead) en el mismo PR de implementación, una vez aprobada la spec, como ya dice `task.md` T4.** | Sin esos cambios TC-01 y TC-06 no se pueden cerrar; el agente no toca `.github/`. | Se indica otra persona. |
+| B-03 | **Se acepta la revisión de par con los cuatro puntos de Erick atendidos (commit `ff0848c`), sin una nueva respuesta suya.** | En el PR #59 Erick dejó «cambios solicitados» el 2026-11-11, Alexis los atendió el 2026-11-12 y pidió el 2026-11-13 que los revisara; no hay respuesta posterior en el hilo. | Se pide la re-revisión de Erick antes de aprobar. |
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-20
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)

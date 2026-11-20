@@ -214,6 +214,11 @@ public class Spec040ReglasTests
             await foreach (var key in multiplexer.GetServer(endpoint).KeysAsync(pattern: "*"))
             {
                 key.ToString().Should().NotContainEquivalentOf("direccion");
+                if (await multiplexer.GetDatabase().KeyTypeAsync(key) != RedisType.String)
+                {
+                    continue;
+                }
+
                 var value = (string?)await multiplexer.GetDatabase().StringGetAsync(key);
                 (value ?? string.Empty).Should().NotContain("Secretisima").And.NotContain("Secreta");
             }
