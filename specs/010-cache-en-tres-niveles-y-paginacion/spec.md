@@ -1,6 +1,7 @@
 # Spec 010 — Caché en tres niveles y paginación
 
 > **Estado:** Aprobada · **Repositorio:** knock-backend · **Rector:** `constitution.md`
+> **Claves de trabajo:** KNOCK-166 (TT-API-08, caché en el backend) y KNOCK-167 (TT-API-09, paginación, serializadores y compresión) · la spec es madre de las dos tarjetas y no se parte (decisión del líder, 2026-11-19)
 
 ## 1. Objetivo
 Definir cómo el backend responde rápido: caché en la capa de datos y en las respuestas, paginación por cursor y las demás técnicas de rendimiento que se establecieron como requerimientos.
