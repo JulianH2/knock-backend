@@ -12,6 +12,9 @@ namespace Knock.Identity.Api.Hosting;
 /// </summary>
 internal sealed class DomainExceptionHandler : IExceptionHandler
 {
+    private const string _retryAfterSeconds = "30";
+    private const string _panelSegment = "/panel/";
+
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
@@ -21,6 +24,12 @@ internal sealed class DomainExceptionHandler : IExceptionHandler
         }
 
         var status = DomainErrors.ToStatusCode(domain.Kind);
+        if (domain.Kind == DomainErrorKind.ServiceUnavailable && httpContext.Request.Path.Value?.Contains(_panelSegment, StringComparison.OrdinalIgnoreCase) == true)
+        {
+            // Solo los 503 del panel llevan Retry-After (spec 033, §5); los de otros módulos conservan su comportamiento.
+            httpContext.Response.Headers.RetryAfter = _retryAfterSeconds;
+        }
+
         await ProblemResponses.WriteAsync(httpContext, status, ReasonPhrases.GetReasonPhrase(status), domain.Code);
         return true;
     }

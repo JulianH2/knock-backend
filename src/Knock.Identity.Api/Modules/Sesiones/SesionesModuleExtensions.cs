@@ -26,6 +26,7 @@ public static class SesionesModuleExtensions
         services.AddSingleton<SessionTokenIssuer>();
         services.AddSingleton<IFirebaseIdTokenVerifier, FirebaseIdTokenVerifier>();
         services.AddSingleton<LoginService>();
+        services.AddSingleton<ISesionesApi, SesionesApi>();
         services.AddSingleton<ISesionCancelada, RedisSesionCancelada>();
         services.AddSingleton<SessionRefreshService>();
         services.AddSingleton<LogoutService>();

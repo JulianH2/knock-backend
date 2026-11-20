@@ -12,7 +12,7 @@ public class Spec039LoggingTests
     private const string _new = "+525598765432";
     private const string _token = "synthetic-secret-token";
 
-    private sealed class Capture<T> : ILogger<T>
+    internal sealed class Capture<T> : ILogger<T>
     {
         public List<string> Lines { get; } = [];
 
