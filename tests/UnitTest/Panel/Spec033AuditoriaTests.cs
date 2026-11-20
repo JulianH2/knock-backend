@@ -37,24 +37,11 @@ public class Spec033AuditoriaTests
         public HttpContext? HttpContext { get; set; }
     }
 
-    private sealed class CapturingLogger : ILogger<AuditoriaPanel>
-    {
-        public List<string> Lines { get; } = [];
-
-        public IDisposable? BeginScope<TState>(TState state)
-            where TState : notnull => null;
-
-        public bool IsEnabled(LogLevel logLevel) => true;
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
-            Lines.Add(formatter(state, exception) + exception);
-    }
-
-    private static (AuditoriaPanel Audit, FakeAuditStore Store, FakeAccessor Accessor, CapturingLogger Logger) Create()
+    private static (AuditoriaPanel Audit, FakeAuditStore Store, FakeAccessor Accessor, Spec039LoggingTests.Capture<AuditoriaPanel> Logger) Create()
     {
         var store = new FakeAuditStore();
         var accessor = new FakeAccessor();
-        var logger = new CapturingLogger();
+        var logger = new Spec039LoggingTests.Capture<AuditoriaPanel>();
         var hasher = new PanelIpHasher(PhoneProtectionTestKeys.Keys());
         return (new AuditoriaPanel(store, hasher, accessor, TimeProvider.System, logger), store, accessor, logger);
     }
