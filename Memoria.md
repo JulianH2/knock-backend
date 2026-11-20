@@ -983,3 +983,9 @@
 - **Por qué:** `traceId` y `correlationId` son aleatorios y a veces contienen el valor buscado ("123", "hi", un cursor); la prueba fallaba de forma intermitente y tumbaba el `gate` de PR ajenos.
 - **Decisiones (con porqué):** (1) Un solo ayudante en vez de copiar el patrón, para no crear clones (jscpd, `codemap.py --check`). (2) No se quitó ninguna aserción: el valor se sigue negando, ahora donde puede aparecer de verdad (los motivos).
 - **A evitar:** comparar un valor contra el cuerpo completo de una respuesta con identificadores aleatorios.
+
+## 2026-11-19 · KNOCK-75 · Excepción EXC-027 de Gitleaks por cadenas de prueba del panel
+- **Qué cambió:** `.gitleaksignore` acepta cinco huellas de los commits de la rama del panel (cadena de conexión de MongoDB inventada en `PanelFakes.cs` y `Spec033AuditoriaTests.cs`, y el secreto de ejemplo del estándar TOTP en `Spec033TotpDominioTests.cs`), y `security/exceptions.yaml` registra EXC-027 (responsable el Tech Lead, vence el 2027-02-17).
+- **Por qué:** Gitleaks revisa todas las ramas con `fetch-depth: 0`; al empujar la rama del panel, el check de secretos se puso en rojo en todos los PR hacia sprint-05, incluida la promoción a develop. Son valores sintéticos, no credenciales.
+- **Decisiones (con porqué):** (1) Huellas y excepción, como EXC-004, 023 y 024, en vez de reescribir la historia de la rama o borrarla: se conservan los commits por tarea. (2) Alcance de cinco líneas exactas; las reglas siguen activas para lo demás.
+- **A evitar:** escribir en una prueba o en un documento una cadena de conexión completa con usuario y clave (arma la cadena sin ese formato); reescribir o volver a empujar la rama del panel con otros hashes (las huellas dejan de coincidir).
