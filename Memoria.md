@@ -1,5 +1,10 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — KNOCK-185: borrador de la spec 058, colección `archivos` de Media
+- **Decisión:** el registro de archivos privados pasa a la colección `archivos` (`_id` ObjectId, `archivoId` UUID v7 único) y el tope de 10 subidas pendientes se cuenta en MongoDB insertando y verificando, no con un contador aparte. Queda en Borrador; D1 a D8 esperan al Tech Lead.
+- **Porqué:** la constitución y la spec 003 prohíben dato de negocio en Blob; insertar y verificar no depende de transacciones ni de índices parciales y nunca deja más pendientes que el tope aunque rechace alguna de más.
+- **A evitar:** mezclar `archivos` con `subidas_imagen` (spec 032); contar y luego insertar; borrar el contenedor `registros-temporales` sin revisar antes si tiene registros (no hay inventario de Azure en el repositorio); dar por cierto el formato de `archivoId` mientras la spec 020 diga 24 hexadecimales.
+
 ## 2026-11-19 — KNOCK-186: plantilla de ruta en ProblemDetails
 - **Decisión:** R-06 de la spec 035 se cumple con la plantilla de la ruta del endpoint, sin consulta y con `/` inicial, para no repetir valores recibidos y respetar CA-046-17 y CA-023-03. Sin endpoint se conserva la ruta de la petición sin consulta.
 - **Límite:** la ruta de respaldo puede contener valores cuando no hay endpoint; no se interpreta como una plantilla.
