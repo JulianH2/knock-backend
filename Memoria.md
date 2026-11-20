@@ -1007,7 +1007,25 @@
 - **Qué cambió:** `.mcp.json`, `.vscode/mcp.json`, `opencode.json`, `.codex/config.toml` y `docs/mcp.md` apuntan a `https://mcp.atlassian.com/v2/mcp`. Solo cambió la dirección: mismo transporte y mismos permisos (lectura permitida, escritura denegada).
 - **Por qué:** la dirección `/v1/mcp/authv2` está deprecada y Atlassian la retira el 2027-03-01.
 - **A evitar:** dejar direcciones antiguas del conector en configuraciones de agentes; al cambiar de endpoint, revisar los cinco archivos a la vez y no tocar la lista de herramientas.
+## 2026-11-19 · KNOCK-162 · Borrador de la spec 056 (autenticación entre servicios)
+- **Qué cambió:** `specs/056-autenticacion-entre-servicios/` (spec, plan, task, gates) en estado Borrador y su fila en `specs/README.md`. Sin código.
+- **Por qué:** la spec 009 dejó la regla general de llamadas internas para una spec propia; hoy solo existe el esquema HS256 por emisor de las specs 037 y 041 (implementado únicamente en Mercado).
+- **Decisiones (con porqué):** la spec toma ese esquema como base y fija propiedades, sin inventar mecanismo, rotación, replay ni Key Vault/Terraform: quedan como dudas P-01 a P-08 para el líder. Casos CA-NN (convención de specs numeradas, prueba `CA_056_NN`).
+- **A evitar:** dos nombres de secreto para lo mismo (`avisos-key-*` vs `interno-key-identity`) sin decidir convención.
+## 2026-11-19 · KNOCK-87 · Borrador de la spec 057 (borrado de fotos de verificación)
+- **Qué cambió:** `specs/057-borrado-de-fotos-de-verificacion/` (spec, plan, task y gates) en estado Borrador y su fila en `specs/README.md`. Sin código.
+- **Decisiones (con porqué):** (1) usa los tipos de tarea `AvisarAlVerificador` y `BorrarFotosDeVerificacion` de la spec 054, no los nombres de la ficha, para no duplicar el catálogo. (2) La llave se destruye antes que los blobs, así lo que falte queda ilegible. (3) Incluye la baja de cuenta porque la spec 025 §2.3 la difiere a HU-068. (4) Casos `TC-HU-068-KK` de la ficha; `sdd_lint.py --trace` de las specs numeradas solo reconoce `CA-NN`.
+- **A evitar:** implementar antes de aprobar y de tener la spec 025 (almacén cifrado), 053 y 054 en Identidad; dudas abiertas en §8 (correo, llave en Key Vault, respaldos).
 
+## 2026-11-19 · KNOCK-69 · Enmienda a la spec 020: solicitudes activas primero
+- **Qué cambió:** notas fechadas en R-09, CA-14, §6 y §14 de `specs/020-solicitudes-y-cotizaciones/spec.md`, CA-24 con su prueba prevista y la tarea T-16 (pendiente) en `task.md`. El estado de la spec y las casillas de aprobación no se tocaron.
+- **Por qué:** HU-026 CA1 pide Actividad con lo en curso primero. El Tech Lead eligió la opción A: no hay `/me/actividad`; la app usa `GET /api/v1/solicitudes` y `GET /api/v1/conversaciones`.
+- **Decisiones (con porqué):** (1) Activas: `enviada`, `cotizando`, `cita_confirmada`; terminadas: `terminada`, `calificada`, `cancelada`, `vencida`. (2) Cursor de tres datos (grupo, `creadoEn`, `_id`): cada grupo es una paginación por clave normal, así el cursor sigue estable. (3) Índice `{ clienteId, estado, creadoEn }` de la spec 048, sin borrar el actual. (4) Sin campo guardado de grupo, para no duplicar el estado.
+- **A evitar:** ordenar solo en la app (rompe la paginación) y reutilizar cursores del formato anterior (responden 400 `invalid_cursor`).
+## 2026-11-19 · KNOCK-166 y KNOCK-167 · Spec 010 ligada a sus dos tarjetas
+- **Qué cambió:** el encabezado de la spec 010 lleva las claves KNOCK-166 y KNOCK-167 y su `task.md` indica qué tareas corresponden a cada tarjeta (166: T-01 a T-04 y T-07; 167: T-05 y T-06). Solo documentación.
+- **Por qué:** el líder decidió que la 010 queda como spec madre de las dos tarjetas y no se parte; sin la clave en la spec, las tarjetas no pasaban el paso 0 de `story-workflow`.
+- **A evitar:** abrir una tarjeta técnica sin buscar antes su clave en `specs/`; la spec puede existir con otro número y sin la clave.
 ## 2026-11-19 · KNOCK-294 · Pruebas de errores: comprobar solo los motivos, no el traceId
 - **Qué cambió:** nuevo ayudante `ProblemBody.Reasons(raw)` en `tests/IntegrationTest/Support` (la sección `errors` del ProblemDetails; si no la hay, el cuerpo sin `traceId` ni `correlationId`). Las pruebas que comprobaban «el motivo nunca repite el valor enviado» sobre el cuerpo completo (specs 015, 017, 020, 021, 022, 023, 040, 041, 043, 046) ahora niegan sobre `Reasons`. `SecureHttp.AssertProblemAsync` (SecurityTest) busca los textos prohibidos sin `traceId`/`correlationId`.
 - **Por qué:** `traceId` y `correlationId` son aleatorios y a veces contienen el valor buscado ("123", "hi", un cursor); la prueba fallaba de forma intermitente y tumbaba el `gate` de PR ajenos.
