@@ -77,6 +77,7 @@ internal static class PanelGatewayExtensions
         services.AddAuthentication().AddJwtBearer(GatewayPanelSettings.Scheme, _ => { });
         services.AddOptions<JwtBearerOptions>(GatewayPanelSettings.Scheme).Configure<GatewayPanelSettings>((options, settings) =>
         {
+            // jscpd:ignore-start -- EXC-028
             options.MapInboundClaims = false;
             options.TokenValidationParameters = new TokenValidationParameters
             {
@@ -92,6 +93,7 @@ internal static class PanelGatewayExtensions
                 ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
                 ClockSkew = TimeSpan.Zero,
             };
+            // jscpd:ignore-end
             options.Events = new JwtBearerEvents
             {
                 // Spec 033, R-14: las sesiones del panel se cancelan por sid igual que las de la app (sesion-cancelada:{sid}).

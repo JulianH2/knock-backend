@@ -19,6 +19,7 @@ internal static class PanelBearer
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(settings);
+        // jscpd:ignore-start -- EXC-028
         options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -34,6 +35,7 @@ internal static class PanelBearer
             ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
             ClockSkew = TimeSpan.Zero,
         };
+        // jscpd:ignore-end
         options.Events = new JwtBearerEvents
         {
             OnTokenValidated = RejectCancelledSessionAsync,
