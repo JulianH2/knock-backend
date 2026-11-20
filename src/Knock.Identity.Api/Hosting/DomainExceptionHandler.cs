@@ -13,6 +13,7 @@ namespace Knock.Identity.Api.Hosting;
 internal sealed class DomainExceptionHandler : IExceptionHandler
 {
     private const string _retryAfterSeconds = "30";
+    private const string _panelSegment = "/panel/";
 
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
@@ -23,9 +24,9 @@ internal sealed class DomainExceptionHandler : IExceptionHandler
         }
 
         var status = DomainErrors.ToStatusCode(domain.Kind);
-        if (domain.Kind == DomainErrorKind.ServiceUnavailable)
+        if (domain.Kind == DomainErrorKind.ServiceUnavailable && httpContext.Request.Path.Value?.Contains(_panelSegment, StringComparison.OrdinalIgnoreCase) == true)
         {
-            // Cada 503 de dominio lleva Retry-After (spec 033, §5: los del panel; spec 013: la moderación no disponible).
+            // Solo los 503 del panel llevan Retry-After (spec 033, §5); los de otros módulos conservan su comportamiento.
             httpContext.Response.Headers.RetryAfter = _retryAfterSeconds;
         }
 
