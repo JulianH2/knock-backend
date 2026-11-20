@@ -987,6 +987,10 @@
 - **Por qué:** la spec 009 dejó la regla general de llamadas internas para una spec propia; hoy solo existe el esquema HS256 por emisor de las specs 037 y 041 (implementado únicamente en Mercado).
 - **Decisiones (con porqué):** la spec toma ese esquema como base y fija propiedades, sin inventar mecanismo, rotación, replay ni Key Vault/Terraform: quedan como dudas P-01 a P-08 para el líder. Casos CA-NN (convención de specs numeradas, prueba `CA_056_NN`).
 - **A evitar:** dos nombres de secreto para lo mismo (`avisos-key-*` vs `interno-key-identity`) sin decidir convención.
+## 2026-11-19 · KNOCK-87 · Borrador de la spec 057 (borrado de fotos de verificación)
+- **Qué cambió:** `specs/057-borrado-de-fotos-de-verificacion/` (spec, plan, task y gates) en estado Borrador y su fila en `specs/README.md`. Sin código.
+- **Decisiones (con porqué):** (1) usa los tipos de tarea `AvisarAlVerificador` y `BorrarFotosDeVerificacion` de la spec 054, no los nombres de la ficha, para no duplicar el catálogo. (2) La llave se destruye antes que los blobs, así lo que falte queda ilegible. (3) Incluye la baja de cuenta porque la spec 025 §2.3 la difiere a HU-068. (4) Casos `TC-HU-068-KK` de la ficha; `sdd_lint.py --trace` de las specs numeradas solo reconoce `CA-NN`.
+- **A evitar:** implementar antes de aprobar y de tener la spec 025 (almacén cifrado), 053 y 054 en Identidad; dudas abiertas en §8 (correo, llave en Key Vault, respaldos).
 
 ## 2026-11-19 · KNOCK-166 y KNOCK-167 · Spec 010 ligada a sus dos tarjetas
 - **Qué cambió:** el encabezado de la spec 010 lleva las claves KNOCK-166 y KNOCK-167 y su `task.md` indica qué tareas corresponden a cada tarjeta (166: T-01 a T-04 y T-07; 167: T-05 y T-06). Solo documentación.
