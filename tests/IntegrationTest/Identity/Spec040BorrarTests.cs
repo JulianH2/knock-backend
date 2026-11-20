@@ -65,7 +65,7 @@ public class Spec040BorrarTests
 
         foreign.StatusCode.Should().Be(HttpStatusCode.NotFound);
         missing.StatusCode.Should().Be(HttpStatusCode.NotFound);
-        (await foreign.Content.ReadAsStringAsync()).Should().NotContain("Falsa").And.NotContain(id.ToString());
+        ProblemBody.Reasons(await foreign.Content.ReadAsStringAsync()).Should().NotContain("Falsa").And.NotContain(id.ToString());
         (await ExistsAsync(host, id)).Should().BeTrue();
     }
 
