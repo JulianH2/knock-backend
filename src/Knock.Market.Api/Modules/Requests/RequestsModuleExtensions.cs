@@ -1,11 +1,13 @@
 using Knock.Contracts.Moderation;
 using Knock.Market.Api.Common.Crypto;
+using Knock.Market.Api.Common.TareasProgramadas;
 using Knock.Market.Api.Hosting;
 using Knock.Market.Api.Modules.Requests.Data;
 using Knock.Market.Api.Modules.Requests.Domain;
 using Knock.Market.Api.Modules.Requests.Services;
 using Knock.Market.Api.Modules.Requests.Validators;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using MongoDB.Driver;
 
 namespace Knock.Market.Api.Modules.Requests;
 
@@ -24,6 +26,7 @@ public static class RequestsModuleExtensions
             .ValidateOnStart();
         services.AddOptions<QuotePricingOptions>().BindConfiguration(QuotePricingOptions.SectionName);
         services.AddKnockMongoDatabase(ModuleKey);
+        services.AddScoped<ITareasProgramadasStore>(provider => new TareasProgramadasStore(provider.GetRequiredKeyedService<IMongoDatabase>(ModuleKey)));
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<ITechnicianDirectory, MongoTechnicianDirectory>();
         services.AddScoped<IQuoteRequestReader, MongoQuoteRequestReader>();

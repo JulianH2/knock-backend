@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-20T18:38:29Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-20T18:50:55Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -17,11 +17,11 @@
 | `Knock.Contracts` | - | 9 | 16 | 7 |
 | `Knock.Gateway` | -, hosting | 16 | 43 | 60 |
 | `Knock.Identity.Api` | -, common, hosting | 34 | 68 | 97 |
-| `Knock.Market.Api` | -, common, hosting | 34 | 68 | 100 |
+| `Knock.Market.Api` | -, common, hosting | 37 | 74 | 103 |
 | `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
 | `Panel` | -, controllers, data, domain, dtos, services, validators | 29 | 103 | 155 |
-| `Requests` | -, controllers, data, domain, dtos, services, validators | 67 | 141 | 129 |
+| `Requests` | -, controllers, data, domain, dtos, services, validators | 68 | 142 | 133 |
 | `Safety` | -, controllers, data, domain, dtos, services, validators | 15 | 38 | 33 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 28 | 50 | 56 |
 | `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 26 | 67 | 68 |
@@ -137,7 +137,7 @@
 - `Locked`: `src/Knock.Identity.Api/Modules/Panel/Services/AccesoPanelService.cs:30`, `src/Knock.Identity.Api/Modules/Panel/Services/AccesoPanelService.cs:56`
 - `LogRedactionProcessor`: `src/Knock.Gateway/Hosting/TelemetryRedactor.cs:329`, `src/Knock.Identity.Api/Hosting/TelemetryRedactor.cs:329`, `src/Knock.Market.Api/Hosting/TelemetryRedactor.cs:328`, `src/Knock.Messaging.Api/Hosting/TelemetryRedactor.cs:329`
 - `LoggingExtensions`: `src/Knock.Gateway/Hosting/LoggingExtensions.cs:13`, `src/Knock.Identity.Api/Hosting/LoggingExtensions.cs:13`, `src/Knock.Market.Api/Hosting/LoggingExtensions.cs:12`, `src/Knock.Messaging.Api/Hosting/LoggingExtensions.cs:13`
-- `ModulesExtensions`: `src/Knock.Identity.Api/Hosting/ModulesExtensions.cs:12`, `src/Knock.Market.Api/Hosting/ModulesExtensions.cs:9`
+- `ModulesExtensions`: `src/Knock.Identity.Api/Hosting/ModulesExtensions.cs:12`, `src/Knock.Market.Api/Hosting/ModulesExtensions.cs:10`
 - `MongoExtensions`: `src/Knock.Identity.Api/Hosting/MongoExtensions.cs:138`, `src/Knock.Market.Api/Hosting/MongoExtensions.cs:136`, `src/Knock.Messaging.Api/Hosting/MongoExtensions.cs:138`
 - `MongoReadinessHealthCheck`: `src/Knock.Identity.Api/Hosting/MongoExtensions.cs:227`, `src/Knock.Market.Api/Hosting/MongoExtensions.cs:225`, `src/Knock.Messaging.Api/Hosting/MongoExtensions.cs:227`
 - `NoPanelAccess`: `src/Knock.Identity.Api/Modules/Panel/Services/AccesoPanelService.cs:27`, `src/Knock.Identity.Api/Modules/Panel/Services/AccesoPanelService.cs:53`
@@ -628,6 +628,11 @@
 - `src/Knock.Market.Api/Common/Security/JwtSettings.cs` — record `JwtSettings`
 - `src/Knock.Market.Api/Common/Security/JwtSettingsFactory.cs` — class `JwtSettingsFactory`
   - `Create()`:14
+- `src/Knock.Market.Api/Common/TareasProgramadas/EjecutorDeTareasProgramadas.cs` — interface `IManejadorDeTarea`, class `EjecutorDeTareasProgramadas`
+  - `EjecutorDeTareasProgramadas()`:9, `ExecuteOneAsync()`:17
+- `src/Knock.Market.Api/Common/TareasProgramadas/ITareasProgramadasStore.cs` — record `TareaReservada`, interface `ITareasProgramadasStore`
+- `src/Knock.Market.Api/Common/TareasProgramadas/TareasProgramadasHostedService.cs` — class `TareasProgramadasOptions`, class `TareasProgramadasHostedService`
+  - `ExecuteAsync()`:16
 
 **hosting**
 
@@ -654,7 +659,7 @@
 - `src/Knock.Market.Api/Hosting/LoggingExtensions.cs` — class `LoggingExtensions`, class `ScopeRequestPathEnricher`
   - `AddKnockLogging()`:19, `ConfigureRequestLogging()`:35, `IsQueryBearingBelowWarning()`:66, `RoutePath()`:79, `Enrich()`:144
 - `src/Knock.Market.Api/Hosting/ModulesExtensions.cs` — class `ModulesExtensions`
-  - `AddKnockModules()`:11
+  - `AddKnockModules()`:12
 - `src/Knock.Market.Api/Hosting/MongoExtensions.cs` — class `KnockMongoOptions`, class `KnockMongoOptionsValidator`, class `MongoExtensions`, class `MongoReadinessHealthCheck`
   - `Seconds()`:58, `Validate()`:74, `AddKnockMongo()`:147, `AddKnockMongoDatabase()`:169, `CreateSettings()`:183, `CheckHealthAsync()`:227
 - `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs` — class `ObservabilityOptions`, record `AzureMonitorSignalSettings`, class `AzureMonitorExportStatus`, class `ObservabilityExtensions`, class `TelemetryExceptionRecorder`, class `IgnoreIncomingTraceContextPropagator`, class `OpenTelemetryLogSink`, class `SerilogLogState`
@@ -856,7 +861,7 @@
 
 - `src/Knock.Market.Api/Modules/Requests/IRequestsApi.cs` — interface `IRequestsApi`
 - `src/Knock.Market.Api/Modules/Requests/RequestsModuleExtensions.cs` — class `RequestsModuleExtensions`
-  - `AddRequestsModule()`:18
+  - `AddRequestsModule()`:20
 
 **controllers**
 
@@ -905,6 +910,8 @@
   - `SaveAsync()`:47, `SaveAsync()`:50
 - `src/Knock.Market.Api/Modules/Requests/Data/RequestsStore.cs` — record `RequestRecord`, record `RequestRecordPage`, class `RequestsStore`
   - `InsertAsync()`:53, `FindAsync()`:67, `CountLiveQuotesAsync()`:103, `HasQuotedAsync()`:119
+- `src/Knock.Market.Api/Modules/Requests/Data/TareasProgramadasStore.cs` — class `TareasProgramadasStore`
+  - `ReserveAsync()`:11, `CompleteAsync()`:30, `FailAsync()`:34, `ConfirmLeaseAsync()`:50
 - `src/Knock.Market.Api/Modules/Requests/Data/VisitStore.cs` — record `VisitRecord`, record `FailedAttempt`, enum `VisitCloseReason`, class `VisitStore`
   - `VisitRecord()`:10, `FindAsync()`:65, `MarkArrivedAsync()`:75, `RegisterFailedAttemptAsync()`:99, `CloseAsync()`:133, `CountNoticeAsync()`:162
 
