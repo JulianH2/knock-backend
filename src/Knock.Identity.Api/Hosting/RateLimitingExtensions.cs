@@ -48,6 +48,9 @@ internal static class RateLimitingExtensions
     /// <summary>Spec 039: programar la eliminación de la cuenta (USR-10). Valor propuesto: la spec no fija límite, solo registra el 429.</summary>
     public const string DeletionPolicy = "eliminacion";
 
+    /// <summary>Spec 025 (R-19): crear una verificación, 3 por hora por persona.</summary>
+    public const string VerificationCreatePolicy = "verificacion-crear";
+
     private const string _healthPath = "/health";
     private const string _readyPath = "/health/ready";
     private const string _unknownClient = "unknown";
@@ -76,6 +79,7 @@ internal static class RateLimitingExtensions
             options.AddPolicy(AccessRecoveryPolicy, context => SharedPartition($"recuperacion:{ClientKey(context)}", new RateLimitPolicySettings { PermitLimit = 3, Window = TimeSpan.FromHours(1) }, services));
             options.AddPolicy(ExportPolicy, SubjectPolicy(ExportPolicy, 3, TimeSpan.FromHours(1), services));
             options.AddPolicy(DeletionPolicy, SubjectPolicy(DeletionPolicy, 5, TimeSpan.FromHours(1), services));
+            options.AddPolicy(VerificationCreatePolicy, SubjectPolicy(VerificationCreatePolicy, 3, TimeSpan.FromHours(1), services));
             options.GlobalLimiter = PartitionedRateLimiter.CreateChained(
                 PartitionedRateLimiter.Create<HttpContext, string>(context => GlobalPartition(context, global, ready, services)),
                 PartitionedRateLimiter.Create<HttpContext, string>(context =>
