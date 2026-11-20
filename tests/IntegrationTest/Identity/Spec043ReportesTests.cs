@@ -1,6 +1,7 @@
 using System.Net;
 using AwesomeAssertions;
 using Knock.Contracts.Moderation;
+using Knock.IntegrationTest.Support;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -94,7 +95,7 @@ public sealed class Spec043ReportesTests
         using var response = await host.PostJsonAsync(_reports, host.Caller, body);
 
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
-        (await response.Content.ReadAsStringAsync()).Should().NotContain(kind, "no repite el valor");
+        ProblemBody.Reasons(await response.Content.ReadAsStringAsync()).Should().NotContain(kind, "no repite el valor");
         (await host.CountReportsAsync()).Should().Be(0);
     }
 

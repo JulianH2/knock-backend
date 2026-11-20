@@ -977,3 +977,9 @@
 - **Qué cambió:** `.mcp.json`, `.vscode/mcp.json`, `opencode.json`, `.codex/config.toml` y `docs/mcp.md` apuntan a `https://mcp.atlassian.com/v2/mcp`. Solo cambió la dirección: mismo transporte y mismos permisos (lectura permitida, escritura denegada).
 - **Por qué:** la dirección `/v1/mcp/authv2` está deprecada y Atlassian la retira el 2027-03-01.
 - **A evitar:** dejar direcciones antiguas del conector en configuraciones de agentes; al cambiar de endpoint, revisar los cinco archivos a la vez y no tocar la lista de herramientas.
+
+## 2026-11-19 · KNOCK-294 · Pruebas de errores: comprobar solo los motivos, no el traceId
+- **Qué cambió:** nuevo ayudante `ProblemBody.Reasons(raw)` en `tests/IntegrationTest/Support` (la sección `errors` del ProblemDetails; si no la hay, el cuerpo sin `traceId` ni `correlationId`). Las pruebas que comprobaban «el motivo nunca repite el valor enviado» sobre el cuerpo completo (specs 015, 017, 020, 021, 022, 023, 040, 041, 043, 046) ahora niegan sobre `Reasons`. `SecureHttp.AssertProblemAsync` (SecurityTest) busca los textos prohibidos sin `traceId`/`correlationId`.
+- **Por qué:** `traceId` y `correlationId` son aleatorios y a veces contienen el valor buscado ("123", "hi", un cursor); la prueba fallaba de forma intermitente y tumbaba el `gate` de PR ajenos.
+- **Decisiones (con porqué):** (1) Un solo ayudante en vez de copiar el patrón, para no crear clones (jscpd, `codemap.py --check`). (2) No se quitó ninguna aserción: el valor se sigue negando, ahora donde puede aparecer de verdad (los motivos).
+- **A evitar:** comparar un valor contra el cuerpo completo de una respuesta con identificadores aleatorios.
