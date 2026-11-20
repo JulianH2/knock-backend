@@ -92,12 +92,13 @@ internal static class SecureHttp
         return raw;
     }
 
-    /// <summary>El cuerpo de un error sin el <c>correlationId</c> ni el <c>traceId</c> (distintos en cada petición): sirve para comparar dos errores.</summary>
+    /// <summary>El cuerpo de un error sin el <c>correlationId</c>, el <c>traceId</c> (distintos en cada petición) ni el <c>instance</c> (la ruta de la petición, con el id del recurso): sirve para comparar dos errores.</summary>
     public static string WithoutCorrelationId(string problemJson)
     {
         var body = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(problemJson) ?? [];
         body.Remove("correlationId");
         body.Remove("traceId");
+        body.Remove("instance");
         return JsonSerializer.Serialize(body.OrderBy(p => p.Key, StringComparer.Ordinal).ToDictionary(p => p.Key, p => p.Value));
     }
 
