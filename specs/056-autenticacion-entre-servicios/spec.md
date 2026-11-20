@@ -144,11 +144,24 @@ Análisis proporcional: cambio de autenticación y permisos entre servicios; sin
 - **P-08 (2026-11-19):** se elimina como duda aparte; quedó resuelta con P-02 y P-03.
 - **Estado «Firmada» (2026-11-19):** se mantiene como pide `sdd_lint`; unificarlo con «Implementada» es otra tarea.
 
-**Dudas abiertas** (este borrador no las resuelve; las decide el Tech Lead):
-- **D-01 — Quién ejecuta la rotación manual cada 90 días** y con qué procedimiento (la decisión fija periodicidad y ventana, no responsable ni pasos).
-- **D-02 — Nombre y lectura de la clave «anterior»** de cada emisor (secreto en Key Vault y su configuración en el servicio); depende del PR de `deploy/**` de P-04.
-- **D-03 — Alcance de «idempotente» en CA-10:** falta confirmar si basta con que cada receptor ya sea idempotente (la 037 deduplica por `eventoId`; `GET /interno/historial` solo lee) o se espera una prueba adicional por ruta.
-- **D-04 — Mejora propuesta en la spec 026:** una ruta interna de pertenencia en Mercado. No se decidió y no se incluye; si se hiciera usaría la credencial de servicio y requeriría su propia decisión.
+**Decisiones pendientes del Tech Lead (sí/no).** Quedan cuatro; ninguna bloquea la aprobación de la spec, pero D-01 y D-02 deben estar resueltas antes de la tarea T-07 (rotación). Cada una trae contexto, opciones y la recomendación del autor; responder «sí» a una recomendación la deja decidida tal como está escrita.
+
+- **D-01 — ¿La rotación manual de 90 días la ejecuta el Tech Lead con un procedimiento escrito en `docs/`?**
+  - Contexto: P-02 fijó periodicidad (90 días), dos claves y ventana de 24 horas, pero no quién rota ni los pasos. Los secretos viven en Key Vault y su alta la hace el Tech Lead (P-04).
+  - Opciones: (a) el Tech Lead, con un procedimiento de cinco pasos (crear la clave nueva, pasar la vigente a «anterior», desplegar con la nueva, esperar 24 horas, retirar la anterior); (b) un turno rotativo del equipo con el mismo procedimiento; (c) automatizarla (contradice «manual» de P-02).
+  - **Recomendación: (a), sí.** Quien administra Key Vault ya tiene el permiso; el procedimiento se escribe en `docs/` junto con el PR de `deploy/**` de P-04. Si la respuesta es «no», indicar quién.
+- **D-02 — ¿La clave «anterior» de cada emisor se llama como la vigente con el sufijo `-previous` y se lee de una configuración `<Clave>:Previous`?**
+  - Contexto: P-06 dejó `avisos-key-market`, `avisos-key-identity` e `interno-key-identity`; falta el nombre de la clave anterior y su lectura. Se define en el mismo PR de `deploy/**` (P-04).
+  - Opciones: (a) sufijo `-previous` (por ejemplo `interno-key-identity-previous`), opcional: si no existe, solo vale la vigente; (b) usar versiones de un mismo secreto de Key Vault (la anterior es la versión previa); (c) un secreto con dos valores.
+  - **Recomendación: (a), sí.** Es explícito, se prueba con un nombre fijo (CA_056_11) y permite retirar la anterior borrando un secreto sin tocar la vigente. (b) depende de listar versiones en tiempo de ejecución y complica la prueba.
+- **D-03 — ¿Basta con que cada receptor ya sea idempotente, con una prueba por ruta interna, para cumplir CA-10?**
+  - Contexto: la 037 deduplica por `eventoId` y `GET /api/v1/interno/historial` (041) solo lee; P-03 acepta la segunda presentación de la misma credencial porque no hay efecto duplicado.
+  - Opciones: (a) sí: CA_056_10 prueba la validación (dos presentaciones aceptan, vencida rechaza) y se agrega una prueba de integración por ruta interna existente que repite la misma llamada y comprueba un solo efecto; (b) basta la prueba de validación y se confía en las suites de la 037 y la 041.
+  - **Recomendación: (a), sí.** Son dos rutas y la prueba es barata; (b) deja sin comprobar que la repetición de la credencial no duplique el aviso.
+- **D-04 — ¿Se descarta en esta spec la ruta interna de pertenencia en Mercado (mejora de la spec 026)?**
+  - Contexto: hoy Mensajería comprueba la pertenencia con `GET /api/v1/visitas/{id}` y el JWT del usuario (P-07 lo mantiene). Una ruta interna usaría credencial de servicio, quitaría el reenvío del JWT de usuario entre servicios y exigiría enmendar la 026 y su propia decisión.
+  - Opciones: (a) sí, se descarta y se deja como mejora futura con ticket propio; (b) no, se incluye en la 056 (amplía alcance y puntos; la spec vale 2 puntos).
+  - **Recomendación: (a), sí.** P-07 ya decidió mantener el reenvío; incluirla cambia el alcance y obliga a una enmienda de la 026. Si la respuesta es «no», se abre una spec aparte.
 
 ## Aprobación
 - [ ] Revisor 1 — nombre: ________ fecha: ________

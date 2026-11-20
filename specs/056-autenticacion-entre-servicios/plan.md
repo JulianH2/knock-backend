@@ -1,6 +1,6 @@
 # plan.md — Spec 056 Autenticación entre servicios (KNOCK-162)
 
-> **Estado:** Borrador. El plan se confirma al aprobar la spec; P-01 a P-08 se decidieron el 2026-11-19 (spec §8); quedan las dudas D-01 a D-04.
+> **Estado:** Borrador. El plan se confirma al aprobar la spec; P-01 a P-08 se decidieron el 2026-11-19 (spec §8); quedan las decisiones sí/no D-01 a D-04 (spec §8, con recomendación).
 
 ## 1. Mapeo de archivos
 - **Reutilizar (buscado con `codemap.py --query`):**
@@ -37,7 +37,7 @@
 | CA-12 | `MarketCall_ForwardsUserToken_CA_056_12` y regresión de la spec 026 | IntegrationTest · (comando) |
 
 ## 4. Secuencia
-1. Aprobar la spec (persona), hacer antes y en PR aparte la enmienda a la spec 055 (P-01b) y resolver D-01 a D-04. Nada de código antes.
+1. Aprobar la spec (persona), hacer antes y en PR aparte la enmienda a la spec 055 (P-01b) y resolver D-01 a D-04 (sí/no del Tech Lead). Nada de código antes.
 2. Contrato: confirmar propiedades de la credencial; actualizar `docs/endpoints.md` si cambia.
 3. Dominio y servicio de validación y emisión + unitarias (CA-02, CA-06).
 4. Receptores (Mensajería y ajuste de Mercado) + integración (CA-07, CA-09).

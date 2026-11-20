@@ -4,7 +4,7 @@
 
 | Tarea | Qué se hace | Cubre | Estado |
 |---|---|---|---|
-| T-01 | Decisiones de §8 registradas (2026-11-19); resolver D-01 a D-04 con el líder | R-10 | parcial |
+| T-01 | Decisiones de §8 registradas (2026-11-19); responder D-01 a D-04 (sí/no con recomendación, spec §8) | R-10 | parcial |
 | T-02 | Definir o extraer la validación de la credencial de servicio (según P-01) con falla cerrada | R-01 a R-06 · CA-02, CA-06 | pendiente |
 | T-03 | Aplicar la regla común en Mensajería (`POST /api/v1/interno/avisos`, spec 037) y revisar Mercado (spec 041) | R-01 a R-05, R-09 · CA-03, CA-09 | pendiente |
 | T-04 | Comprobar que el gateway no enruta `/api/v1/interno/*` | R-07 · CA-07 | pendiente |

@@ -1107,3 +1107,9 @@
 - **Qué cambió:** `specs/README.md` agrega la fila 059 (Suspensión preventiva en casos críticos, Borrador), que el PR #182 había dejado fuera.
 - **Por qué:** el índice debe listar toda spec del repositorio; una persona o una herramienta que lea primero el índice no veía la 059.
 - **A evitar:** agregar una carpeta de spec sin su fila en el índice en el mismo cambio.
+
+## 2026-11-20 · KNOCK-162 · Spec 056: dudas D-01 a D-04 redactadas como decisiones sí/no
+- **Qué cambió:** en `specs/056-autenticacion-entre-servicios/spec.md` §8, las cuatro dudas que quedaban (D-01 a D-04) pasan a decisiones sí/no con contexto, opciones y recomendación; `plan.md` y `task.md` apuntan a ellas. Solo documentación.
+- **Por qué:** el Tech Lead respondió P-01 a P-08 y las dos correcciones (PR #180); lo que faltaba era formularlo de modo que se pueda contestar con un sí o un no.
+- **Decisiones (con porqué):** la recomendación del autor queda marcada, pero no se aplica como decidida hasta que el Tech Lead conteste; no se inventó ningún bloqueo (ninguna impide aprobar la spec, D-01 y D-02 solo anteceden a T-07).
+- **A evitar:** dejar una duda abierta sin opciones ni recomendación.
