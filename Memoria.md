@@ -1,5 +1,10 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — KNOCK-53: auditoría de la exploración sin cuenta (HU-005)
+- **Estado:** el backend ya cubre lo público: `GET /api/v1/oficios`, `GET /api/v1/tecnicos/autocompletar` y `GET /api/v1/tecnicos/{id}` son anónimos en el gateway y en Mercado, con caché y sin datos privados. Se agregaron pruebas TC-HU-005-01, -02, -04 y -05 y una nota en `docs/rate-limit-matrix.md`; no hay código de producción nuevo.
+- **Pendiente de decisión:** CA4 pide 429 tras 60 peticiones por minuto por IP y el límite global vigente es 100. Búsqueda y zonas siguen con sesión (specs 027 y 023). `GET /api/v1/explorar` (spec 046, T-14) no existe todavía. «Continuar donde me quedé» (CA3) es de la app: el backend no guarda acción pendiente.
+- **A evitar:** subir un límite más estricto solo para las rutas públicas sin acordarlo, porque cambia la spec 009.
+
 ## 2026-11-20 — KNOCK-68: pruebas iniciales de T-08 bloqueadas por T-07
 - **Estado:** se agregaron pruebas iniciales de bandeja, descarte, autenticación y carrera en `tests/IntegrationTest/Requests/Spec028BandejaTests.cs`; T-08 sigue pendiente. No se implementaron rutas ni cambios de producción.
 - **Bloqueo:** en esta rama T-07 figura pendiente y `QuoteStore` no consulta ni cambia el envío al cotizar. Una prueba con envío ya descartado recibió 201 y guardó una cotización, por lo que no se puede garantizar que gane solo una de las operaciones sin modificar la transacción de cotización de T-07. T-08 se pidió como paso único.

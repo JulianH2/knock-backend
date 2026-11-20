@@ -95,6 +95,36 @@ public sealed class GatewaySecurityTests
         host.PathsSeen.Should().NotContain("/api/v1/colonias/en-punto").And.NotContain("/api/v1/auth/logout");
     }
 
+    [Theory]
+    [InlineData("/api/v1/oficios")]
+    [InlineData("/api/v1/tecnicos/autocompletar?q=plomer")]
+    [InlineData("/api/v1/tecnicos/665f1c2e8b3a4d0012345678")]
+    public async Task PublicReadRoutes_AnswerWithoutTokenAndReturn429WhenTheIpLimitIsPassed_TC_HU_005_04(string path)
+    {
+        await using var host = await StartWithRedisAsync(new Dictionary<string, string?>
+        {
+            ["RateLimiting:Ip:PermitLimit"] = "3",
+            ["RateLimiting:Ip:Window"] = "00:01:00",
+            ["RateLimiting:Auth:PermitLimit"] = "1000",
+            ["RateLimiting:User:PermitLimit"] = "1000",
+        });
+        var uri = new Uri(path, UriKind.Relative);
+        var statuses = new List<HttpStatusCode>();
+        HttpResponseMessage? last = null;
+
+        for (var i = 0; i < 4; i++)
+        {
+            last?.Dispose();
+            last = await GetAsync(host.Client, uri);
+            statuses.Add(last.StatusCode);
+        }
+
+        statuses.Take(3).Should().OnlyContain(status => status == HttpStatusCode.OK, "sin sesión la ruta pública deja pasar");
+        statuses[3].Should().Be(HttpStatusCode.TooManyRequests);
+        last!.Headers.Contains("Retry-After").Should().BeTrue();
+        last.Dispose();
+    }
+
     [Fact]
     public async Task EveryResponse_CarriesTheSecurityHeaders_CA_009_02()
     {
