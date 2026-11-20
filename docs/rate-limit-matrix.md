@@ -74,6 +74,10 @@
 
 `POST /api/v1/solicitudes/{id}/cotizaciones` añade una ventana fija de **3 peticiones por minuto por `sub`** y por proceso, además de los límites generales. La cuarta responde 429 con `Retry-After`. Con dos réplicas pueden pasar hasta 6 por minuto; el límite compartido queda para KNOCK-247.
 
+## Descarte en el gateway (spec 028, KNOCK-68)
+
+`POST /api/v1/solicitudes/{id}/descartar` suma una ventana fija de **30 peticiones por hora por `sub`**, compartida mediante Redis (`ratelimit:descarte:*`). La petición 31 responde 429 con `Retry-After`; si Redis falla responde 503. También aplican los límites generales del gateway. La bandeja no tiene límite específico adicional.
+
 ## Direcciones del cliente en Identidad (spec 040, KNOCK-285)
 
 `GET` y `POST /api/v1/me/direcciones` y `PUT` y `DELETE /api/v1/me/direcciones/{id}` no tienen política propia: usan la política global por IP de Identidad y los límites del gateway por IP y usuario; la respuesta 429 incluye `Retry-After`. `POST` y `PUT` limitan el cuerpo a 4 KB (413). El tope de 10 direcciones por persona es una regla de negocio (409 `address_limit_reached`), no un límite de peticiones.
