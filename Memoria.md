@@ -992,6 +992,11 @@
 - **Decisiones (con porqué):** (1) usa los tipos de tarea `AvisarAlVerificador` y `BorrarFotosDeVerificacion` de la spec 054, no los nombres de la ficha, para no duplicar el catálogo. (2) La llave se destruye antes que los blobs, así lo que falte queda ilegible. (3) Incluye la baja de cuenta porque la spec 025 §2.3 la difiere a HU-068. (4) Casos `TC-HU-068-KK` de la ficha; `sdd_lint.py --trace` de las specs numeradas solo reconoce `CA-NN`.
 - **A evitar:** implementar antes de aprobar y de tener la spec 025 (almacén cifrado), 053 y 054 en Identidad; dudas abiertas en §8 (correo, llave en Key Vault, respaldos).
 
+## 2026-11-19 · KNOCK-69 · Enmienda a la spec 020: solicitudes activas primero
+- **Qué cambió:** notas fechadas en R-09, CA-14, §6 y §14 de `specs/020-solicitudes-y-cotizaciones/spec.md`, CA-24 con su prueba prevista y la tarea T-16 (pendiente) en `task.md`. El estado de la spec y las casillas de aprobación no se tocaron.
+- **Por qué:** HU-026 CA1 pide Actividad con lo en curso primero. El Tech Lead eligió la opción A: no hay `/me/actividad`; la app usa `GET /api/v1/solicitudes` y `GET /api/v1/conversaciones`.
+- **Decisiones (con porqué):** (1) Activas: `enviada`, `cotizando`, `cita_confirmada`; terminadas: `terminada`, `calificada`, `cancelada`, `vencida`. (2) Cursor de tres datos (grupo, `creadoEn`, `_id`): cada grupo es una paginación por clave normal, así el cursor sigue estable. (3) Índice `{ clienteId, estado, creadoEn }` de la spec 048, sin borrar el actual. (4) Sin campo guardado de grupo, para no duplicar el estado.
+- **A evitar:** ordenar solo en la app (rompe la paginación) y reutilizar cursores del formato anterior (responden 400 `invalid_cursor`).
 ## 2026-11-19 · KNOCK-166 y KNOCK-167 · Spec 010 ligada a sus dos tarjetas
 - **Qué cambió:** el encabezado de la spec 010 lleva las claves KNOCK-166 y KNOCK-167 y su `task.md` indica qué tareas corresponden a cada tarjeta (166: T-01 a T-04 y T-07; 167: T-05 y T-06). Solo documentación.
 - **Por qué:** el líder decidió que la 010 queda como spec madre de las dos tarjetas y no se parte; sin la clave en la spec, las tarjetas no pasaban el paso 0 de `story-workflow`.
