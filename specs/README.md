@@ -23,7 +23,7 @@ Cada carpeta tiene `spec.md`, `plan.md` y `task.md`. Estados: Borrador → Aprob
 | 017 | Perfil de la persona (USR-01, USR-02) | Aprobada | [`017-perfil-de-la-persona`](017-perfil-de-la-persona/spec.md) |
 | 018 | Sesiones por dispositivo (SES-04, SES-05) | Aprobada | [`018-sesiones-por-dispositivo`](018-sesiones-por-dispositivo/spec.md) |
 | 019 | MCP del proyecto | Aprobada | [`019-mcp-del-proyecto`](019-mcp-del-proyecto/spec.md) |
-| BUG-001 | El job `dast` del CI nunca se ejecuta (KNOCK-238) | Borrador | [`BUG-001-job-dast-no-se-ejecuta`](BUG-001-job-dast-no-se-ejecuta/spec.md) |
+| BUG-001 | El job `dast` del CI nunca se ejecuta (KNOCK-238) | Aprobada | [`BUG-001-job-dast-no-se-ejecuta`](BUG-001-job-dast-no-se-ejecuta/spec.md) |
 | BUG-005 | Market sin redacción de registros de consola (KNOCK-255) | Implementada | [`BUG-005-market-sin-redaccion-de-registros`](BUG-005-market-sin-redaccion-de-registros/spec.md) |
 | 020 | Solicitudes y cotizaciones (pedir y enviar) | Aprobada | [`020-solicitudes-y-cotizaciones`](020-solicitudes-y-cotizaciones/spec.md) |
 | 021 | Comparar y elegir cotización | Aprobada | [`021-comparar-y-elegir-cotizacion`](021-comparar-y-elegir-cotizacion/spec.md) |

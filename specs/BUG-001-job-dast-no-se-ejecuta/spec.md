@@ -6,7 +6,7 @@
 > **Relacionadas:** spec 007 (CI y despliegue; deja ZAP fuera de su alcance hasta tener un servicio desplegable), KNOCK-233 (comprobaciones obligatorias de los rulesets, spec 007 T-05), KNOCK-239 y KNOCK-240 (encabezados del gateway, de otra persona).
 > **Fuentes:** `.github/workflows/ci-pr.yml` (jobs `detect`, `dast` y `gate`) · `docs/QA_DEVSECOPS.md` (filas DAST y Smoke) · `docs/modelo-de-amenazas.md` · `deploy/docker-compose.local.yml` · `src/*/Dockerfile` · `security/exceptions.yaml`
 > **Skills:** story-workflow, spec-first-writing, foundation-backend, security-core, testing-strategy-backend, reuse-before-create
-> **Estado:** Borrador
+> **Estado:** Aprobada
 
 ## 1. Objetivo
 Que el escaneo dinámico (ZAP baseline) y la prueba de humo que `docs/QA_DEVSECOPS.md` promete en cada PR **se ejecuten de verdad**. La pila de servicios corre dentro del runner, sin costo y sin Azure. Si el escaneo deja de poder ejecutarse, el `gate` debe fallar en vez de darlo por bueno.
@@ -99,6 +99,6 @@ No aplica: la pila del CI arranca con bases vacías y se destruye con `down -v` 
 | B-03 | **Se acepta la revisión de par con los cuatro puntos de Erick atendidos (commit `ff0848c`), sin una nueva respuesta suya.** | En el PR #59 Erick dejó «cambios solicitados» el 2026-11-11, Alexis los atendió el 2026-11-12 y pidió el 2026-11-13 que los revisara; no hay respuesta posterior en el hilo. | Se pide la re-revisión de Erick antes de aprobar. |
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-20
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
