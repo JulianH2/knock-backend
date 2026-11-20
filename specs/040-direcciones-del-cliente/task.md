@@ -5,7 +5,7 @@
 
 | Tarea | Qué se hace | Cubre | Depende de | Paralelo con | Responsable sugerido | Estado |
 |---|---|---|---|---|---|---|
-| T-00 | Prerrequisitos que hoy no existen y no son parte de esta spec: Llaves de cifrado de campo en Key Vault (spec 025) y la copia de la dirección en la visita de la spec 022 (hoy no implementadas) | §8 | — | T-01 | por asignar | pendiente |
+| T-00 | Prerrequisitos que hoy no existen y no son parte de esta spec: Llaves de cifrado de campo en Key Vault (spec 025) y la copia de la dirección en la visita de la spec 022. Conciliado 2026-11-20 (KNOCK-54): la copia ya existe (la solicitud guarda `direccionCifrada` y la visita la descifra para el cliente y el técnico elegido, specs 020 y 022); el secreto `identity-field-encryption-key` está declarado en `deploy/apps/main.tf` (KNOCK-287) pero **una persona debe crearlo en Key Vault y ejecutar el apply**; sin él Identidad falla cerrada con 500 | §8 | — | T-01 | José (secreto y apply) | parcial: falta crear el secreto |
 | T-01 | Script de `db/` con colecciones e índices de §6 y prueba de base de datos | §6 | — | T-02 en adelante (con datos de prueba) | por asignar | hecha |
 | T-02 | `GET /api/v1/me/direcciones` (DIR-01): DTO, validador, servicio, almacén, controlador y pruebas | R-01 · CA-01 a CA-02 | T-01 | otras rutas | por asignar | hecha |
 | T-03 | `POST /api/v1/me/direcciones` (DIR-02): DTO, validador, servicio, almacén, controlador y pruebas | R-02 a R-03 · CA-03 a CA-06 | T-01 | otras rutas | por asignar | hecha |
@@ -14,7 +14,7 @@
 | T-06 | Reglas de negocio específicas de la spec (estados, plazos y límites) | R-10 a R-14 · CA-18 a CA-22 | T-01 | otras rutas | por asignar | hecha |
 | T-07 | Transversales: `sub` del token, registros sin datos personales, 429 y 413, sin `Idempotency-Key` | R-15 a R-18 · CA-23 a CA-26 | T-02 a T-06 | T-08 | por asignar | hecha |
 | T-08 | OpenAPI, `docs/endpoints.md` y `docs/rate-limit-matrix.md` | §5 | T-02 a T-06 | T-07 | por asignar | hecha |
-| T-09 | Gates, `Memoria.md` y revisión de par | §12 | todas | — | por asignar | pendiente |
+| T-09 | Gates, `Memoria.md` y revisión de par | §12 | todas | — | por asignar | hecha (`sdd_lint --trace 040` sin faltantes, entrada de Memoria del 2026-11-17, revisión de pares del PR #159 resuelta el 2026-11-18); falta la firma de «Implementada» por una persona |
 
 ## Definición de terminado
 - Los criterios de aceptación de `spec.md` están cubiertos por pruebas en verde.

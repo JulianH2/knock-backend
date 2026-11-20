@@ -41,6 +41,7 @@ public static class RequestsModuleExtensions
         services.AddScoped<IOutbox, MongoOutbox>();
         services.AddScoped<CandidatosStore>();
         services.AddScoped<EnviosStore>();
+        services.AddScoped<BandejaService>();
         services.AddScoped<RepartoStore>();
         services.AddScoped<RepartoService>();
         services.AddScoped<IManejadorDeTarea, RepartirOleada>();
