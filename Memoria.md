@@ -1,5 +1,10 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — KNOCK-53: auditoría de la exploración sin cuenta (HU-005)
+- **Estado:** el backend ya cubre lo público: `GET /api/v1/oficios`, `GET /api/v1/tecnicos/autocompletar` y `GET /api/v1/tecnicos/{id}` son anónimos en el gateway y en Mercado, con caché y sin datos privados. Se agregaron pruebas TC-HU-005-01, -02, -04 y -05 y una nota en `docs/rate-limit-matrix.md`; no hay código de producción nuevo.
+- **Pendiente de decisión:** CA4 pide 429 tras 60 peticiones por minuto por IP y el límite global vigente es 100. Búsqueda y zonas siguen con sesión (specs 027 y 023). `GET /api/v1/explorar` (spec 046, T-14) no existe todavía. «Continuar donde me quedé» (CA3) es de la app: el backend no guarda acción pendiente.
+- **A evitar:** subir un límite más estricto solo para las rutas públicas sin acordarlo, porque cambia la spec 009.
+
 ## 2026-11-20 — Spec 029: cascada T-02 parcial (Alexis)
 - **Avance:** `CierreDeSolicitudService` usa `TransicionesDeSolicitud` y una transacción de MongoDB para solicitud, cotizaciones, envíos y outbox; no modifica visitas. Las pruebas con DocumentDB local cubren cancelación y vencimiento con un envío y una cotización, y reversión al fallar el buzón. El evento solo lleva los campos previstos; el vencimiento incluye `clienteId`.
 - **Verificación:** prueba roja de compilación por servicio inexistente antes del código; integración 029 3/3; build Release sin restaurar 0 errores y advertencias; ArchitectureTest 25/25; formato correcto. UnitTest 1911/1912: falló una prueba de tiempo del redactor de Mensajería (1,403 ms frente a 1 ms).
