@@ -4,13 +4,13 @@ namespace Knock.IntegrationTest.Support;
 
 /// <summary>
 /// El texto de un error donde buscar valores que nunca deben repetirse. El cuerpo completo trae <c>traceId</c> y <c>correlationId</c>,
-/// aleatorios y a veces con ese mismo valor ("123", "hi"), y la prueba fallaba de forma intermitente: aquí van solo los motivos.
+/// aleatorios y a veces con ese mismo valor ("123", "hi"), y la prueba fallaba de forma intermitente; también trae <c>instance</c>, la ruta de la petición (con el id del recurso), que no es un motivo: aquí van solo los motivos.
 /// </summary>
 internal static class ProblemBody
 {
-    private static readonly string[] _randomIds = ["traceId", "correlationId"];
+    private static readonly string[] _randomIds = ["traceId", "correlationId", "instance"];
 
-    /// <summary>La sección <c>errors</c> si existe; si no, el cuerpo sin <c>traceId</c> ni <c>correlationId</c> (y el texto tal cual si no es un objeto JSON).</summary>
+    /// <summary>La sección <c>errors</c> si existe; si no, el cuerpo sin <c>traceId</c>, <c>correlationId</c> ni <c>instance</c> (y el texto tal cual si no es un objeto JSON).</summary>
     public static string Reasons(string raw)
     {
         ArgumentNullException.ThrowIfNull(raw);
