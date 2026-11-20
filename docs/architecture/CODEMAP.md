@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-20T18:39:44Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-20T19:11:03Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -19,7 +19,7 @@
 | `Knock.Identity.Api` | -, common, hosting | 34 | 68 | 97 |
 | `Knock.Market.Api` | -, common, hosting | 37 | 74 | 103 |
 | `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
-| `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
+| `Media` | -, data, domain, dtos, services, validators | 23 | 40 | 66 |
 | `Panel` | -, controllers, data, domain, dtos, services, validators | 29 | 103 | 155 |
 | `Requests` | -, controllers, data, domain, dtos, services, validators | 72 | 148 | 147 |
 | `Safety` | -, controllers, data, domain, dtos, services, validators | 15 | 38 | 33 |
@@ -146,8 +146,8 @@
 - `OpenApiExtensions`: `src/Knock.Identity.Api/Hosting/OpenApiExtensions.cs:8`, `src/Knock.Market.Api/Hosting/OpenApiExtensions.cs:5`
 - `OpenTelemetryLogSink`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:215`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:215`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:211`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:215`
 - `PrivateNoStoreAttribute`: `src/Knock.Identity.Api/Modules/Addresses/Controllers/PrivateNoStoreAttribute.cs:10`, `src/Knock.Market.Api/Hosting/PrivateNoStoreAttribute.cs:11`
-- `ProblemDetailsExtensions`: `src/Knock.Identity.Api/Hosting/ProblemDetailsExtensions.cs:6`, `src/Knock.Market.Api/Hosting/ProblemDetailsExtensions.cs:5`
-- `ProblemResponses`: `src/Knock.Gateway/Hosting/ProblemResponses.cs:7`, `src/Knock.Identity.Api/Hosting/RequestBodyLimitMiddleware.cs:8`, `src/Knock.Market.Api/Hosting/RequestBodyLimitMiddleware.cs:9`, `src/Knock.Messaging.Api/Hosting/ProblemResponses.cs:7`
+- `ProblemDetailsExtensions`: `src/Knock.Identity.Api/Hosting/ProblemDetailsExtensions.cs:7`, `src/Knock.Market.Api/Hosting/ProblemDetailsExtensions.cs:6`
+- `ProblemResponses`: `src/Knock.Gateway/Hosting/ProblemResponses.cs:8`, `src/Knock.Identity.Api/Hosting/RequestBodyLimitMiddleware.cs:8`, `src/Knock.Market.Api/Hosting/RequestBodyLimitMiddleware.cs:9`, `src/Knock.Messaging.Api/Hosting/ProblemResponses.cs:8`
 - `RateLimitPolicySettings`: `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:12`, `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:13`, `src/Knock.Messaging.Api/Hosting/RateLimitingExtensions.cs:12`
 - `RateLimitSettings`: `src/Knock.Gateway/Hosting/RateLimitingExtensions.cs:21`, `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:22`, `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:23`, `src/Knock.Messaging.Api/Hosting/RateLimitingExtensions.cs:22`
 - `RateLimitingExtensions`: `src/Knock.Gateway/Hosting/RateLimitingExtensions.cs:66`, `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:34`, `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:35`, `src/Knock.Messaging.Api/Hosting/RateLimitingExtensions.cs:32`
@@ -522,7 +522,7 @@
 - `src/Knock.Gateway/Hosting/PanelGatewayExtensions.cs` — record `GatewayPanelSettings`, class `PanelGatewayExtensions`, class `PanelTokenMiddleware`
   - `GatewayPanelSettings()`:15, `Create()`:23, `NormalizeOrigin()`:59, `AddKnockGatewayPanel()`:74, `PanelTokenMiddleware()`:131, `InvokeAsync()`:133
 - `src/Knock.Gateway/Hosting/ProblemResponses.cs` — class `ProblemResponses`
-  - `WriteAsync()`:9, `AddKnockGatewayProblemDetails()`:25
+  - `WriteAsync()`:10, `AddKnockGatewayProblemDetails()`:26
 - `src/Knock.Gateway/Hosting/RateLimitingExtensions.cs` — class `RateLimitPolicy`, class `RateLimitSettings`, interface `IRequestCounter`, class `RedisRequestCounter`, class `RateLimitingExtensions`, class `IpRateLimitMiddleware`, class `UserRateLimitMiddleware`, class `RateLimitCheck`
   - `HitAsync()`:53, `AddKnockGatewayRateLimiting()`:68, `IsApiPath()`:81, `IsPanelSessionPath()`:91, `ClientKey()`:100, `IpRateLimitMiddleware()`:128, `InvokeAsync()`:132, `IsAuthPath()`:156, `UserRateLimitMiddleware()`:163, `InvokeAsync()`:165, `RejectedAsync()`:183
 - `src/Knock.Gateway/Hosting/RedisExtensions.cs` — class `KnockRedisOptions`, class `KnockRedisOptionsValidator`, class `RedisExtensions`, class `RedisReadinessHealthCheck`
@@ -588,7 +588,7 @@
 - `src/Knock.Identity.Api/Hosting/OpenApiExtensions.cs` — class `OpenApiExtensions`
   - `AddKnockOpenApi()`:10, `MapKnockOpenApi()`:43
 - `src/Knock.Identity.Api/Hosting/ProblemDetailsExtensions.cs` — class `ProblemDetailsExtensions`
-  - `AddKnockProblemDetails()`:9
+  - `AddKnockProblemDetails()`:10
 - `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs` — class `RateLimitPolicySettings`, class `RateLimitSettings`, class `RateLimitingExtensions`
   - `AddKnockRateLimiting()`:59, `ClientKey()`:159
 - `src/Knock.Identity.Api/Hosting/RedisExtensions.cs` — class `KnockRedisOptions`, class `KnockRedisOptionsValidator`, class `RedisExtensions`, class `RedisReadinessHealthCheck`
@@ -669,7 +669,7 @@
 - `src/Knock.Market.Api/Hosting/PrivateNoStoreAttribute.cs` — class `PrivateNoStoreAttribute`
   - `OnActionExecuting()`:15
 - `src/Knock.Market.Api/Hosting/ProblemDetailsExtensions.cs` — class `ProblemDetailsExtensions`
-  - `AddKnockProblemDetails()`:8
+  - `AddKnockProblemDetails()`:9
 - `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs` — class `RateLimitPolicySettings`, class `RateLimitSettings`, class `RateLimitingExtensions`
   - `AddKnockRateLimiting()`:57, `ClientKey()`:154
 - `src/Knock.Market.Api/Hosting/RedisExtensions.cs` — class `KnockRedisOptions`, class `KnockRedisOptionsValidator`, class `RedisExtensions`, class `RedisReadinessHealthCheck`
@@ -718,7 +718,7 @@
 - `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs` — class `ObservabilityOptions`, record `AzureMonitorSignalSettings`, class `AzureMonitorExportStatus`, class `ObservabilityExtensions`, class `TelemetryExceptionRecorder`, class `IgnoreIncomingTraceContextPropagator`, class `OpenTelemetryLogSink`, class `SerilogLogState`
   - `Record()`:47, `AddKnockObservability()`:71, `TryHandleAsync()`:177, `Inject()`:200, `ExtractTraceIdAndState()`:202, `ExtractBaggage()`:208, `Emit()`:224, `GetEnumerator()`:285
 - `src/Knock.Messaging.Api/Hosting/ProblemResponses.cs` — class `ProblemResponses`
-  - `AddKnockProblemDetails()`:9, `WriteAsync()`:16
+  - `AddKnockProblemDetails()`:10, `WriteAsync()`:21
 - `src/Knock.Messaging.Api/Hosting/RateLimitingExtensions.cs` — class `RateLimitPolicySettings`, class `RateLimitSettings`, class `RateLimitingExtensions`
   - `AddKnockRateLimiting()`:43, `ClientKey()`:99
 - `src/Knock.Messaging.Api/Hosting/RedisExtensions.cs` — class `KnockRedisOptions`, class `KnockRedisOptionsValidator`, class `RedisExtensions`, class `RedisReadinessHealthCheck`
@@ -735,6 +735,10 @@
 - `src/Knock.Market.Api/Modules/Media/IMediaApi.cs` — interface `IMediaApi`
 - `src/Knock.Market.Api/Modules/Media/MediaModuleExtensions.cs` — class `MediaModuleExtensions`, class `UnavailableModerator`
   - `AddMediaModule()`:13, `ReviewTextAsync()`:42, `ReviewImageAsync()`:45
+- `src/Knock.Market.Api/Modules/Media/Options/ImagenesOptions.cs` — class `ImagenesOptions`, class `ImagenesOptionsValidator`
+  - `Validate()`:25, `TryParseBase()`:35
+- `src/Knock.Market.Api/Modules/Media/Options/ImagenesServiceCollectionExtensions.cs` — class `ImagenesServiceCollectionExtensions`
+  - `AddImagenesPublicas()`:10
 
 **data**
 
@@ -747,6 +751,9 @@
 
 **domain**
 
+- `src/Knock.Market.Api/Modules/Media/Domain/CodigosImagen.cs` — class `CodigosImagen`
+- `src/Knock.Market.Api/Modules/Media/Domain/ImagenPublica.cs` — enum `PropositoImagen`, class `PropositoImagenExtensions`, record `ImagenPublica`
+  - `Parse()`:8, `ToContractValue()`:15
 - `src/Knock.Market.Api/Modules/Media/Domain/MediaFile.cs` — enum `MediaUsage`, enum `MediaFileState`, enum `ImageFormat`, record `MediaFile`
   - `MediaFile()`:14, `IsReadyFor()`:24, `CreatePending()`:25, `MarkReady()`:28, `MarkRejected()`:33
 - `src/Knock.Market.Api/Modules/Media/Domain/MediaOutcome.cs` — enum `MediaOutcomeStatus`, record `MediaOutcome`, class `MediaRejection`, record `ProcessedImage`
@@ -765,12 +772,16 @@
 - `src/Knock.Market.Api/Modules/Media/Services/IMediaBlobStore.cs` — record `UploadedBlob`, interface `IMediaBlobStore`
 - `src/Knock.Market.Api/Modules/Media/Services/ImageProcessor.cs` — class `ImageProcessor`
   - `ProcessAsync()`:21, `ProcessAsync()`:24, `RunLimitedAsync()`:28, `Dispose()`:42
+- `src/Knock.Market.Api/Modules/Media/Services/ImagenPublicaUrl.cs` — class `ImagenPublicaUrl`
+  - `Build()`:31, `TryParse()`:40
 - `src/Knock.Market.Api/Modules/Media/Services/InMemoryMediaBlobStore.cs` — class `InMemoryMediaBlobStore`
   - `EnsureContainersAsync()`:12, `UploadRaw()`:14, `ContainsQuarantine()`:21, `GetBlob()`:23, `ClearQuarantine()`:26, `GetUploadedAsync()`:28, `DownloadQuarantineAsync()`:33, `UploadFileAsync()`:44, `DeleteQuarantineAsync()`:53
 - `src/Knock.Market.Api/Modules/Media/Services/MediaApi.cs` — class `MediaApi`
   - `IsReadyAndOwnedByAsync()`:8
 - `src/Knock.Market.Api/Modules/Media/Services/MediaService.cs` — record `UploadTicket`, record `ConfirmedFile`, class `MediaService`
   - `MediaService()`:18, `CreateUploadAsync()`:25, `ConfirmAsync()`:41, `IsReadyAndOwnedByAsync()`:95
+- `src/Knock.Market.Api/Modules/Media/Services/ProcesadorImagen.cs` — record `ImagenProcesada`, record `ResultadoProcesamiento`, class `ProcesadorImagen`
+  - `ResultadoProcesamiento()`:11, `Ok()`:13, `Rechazada()`:15, `ProcesadorImagen()`:25, `LadoMaximo()`:38, `ProcesarAsync()`:41
 
 **validators**
 
