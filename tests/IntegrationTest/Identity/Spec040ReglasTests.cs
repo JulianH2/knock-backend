@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using AwesomeAssertions;
+using Knock.IntegrationTest.Support;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -155,7 +156,7 @@ public class Spec040ReglasTests
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
         var raw = await response.Content.ReadAsStringAsync();
         JsonElement.Parse(raw).GetProperty("code").GetString().Should().Be("address_limit_reached");
-        raw.Should().NotContain("Once");
+        ProblemBody.Reasons(raw).Should().NotContain("Once");
         (await PrincipalsAsync(host, ana)).Should().HaveCount(10);
     }
 
