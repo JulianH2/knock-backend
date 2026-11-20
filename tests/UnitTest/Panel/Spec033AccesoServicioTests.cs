@@ -119,13 +119,13 @@ public class Spec033AccesoServicioTests
     public async Task Una_Cuenta_Sin_Totp_Configurado_Es_403_R_06()
     {
         var world = new PanelWorld();
-        await world.Admin.AltaAsync(new PanelAltaRequest(PanelWorld.Phone, "Ana", [PanelRolesAdmin], null, false), CancellationToken.None);
+        await world.Admin.AltaAsync(new PanelAltaRequest(PanelWorld.Phone, "Ana", [_panelRolesAdmin], null, false), CancellationToken.None);
 
         (await world.Access.VerifyPhoneAsync(world.TokenFor(), _ip, CancellationToken.None)).Should().BeOfType<PhoneOutcome.NoPanelAccess>();
         world.Challenges.Created.Should().Be(0);
     }
 
-    private const string PanelRolesAdmin = "administrador";
+    private const string _panelRolesAdmin = "administrador";
 
     [Fact]
     public async Task Una_Cuenta_Suspendida_En_La_App_Es_403_No_Panel_Access_CA_033_25()
@@ -391,7 +391,7 @@ public class Spec033AccesoServicioTests
     {
         var world = new PanelWorld();
         const string testSecret = "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP";
-        await world.Admin.AltaAsync(new PanelAltaRequest(PanelWorld.Phone, "Ana", [PanelRolesAdmin], testSecret, true), CancellationToken.None);
+        await world.Admin.AltaAsync(new PanelAltaRequest(PanelWorld.Phone, "Ana", [_panelRolesAdmin], testSecret, true), CancellationToken.None);
         var account = world.Accounts.Accounts.Values.Single();
         var plain = OtpNet.Base32Encoding.ToBytes(testSecret);
         var idToken = world.TokenFor();

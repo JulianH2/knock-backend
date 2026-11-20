@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-19T22:43:49Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-20T00:27:11Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -20,7 +20,7 @@
 | `Knock.Market.Api` | -, common, hosting | 34 | 68 | 100 |
 | `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
-| `Panel` | -, controllers, data, domain, dtos, services, validators | 29 | 103 | 154 |
+| `Panel` | -, controllers, data, domain, dtos, services, validators | 29 | 103 | 155 |
 | `Requests` | -, controllers, data, domain, dtos, services, validators | 62 | 134 | 123 |
 | `Safety` | -, controllers, data, domain, dtos, services, validators | 15 | 38 | 33 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 28 | 50 | 56 |
@@ -803,9 +803,9 @@
 - `src/Knock.Identity.Api/Modules/Panel/Data/PanelCuentasStore.cs` — class `PanelCuentasStore`
   - `EnsureIndexesAsync()`:44, `FindBySubAsync()`:49, `InsertAsync()`:52, `SetRolesAsync()`:85, `SetEstadoAsync()`:88, `ResetTotpAsync()`:91, `TryAcceptStepAsync()`:105, `RegisterFailureAsync()`:114, `ResetFailuresAsync()`:154, `ToAccount()`:171
 - `src/Knock.Identity.Api/Modules/Panel/Data/PanelData.cs` — record `NuevaCuentaPanel`, record `NuevaSesionPanel`, record `PanelAuditEntry`, class `PanelAuditValues`, enum `ActivacionResultado`, record `InvitacionVigente`, interface `IPanelCuentasStore`, interface `IPanelSesionesStore`, interface `IPanelActivacionesStore`, record `ProtectedSecretForStore`, interface `IPanelAuditoriaStore`, interface `IPanelDesafios`, record `CuentaPanelEnCache`, interface `IPanelCuentaCache`, interface `IPanelSidCanceller`, class `PanelStoreFailures`
-  - `NuevaCuentaPanel()`:6, `ToString()`:14, `NuevaSesionPanel()`:18, `ToString()`:20, `InvitacionVigente()`:76, `ToString()`:78, `ProtectedSecretForStore()`:144, `ToString()`:146, `CuentaPanelEnCache()`:173, `ToString()`:175, `IsStoreFailure()`:197
+  - `NuevaCuentaPanel()`:6, `ToString()`:14, `NuevaSesionPanel()`:18, `ToString()`:20, `InvitacionVigente()`:76, `ToString()`:78, `ProtectedSecretForStore()`:144, `ToString()`:146, `CuentaPanelEnCache()`:173, `ToString()`:175, `IsStoreFailure()`:200
 - `src/Knock.Identity.Api/Modules/Panel/Data/PanelRedisStores.cs` — class `RedisPanelDesafios`, class `RedisPanelCuentaCache`, class `RedisPanelSidCanceller`
-  - `ChallengeKey()`:29, `IpKey()`:31, `CreateAsync()`:33, `PeekAsync()`:45, `ConsumeAsync()`:52, `IpFailuresAsync()`:59, `RegisterIpFailureAsync()`:66, `Key()`:83, `GetAsync()`:85, `SetAsync()`:104, `DeleteAsync()`:124, `CancelAsync()`:136
+  - `ChallengeKey()`:29, `IpKey()`:31, `CreateAsync()`:33, `PeekAsync()`:45, `ConsumeAsync()`:52, `IpFailuresAsync()`:59, `RegisterIpFailureAsync()`:66, `Key()`:83, `GetAsync()`:85, `SetAsync()`:104, `DeleteAsync()`:124, `CancelAsync()`:136, `IsCancelledAsync()`:143
 - `src/Knock.Identity.Api/Modules/Panel/Data/PanelSesionesStore.cs` — class `PanelSesionesStore`
   - `EnsureIndexesAsync()`:45, `CreateAsync()`:60, `FindByFingerprintAsync()`:92, `FindByUsedFingerprintAsync()`:95, `FindByIdAsync()`:98, `RotateAsync()`:102, `RevokeAllAsync()`:120, `RevokeAsync()`:135
 
