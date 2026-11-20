@@ -37,6 +37,8 @@ public static class RequestsModuleExtensions
         services.AddOptions<FieldEncryptionOptions>().BindConfiguration(FieldEncryptionOptions.SectionName);
         services.AddSingleton<FieldCipher>();
         services.AddScoped<IOutbox, MongoOutbox>();
+        services.AddScoped<CandidatosStore>();
+        services.AddScoped<EnviosStore>();
         services.AddScoped<RequestsStore>();
         // Fotos y moderación: hasta que lleguen los servicios reales (spec 013, OI-2) fallan cerrado; las pruebas los sustituyen por dobles.
         services.TryAddScoped<IRequestPhotos, UnavailableRequestPhotos>();

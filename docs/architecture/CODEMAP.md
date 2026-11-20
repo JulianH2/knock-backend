@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-20T04:49:54Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-20T05:02:44Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -20,7 +20,7 @@
 | `Knock.Market.Api` | -, common, hosting | 37 | 74 | 103 |
 | `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
-| `Requests` | -, controllers, data, domain, dtos, services, validators | 63 | 135 | 127 |
+| `Requests` | -, controllers, data, domain, dtos, services, validators | 65 | 137 | 131 |
 | `Safety` | -, controllers, data, domain, dtos, services, validators | 15 | 38 | 33 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 26 | 47 | 54 |
 | `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 22 | 55 | 57 |
@@ -799,6 +799,8 @@
 
 **data**
 
+- `src/Knock.Market.Api/Modules/Requests/Data/CandidatosStore.cs` — class `CandidatosStore`
+  - `FindAsync()`:13
 - `src/Knock.Market.Api/Modules/Requests/Data/ChoiceStore.cs` — record `ChosenVisit`, record `ChooseResult`, record `TechnicianPublic`, class `ChoiceStore`
   - `ListQuotesAsync()`:56, `FindTechniciansAsync()`:69, `TryFindTechnicianAsync()`:91, `FindVisitIdsAsync()`:104, `ChooseAsync()`:121
 - `src/Knock.Market.Api/Modules/Requests/Data/ConversationPermissionStore.cs` — record `ConversationTechnician`, class `ConversationPermissionStore`
@@ -809,6 +811,8 @@
   - `ValidateAsync()`:9
 - `src/Knock.Market.Api/Modules/Requests/Data/DemoTechnicianStore.cs` — class `DemoTechnicianStore`
   - `ValidateAsync()`:14, `SaveAsync()`:17
+- `src/Knock.Market.Api/Modules/Requests/Data/EnviosStore.cs` — class `EnviosStore`
+  - `FindTechniciansAsync()`:10, `InsertAsync()`:18, `InsertAsync()`:22
 - `src/Knock.Market.Api/Modules/Requests/Data/HistoryStore.cs` — record `HistoryVisit`, record `HistoryVisitPage`, class `HistoryStore`
   - `FindLinkedTradesAsync()`:34
 - `src/Knock.Market.Api/Modules/Requests/Data/MongoOutbox.cs` — record `OutboxMessage`, interface `IOutbox`, class `MongoOutbox`

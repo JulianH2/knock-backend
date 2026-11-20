@@ -1,5 +1,15 @@
 # Memoria — knock-backend
 
+## 2026-11-19 — KNOCK-68: candidatos y envíos (T-05)
+- **Estado:** `CandidatosStore` filtra disponibilidad, oficio, estado, ocultamiento, cliente y envíos previos; usa `$geoNear` y radio, e incluye técnicos sin ubicación de la colonia base. `EnviosStore` permite insertar con o sin sesión y consultar destinatarios previos. Se reutiliza `WaveCandidate`, ampliado con el usuario del técnico, y el índice único definido por la 028; no se agregaron dependencias.
+- **Verificación:** las pruebas nuevas no compilaban antes de crear los almacenes. Después, build Release sin restauración pasó sin avisos y 3 pruebas `Spec028Candidatos` pasaron sobre documentdb-local. El índice único se construye en la prueba con la misma definición del script; la ejecución del script se cubre aparte en DatabaseTest.
+- **Límites:** el reparto y la escritura transaccional completa son T-06, no se implementaron. No se verificó la consulta contra Azure ni se obtuvo un `explain`; la consulta geográfica exige un índice `2dsphere` sobre `ubicacionBase`. Sin centro solo se usa la colonia base.
+
+## 2026-11-19 — KNOCK-68: revisión inicial de T-05 y T-06
+- **Estado:** Alexis figura como responsable de T-05 y T-06; ambas siguen pendientes. No se implementaron los almacenes ni el reparto y no se escribieron pruebas nuevas.
+- **Verificación:** `dotnet test tests/IntegrationTest -c Release --no-restore --filter FullyQualifiedName~Spec028` pasó 3 pruebas existentes del ejecutor; no cubren las tareas pendientes.
+- **A evitar:** considerar que la reserva por sí sola impide dos manejadores simultáneos; la confirmación de `reservaId` debe ocurrir en la transacción de negocio, junto con el avance condicionado y el buzón.
+
 ## 2026-11-16 — Spec 055 y enmienda 1.2.0 de la constitución: biblioteca técnica compartida (KNOCK-251)
 - **Decisión:** se redacta en Borrador la spec 055 (`Knock.Hosting`) con la enmienda a la constitución (§4 y estructura del repositorio; versión 1.1.0 → 1.2.0) que permite una biblioteca técnica compartida, como pide EXC-008 («su spec y el cambio de la constitución que la permita»). La spec cubre la biblioteca completa por etapas: la 1 (KNOCK-251) mueve los encabezados reenviados y el redactor de registros y retira EXC-020; la 2 mueve el límite de peticiones (después de KNOCK-247) y retira EXC-025; la 3 mueve el resto del catálogo y retira EXC-007, EXC-008, EXC-015, EXC-016, EXC-018 y EXC-021.
 - **Porqué:** la constitución 1.1.0 solo permitía compartir `Knock.Contracts` sin lógica, y había 8 excepciones vivas de jscpd y codemap por copias de `Hosting/`. El Tech Lead pidió el 2026-11-16 que la spec cubra la biblioteca completa, incluido luego el limitador, y que la apruebe él antes de escribir código.
