@@ -1,6 +1,7 @@
 using System.Net;
 using AwesomeAssertions;
 using Knock.IntegrationTest.Requests;
+using Knock.IntegrationTest.Support;
 using MongoDB.Bson;
 using Xunit;
 
@@ -54,7 +55,7 @@ public sealed class Spec046BusquedaHttpTests
         using var malformed = await host.SendAsync(HttpMethod.Get, $"/api/v1/tecnicos/{id}/llega-a-mi-colonia?colonia=centro", host.ClientSub);
         using var unknown = await host.SendAsync(HttpMethod.Get, $"/api/v1/tecnicos/{id}/llega-a-mi-colonia?colonia={ObjectId.GenerateNewId()}", host.ClientSub);
         malformed.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
-        (await malformed.Content.ReadAsStringAsync()).Should().NotContain("centro");
+        ProblemBody.Reasons(await malformed.Content.ReadAsStringAsync()).Should().NotContain("centro");
         unknown.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         (await Spec020Host.ReadAsync(unknown)).GetProperty("code").GetString().Should().Be("colonia_not_found");
     }
@@ -92,6 +93,6 @@ public sealed class Spec046BusquedaHttpTests
         using var symbols = await host.SendAsync(HttpMethod.Get, "/api/v1/tecnicos/autocompletar?q=%2A.%2A");
         shortText.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         symbols.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
-        (await symbols.Content.ReadAsStringAsync()).Should().NotContain("*.*");
+        ProblemBody.Reasons(await symbols.Content.ReadAsStringAsync()).Should().NotContain("*.*");
     }
 }
