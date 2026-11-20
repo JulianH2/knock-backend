@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-20T18:50:55Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-20T18:58:40Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -12,13 +12,13 @@
 | `Assistant` | data, services | 3 | 13 | 8 |
 | `Catalog` | -, controllers, data, domain, dtos, services, validators | 49 | 87 | 113 |
 | `Chat` | -, data, hubs, services | 6 | 18 | 26 |
-| `Conversaciones` | domain | 1 | 2 | 1 |
+| `Conversaciones` | -, domain | 4 | 7 | 4 |
 | `HomeAndCar` | -, controllers, data, domain, dtos, services, validators | 8 | 32 | 29 |
 | `Knock.Contracts` | - | 9 | 16 | 7 |
 | `Knock.Gateway` | -, hosting | 16 | 43 | 60 |
 | `Knock.Identity.Api` | -, common, hosting | 34 | 68 | 97 |
 | `Knock.Market.Api` | -, common, hosting | 37 | 74 | 103 |
-| `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
+| `Knock.Messaging.Api` | -, common, hosting | 21 | 47 | 60 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
 | `Panel` | -, controllers, data, domain, dtos, services, validators | 29 | 103 | 155 |
 | `Requests` | -, controllers, data, domain, dtos, services, validators | 68 | 142 | 133 |
@@ -61,11 +61,12 @@
 - `src/Knock.Gateway/Hosting/TelemetryRedactor.cs:331 LogRedactionProcessor.OnEnd` · `src/Knock.Identity.Api/Hosting/TelemetryRedactor.cs:331 LogRedactionProcessor.OnEnd` · `src/Knock.Market.Api/Hosting/TelemetryRedactor.cs:330 LogRedactionProcessor.OnEnd` · `src/Knock.Messaging.Api/Hosting/TelemetryRedactor.cs:331 LogRedactionProcessor.OnEnd`
 - `src/Knock.Gateway/Hosting/TelemetryRedactor.cs:362 RedactingJsonFormatter.Format` · `src/Knock.Identity.Api/Hosting/TelemetryRedactor.cs:362 RedactingJsonFormatter.Format` · `src/Knock.Market.Api/Hosting/TelemetryRedactor.cs:361 RedactingJsonFormatter.Format` · `src/Knock.Messaging.Api/Hosting/TelemetryRedactor.cs:362 RedactingJsonFormatter.Format`
 - `src/Knock.Gateway/Hosting/TelemetryRedactor.cs:382 RedactingJsonFormatter.RedactNode` · `src/Knock.Identity.Api/Hosting/TelemetryRedactor.cs:382 RedactingJsonFormatter.RedactNode` · `src/Knock.Market.Api/Hosting/TelemetryRedactor.cs:381 RedactingJsonFormatter.RedactNode` · `src/Knock.Messaging.Api/Hosting/TelemetryRedactor.cs:382 RedactingJsonFormatter.RedactNode`
+- `src/Knock.Identity.Api/Common/Errors/DomainException.cs:58 DomainErrors.ToStatusCode` · `src/Knock.Messaging.Api/Modules/Conversaciones/Domain/DomainException.cs:53 DomainErrors.ToStatusCode`
 - `src/Knock.Identity.Api/Common/Security/JwtSettingsFactory.cs:15 JwtSettingsFactory.Create` · `src/Knock.Market.Api/Common/Security/JwtSettingsFactory.cs:14 JwtSettingsFactory.Create` · `src/Knock.Messaging.Api/Hosting/JwtSettings.cs:18 JwtSettingsFactory.Create`
 - `src/Knock.Identity.Api/Common/Security/JwtSettingsFactory.cs:30 JwtSettingsFactory.ResolveKey` · `src/Knock.Market.Api/Common/Security/JwtSettingsFactory.cs:29 JwtSettingsFactory.ResolveKey` · `src/Knock.Messaging.Api/Hosting/JwtSettings.cs:33 JwtSettingsFactory.ResolveKey`
 - `src/Knock.Identity.Api/Hosting/ApiVersioningExtensions.cs:8 ApiVersioningExtensions.AddKnockApiVersioning` · `src/Knock.Market.Api/Hosting/ApiVersioningExtensions.cs:7 ApiVersioningExtensions.AddKnockApiVersioning`
-- `src/Knock.Identity.Api/Hosting/AuthenticationExtensions.cs:56 AuthenticationExtensions.AddInternalControllers` · `src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs:59 AuthenticationExtensions.AddInternalControllers`
-- `src/Knock.Identity.Api/Hosting/AuthenticationExtensions.cs:80 InternalControllerFeatureProvider.IsInternalController` · `src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs:83 InternalControllerFeatureProvider.IsInternalController`
+- `src/Knock.Identity.Api/Hosting/AuthenticationExtensions.cs:56 AuthenticationExtensions.AddInternalControllers` · `src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs:59 AuthenticationExtensions.AddInternalControllers` · `src/Knock.Messaging.Api/Hosting/InternalControllersExtensions.cs:9 InternalControllersExtensions.AddInternalControllers`
+- `src/Knock.Identity.Api/Hosting/AuthenticationExtensions.cs:80 InternalControllerFeatureProvider.IsInternalController` · `src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs:83 InternalControllerFeatureProvider.IsInternalController` · `src/Knock.Messaging.Api/Hosting/InternalControllersExtensions.cs:33 InternalControllerFeatureProvider.IsInternalController`
 - `src/Knock.Identity.Api/Hosting/AuthenticationExtensions.cs:91 AuthenticationStartupCheck.StartAsync` · `src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs:94 AuthenticationStartupCheck.StartAsync`
 - `src/Knock.Identity.Api/Hosting/CorrelationIdMiddleware.cs:31 CorrelationIdMiddleware` · `src/Knock.Market.Api/Hosting/CorrelationIdMiddleware.cs:30 CorrelationIdMiddleware`
 - `src/Knock.Identity.Api/Hosting/CorrelationIdMiddleware.cs:33 CorrelationIdMiddleware.InvokeAsync` · `src/Knock.Market.Api/Hosting/CorrelationIdMiddleware.cs:32 CorrelationIdMiddleware.InvokeAsync`
@@ -85,7 +86,7 @@
 - `src/Knock.Identity.Api/Hosting/MongoExtensions.cs:196 MongoExtensions.Bind` · `src/Knock.Market.Api/Hosting/MongoExtensions.cs:194 MongoExtensions.Bind` · `src/Knock.Messaging.Api/Hosting/MongoExtensions.cs:196 MongoExtensions.Bind`
 - `src/Knock.Identity.Api/Hosting/MongoExtensions.cs:229 MongoReadinessHealthCheck.CheckHealthAsync` · `src/Knock.Market.Api/Hosting/MongoExtensions.cs:227 MongoReadinessHealthCheck.CheckHealthAsync` · `src/Knock.Messaging.Api/Hosting/MongoExtensions.cs:229 MongoReadinessHealthCheck.CheckHealthAsync`
 - `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:105 RateLimitingExtensions.GlobalPartition` · `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:106 RateLimitingExtensions.GlobalPartition`
-- `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:159 RateLimitingExtensions.ClientKey` · `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:154 RateLimitingExtensions.ClientKey` · `src/Knock.Messaging.Api/Hosting/RateLimitingExtensions.cs:99 RateLimitingExtensions.ClientKey`
+- `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:159 RateLimitingExtensions.ClientKey` · `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:154 RateLimitingExtensions.ClientKey` · `src/Knock.Messaging.Api/Hosting/RateLimitingExtensions.cs:110 RateLimitingExtensions.ClientKey`
 - `src/Knock.Identity.Api/Hosting/RedisRequestCounter.cs:8 RedisRequestCounter` · `src/Knock.Market.Api/Hosting/RedisRequestCounter.cs:8 RedisRequestCounter`
 - `src/Knock.Identity.Api/Hosting/SecurityExtensions.cs:13 SecurityExtensions.AddKnockSecurity` · `src/Knock.Market.Api/Hosting/SecurityExtensions.cs:12 SecurityExtensions.AddKnockSecurity`
 - `src/Knock.Identity.Api/Hosting/SecurityHeadersMiddleware.cs:12 SecurityHeadersMiddleware` · `src/Knock.Market.Api/Hosting/SecurityHeadersMiddleware.cs:11 SecurityHeadersMiddleware`
@@ -94,15 +95,17 @@
 - `src/Knock.Identity.Api/Hosting/SecuritySettings.cs:84 SecuritySettingsValidator.IsValidOrigin` · `src/Knock.Market.Api/Hosting/SecuritySettings.cs:83 SecuritySettingsValidator.IsValidOrigin`
 - `src/Knock.Identity.Api/Hosting/SharedRateLimiter.cs:40 SharedRateLimiter.AcquireAsyncCore` · `src/Knock.Market.Api/Hosting/SharedRateLimiter.cs:40 SharedRateLimiter.AcquireAsyncCore`
 - `src/Knock.Identity.Api/Hosting/ValidationExtensions.cs:70 ValidationFilter.ToCamelCasePath` · `src/Knock.Market.Api/Hosting/ValidationExtensions.cs:65 ValidationFilter.ToCamelCasePath`
-- `src/Knock.Identity.Api/Hosting/ValidationExtensions.cs:74 ValidationFilter.Collect` · `src/Knock.Market.Api/Hosting/ValidationExtensions.cs:69 ValidationFilter.Collect`
+- `src/Knock.Identity.Api/Hosting/ValidationExtensions.cs:74 ValidationFilter.Collect` · `src/Knock.Market.Api/Hosting/ValidationExtensions.cs:69 ValidationFilter.Collect` · `src/Knock.Messaging.Api/Hosting/ValidationExtensions.cs:72 ValidationFilter.Collect`
 - `src/Knock.Identity.Api/Modules/Usuarios/Controllers/V1/MeController.cs:81 MeController.Matches` · `src/Knock.Market.Api/Modules/Catalog/Controllers/V1/OficiosController.cs:52 OficiosController.Matches`
 - `src/Knock.Identity.Api/Modules/Usuarios/Data/ProfileCacheOptions.cs:25 ProfileCacheOptionsValidator.Validate` · `src/Knock.Market.Api/Modules/Catalog/Data/CatalogCacheOptions.cs:25 CatalogCacheOptionsValidator.Validate`
+- `src/Knock.Market.Api/Hosting/DomainExceptionHandler.cs:14 DomainExceptionHandler.TryHandleAsync` · `src/Knock.Messaging.Api/Modules/Conversaciones/DomainExceptionHandler.cs:14 DomainExceptionHandler.TryHandleAsync`
+- `src/Knock.Market.Api/Hosting/ValidationExtensions.cs:28 ValidationFilter.OnActionExecutionAsync` · `src/Knock.Messaging.Api/Hosting/ValidationExtensions.cs:28 ValidationFilter.OnActionExecutionAsync`
 
 ## Tipos con el mismo nombre en varios lugares
 
-- `ApiVersioningExtensions`: `src/Knock.Identity.Api/Hosting/ApiVersioningExtensions.cs:6`, `src/Knock.Market.Api/Hosting/ApiVersioningExtensions.cs:5`
-- `AuthenticationExtensions`: `src/Knock.Gateway/Hosting/AuthenticationExtensions.cs:42`, `src/Knock.Identity.Api/Hosting/AuthenticationExtensions.cs:10`, `src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs:10`, `src/Knock.Messaging.Api/Hosting/AuthenticationExtensions.cs:28`
-- `AuthenticationStartupCheck`: `src/Knock.Identity.Api/Hosting/AuthenticationExtensions.cs:89`, `src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs:92`, `src/Knock.Messaging.Api/Hosting/AuthenticationExtensions.cs:138`
+- `ApiVersioningExtensions`: `src/Knock.Identity.Api/Hosting/ApiVersioningExtensions.cs:6`, `src/Knock.Market.Api/Hosting/ApiVersioningExtensions.cs:5`, `src/Knock.Messaging.Api/Hosting/ApiVersioningExtensions.cs:5`
+- `AuthenticationExtensions`: `src/Knock.Gateway/Hosting/AuthenticationExtensions.cs:42`, `src/Knock.Identity.Api/Hosting/AuthenticationExtensions.cs:10`, `src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs:10`, `src/Knock.Messaging.Api/Hosting/AuthenticationExtensions.cs:29`
+- `AuthenticationStartupCheck`: `src/Knock.Identity.Api/Hosting/AuthenticationExtensions.cs:89`, `src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs:92`, `src/Knock.Messaging.Api/Hosting/AuthenticationExtensions.cs:139`
 - `AzureMonitorExportStatus`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:39`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:39`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:38`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:39`
 - `AzureMonitorSignalSettings`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:36`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:36`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:35`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:36`
 - `BusquedaStore`: `src/Knock.Market.Api/Modules/Catalog/Data/BusquedaStore.cs:17`, `src/Knock.Market.Api/Modules/Catalog/Data/BusquedaStorePaging.cs:11`
@@ -112,19 +115,20 @@
 - `CorsMiddleware`: `src/Knock.Identity.Api/Hosting/CorsMiddleware.cs:14`, `src/Knock.Market.Api/Hosting/CorsMiddleware.cs:13`
 - `CorsSettings`: `src/Knock.Identity.Api/Hosting/SecuritySettings.cs:21`, `src/Knock.Market.Api/Hosting/SecuritySettings.cs:20`
 - `DataExtensions`: `src/Knock.Gateway/Hosting/DataExtensions.cs:7`, `src/Knock.Identity.Api/Hosting/DataExtensions.cs:7`, `src/Knock.Messaging.Api/Hosting/DataExtensions.cs:7`
-- `DomainErrorKind`: `src/Knock.Identity.Api/Common/Errors/DomainException.cs:5`, `src/Knock.Market.Api/Common/Errors/DomainException.cs:4`
-- `DomainErrors`: `src/Knock.Identity.Api/Common/Errors/DomainException.cs:56`, `src/Knock.Market.Api/Common/Errors/DomainException.cs:54`
-- `DomainException`: `src/Knock.Identity.Api/Common/Errors/DomainException.cs:19`, `src/Knock.Market.Api/Common/Errors/DomainException.cs:17`
-- `DomainExceptionHandler`: `src/Knock.Identity.Api/Hosting/DomainExceptionHandler.cs:13`, `src/Knock.Market.Api/Hosting/DomainExceptionHandler.cs:12`
+- `DomainErrorKind`: `src/Knock.Identity.Api/Common/Errors/DomainException.cs:5`, `src/Knock.Market.Api/Common/Errors/DomainException.cs:4`, `src/Knock.Messaging.Api/Modules/Conversaciones/Domain/DomainException.cs:6`
+- `DomainErrors`: `src/Knock.Identity.Api/Common/Errors/DomainException.cs:56`, `src/Knock.Market.Api/Common/Errors/DomainException.cs:54`, `src/Knock.Messaging.Api/Modules/Conversaciones/Domain/DomainException.cs:51`
+- `DomainException`: `src/Knock.Identity.Api/Common/Errors/DomainException.cs:19`, `src/Knock.Market.Api/Common/Errors/DomainException.cs:17`, `src/Knock.Messaging.Api/Modules/Conversaciones/Domain/DomainException.cs:20`
+- `DomainExceptionHandler`: `src/Knock.Identity.Api/Hosting/DomainExceptionHandler.cs:13`, `src/Knock.Market.Api/Hosting/DomainExceptionHandler.cs:12`, `src/Knock.Messaging.Api/Modules/Conversaciones/DomainExceptionHandler.cs:12`
+- `ErrorCodes`: `src/Knock.Market.Api/Common/Errors/ErrorCodes.cs:7`, `src/Knock.Messaging.Api/Common/Errors/ErrorCodes.cs:7`
 - `FieldCipher`: `src/Knock.Identity.Api/Common/Crypto/FieldCipher.cs:27`, `src/Knock.Market.Api/Common/Crypto/FieldCipher.cs:25`
 - `FieldEncryptionOptions`: `src/Knock.Identity.Api/Common/Crypto/FieldCipher.cs:13`, `src/Knock.Market.Api/Common/Crypto/FieldCipher.cs:12`
 - `ForwardedHeadersExtensions`: `src/Knock.Identity.Api/Hosting/ForwardedHeadersExtensions.cs:7`, `src/Knock.Market.Api/Hosting/ForwardedHeadersExtensions.cs:6`, `src/Knock.Messaging.Api/Hosting/ForwardedHeadersExtensions.cs:7`
 - `HealthExtensions`: `src/Knock.Gateway/Hosting/HealthExtensions.cs:10`, `src/Knock.Identity.Api/Hosting/HealthExtensions.cs:10`, `src/Knock.Market.Api/Hosting/HealthExtensions.cs:5`, `src/Knock.Messaging.Api/Hosting/HealthExtensions.cs:10`
 - `HstsSettings`: `src/Knock.Gateway/Hosting/HstsExtensions.cs:10`, `src/Knock.Identity.Api/Hosting/SecuritySettings.cs:7`, `src/Knock.Market.Api/Hosting/SecuritySettings.cs:6`
 - `HttpsSettings`: `src/Knock.Identity.Api/Hosting/SecuritySettings.cs:15`, `src/Knock.Market.Api/Hosting/SecuritySettings.cs:14`
-- `IRevokedSessions`: `src/Knock.Gateway/Hosting/RevokedSessions.cs:10`, `src/Knock.Messaging.Api/Hosting/AuthenticationExtensions.cs:12`
+- `IRevokedSessions`: `src/Knock.Gateway/Hosting/RevokedSessions.cs:10`, `src/Knock.Messaging.Api/Hosting/AuthenticationExtensions.cs:13`
 - `IgnoreIncomingTraceContextPropagator`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:194`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:194`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:190`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:194`
-- `InternalControllerFeatureProvider`: `src/Knock.Identity.Api/Hosting/AuthenticationExtensions.cs:72`, `src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs:75`
+- `InternalControllerFeatureProvider`: `src/Knock.Identity.Api/Hosting/AuthenticationExtensions.cs:72`, `src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs:75`, `src/Knock.Messaging.Api/Hosting/InternalControllersExtensions.cs:25`
 - `JsonCompressionMiddleware`: `src/Knock.Identity.Api/Hosting/JsonCompressionMiddleware.cs:23`, `src/Knock.Market.Api/Hosting/JsonCompressionMiddleware.cs:20`
 - `JwtSettings`: `src/Knock.Identity.Api/Common/Security/JwtSettings.cs:7`, `src/Knock.Market.Api/Common/Security/JwtSettings.cs:6`, `src/Knock.Messaging.Api/Hosting/JwtSettings.cs:8`
 - `JwtSettingsFactory`: `src/Knock.Identity.Api/Common/Security/JwtSettingsFactory.cs:11`, `src/Knock.Market.Api/Common/Security/JwtSettingsFactory.cs:10`, `src/Knock.Messaging.Api/Hosting/JwtSettings.cs:14`
@@ -145,17 +149,17 @@
 - `ObservabilityOptions`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:22`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:22`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:21`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:22`
 - `OpenApiExtensions`: `src/Knock.Identity.Api/Hosting/OpenApiExtensions.cs:8`, `src/Knock.Market.Api/Hosting/OpenApiExtensions.cs:5`
 - `OpenTelemetryLogSink`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:215`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:215`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:211`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:215`
-- `PrivateNoStoreAttribute`: `src/Knock.Identity.Api/Modules/Addresses/Controllers/PrivateNoStoreAttribute.cs:10`, `src/Knock.Market.Api/Hosting/PrivateNoStoreAttribute.cs:11`
+- `PrivateNoStoreAttribute`: `src/Knock.Identity.Api/Modules/Addresses/Controllers/PrivateNoStoreAttribute.cs:10`, `src/Knock.Market.Api/Hosting/PrivateNoStoreAttribute.cs:11`, `src/Knock.Messaging.Api/Hosting/PrivateNoStoreAttribute.cs:11`
 - `ProblemDetailsExtensions`: `src/Knock.Identity.Api/Hosting/ProblemDetailsExtensions.cs:7`, `src/Knock.Market.Api/Hosting/ProblemDetailsExtensions.cs:6`
-- `ProblemResponses`: `src/Knock.Gateway/Hosting/ProblemResponses.cs:8`, `src/Knock.Identity.Api/Hosting/RequestBodyLimitMiddleware.cs:8`, `src/Knock.Market.Api/Hosting/RequestBodyLimitMiddleware.cs:9`, `src/Knock.Messaging.Api/Hosting/ProblemResponses.cs:8`
-- `RateLimitPolicySettings`: `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:12`, `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:13`, `src/Knock.Messaging.Api/Hosting/RateLimitingExtensions.cs:12`
-- `RateLimitSettings`: `src/Knock.Gateway/Hosting/RateLimitingExtensions.cs:21`, `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:22`, `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:23`, `src/Knock.Messaging.Api/Hosting/RateLimitingExtensions.cs:22`
-- `RateLimitingExtensions`: `src/Knock.Gateway/Hosting/RateLimitingExtensions.cs:66`, `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:34`, `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:35`, `src/Knock.Messaging.Api/Hosting/RateLimitingExtensions.cs:32`
+- `ProblemResponses`: `src/Knock.Gateway/Hosting/ProblemResponses.cs:8`, `src/Knock.Identity.Api/Hosting/RequestBodyLimitMiddleware.cs:8`, `src/Knock.Market.Api/Hosting/RequestBodyLimitMiddleware.cs:9`, `src/Knock.Messaging.Api/Hosting/ProblemResponses.cs:10`
+- `RateLimitPolicySettings`: `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:12`, `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:13`, `src/Knock.Messaging.Api/Hosting/RateLimitingExtensions.cs:13`
+- `RateLimitSettings`: `src/Knock.Gateway/Hosting/RateLimitingExtensions.cs:21`, `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:22`, `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:23`, `src/Knock.Messaging.Api/Hosting/RateLimitingExtensions.cs:23`
+- `RateLimitingExtensions`: `src/Knock.Gateway/Hosting/RateLimitingExtensions.cs:66`, `src/Knock.Identity.Api/Hosting/RateLimitingExtensions.cs:34`, `src/Knock.Market.Api/Hosting/RateLimitingExtensions.cs:35`, `src/Knock.Messaging.Api/Hosting/RateLimitingExtensions.cs:33`
 - `RedactingJsonFormatter`: `src/Knock.Gateway/Hosting/TelemetryRedactor.cs:358`, `src/Knock.Identity.Api/Hosting/TelemetryRedactor.cs:358`, `src/Knock.Market.Api/Hosting/TelemetryRedactor.cs:357`, `src/Knock.Messaging.Api/Hosting/TelemetryRedactor.cs:358`
 - `RedisExtensions`: `src/Knock.Gateway/Hosting/RedisExtensions.cs:93`, `src/Knock.Identity.Api/Hosting/RedisExtensions.cs:93`, `src/Knock.Market.Api/Hosting/RedisExtensions.cs:91`, `src/Knock.Messaging.Api/Hosting/RedisExtensions.cs:92`
 - `RedisReadinessHealthCheck`: `src/Knock.Gateway/Hosting/RedisExtensions.cs:160`, `src/Knock.Identity.Api/Hosting/RedisExtensions.cs:160`, `src/Knock.Market.Api/Hosting/RedisExtensions.cs:158`, `src/Knock.Messaging.Api/Hosting/RedisExtensions.cs:159`
 - `RedisRequestCounter`: `src/Knock.Gateway/Hosting/RateLimitingExtensions.cs:45`, `src/Knock.Identity.Api/Hosting/RedisRequestCounter.cs:8`, `src/Knock.Market.Api/Hosting/RedisRequestCounter.cs:8`
-- `RedisRevokedSessions`: `src/Knock.Gateway/Hosting/RevokedSessions.cs:16`, `src/Knock.Messaging.Api/Hosting/AuthenticationExtensions.cs:18`
+- `RedisRevokedSessions`: `src/Knock.Gateway/Hosting/RevokedSessions.cs:16`, `src/Knock.Messaging.Api/Hosting/AuthenticationExtensions.cs:19`
 - `RequestBodyLimitMiddleware`: `src/Knock.Identity.Api/Hosting/RequestBodyLimitMiddleware.cs:37`, `src/Knock.Market.Api/Hosting/RequestBodyLimitMiddleware.cs:34`
 - `ScopeRequestPathEnricher`: `src/Knock.Gateway/Hosting/LoggingExtensions.cs:141`, `src/Knock.Identity.Api/Hosting/LoggingExtensions.cs:141`, `src/Knock.Market.Api/Hosting/LoggingExtensions.cs:140`, `src/Knock.Messaging.Api/Hosting/LoggingExtensions.cs:141`
 - `SecurityExtensions`: `src/Knock.Identity.Api/Hosting/SecurityExtensions.cs:7`, `src/Knock.Market.Api/Hosting/SecurityExtensions.cs:6`
@@ -163,13 +167,13 @@
 - `SecuritySettings`: `src/Knock.Identity.Api/Hosting/SecuritySettings.cs:29`, `src/Knock.Market.Api/Hosting/SecuritySettings.cs:28`
 - `SecuritySettingsValidator`: `src/Knock.Identity.Api/Hosting/SecuritySettings.cs:41`, `src/Knock.Market.Api/Hosting/SecuritySettings.cs:40`
 - `SerilogLogState`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:255`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:255`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:251`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:255`
-- `SharedRateLimiter`: `src/Knock.Identity.Api/Hosting/SharedRateLimiter.cs:10`, `src/Knock.Market.Api/Hosting/SharedRateLimiter.cs:10`
+- `SharedRateLimiter`: `src/Knock.Identity.Api/Hosting/SharedRateLimiter.cs:10`, `src/Knock.Market.Api/Hosting/SharedRateLimiter.cs:10`, `src/Knock.Messaging.Api/Hosting/SharedRateLimiter.cs:13`
 - `TelemetryExceptionRecorder`: `src/Knock.Gateway/Hosting/ObservabilityExtensions.cs:175`, `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs:175`, `src/Knock.Market.Api/Hosting/ObservabilityExtensions.cs:171`, `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs:175`
 - `TelemetryRedactionProcessor`: `src/Knock.Gateway/Hosting/TelemetryRedactor.cs:293`, `src/Knock.Identity.Api/Hosting/TelemetryRedactor.cs:293`, `src/Knock.Market.Api/Hosting/TelemetryRedactor.cs:292`, `src/Knock.Messaging.Api/Hosting/TelemetryRedactor.cs:293`
 - `TelemetryRedactor`: `src/Knock.Gateway/Hosting/TelemetryRedactor.cs:25`, `src/Knock.Identity.Api/Hosting/TelemetryRedactor.cs:25`, `src/Knock.Market.Api/Hosting/TelemetryRedactor.cs:24`, `src/Knock.Messaging.Api/Hosting/TelemetryRedactor.cs:25`
 - `UnavailableContentModerator`: `src/Knock.Identity.Api/Modules/Safety/Services/UnavailableContentModerator.cs:9`, `src/Knock.Market.Api/Modules/Requests/Services/RequestPorts.cs:29`
-- `ValidationExtensions`: `src/Knock.Identity.Api/Hosting/ValidationExtensions.cs:9`, `src/Knock.Market.Api/Hosting/ValidationExtensions.cs:9`
-- `ValidationFilter`: `src/Knock.Identity.Api/Hosting/ValidationExtensions.cs:25`, `src/Knock.Market.Api/Hosting/ValidationExtensions.cs:24`
+- `ValidationExtensions`: `src/Knock.Identity.Api/Hosting/ValidationExtensions.cs:9`, `src/Knock.Market.Api/Hosting/ValidationExtensions.cs:9`, `src/Knock.Messaging.Api/Hosting/ValidationExtensions.cs:9`
+- `ValidationFilter`: `src/Knock.Identity.Api/Hosting/ValidationExtensions.cs:25`, `src/Knock.Market.Api/Hosting/ValidationExtensions.cs:24`, `src/Knock.Messaging.Api/Hosting/ValidationExtensions.cs:24`
 
 ## Índice por módulo
 
@@ -435,8 +439,17 @@
 
 ### Conversaciones
 
+**-**
+
+- `src/Knock.Messaging.Api/Modules/Conversaciones/ConversacionesModuleExtensions.cs` — class `ConversacionesModuleExtensions`
+  - `AddConversacionesModule()`:7
+- `src/Knock.Messaging.Api/Modules/Conversaciones/DomainExceptionHandler.cs` — class `DomainExceptionHandler`
+  - `TryHandleAsync()`:14
+
 **domain**
 
+- `src/Knock.Messaging.Api/Modules/Conversaciones/Domain/DomainException.cs` — enum `DomainErrorKind`, class `DomainException`, class `DomainErrors`
+  - `ToStatusCode()`:53
 - `src/Knock.Messaging.Api/Modules/Conversaciones/Domain/OcultadorDeContacto.cs` — record struct `TextoOculto`, class `OcultadorDeContacto`
   - `Ocultar()`:23
 
@@ -697,10 +710,16 @@
 
 - `src/Knock.Messaging.Api/Program.cs` — —
 
+**common**
+
+- `src/Knock.Messaging.Api/Common/Errors/ErrorCodes.cs` — class `ErrorCodes`
+
 **hosting**
 
+- `src/Knock.Messaging.Api/Hosting/ApiVersioningExtensions.cs` — class `ApiVersioningExtensions`
+  - `AddKnockApiVersioning()`:8
 - `src/Knock.Messaging.Api/Hosting/AuthenticationExtensions.cs` — interface `IRevokedSessions`, class `RedisRevokedSessions`, class `AuthenticationExtensions`, class `AuthenticationStartupCheck`
-  - `IsRevokedAsync()`:20, `AddKnockAuthentication()`:39, `StartAsync()`:140, `StopAsync()`:146
+  - `IsRevokedAsync()`:21, `AddKnockAuthentication()`:40, `StartAsync()`:141, `StopAsync()`:147
 - `src/Knock.Messaging.Api/Hosting/ChatHostingExtensions.cs` — class `ChatHostingExtensions`
   - `AddKnockChatBridge()`:22, `UseKnockChatGate()`:38
 - `src/Knock.Messaging.Api/Hosting/DataExtensions.cs` — class `DataExtensions`
@@ -709,6 +728,8 @@
   - `AddKnockForwardedHeaders()`:16
 - `src/Knock.Messaging.Api/Hosting/HealthExtensions.cs` — class `HealthExtensions`
   - `MapKnockReadiness()`:16
+- `src/Knock.Messaging.Api/Hosting/InternalControllersExtensions.cs` — class `InternalControllersExtensions`, class `InternalControllerFeatureProvider`
+  - `AddInternalControllers()`:9, `IsController()`:27
 - `src/Knock.Messaging.Api/Hosting/JwtSettings.cs` — record `JwtSettings`, class `JwtSettingsFactory`
   - `Create()`:18
 - `src/Knock.Messaging.Api/Hosting/LoggingExtensions.cs` — class `LoggingExtensions`, class `ScopeRequestPathEnricher`
@@ -717,16 +738,22 @@
   - `Seconds()`:60, `Validate()`:76, `AddKnockMongo()`:149, `AddKnockMongoDatabase()`:171, `CreateSettings()`:185, `CheckHealthAsync()`:229
 - `src/Knock.Messaging.Api/Hosting/ObservabilityExtensions.cs` — class `ObservabilityOptions`, record `AzureMonitorSignalSettings`, class `AzureMonitorExportStatus`, class `ObservabilityExtensions`, class `TelemetryExceptionRecorder`, class `IgnoreIncomingTraceContextPropagator`, class `OpenTelemetryLogSink`, class `SerilogLogState`
   - `Record()`:47, `AddKnockObservability()`:71, `TryHandleAsync()`:177, `Inject()`:200, `ExtractTraceIdAndState()`:202, `ExtractBaggage()`:208, `Emit()`:224, `GetEnumerator()`:285
+- `src/Knock.Messaging.Api/Hosting/PrivateNoStoreAttribute.cs` — class `PrivateNoStoreAttribute`
+  - `OnActionExecuting()`:15
 - `src/Knock.Messaging.Api/Hosting/ProblemResponses.cs` — class `ProblemResponses`
-  - `AddKnockProblemDetails()`:10, `WriteAsync()`:21
+  - `AddKnockProblemDetails()`:16, `WriteAsync()`:45
 - `src/Knock.Messaging.Api/Hosting/RateLimitingExtensions.cs` — class `RateLimitPolicySettings`, class `RateLimitSettings`, class `RateLimitingExtensions`
-  - `AddKnockRateLimiting()`:43, `ClientKey()`:99
+  - `AddKnockRateLimiting()`:47, `ClientKey()`:110
 - `src/Knock.Messaging.Api/Hosting/RedisExtensions.cs` — class `KnockRedisOptions`, class `KnockRedisOptionsValidator`, class `RedisExtensions`, class `RedisReadinessHealthCheck`
   - `Validate()`:40, `AddKnockRedis()`:104, `CreateConfiguration()`:122, `CheckHealthAsync()`:161
 - `src/Knock.Messaging.Api/Hosting/SecurityHeadersMiddleware.cs` — class `SecurityHeadersMiddleware`
   - `SecurityHeadersMiddleware()`:11, `InvokeAsync()`:17
+- `src/Knock.Messaging.Api/Hosting/SharedRateLimiter.cs` — class `SharedRateLimiter`, class `SharedLease`
+  - `GetStatistics()`:48, `AttemptAcquireCore()`:50, `AcquireAsyncCore()`:52, `Dispose()`:80, `TryGetMetadata()`:102
 - `src/Knock.Messaging.Api/Hosting/TelemetryRedactor.cs` — class `TelemetryRedactor`, class `CoordinatePairs`, class `TelemetryRedactionProcessor`, class `LogRedactionProcessor`, class `RedactingJsonFormatter`
   - `IsSensitiveKey()`:42, `Redact()`:44, `RedactAttribute()`:76, `RedactUrl()`:100, `ExceptionEvent()`:122, `Redact()`:180, `OnEnd()`:298, `OnEnd()`:331, `Format()`:362
+- `src/Knock.Messaging.Api/Hosting/ValidationExtensions.cs` — class `ValidationExtensions`, class `ValidationFilter`
+  - `AddKnockValidation()`:12, `OnActionExecutionAsync()`:28, `ToCamelCasePath()`:65
 
 ### Media
 

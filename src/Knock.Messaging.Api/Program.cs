@@ -1,6 +1,7 @@
 using Knock.Contracts.Correlation;
 using Knock.Messaging.Api.Hosting;
 using Knock.Messaging.Api.Modules.Chat;
+using Knock.Messaging.Api.Modules.Conversaciones;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,8 @@ builder.Services.AddKnockForwardedHeaders();
 builder.Services.AddKnockData();
 // Spec 026: chat de visita en tiempo real con SignalR y Redis como puente entre copias.
 builder.Services.AddChatModule().AddKnockChatBridge();
+// Spec 030: errores de dominio de Conversaciones como ProblemDetails (las rutas llegan con T-05 a T-07).
+builder.Services.AddConversacionesModule();
 
 var app = builder.Build();
 

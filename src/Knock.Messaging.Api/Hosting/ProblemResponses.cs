@@ -10,8 +10,8 @@ namespace Knock.Messaging.Api.Hosting;
 internal static class ProblemResponses
 {
     /// <summary>
-    /// RFC 9457 para toda respuesta de error, con <c>traceId</c> y <c>correlationId</c>; el detalle de la excepción solo se incluye en Development. Registra el manejador de excepciones
-    /// de dominio, que escribe el <c>code</c> de su catálogo.
+    /// RFC 9457 para toda respuesta de error, con <c>traceId</c> y <c>correlationId</c>; el detalle de la excepción solo se incluye en Development. El manejador de excepciones de
+    /// dominio lo registra el módulo Conversaciones.
     /// </summary>
     public static IServiceCollection AddKnockProblemDetails(this IServiceCollection services)
     {
@@ -39,7 +39,6 @@ internal static class ProblemResponses
                     context.ProblemDetails.Extensions["stackTrace"] = exception.StackTrace;
                 }
             });
-        services.AddExceptionHandler<DomainExceptionHandler>();
         return services;
     }
 
