@@ -58,7 +58,12 @@ internal sealed class CotizacionesController(QuoteService service) : ControllerB
 
     private ObjectResult Error(int status, string code)
     {
-        var problem = new ProblemDetails { Status = status, Title = ReasonPhrases.GetReasonPhrase(status) };
+        var problem = new ProblemDetails
+        {
+            Status = status,
+            Title = ReasonPhrases.GetReasonPhrase(status),
+            Detail = code == "quote_quota_full" ? "Esta solicitud ya tiene suficientes cotizaciones" : null,
+        };
         problem.Extensions["code"] = code;
         return StatusCode(status, problem);
     }
