@@ -1033,3 +1033,8 @@
 - **Por qué:** Gitleaks revisa todas las ramas con `fetch-depth: 0`; al empujar la rama del panel, el check de secretos se puso en rojo en todos los PR hacia sprint-05, incluida la promoción a develop. Son valores sintéticos, no credenciales.
 - **Decisiones (con porqué):** (1) Huellas y excepción, como EXC-004, 023 y 024, en vez de reescribir la historia de la rama o borrarla: se conservan los commits por tarea. (2) Alcance de cinco líneas exactas; las reglas siguen activas para lo demás.
 - **A evitar:** escribir en una prueba o en un documento una cadena de conexión completa con usuario y clave (arma la cadena sin ese formato); reescribir o volver a empujar la rama del panel con otros hashes (las huellas dejan de coincidir).
+
+## 2026-11-20 · KNOCK-97 · Fila de la spec 059 en el índice de specs
+- **Qué cambió:** `specs/README.md` agrega la fila 059 (Suspensión preventiva en casos críticos, Borrador), que el PR #182 había dejado fuera.
+- **Por qué:** el índice debe listar toda spec del repositorio; una persona o una herramienta que lea primero el índice no veía la 059.
+- **A evitar:** agregar una carpeta de spec sin su fila en el índice en el mismo cambio.
