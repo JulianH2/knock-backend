@@ -1,5 +1,16 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — Spec 029: cascada T-02 parcial (Alexis)
+- **Avance:** `CierreDeSolicitudService` usa `TransicionesDeSolicitud` y una transacción de MongoDB para solicitud, cotizaciones, envíos y outbox; no modifica visitas. Las pruebas con DocumentDB local cubren cancelación y vencimiento con un envío y una cotización, y reversión al fallar el buzón. El evento solo lleva los campos previstos; el vencimiento incluye `clienteId`.
+- **Verificación:** prueba roja de compilación por servicio inexistente antes del código; integración 029 3/3; build Release sin restaurar 0 errores y advertencias; ArchitectureTest 25/25; formato correcto. UnitTest 1911/1912: falló una prueba de tiempo del redactor de Mensajería (1,403 ms frente a 1 ms).
+- **Pendiente:** T-02 queda parcial: falta comprobar la integración con los envíos reales de la 028, más casos de atomicidad, concurrencia y registros; CA-01 y CA-06 requieren los flujos HTTP/ejecutor de T-03/T-04 y CA-15 también exige revisar registros. T-03 y T-05 no implementadas; no se generó contrato.
+
+## 2026-11-20 — Spec 029: T-02 bloqueada por dependencias locales
+- **Alcance confirmado:** la cascada cierra solicitud, cotizaciones y envíos; no modifica visitas. Una solicitud con cita no se cancela, conforme a R-05.
+- **Estado:** se escribió una prueba inicial de integración para la cascada de cancelación y vencimiento en `Spec029CierreTests`; no compila ni se ha verificado, y el servicio aún no existe. T-02 parcial; T-03 y T-05 pendientes, respetando el orden solicitado.
+- **Bloqueo:** build y pruebas con `--no-restore` fallan con NU1101 por `Otp.NET` y `QRCoder` ausentes en la caché local. Formato agotó 180 s. No se cambió NuGetAudit ni se restauraron paquetes. No se exportó OpenAPI con binarios anteriores.
+- **Pendiente:** disponer de los paquetes y assets restaurados externamente, ejecutar la prueba roja y completar T-02 antes de T-03 y T-05. La prueba inicial no demuestra CA-01 ni CA-06 completos.
+
 ## 2026-11-19 — Spec 048 T-01 y T-04: índices y cotizaciones propias (KNOCK-266)
 - **Decisión y duda documental:** Alexis, con autorización del líder, confirmó que R-18 y D-03 prevalecen sobre §6: no agregar el campo ni índices únicos `idempotencyKey`; la repetición se controla por estado y el índice único `(solicitudId, tecnicoId)`. La spec no se editó y §6 aún debe conciliarse.
 - **Implementación:** el script 048 agrega únicamente índices adicionales respecto de 020/021; la consulta usa `QuoteStore`, filtra por `tecnicoUsuarioId` del token, pagina por fecha e identificador y el gateway enruta el GET autenticado. Se reutilizan `RequestCursor`, el directorio de técnicos y el filtro de validación.
