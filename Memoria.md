@@ -1152,3 +1152,8 @@
 - **Qué cambió:** `specs/README.md` agrega la fila 059 (Suspensión preventiva en casos críticos, Borrador), que el PR #182 había dejado fuera.
 - **Por qué:** el índice debe listar toda spec del repositorio; una persona o una herramienta que lea primero el índice no veía la 059.
 - **A evitar:** agregar una carpeta de spec sin su fila en el índice en el mismo cambio.
+
+## 2026-11-20 · KNOCK-75 · Terraform conecta los secretos del panel interno
+- **Qué cambió:** `deploy/apps/main.tf` pasa `PanelJwt__SigningKey` (secreto `panel-jwt-signing-key`) al gateway y a Identity, y `PanelTotp__Keys__1` (secreto `panel-totp-key`) con `PanelTotp__KeyVersion = 1` solo a Identity; `Cors__Panel__Origen` sale de la variable `panel_origin` (vacía por omisión, no es secreto). `deploy/up.sh`, su prueba y `deploy/README.md` agregan los dos nombres a la lista de secretos requeridos.
+- **Por qué:** sin estos valores el panel responde 503 (spec 033, R-13, R-26 y R-27). Los secretos existían en la spec pero ningún servicio los recibía, así que crearlos en Key Vault no bastaba.
+- **A evitar:** generar las llaves con `RandomNumberGenerator::Fill` en PowerShell 5.1 (no existe y deja 32 bytes en cero: dos secretos se guardaron así el 2026-11-20 y hay que sobrescribirlos); reusar `jwt-signing-key` para el panel; fijar `panel_origin` a algo que no sea `https://host` sin ruta; aplicar sin crear antes los dos secretos (`up.sh` lo detiene).
