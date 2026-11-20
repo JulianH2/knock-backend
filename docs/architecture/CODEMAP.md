@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-20T05:19:27Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-20T06:04:46Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -20,7 +20,7 @@
 | `Knock.Market.Api` | -, common, hosting | 37 | 74 | 103 |
 | `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
-| `Requests` | -, controllers, data, domain, dtos, services, validators | 67 | 141 | 141 |
+| `Requests` | -, controllers, data, domain, dtos, services, validators | 67 | 141 | 143 |
 | `Safety` | -, controllers, data, domain, dtos, services, validators | 15 | 38 | 33 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 26 | 47 | 54 |
 | `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 22 | 55 | 57 |
@@ -812,7 +812,7 @@
 - `src/Knock.Market.Api/Modules/Requests/Data/DemoTechnicianStore.cs` — class `DemoTechnicianStore`
   - `ValidateAsync()`:14, `SaveAsync()`:17
 - `src/Knock.Market.Api/Modules/Requests/Data/EnviosStore.cs` — class `EnviosStore`
-  - `FindTechniciansAsync()`:10, `AnyAsync()`:18, `InsertAsync()`:21, `InsertAsync()`:25
+  - `FindTechniciansAsync()`:11, `AnyAsync()`:19, `CanViewAsync()`:22, `MarkQuotedAsync()`:27, `InsertAsync()`:37, `InsertAsync()`:41
 - `src/Knock.Market.Api/Modules/Requests/Data/HistoryStore.cs` — record `HistoryVisit`, record `HistoryVisitPage`, class `HistoryStore`
   - `FindLinkedTradesAsync()`:34
 - `src/Knock.Market.Api/Modules/Requests/Data/MongoOutbox.cs` — record `OutboxMessage`, interface `IOutbox`, class `MongoOutbox`
@@ -820,7 +820,7 @@
 - `src/Knock.Market.Api/Modules/Requests/Data/QuoteReaders.cs` — class `MongoTechnicianDirectory`, class `MongoQuoteRequestReader`
   - `FindBySubAsync()`:16, `FindEligibleAsync()`:19, `ExistsAsync()`:60, `FindAsync()`:74
 - `src/Knock.Market.Api/Modules/Requests/Data/QuoteStore.cs` — class `QuoteStore`
-  - `SaveAsync()`:21, `SaveAsync()`:24
+  - `SaveAsync()`:23, `SaveAsync()`:26
 - `src/Knock.Market.Api/Modules/Requests/Data/RepartoStore.cs` — class `RepartoStore`
   - `FindAsync()`:19, `DistributeAsync()`:22, `ReviewAsync()`:51
 - `src/Knock.Market.Api/Modules/Requests/Data/RequestsStore.cs` — record `RequestRecord`, record `RequestRecordPage`, class `RequestsStore`
@@ -895,7 +895,7 @@
   - `AreReadyForAsync()`:22, `ReadLinksAsync()`:24, `ReviewTextAsync()`:31, `ReviewImageAsync()`:34
 - `src/Knock.Market.Api/Modules/Requests/Services/RequestsApi.cs` — class `RequestsApi`
 - `src/Knock.Market.Api/Modules/Requests/Services/SolicitudService.cs` — enum `CreateRequestStatus`, record `CreateRequestOutcome`, class `SolicitudService`
-  - `SolicitudService()`:31, `CreateAsync()`:46, `ListAsync()`:116, `GetAsync()`:143, `AddressContext()`:209
+  - `SolicitudService()`:32, `CreateAsync()`:49, `ListAsync()`:119, `GetAsync()`:146, `AddressContext()`:221
 - `src/Knock.Market.Api/Modules/Requests/Services/TrustNoticeService.cs` — enum `TrustNoticeStatus`, record `TrustNoticeOutcome`, class `TrustNoticeService`
   - `TrustNoticeService()`:21, `PrepareAsync()`:23
 - `src/Knock.Market.Api/Modules/Requests/Services/VisitCodeFactory.cs` — record `VisitCode`, class `VisitCodeFactory`

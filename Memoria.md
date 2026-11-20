@@ -1,5 +1,11 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — KNOCK-68: cotización y detalle por envío (T-07)
+- **Estado:** con oleadas activas, cotizar requiere envío activo, que pasa a cotizado en la transacción; el detalle exige envío activo o cotizado y mantiene la elegibilidad base. El contador de cotizaciones activas se incrementa con filtro condicionado en la misma transacción que envío, cotización y buzón; el límite usa `Oleadas:MaximoCotizaciones`. La bandera apagada conserva la elegibilidad base.
+- **Decisión:** solicitudes antiguas sin contador o con contador cero se inicializan contando cotizaciones vivas dentro de la transacción antes del incremento condicionado; la versión anterior podía crear cotizaciones dejando cero. Un contador no cero desactualizado no se repara automáticamente; el retiro futuro debe decrementarlo transaccionalmente.
+- **Verificación:** las pruebas nuevas dieron 7 fallos y 3 aprobadas antes del cambio. Build Release sin restauración pasó sin avisos; integración filtrada Spec028 y Spec020 pasó 77/77. Se ajustó la preparación de CA-020-23 para entregar envíos también a técnicos inelegibles con oleadas activas, conservando las aserciones de elegibilidad. No se verificó Azure ni una carrera real contra descarte (T-08 aún no existe).
+- **Pendiente:** el formato global señala diferencias previas en `Spec028RepartoTests.cs`, ajeno a T-07. OpenAPI y documentos de rutas son T-10; no se creó commit.
+
 ## 2026-11-19 — KNOCK-68: manejadores de reparto (T-06)
 - **Estado:** creación programa la primera oleada en su transacción cuando está habilitada; `RepartoService` registra los dos manejadores, confirma la reserva en la transacción y usa el avance condicionado de oleada, envíos, tareas y `MongoOutbox`. La revisión cuenta cotizaciones vivas y programa la siguiente. La última oleada sin ningún envío escribe `SolicitudSinTecnicos`; sus datos y los de envío solo contienen identificadores y número de oleada.
 - **Decisiones:** la tarea se programa con upsert por tipo y clave de negocio para tolerar una repetición tras el commit; el índice único de la spec debe estar aplicado. Una revisión escribe `revisionOleada` en la solicitud dentro de su transacción para competir con cambios concurrentes; no tiene significado de negocio.
