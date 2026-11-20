@@ -34,7 +34,7 @@ public sealed class Spec035GatewayRegistrosTests
         await capture.AssertNoQueryAsync();
 
         using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        body.RootElement.GetProperty("instance").GetString().Should().Be("/api/v1/me");
+        body.RootElement.GetProperty("instance").GetString().Should().Be("/api/v1/me/{**resto}");
     }
 
     [Fact]

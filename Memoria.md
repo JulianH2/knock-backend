@@ -1,5 +1,10 @@
 # Memoria — knock-backend
 
+## 2026-11-19 — KNOCK-186: plantilla de ruta en ProblemDetails
+- **Decisión:** R-06 de la spec 035 se cumple con la plantilla de la ruta del endpoint, sin consulta y con `/` inicial, para no repetir valores recibidos y respetar CA-046-17 y CA-023-03. Sin endpoint se conserva la ruta de la petición sin consulta.
+- **Límite:** la ruta de respaldo puede contener valores cuando no hay endpoint; no se interpreta como una plantilla.
+- **Verificación:** build Release sin restaurar sin advertencias; filtro solicitado: 36 unitarias, 11 de seguridad y 15 de integración aprobadas. Formato de los archivos afectados y codemap actualizados y verificados.
+
 ## 2026-11-19 — KNOCK-186: soporte compartido de trazas de la spec 035
 - **Cambio:** `QueryTraceCapture` reúne el exportador en memoria y las aserciones de consulta ausente en `tests/IntegrationTest/Support/QueryLeakDetector.cs`, archivo ya enlazado por SecurityTest; no se agregó referencia entre proyectos ni dependencia. Se conservan las comprobaciones y el plazo de espera.
 - **Verificación:** build Release sin restaurar y formato de los tres archivos C# correctos; codemap actualizado y `--check` correcto. jscpd acotado ya no muestra los dos clones de la spec 035, pero devuelve error por un clon entre `CorrelationAcrossServicesTests.cs` y `GatewayRoutingTests.cs`. No se ejecutaron pruebas de integración por instrucción.

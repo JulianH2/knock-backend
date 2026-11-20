@@ -1,5 +1,6 @@
 // jscpd:ignore-start -- EXC-016
 using Knock.Contracts.Correlation;
+using Microsoft.AspNetCore.Routing;
 
 namespace Knock.Gateway.Hosting;
 
@@ -28,7 +29,9 @@ internal static class ProblemResponses
             options.CustomizeProblemDetails = context =>
             {
                 context.ProblemDetails.Type ??= "about:blank";
-                context.ProblemDetails.Instance = context.HttpContext.Request.Path;
+                context.ProblemDetails.Instance = context.HttpContext.GetEndpoint() is RouteEndpoint { RoutePattern.RawText: { } route }
+                    ? "/" + route.TrimStart('/')
+                    : context.HttpContext.Request.Path;
                 if (CorrelationId.Current(context.HttpContext) is { } correlationId)
                 {
                     context.ProblemDetails.Extensions["correlationId"] = correlationId;

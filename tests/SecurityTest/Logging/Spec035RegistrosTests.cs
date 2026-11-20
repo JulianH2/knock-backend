@@ -26,21 +26,21 @@ public sealed class Spec035RegistrosTests
     public async Task Identity_ProblemDetails_Y_Traza_CA_035_07_CA_035_16()
     {
         using var factory = await SecurityIdentityFactory.CreateAsync();
-        await CheckProblemAndTraceAsync(factory, HttpMethod.Post, "/api/v1/auth/refresh", HttpStatusCode.BadRequest, "{");
+        await CheckProblemAndTraceAsync(factory, HttpMethod.Post, "/api/v1/auth/refresh", "/api/v{version:apiVersion}/auth/refresh", HttpStatusCode.BadRequest, "{");
     }
 
     [Fact]
     public async Task Market_ProblemDetails_Y_Traza_CA_035_07_CA_035_16()
     {
         using var factory = await SecurityMarketFactory.CreateAsync();
-        await CheckProblemAndTraceAsync(factory, HttpMethod.Get, "/api/v1/colonias/en-punto", HttpStatusCode.UnprocessableEntity, bearer: TokenForge.Valid());
+        await CheckProblemAndTraceAsync(factory, HttpMethod.Get, "/api/v1/colonias/en-punto", "/api/v{version:apiVersion}/colonias/en-punto", HttpStatusCode.UnprocessableEntity, bearer: TokenForge.Valid());
     }
 
     [Fact]
     public async Task Messaging_ProblemDetails_Y_Traza_CA_035_07_CA_035_16()
     {
         using var factory = await SecurityMessagingFactory.CreateAsync();
-        await CheckProblemAndTraceAsync(factory, HttpMethod.Get, "/sonda/protegida", HttpStatusCode.Unauthorized);
+        await CheckProblemAndTraceAsync(factory, HttpMethod.Get, "/sonda/protegida", "/sonda/protegida", HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public sealed class Spec035RegistrosTests
     }
 
     private static async Task CheckProblemAndTraceAsync<T>(
-        WebApplicationFactory<T> factory, HttpMethod method, string path, HttpStatusCode status, string? json = null, string? bearer = null)
+        WebApplicationFactory<T> factory, HttpMethod method, string path, string expectedInstance, HttpStatusCode status, string? json = null, string? bearer = null)
         where T : class
     {
         var capture = new QueryTraceCapture();
@@ -81,7 +81,7 @@ public sealed class Spec035RegistrosTests
         response.StatusCode.Should().Be(status);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/problem+json");
         var body = await SecureHttp.ReadJsonAsync(response);
-        body.GetProperty("instance").GetString().Should().Be(path);
+        body.GetProperty("instance").GetString().Should().Be(expectedInstance);
         await capture.AssertNoQueryAsync();
     }
 

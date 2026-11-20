@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Text.Json;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry;
@@ -50,6 +52,18 @@ public sealed class Spec035RedaccionTests
     [Theory]
     [MemberData(nameof(Projects))]
     public async Task ProblemDetails_Sin_Consulta_CA_035_07(string project)
+        => await CheckProblemInstanceAsync(project, null, "/error");
+
+    [Theory]
+    [MemberData(nameof(Projects))]
+    public async Task ProblemDetails_Usa_Plantilla_Sin_Valores_CA_035_07(string project)
+    {
+        await CheckProblemInstanceAsync(project, "api/v1/tecnicos/{id}", "/api/v1/tecnicos/{id}");
+        await CheckProblemInstanceAsync(project, "/api/v1/tecnicos/{id}", "/api/v1/tecnicos/{id}");
+        await CheckProblemInstanceAsync(project, "api/v1/zonas/cp/{cp}", "/api/v1/zonas/cp/{cp}");
+    }
+
+    private static async Task CheckProblemInstanceAsync(string project, string? template, string expected)
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -66,8 +80,13 @@ public sealed class Spec035RedaccionTests
 
         using var provider = services.BuildServiceProvider();
         var context = new DefaultHttpContext { RequestServices = provider };
-        context.Request.Path = "/error";
+        context.Request.Path = template is null ? "/error" : "/api/v1/tecnicos/no-es-un-id";
         context.Request.QueryString = new QueryString("?q=synthetic-secret");
+        if (template is not null)
+        {
+            context.SetEndpoint(new RouteEndpointBuilder(
+                _ => Task.CompletedTask, RoutePatternFactory.Parse(template), 0).Build());
+        }
         context.Response.Body = new MemoryStream();
         await provider.GetRequiredService<IProblemDetailsService>().WriteAsync(new ProblemDetailsContext
         {
@@ -76,7 +95,7 @@ public sealed class Spec035RedaccionTests
         });
         context.Response.Body.Position = 0;
         using var json = await JsonDocument.ParseAsync(context.Response.Body);
-        json.RootElement.GetProperty("instance").GetString().Should().Be("/error");
+        json.RootElement.GetProperty("instance").GetString().Should().Be(expected);
     }
 
     [Theory]
