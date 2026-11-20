@@ -977,3 +977,8 @@
 - **Qué cambió:** `.mcp.json`, `.vscode/mcp.json`, `opencode.json`, `.codex/config.toml` y `docs/mcp.md` apuntan a `https://mcp.atlassian.com/v2/mcp`. Solo cambió la dirección: mismo transporte y mismos permisos (lectura permitida, escritura denegada).
 - **Por qué:** la dirección `/v1/mcp/authv2` está deprecada y Atlassian la retira el 2027-03-01.
 - **A evitar:** dejar direcciones antiguas del conector en configuraciones de agentes; al cambiar de endpoint, revisar los cinco archivos a la vez y no tocar la lista de herramientas.
+
+## 2026-11-19 · KNOCK-73 · Spec 030 T-02: colecciones de conversaciones y mensajes
+- **Qué cambió:** `db/030-conversaciones.js` crea `conversaciones` y `mensajes` en `messaging` (variable `KNOCK_DB_MESSAGING`) con los índices de spec 030 §6: par `(solicitudId, tecnicoId)` único, listas por `clienteId` y `tecnicoUsuarioId` con `ultimoMensajeEn`, cursor de mensajes y TTL de 180 días sobre `creadoEn`. Prueba de base de datos: `tests/DatabaseTest/Scripts/Spec030RetencionTests.cs` (CA-19).
+- **Por qué:** los stores de T-05 a T-07 necesitan las colecciones e índices; el TTL (15 552 000 s) cumple R-21 sin trabajos de limpieza.
+- **A evitar:** editar este script una vez fusionado (un cambio de índice va en un script nuevo); los nombres de índice deben coincidir con los que cree el `EnsureIndexesAsync` de T-05 para que no choquen.
