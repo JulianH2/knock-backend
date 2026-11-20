@@ -2,6 +2,7 @@ extern alias IdentityApi;
 
 using System.Net;
 using System.Security.Cryptography;
+using IdentityApi::Knock.Identity.Api.Modules.Panel.Data;
 using IdentityApi::Knock.Identity.Api.Modules.Sesiones.Data;
 using IdentityApi::Knock.Identity.Api.Modules.Sesiones.Services;
 using Microsoft.AspNetCore.Builder;
@@ -70,6 +71,10 @@ internal sealed class IdentityApiFactory(IReadOnlyDictionary<string, string?> se
 
         var factory = new IdentityApiFactory(values) { ExtraServices = configureServices };
         await factory.Services.GetRequiredService<SesionesStore>().EnsureIndexesAsync(CancellationToken.None);
+        await factory.Services.GetRequiredService<PanelCuentasStore>().EnsureIndexesAsync(CancellationToken.None);
+        await factory.Services.GetRequiredService<PanelSesionesStore>().EnsureIndexesAsync(CancellationToken.None);
+        await factory.Services.GetRequiredService<PanelActivacionesStore>().EnsureIndexesAsync(CancellationToken.None);
+        await factory.Services.GetRequiredService<PanelAuditoriaStore>().EnsureIndexesAsync(CancellationToken.None);
         return factory;
     }
 

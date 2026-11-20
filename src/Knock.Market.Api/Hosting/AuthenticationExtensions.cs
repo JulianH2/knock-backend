@@ -22,6 +22,7 @@ internal static class AuthenticationExtensions
         services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
             .Configure<JwtSettings>((options, settings) =>
             {
+                // jscpd:ignore-start -- EXC-028
                 options.MapInboundClaims = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -37,6 +38,7 @@ internal static class AuthenticationExtensions
                     ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
                     ClockSkew = TimeSpan.Zero,
                 };
+                // jscpd:ignore-end
                 options.Events = new JwtBearerEvents
                 {
                     // Mismo 401 para cualquier fallo: sin motivo en el cuerpo ni en WWW-Authenticate.

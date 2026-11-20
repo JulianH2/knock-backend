@@ -330,13 +330,7 @@ internal sealed class SesionesStore(
         return result.MatchedCount == 1;
     }
 
-    internal static bool IsDuplicateKey(Exception exception) => exception switch
-    {
-        MongoWriteException write => write.WriteError.Category == ServerErrorCategory.DuplicateKey,
-        MongoBulkWriteException bulk => bulk.WriteErrors.Any(error => error.Category == ServerErrorCategory.DuplicateKey),
-        MongoCommandException command => command.Code == 11000,
-        _ => false,
-    };
+    internal static bool IsDuplicateKey(Exception exception) => Knock.Identity.Api.Hosting.MongoWriteErrors.IsDuplicateKey(exception);
 
     private static BsonDocument UserDocument(NewAccount account, ObjectId userId)
     {
