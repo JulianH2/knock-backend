@@ -252,13 +252,14 @@ resource "azurerm_storage_management_policy" "quarantine" {
 # No hay ningún recurso de CDN de Azure ni de Front Door (CA-23); la dirección base es configurable para poner una CDN después sin cambiar código.
 
 resource "azurerm_storage_account" "public_images" {
-  #checkov:skip=CKV_AZURE_190: EXC pendiente (spec 032, T-10): la lectura anónima por blob es el diseño de la spec 032 (ADR-007); una persona la registra en security/exceptions.yaml
-  #checkov:skip=CKV_AZURE_206: EXC pendiente (spec 032, T-10) replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
-  #checkov:skip=CKV_AZURE_33: EXC pendiente (spec 032, T-10) replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
-  #checkov:skip=CKV2_AZURE_21: EXC pendiente (spec 032, T-10) replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
-  #checkov:skip=CKV_AZURE_59: EXC pendiente (spec 032, T-10) replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
-  #checkov:skip=CKV2_AZURE_33: EXC pendiente (spec 032, T-10) replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
-  #checkov:skip=CKV2_AZURE_1: EXC pendiente (spec 032, T-10) replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
+  #checkov:skip=CKV2_AZURE_47: EXC-029: la lectura anónima por blob es el diseño de la spec 032 (ADR-007 opción D); solo imágenes ya procesadas y moderadas, sin listado
+  #checkov:skip=CKV_AZURE_190: EXC-029: la lectura anónima por blob es el diseño de la spec 032 (ADR-007)
+  #checkov:skip=CKV_AZURE_206: EXC-029 replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
+  #checkov:skip=CKV_AZURE_33: EXC-029 replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
+  #checkov:skip=CKV2_AZURE_21: EXC-029 replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
+  #checkov:skip=CKV_AZURE_59: EXC-029 replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
+  #checkov:skip=CKV2_AZURE_33: EXC-029 replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
+  #checkov:skip=CKV2_AZURE_1: EXC-029 replicación geográfica, endpoints privados y llaves administradas cuestan; solo contiene imágenes públicas ya procesadas
   name                            = "stpub${local.compact}"
   location                        = var.location
   resource_group_name             = data.azurerm_resource_group.this.name
@@ -289,8 +290,8 @@ resource "azurerm_storage_account" "public_images" {
 }
 
 resource "azurerm_storage_container" "public_images" {
-  #checkov:skip=CKV2_AZURE_21: EXC pendiente (spec 032, T-10) el registro de lecturas necesita un diagnóstico con costo
-  #checkov:skip=CKV_AZURE_34: EXC pendiente (spec 032, T-10): el acceso anónimo de nivel blob es el diseño de la spec 032 (ADR-007); se lee un archivo si se conoce su nombre, no se lista
+  #checkov:skip=CKV2_AZURE_21: EXC-029 el registro de lecturas necesita un diagnóstico con costo
+  #checkov:skip=CKV_AZURE_34: EXC-029: el acceso anónimo de nivel blob es el diseño de la spec 032 (ADR-007); se lee un archivo si se conoce su nombre, no se lista
   name                  = "imagenes-publicas"
   storage_account_id    = azurerm_storage_account.public_images.id
   container_access_type = "blob"
