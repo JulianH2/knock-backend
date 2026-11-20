@@ -1,6 +1,6 @@
 # Spec 059 — Suspensión preventiva en casos críticos (efecto de suspender una cuenta)
 
-> **Estado:** Borrador · **Repositorio:** knock-backend · **Rector:** `constitution.md`
+> **Estado:** Aprobada · **Repositorio:** knock-backend · **Rector:** `constitution.md`
 > **Jira:** KNOCK-97 (HU-047 · Suspensión preventiva en casos críticos · Épica EP-08 Confianza y seguridad · Sprint 5 · 3 puntos · Capas Back + BD) · **Responsable:** José Guillermo Rangel Hernández
 > **Fuentes:** `docs/backlog/HU-047.md`; `docs/referencia/DECISIONES.md` §5 (política de reportes y suspensión); specs 015 R-07, 016 R-02 y R-04 a R-08, 020 R-23, 027 R-07, 033 R-02 y R-06, 037 R-11 y R-13, 039, 043 (§6, T-08), 050, 053 R-20 (REP-05) y 054 R-15.
 > **Servicios:** Identidad (`Knock.Identity.Api`, módulos `Safety` y `Sesiones`) y Mercado (`Knock.Market.Api`, consumidor del evento) · **Colecciones:** `usuarios` (campo nuevo), `sesiones`, `reportes`, `panel_auditoria`, `outbox`
@@ -230,6 +230,6 @@ Cada una se contesta sí o no sobre la recomendación del autor; responder «sí
 | 13 | **Se confirman D-02, D-03 y D-04 de §14** (casos `CA-NN`, permiso `reports:resolve`, sesiones del panel incluidas en la revocación). | Son decisiones tomadas por el autor sin consulta. | Se indica cuál cambiar. |
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-20
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Implementada (tras el merge)
