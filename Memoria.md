@@ -1171,6 +1171,10 @@
 - **Por qué:** el índice debe listar toda spec del repositorio; una persona o una herramienta que lea primero el índice no veía la 059.
 - **A evitar:** agregar una carpeta de spec sin su fila en el índice en el mismo cambio.
 
+## 2026-11-20 · KNOCK-97 · Spec 059: dudas redactadas como decisiones sí/no
+- **Qué cambió:** `specs/059-suspension-preventiva/spec.md` §15: las doce dudas pasan a trece decisiones sí/no con contexto, alternativa y recomendación (la 11 se cerró: 059 ya está en `sprint-05` con su fila del índice). Solo documentación.
+- **Por qué:** la spec pedía respuestas sin dar una propuesta concreta; algunas (5, 6) condicionan tareas de código, el resto no.
+- **A evitar:** dejar una duda sin recomendación del autor.
 ## 2026-11-20 — KNOCK-54 (HU-010): conciliación con la spec 040
 - **Estado:** la tarjeta no pide código nuevo. Los seis criterios de HU-010 ya están cubiertos: CA1 a CA4 por las direcciones de la spec 040 (`GET/POST/PUT/DELETE /me/direcciones`, cifradas, 422 con `errors.<campo>` si falta calle) y por `direccion` obligatoria en `POST /solicitudes` a domicilio (spec 020); CA5 por la vista del técnico sin dirección (spec 020 CA-013); CA6 por `address_not_applicable` en taller (spec 020 CA-005). `sdd_lint --trace 040` no deja faltantes. La ruta `PUT /me/direccion` de la ficha la reemplaza la colección `/me/direcciones` de la spec 040 (una principal, hasta 10).
 - **Decisión:** `task.md` de la 040 queda conciliado: T-09 hecha (revisión de pares del PR #159 resuelta el 2026-11-18) y T-00 parcial, porque la copia de la dirección en la visita ya existe y solo falta que una persona cree el secreto `identity-field-encryption-key` en Key Vault y haga el apply.

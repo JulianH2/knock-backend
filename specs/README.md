@@ -62,6 +62,8 @@ Cada carpeta tiene `spec.md`, `plan.md` y `task.md`. Estados: Borrador → Aprob
 | 054 | Bandeja de salida y tareas programadas (INT-01) | Aprobada | [`054-bandeja-de-salida-y-tareas-programadas`](054-bandeja-de-salida-y-tareas-programadas/spec.md) |
 | 055 | Biblioteca técnica compartida `Knock.Hosting` (KNOCK-251) | Aprobada | [`055-biblioteca-tecnica-compartida`](055-biblioteca-tecnica-compartida/spec.md) |
 | 056 | Autenticación entre servicios (KNOCK-162) | Borrador | [`056-autenticacion-entre-servicios`](056-autenticacion-entre-servicios/spec.md) |
+| 057 | Borrado de fotos de verificación (KNOCK-87) | Borrador | [`057-borrado-de-fotos-de-verificacion`](057-borrado-de-fotos-de-verificacion/spec.md) |
+| 059 | Suspensión preventiva en casos críticos (KNOCK-97) | Aprobada | [`059-suspension-preventiva`](059-suspension-preventiva/spec.md) |
 | 057 | Borrado de fotos de verificación (KNOCK-87) | Aprobada | [`057-borrado-de-fotos-de-verificacion`](057-borrado-de-fotos-de-verificacion/spec.md) |
 | 059 | Suspensión preventiva en casos críticos (KNOCK-97) | Borrador | [`059-suspension-preventiva`](059-suspension-preventiva/spec.md) |
 | BUG-002 | Falta Strict-Transport-Security en el gateway (KNOCK-239) | Aprobada | [`BUG-002-falta-strict-transport-security-en-el-gateway`](BUG-002-falta-strict-transport-security-en-el-gateway/spec.md) |
