@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-20T01:48:49Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-20T17:27:47Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | `Account` | -, controllers, data, domain, dtos, services, validators | 28 | 63 | 60 |
 | `Addresses` | -, controllers, data, domain, dtos, services, validators | 12 | 25 | 46 |
-| `Assistant` | data | 2 | 7 | 5 |
+| `Assistant` | data, services | 3 | 13 | 8 |
 | `Catalog` | -, controllers, data, domain, dtos, services, validators | 49 | 87 | 113 |
 | `Chat` | -, data, hubs, services | 6 | 18 | 26 |
 | `Conversaciones` | domain | 1 | 2 | 1 |
@@ -20,10 +20,10 @@
 | `Knock.Market.Api` | -, common, hosting | 34 | 68 | 100 |
 | `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
 | `Media` | -, data, domain, dtos, services, validators | 17 | 29 | 53 |
-| `Requests` | -, controllers, data, domain, dtos, services, validators | 62 | 134 | 123 |
+| `Requests` | -, controllers, data, domain, dtos, services, validators | 63 | 135 | 126 |
 | `Safety` | -, controllers, data, domain, dtos, services, validators | 15 | 38 | 33 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 26 | 47 | 54 |
-| `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 22 | 55 | 57 |
+| `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 26 | 67 | 68 |
 | `Trust` | -, controllers, data, domain, dtos, services, validators | 7 | 17 | 16 |
 | `Usuarios` | -, controllers, data, domain, dtos, services | 16 | 29 | 37 |
 
@@ -295,6 +295,11 @@
   - `ConsumoIaStore()`:13, `ReserveAsync()`:44, `AdjustAsync()`:68
 - `src/Knock.Market.Api/Modules/Assistant/Data/UsoIaStore.cs` — record `UsageRecord`, class `UsoIaStore`
   - `UsoIaStore()`:8, `SaveAsync()`:10
+
+**services**
+
+- `src/Knock.Market.Api/Modules/Assistant/Services/FiltroDatosPersonales.cs` — enum `PersonalDataKind`, record struct `CensorshipEntry`, record `FilterResult`, class `FiltroDatosPersonales`, record struct `Range`, class `View`
+  - `Censurar()`:59, `Name()`:78, `Build()`:263
 
 ### Catalog
 
@@ -841,6 +846,8 @@
   - `ToStored()`:35, `ToStored()`:47, `ParseRequest()`:56, `ParseQuote()`:68
 - `src/Knock.Market.Api/Modules/Requests/Domain/SeleccionDeOleada.cs` — record `WaveCandidate`, record `WaveSelection`, class `SeleccionDeOleada`
   - `Select()`:12
+- `src/Knock.Market.Api/Modules/Requests/Domain/TransicionesDeSolicitud.cs` — class `TransicionesDeSolicitud`
+  - `CanClose()`:6, `CancellationError()`:9
 - `src/Knock.Market.Api/Modules/Requests/Domain/VisitRules.cs` — class `VisitErrorCodes`, enum `ArrivalBlock`, record `VisitState`, class `VisitRules`
   - `WindowStart()`:48, `CanArrive()`:55, `TechnicianMaySeeAddress()`:68, `CanNotify()`:71, `CodeHiddenReason()`:76, `BlockForArrival()`:100, `SafetyRule()`:136, `TrustNotice()`:143
 
@@ -879,6 +886,7 @@
 - `src/Knock.Market.Api/Modules/Requests/Services/RequestPorts.cs` — interface `IRequestPhotos`, class `UnavailableRequestPhotos`, class `UnavailableContentModerator`
   - `AreReadyForAsync()`:22, `ReadLinksAsync()`:24, `ReviewTextAsync()`:31, `ReviewImageAsync()`:34
 - `src/Knock.Market.Api/Modules/Requests/Services/RequestsApi.cs` — class `RequestsApi`
+  - `CanArrive()`:7
 - `src/Knock.Market.Api/Modules/Requests/Services/SolicitudService.cs` — enum `CreateRequestStatus`, record `CreateRequestOutcome`, class `SolicitudService`
   - `SolicitudService()`:31, `CreateAsync()`:46, `ListAsync()`:116, `GetAsync()`:143, `AddressContext()`:209
 - `src/Knock.Market.Api/Modules/Requests/Services/TrustNoticeService.cs` — enum `TrustNoticeStatus`, record `TrustNoticeOutcome`, class `TrustNoticeService`
@@ -1030,6 +1038,8 @@
   - `Register()`:38, `Profile()`:67, `Autocomplete()`:81, `Coverage()`:95
 - `src/Knock.Market.Api/Modules/Tecnicos/Controllers/V1/TecnicosMeController.cs` — class `TecnicosMeController`
   - `Update()`:32, `Availability()`:54, `Schedule()`:67, `ReplaceSchedule()`:84
+- `src/Knock.Market.Api/Modules/Tecnicos/Controllers/V1/TrabajoController.cs` — class `TrabajoController`
+  - `Get()`:26
 
 **data**
 
@@ -1040,14 +1050,16 @@
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TechnicianSelfStore.cs` — class `TechnicianSelfStore`
   - `FindOwnAsync()`:26, `ReadOwnAsync()`:37, `SetAvailableUntilAsync()`:60, `ReadScheduleAsync()`:63, `SetScheduleAsync()`:71, `UpdateAsync()`:82
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TrabajoStore.cs` — record `TrabajoVerification`, class `TrabajoStore`
-  - `TrabajoStore()`:10, `ReadVerificationAsync()`:12
+  - `ReadTechnicianAsync()`:14, `ReadUpcomingAsync()`:19, `ReadQuotesAsync()`:29, `CountFinishedAsync()`:35, `ReadRequestsAsync()`:43, `ReadVerificationAsync()`:71
 
 **domain**
 
 - `src/Knock.Market.Api/Modules/Tecnicos/Domain/ScheduleRules.cs` — class `ScheduleRules`
   - `EndOfCityDayUtc()`:14, `AllClosed()`:23, `TryParseTime()`:25, `IsValid()`:31, `Normalize()`:61
 - `src/Knock.Market.Api/Modules/Tecnicos/Domain/TechnicianRules.cs` — class `TechnicianRules`
-  - `IsVisible()`:30, `IsKnownAttention()`:33, `UsesWorkshop()`:35, `VisitsHomes()`:37
+  - `IsVisible()`:30, `IsAvailable()`:33, `IsKnownAttention()`:35, `UsesWorkshop()`:37, `VisitsHomes()`:39
+- `src/Knock.Market.Api/Modules/Tecnicos/Domain/TrabajoRules.cs` — class `TrabajoRules`
+  - `CanShowAddress()`:5, `RejectionReason()`:7, `CompareFinished()`:10
 
 **dtos**
 
@@ -1057,6 +1069,7 @@
   - `RegisterTechnicianBody()`:13
 - `src/Knock.Market.Api/Modules/Tecnicos/Dtos/TechnicianLookupDtos.cs` — class `CoverageQuery`, record `CoverageResponse`, class `AutocompleteQuery`, record `Suggestion`, record `AutocompleteResponse`
 - `src/Knock.Market.Api/Modules/Tecnicos/Dtos/TechnicianProfileDtos.cs` — class `TechnicianIdRoute`, record `TechnicianProfileResponse`, record `TechnicianProfileDetail`
+- `src/Knock.Market.Api/Modules/Tecnicos/Dtos/TrabajoResponse.cs` — record `TrabajoResponse`, record `TrabajoVerificationResponse`, record `TrabajoClient`, record `TrabajoPlace`, record `TrabajoVisitResponse`, record `TrabajoQuoteResponse`, record `TrabajoFinishedItem`, record `TrabajoFinishedPage`, record `TrabajoSummary`
 
 **services**
 
@@ -1068,6 +1081,8 @@
   - `TechnicianProfileService()`:37, `CacheKey()`:44, `GetAsync()`:46, `Forget()`:73, `IsVisible()`:75, `Shorten()`:78
 - `src/Knock.Market.Api/Modules/Tecnicos/Services/TechnicianRegistrationService.cs` — enum `RegisterTechnicianStatus`, record `RegisterTechnicianOutcome`, record `NewTechnician`, interface `ITechnicianProfileStore`, class `TechnicianRegistrationService`
   - `TechnicianRegistrationService()`:47, `RegisterAsync()`:54
+- `src/Knock.Market.Api/Modules/Tecnicos/Services/TecnicoTrabajoService.cs` — class `TecnicoTrabajoService`
+  - `TecnicoTrabajoService()`:15, `GetAsync()`:17
 
 **validators**
 

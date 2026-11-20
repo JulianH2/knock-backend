@@ -141,7 +141,7 @@ internal sealed class VisitStore(
             {
                 VisitCloseReason.Cancelled => (filter.Eq(_stateField, VisitRules.Confirmed), update.Set(_stateField, "cancelada")),
                 VisitCloseReason.NoShow => (filter.Eq(_stateField, VisitRules.Confirmed), update.Set(_stateField, "no_presentado")),
-                VisitCloseReason.Finished => (filter.Eq(_stateField, VisitRules.InProgress), update.Set(_stateField, "terminada")),
+                VisitCloseReason.Finished => (filter.Eq(_stateField, VisitRules.InProgress), update.Set(_stateField, "terminada").Set("terminadaEn", nowUtc)),
                 _ => (filter.Eq(_stateField, VisitRules.Confirmed) & filter.Eq("bloqueada", false), update.Set("bloqueada", true)),
             };
             var changed = await Visits.UpdateOneAsync(transaction, filter.Eq("_id", visit.Id) & condition, change.Set(_updatedField, nowUtc), cancellationToken: token);
