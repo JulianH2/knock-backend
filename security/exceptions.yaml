@@ -331,6 +331,18 @@ excepciones:
     creada: 2026-11-19
     vence: 2027-02-17
     plan: en un commit posterior de la rama del panel las cadenas de prueba se arman sin el formato completo de conexión (sin usuario:clave@host) y el secreto TOTP se lee de una constante de prueba que no parezca una llave; las huellas se quedan mientras esos commits existan en el historial y la excepción se renueva si vence antes de que deje de analizarse.
+  - id: EXC-028
+    herramienta: jscpd, codemap
+    regla: código duplicado (jscpd:ignore)
+    alcance: solo el bloque de TokenValidationParameters del token del panel (de «options.MapInboundClaims = false;» hasta el cierre de «new TokenValidationParameters {...};»), entre «// jscpd:ignore-start -- EXC-028» y «// jscpd:ignore-end», en src/Knock.Gateway/Hosting/PanelGatewayExtensions.cs, src/Knock.Market.Api/Hosting/AuthenticationExtensions.cs y src/Knock.Identity.Api/Modules/Panel/Authorization/PanelBearer.cs (3 archivos, un bloque en cada uno); no se amplía
+    justificacion: >-
+      KNOCK-75 (spec 033): la configuración de validación del token del panel en Gateway e Identidad es la misma del esquema de Market (emisor, audiencia, llave, algoritmo HS256 y cero holgura de reloj).
+      La constitución no permite compartir código entre servicios y aún no existe la biblioteca compartida Knock.Hosting (spec 055, etapa 3, KNOCK-281), por lo que el bloque se copia. Cada servicio lo prueba por separado.
+      Decisión del Tech Lead del 2026-11-20: aceptar la copia temporal con excepción ligada a KNOCK-281 en lugar de disfrazarla.
+    responsable: José Julián Hernández Hernández
+    creada: 2026-11-20
+    vence: 2027-02-18
+    plan: mover la configuración a Knock.Hosting en la etapa 3 (KNOCK-281), quitar los marcadores y retirar esta excepción antes de vencer.
   - id: EXC-029
     herramienta: checkov
     regla: CKV2_AZURE_47, CKV_AZURE_34, CKV_AZURE_190 (lectura anónima por blob) y, para la cuenta pública, CKV_AZURE_206, CKV_AZURE_33, CKV2_AZURE_21, CKV_AZURE_59, CKV2_AZURE_33 y CKV2_AZURE_1

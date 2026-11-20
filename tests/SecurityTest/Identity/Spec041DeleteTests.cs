@@ -71,7 +71,7 @@ public class Spec041DeleteTests
 
         var raw = await SecureHttp.AssertProblemAsync(response, HttpStatusCode.UnprocessableEntity);
         System.Text.Json.JsonElement.Parse(raw).GetProperty("errors").TryGetProperty("id", out _).Should().BeTrue();
-        raw.Should().NotContain(id);
+        SecureHttp.WithoutCorrelationId(raw).Should().NotContain(id);
         (await HomeAndCarHttp.CountAsync(hosts, sub)).Should().Be(1);
     }
 

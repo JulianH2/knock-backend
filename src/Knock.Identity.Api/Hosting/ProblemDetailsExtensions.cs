@@ -1,5 +1,6 @@
 // jscpd:ignore-start -- EXC-015
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Routing;
 
 namespace Knock.Identity.Api.Hosting;
 
@@ -13,6 +14,9 @@ internal static class ProblemDetailsExtensions
             {
                 // RFC 9457: sin «type» propio, «about:blank». Así todos los errores (429, 413…) tienen la misma forma.
                 context.ProblemDetails.Type ??= "about:blank";
+                context.ProblemDetails.Instance = context.HttpContext.GetEndpoint() is RouteEndpoint { RoutePattern.RawText: { } route }
+                    ? "/" + route.TrimStart('/')
+                    : context.HttpContext.Request.Path;
                 if (CorrelationId.Current(context.HttpContext) is { } correlationId)
                 {
                     context.ProblemDetails.Extensions["correlationId"] = correlationId;
