@@ -62,7 +62,8 @@ public sealed class Spec048RequestsScriptTests
                 ["creadoEn"] = now.AddMinutes(-i),
             });
             await db.GetCollection<BsonDocument>("cotizaciones").InsertManyAsync(documents);
-            var store = new QuoteStore(db, Options.Create(new KnockMongoOptions()), Options.Create(new QuotePricingOptions()));
+            var store = new QuoteStore(db, Options.Create(new KnockMongoOptions()), Options.Create(new QuotePricingOptions()),
+                Options.Create(new OleadasOptions()), new EnviosStore(db));
             var page = await store.ListAsync("synthetic-subject", "enviada", null, 20, CancellationToken.None);
             page.Items.Should().HaveCount(20);
             page.NextCursor.Should().NotBeNullOrEmpty();

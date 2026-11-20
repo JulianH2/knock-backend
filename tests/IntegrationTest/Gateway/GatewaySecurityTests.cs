@@ -18,6 +18,30 @@ namespace Knock.IntegrationTest.Gateway;
 /// </summary>
 public sealed class GatewaySecurityTests
 {
+    [Fact]
+    public async Task Spec028_Descarte_Limite_Por_Tecnico_CA_028_18()
+    {
+        await using var host = await StartWithRedisAsync(new Dictionary<string, string?>
+        {
+            ["RateLimiting:Ip:PermitLimit"] = "1000",
+            ["RateLimiting:User:PermitLimit"] = "1000",
+        });
+        var token = GatewayTestSupport.IssueToken(sub: Guid.NewGuid().ToString("D"));
+        var path = new Uri("/api/v1/solicitudes/0123456789abcdef01234567/descartar", UriKind.Relative);
+        for (var i = 0; i < 31; i++)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, path);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            using var response = await host.Client.SendAsync(request);
+            if (i < 30) response.StatusCode.Should().Be(HttpStatusCode.OK);
+            else
+            {
+                response.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
+                response.Headers.RetryAfter.Should().NotBeNull();
+            }
+        }
+    }
+
     private static readonly Uri _protectedUri = new("/api/v1/colonias/en-punto", UriKind.Relative);
     private static readonly Uri _publicCatalogUri = new("/api/v1/oficios", UriKind.Relative);
     private static readonly Uri _searchUri = new("/api/v1/busqueda?q=boiler", UriKind.Relative);
