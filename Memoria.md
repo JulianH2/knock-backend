@@ -1,5 +1,15 @@
 # Memoria — knock-backend
 
+## 2026-11-19 — KNOCK-67: endpoint de resumen y exportación pendiente
+- **Avance:** consulta de visitas, cotizaciones, terminadas y conteo, servicio y controller de trabajo, y ruta del gateway; se reutilizan disponibilidad, cifrado y regla de llegada de Requests mediante su interfaz. La cotización usa `creadoEn` como `enviadaEn`.
+- **Verificación:** build Release sin restauración pasó con cero advertencias; seis pruebas filtradas `Spec036` de integración pasaron, incluida CA-09 en gateway con Redis. La traza reconoce todos los nombres, pero no demuestra cobertura de CA-03 ni CA-05 por HTTP. T-02 queda hecha con mutación a cargo de CI; T-04 sigue parcial por esas verificaciones.
+- **Pendiente:** la exportación OpenAPI agotó 270 segundos pese a `--timeout 240`; se detuvo el proceso de Market que dejó huérfano. No se modificó el JSON a mano ni se ejecutó `oasdiff`, por lo que T-07 queda parcial. `dotnet format` agotó 180 segundos; tras detener ese proceso, la verificación de formato de los archivos afectados pasó. No se ha medido si el índice cubre el orden con respaldo.
+
+## 2026-11-19 — KNOCK-67: avance parcial de T-02 y pruebas iniciales
+- **Decisión de Alexis:** T-02 y T-04 pueden hacerse en la misma rama y PR, en ese orden; no es necesaria una fusión intermedia. Las solicitudes nuevas quedan fuera de la 036, en la 028.
+- **Avance:** se añadieron pruebas unitarias y reglas puras preliminares de visibilidad, motivo de rechazo y comparación de terminadas; no están integradas en el endpoint. Las 11 pruebas unitarias pasaron. Se escribieron pruebas HTTP iniciales de CA-01, CA-02, CA-04 y CA-06: las cuatro fallan con 404 porque aún no existe la ruta.
+- **Bloqueo:** la versión instalada de Stryker rechaza `--no-restore`; no se ejecutó la mutación sin esa opción por la instrucción de no restaurar paquetes. T-02 queda parcial; T-04 y T-07 no se implementaron ni se marcaron hechas. CA-09 aún no tiene prueba nueva. Las reglas preliminares deben integrarse o retirarse al continuar; no son evidencia de privacidad del endpoint.
+
 ## 2026-11-19 — KNOCK-67: verificación parcial de terminación
 - **Decisión de Alexis:** al cerrar una visita terminada se guarda `terminadaEn` en UTC en la misma actualización; para documentos viejos de prueba o demo sin ese campo, la lectura usa `actualizadoEn` como aproximación tanto para el orden como para el cursor.
 - **Verificación:** build Release sin restauración y 11 pruebas filtradas `Spec036` pasaron, incluidas las pruebas del cierre y del respaldo; formato de los archivos afectados y `codemap.py --check` pasaron. `sdd_lint.py --trace 036` señala CA-01, CA-02, CA-04, CA-06 y CA-09 pendientes; reconocer un nombre no prueba por sí solo el criterio completo.
