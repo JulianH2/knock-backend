@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-20T18:38:29Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-20T19:11:56Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -25,7 +25,7 @@
 | `Safety` | -, controllers, data, domain, dtos, services, validators | 15 | 38 | 33 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 28 | 50 | 56 |
 | `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 26 | 67 | 68 |
-| `Trust` | -, controllers, data, domain, dtos, services, validators | 7 | 17 | 16 |
+| `Trust` | -, controllers, data, domain, dtos, services, validators | 10 | 30 | 21 |
 | `Usuarios` | -, controllers, data, domain, dtos, services | 16 | 29 | 37 |
 
 ## ⚠️ Código duplicado (misma estructura)
@@ -1203,11 +1203,15 @@
 
 **domain**
 
+- `src/Knock.Identity.Api/Modules/Trust/Domain/VerificationDomain.cs` — class `VerificationLevels`, class `VerificationStates`, class `PhotoTypes`, class `PhotoStates`, class `VerificationErrors`, class `VerificationReasons`, class `Curp`
+  - `IsKnown()`:11, `PhotosFor()`:14, `TipsFor()`:70, `IsValid()`:82
 - `src/Knock.Market.Api/Modules/Trust/Domain/TrustCursor.cs` — class `TrustErrorCodes`, class `TrustCursor`
   - `Encode()`:24, `Decode()`:27
 
 **dtos**
 
+- `src/Knock.Identity.Api/Modules/Trust/Dtos/VerificationDtos.cs` — record `CreateVerificationRequest`, record `VerificationPhotoResponse`, record `VerificationCreatedResponse`, record `VerificationPhotoStateResponse`, record `VerificationStatusResponse`
+  - `CreateVerificationRequest()`:7
 - `src/Knock.Market.Api/Modules/Trust/Dtos/TrustDtos.cs` — record `TrustedTechnician`, record `TrustedTechnicianPage`, class `TrustedListQuery`, class `TrustedTechnicianRoute`
 
 **services**
@@ -1217,6 +1221,7 @@
 
 **validators**
 
+- `src/Knock.Identity.Api/Modules/Trust/Validators/CreateVerificationRequestValidator.cs` — class `CreateVerificationRequestValidator`
 - `src/Knock.Market.Api/Modules/Trust/Validators/TrustValidators.cs` — class `TrustedListQueryValidator`, class `TrustedTechnicianRouteValidator`
 
 ### Usuarios
