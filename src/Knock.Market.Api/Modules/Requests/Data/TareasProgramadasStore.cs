@@ -8,6 +8,14 @@ internal sealed class TareasProgramadasStore(IMongoDatabase database) : ITareasP
 {
     private readonly IMongoCollection<BsonDocument> _tasks = database.GetCollection<BsonDocument>("tareas_programadas");
 
+    public async Task ScheduleAsync(IClientSessionHandle session, string type, ObjectId requestId, int wave, DateTime due, DateTime now, CancellationToken cancellationToken)
+    {
+        var filter = Builders<BsonDocument>.Filter.Eq("tipo", type) & Builders<BsonDocument>.Filter.Eq("claveNegocio", $"{requestId}:{wave}");
+        var update = Builders<BsonDocument>.Update.SetOnInsert("programadaPara", due).SetOnInsert("estado", "pendiente")
+            .SetOnInsert("intentos", 0).SetOnInsert("creadoEn", now).SetOnInsert("actualizadoEn", now);
+        await _tasks.UpdateOneAsync(session, filter, update, new UpdateOptions { IsUpsert = true }, cancellationToken);
+    }
+
     public async Task<TareaReservada?> ReserveAsync(DateTime now, CancellationToken cancellationToken, IReadOnlyCollection<string>? types = null)
     {
         var filter = Builders<BsonDocument>.Filter;
