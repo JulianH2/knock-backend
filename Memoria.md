@@ -1127,3 +1127,8 @@
 - **Qué cambió:** `specs/README.md` agrega la fila 059 (Suspensión preventiva en casos críticos, Borrador), que el PR #182 había dejado fuera.
 - **Por qué:** el índice debe listar toda spec del repositorio; una persona o una herramienta que lea primero el índice no veía la 059.
 - **A evitar:** agregar una carpeta de spec sin su fila en el índice en el mismo cambio.
+
+## 2026-11-20 · KNOCK-97 · Spec 059: dudas redactadas como decisiones sí/no
+- **Qué cambió:** `specs/059-suspension-preventiva/spec.md` §15: las doce dudas pasan a trece decisiones sí/no con contexto, alternativa y recomendación (la 11 se cerró: 059 ya está en `sprint-05` con su fila del índice). Solo documentación.
+- **Por qué:** la spec pedía respuestas sin dar una propuesta concreta; algunas (5, 6) condicionan tareas de código, el resto no.
+- **A evitar:** dejar una duda sin recomendación del autor.

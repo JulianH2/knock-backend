@@ -210,20 +210,24 @@ Las pruebas citan el caso como `CA_059_NN` en el nombre (para `python scripts/sd
 - **D-03:** Se toma el permiso `reports:resolve` de la spec 033 R-02 (la lista de permisos de la 033 es cerrada).
 - **D-04:** Se incluyen las sesiones del panel de la persona suspendida en la revocación (R-04 d) porque «sesiones vivas tras suspender» es una amenaza directa; la 033 R-06 solo cierra el inicio de sesión nuevo.
 
-## 15. Riesgos y dudas abiertas
-Ninguna se resuelve aquí; cada una la responde una persona antes de aprobar.
-1. **¿Suspensión «automática» o por decisión de moderador?** La HU dice «suspensión automática ante reporte crítico» y «consumidor de `ReporteCreado`», pero en la 043 la `gravedad` la asigna la moderación y la 053 R-20 deriva la suspensión de esa decisión. Esta spec sigue la 053 (R-01). Si debe ser automática (por ejemplo por motivos de peligro, spec 043 R-20), cambian el disparo y el control de §9 contra reportes falsos.
-2. **Reportado cliente (HU CA4).** La HU pide que no se suspenda y entre con prioridad alta; la 053 R-20 dice que `critica` suspende «la cuenta» sin distinguir. ¿Se enmienda la 053? Además, ¿cómo entra con prioridad alta un reporte que aún no tiene gravedad (la cola de la 053 ordena por gravedad)?
-3. **Apelación de una persona suspendida.** La 043 REP-03 exige sesión y la suspensión mata las sesiones. ¿Por qué canal apela (ruta pública con prueba de control del número, soporte u otra)? Sin esto el debido proceso de DECISIONES §5 no es alcanzable.
-4. **¿Quién y cómo levanta la suspensión?** La 053 solo asigna gravedad: no hay ruta que resuelva una apelación ni desestime un reporte ya decidido. ¿Qué ruta o spec llama a `Reactivar`?
-5. **Aviso a clientes con cita.** El catálogo de la 037 es cerrado (ocho tipos y `sesion_revocada`); falta el tipo y su texto (frontend). ¿Qué es «elegir otra cotización» con una visita ya `confirmada` (specs 021 y 050)? ¿Se cancela la visita? ¿Qué pasa con una visita en curso, con las cotizaciones del técnico y con sus conversaciones abiertas en Mensajería?
-6. **Regla gradual: valores.** DECISIONES §5 habla de strikes, suspensión temporal de 7 o 30 días y baja definitiva, sin umbrales. Faltan `UmbralAdvertencias`, la vigencia de una advertencia, la duración de la suspensión gradual (¿tiene fin automático?) y quién la levanta. Esta spec deja el mecanismo y exige configuración sin valor por omisión.
-7. **Dueña del contador.** El conteo de advertencias figura en la tarea pendiente T-08 de la 043; falta decidir si lo implementa esta spec o la 043 (aquí se lee de `reportes`).
-8. **Eliminación programada (spec 039).** Si una cuenta con eliminación programada se suspende, ¿el plazo de gracia sigue corriendo y borra evidencia? Podría usarse para evadir una revisión.
-9. **`version_seguridad` de la ficha.** No se agrega porque la cancelación por `sid` ya existe; confirmar que no se necesita para otra cosa (por ejemplo, invalidar JWT sin Redis).
-10. **Estado visible en el panel.** ¿Debe la persona del panel ver el estado de suspensión de una cuenta (lista o detalle)? No hay ruta en la 053 para eso y no se agregó.
-11. **Numeración y orden de fusión.** 059 se tomó por la regla de colisión con otras specs en paralelo; puede renumerarse antes de fusionar (y entonces cambian las pruebas `CA_059_NN`).
-12. **Redis.** Si Redis se pierde, un JWT puede servir hasta 15 minutos (riesgo ya aceptado en la spec 016); confirmar que para una suspensión crítica sigue siendo aceptable o si el gateway debe consultar un campo de la cuenta.
+## 15. Decisiones pendientes del Tech Lead (sí/no)
+Cada una se contesta sí o no sobre la recomendación del autor; responder «sí» la deja decidida tal como está escrita y «no» obliga a ajustar la spec antes de aprobar. Ninguna se inventó como bloqueo: se anota qué parte del trabajo depende de ella.
+
+| N.º | Decisión (recomendación del autor: sí) | Contexto y alternativa | Si es «no» |
+|---|---|---|---|
+| 1 | **La suspensión se dispara por la decisión de un moderador (`critica`, spec 053 R-20), no de forma automática por el reporte.** | La HU dice «automática», pero la gravedad la asigna la moderación (043) y la 053 deriva la suspensión de esa decisión. Un disparo automático abriría la puerta a reportes falsos o en masa (§9). | Se redefine el disparo y el control de §9 (por ejemplo, automática solo por motivo de peligro, spec 043 R-20). |
+| 2 | **Contra un cliente no se suspende: un reporte `critica` contra un cliente entra con prioridad alta y se enmienda la spec 053 R-20 para distinguirlo.** | La HU CA4 lo pide; la 053 dice «la cuenta» sin distinguir. | La 053 no se enmienda y se suspende también al cliente (contradice la HU). |
+| 3 | **La apelación de una persona suspendida se resuelve en una spec propia (ruta pública que prueba el control del número con el código SMS); esta spec no la incluye.** | La 043 REP-03 exige sesión y la suspensión las revoca; sin canal el debido proceso (DECISIONES §5) no es alcanzable. | Se define aquí el canal (soporte manual u otro) y se agregan casos. |
+| 4 | **`Reactivar` solo lo invoca la resolución de la apelación del panel (permiso `reports:resolve` y doble factor); no se agrega ruta aquí.** | No hay hoy una ruta que desestime un reporte ya decidido ni que resuelva una apelación. | Se agrega la ruta de reactivación a esta spec (más puntos). |
+| 5 | **Esta spec solo avisa a los clientes con cita próxima (tipo nuevo en la spec 037); no cancela visitas, ni toca cotizaciones ni conversaciones.** | Qué pasa con una visita `confirmada` o en curso depende de las specs 021, 027 y 050. | Se define aquí la cancelación de visitas y sus efectos. |
+| 6 | **La regla gradual queda apagada hasta que se fijen sus valores: sin `UmbralAdvertencias` configurado no se aplica; la spec solo deja el mecanismo.** | DECISIONES §5 habla de strikes y suspensión de 7 o 30 días sin umbrales, vigencia ni quién la levanta. | El Tech Lead da los valores (umbral, vigencia de una advertencia, duración, quién levanta) y se escriben en la spec. |
+| 7 | **El contador de advertencias lo implementa la spec 043 (T-08); esta spec solo lo lee de `reportes`.** | T-08 de la 043 sigue pendiente. | Lo implementa esta spec y se mueve la tarea. |
+| 8 | **Suspender una cuenta con eliminación programada (spec 039) pausa el plazo de gracia.** | Sin pausa, la eliminación podría borrar evidencia y evadir la revisión. | El plazo sigue corriendo y se conserva la evidencia por otro medio. |
+| 9 | **No se agrega `version_seguridad`.** | La cancelación por `sid` en Redis ya cubre la revocación (§13). | Se agrega para invalidar JWT sin Redis. |
+| 10 | **El estado de suspensión visible en el panel queda fuera de esta spec** (ticket de la 053). | La 053 no tiene ruta para ello. | Se agrega a esta spec el campo y la ruta de lectura. |
+| 11 | **Se mantiene la numeración 059.** | Ya está en `sprint-05` con su fila del índice (PR #199); renumerar cambiaría las pruebas `CA_059_NN`. También confirma D-01 de §14. | Se renumera antes de fusionar. |
+| 12 | **Se acepta que, si Redis se pierde, un JWT pueda servir hasta 15 minutos (riesgo ya aceptado en la spec 016) también para una suspensión crítica.** | Alternativa: que el gateway consulte un campo de la cuenta en cada petición (costo y latencia). | El gateway consulta el estado de la cuenta y se agrega un caso. |
+| 13 | **Se confirman D-02, D-03 y D-04 de §14** (casos `CA-NN`, permiso `reports:resolve`, sesiones del panel incluidas en la revocación). | Son decisiones tomadas por el autor sin consulta. | Se indica cuál cambiar. |
 
 ## Aprobación
 - [ ] Revisor 1 — nombre: ________ fecha: ________
