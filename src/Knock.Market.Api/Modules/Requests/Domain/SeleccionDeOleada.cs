@@ -1,7 +1,7 @@
 namespace Knock.Market.Api.Modules.Requests.Domain;
 
 /// <summary>An eligible technician projected by the candidate store, with distance in kilometres when known.</summary>
-internal sealed record WaveCandidate(string TechnicianId, decimal Rating, int CompletedJobs, double? DistanceKm);
+internal sealed record WaveCandidate(string TechnicianId, decimal Rating, int CompletedJobs, double? DistanceKm, string? TechnicianUserId = null);
 
 /// <summary>A selected technician and the reason to persist with the delivery.</summary>
 internal sealed record WaveSelection(string TechnicianId, string Reason);

@@ -20,3 +20,7 @@ Mercado escribe cada evento en `outbox` en la misma transacción que el cambio d
 | `VisitaBloqueada` | 022 | Al tercer intento fallido (Identidad abre un reporte de gravedad alta) | `visitaId`, `solicitudId`, `clienteId`, `tecnicoUsuarioId` |
 | `VisitaCerrada` | 022 | Al pasar la visita a `cancelada`, `terminada`, `no_presentado` o bloqueada | `visitaId`, `motivo` (`cancelada`, `terminada`, `no_presentado`, `bloqueada`) |
 | `AvisoConfianzaPreparado` | 022 | Cada vez que el cliente prepara el aviso (`_id` `{visitaId}:{n}`) | `visitaId`, `solicitudId`, `clienteId`, `tecnicoUsuarioId` |
+| `SolicitudEnviadaATecnico` | 028 | Por cada envío de una oleada | `solicitudId`, `tecnicoId`, `oleada` |
+| `SolicitudSinTecnicos` | 028 | Al completar la última oleada sin envíos anteriores | `solicitudId` |
+
+La spec 028 programa `RepartirOleada` y `RevisarOleada` en `tareas_programadas`; no son eventos de entrega.
