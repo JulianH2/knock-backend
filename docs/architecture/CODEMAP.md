@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-20T21:56:22Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-20T22:12:36Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -21,7 +21,7 @@
 | `Knock.Messaging.Api` | -, hosting | 15 | 38 | 48 |
 | `Media` | -, data, domain, dtos, services, validators | 23 | 40 | 66 |
 | `Panel` | -, controllers, data, domain, dtos, services, validators | 29 | 103 | 155 |
-| `Requests` | -, controllers, data, domain, dtos, services, validators | 76 | 158 | 158 |
+| `Requests` | -, controllers, data, domain, dtos, services, validators | 78 | 161 | 162 |
 | `Safety` | -, controllers, data, domain, dtos, services, validators | 15 | 38 | 33 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 28 | 50 | 56 |
 | `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 26 | 67 | 68 |
@@ -909,6 +909,8 @@
   - `FindAsync()`:13
 - `src/Knock.Market.Api/Modules/Requests/Data/ChoiceStore.cs` — record `ChosenVisit`, record `ChooseResult`, record `TechnicianPublic`, class `ChoiceStore`
   - `ListQuotesAsync()`:56, `FindTechniciansAsync()`:69, `TryFindTechnicianAsync()`:91, `FindVisitIdsAsync()`:104, `ChooseAsync()`:121
+- `src/Knock.Market.Api/Modules/Requests/Data/CierreDeSolicitudStore.cs` — record `CierreResult`, class `CierreDeSolicitudStore`
+  - `CloseAsync()`:16
 - `src/Knock.Market.Api/Modules/Requests/Data/ConversationPermissionStore.cs` — record `ConversationTechnician`, class `ConversationPermissionStore`
   - `FindTechnicianAsync()`:29, `FindTechnicianBySubAsync()`:32, `FindQuoteStateAsync()`:36, `FindVisitIdAsync()`:47
 - `src/Knock.Market.Api/Modules/Requests/Data/DemoRequestStore.cs` — class `DemoRequestStore`
@@ -986,6 +988,8 @@
   - `BandejaService()`:13, `IsTechnicianAsync()`:16, `ListAsync()`:18, `DiscardAsync()`:33
 - `src/Knock.Market.Api/Modules/Requests/Services/ChooseQuoteService.cs` — record `ChooseOutcome`, class `ChooseQuoteService`
   - `ChooseQuoteService()`:18, `ChooseAsync()`:26
+- `src/Knock.Market.Api/Modules/Requests/Services/CierreDeSolicitudService.cs` — class `CierreDeSolicitudService`
+  - `CierreDeSolicitudService()`:6, `CancelAsync()`:8, `ExpireAsync()`:11
 - `src/Knock.Market.Api/Modules/Requests/Services/ConversationPermissionService.cs` — class `ConversationPermissionService`
   - `ConversationPermissionService()`:13, `GetAsync()`:22
 - `src/Knock.Market.Api/Modules/Requests/Services/DemoRequestSeeder.cs` — class `DemoRequestSeeder`
