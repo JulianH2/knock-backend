@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Routing;
 
 namespace Knock.Market.Api.Hosting;
 
@@ -12,6 +13,9 @@ internal static class ProblemDetailsExtensions
             {
                 // RFC 9457: sin «type» propio, «about:blank». Así todos los errores (429, 413…) tienen la misma forma.
                 context.ProblemDetails.Type ??= "about:blank";
+                context.ProblemDetails.Instance = context.HttpContext.GetEndpoint() is RouteEndpoint { RoutePattern.RawText: { } route }
+                    ? "/" + route.TrimStart('/')
+                    : context.HttpContext.Request.Path;
                 context.ProblemDetails.Extensions["traceId"] = System.Diagnostics.Activity.Current?.TraceId.ToString() ?? context.HttpContext.TraceIdentifier;
                 if (CorrelationId.Current(context.HttpContext) is { } correlationId)
                 {

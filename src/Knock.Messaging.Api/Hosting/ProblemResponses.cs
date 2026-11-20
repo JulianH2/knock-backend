@@ -1,5 +1,6 @@
 // jscpd:ignore-start -- EXC-021: escritura de ProblemDetails parecida a src/Knock.Market.Api/Hosting/RequestBodyLimitMiddleware.cs (KNOCK-241); se unifica en la biblioteca técnica de KNOCK-251.
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace Knock.Messaging.Api.Hosting;
 
@@ -9,7 +10,11 @@ internal static class ProblemResponses
     public static IServiceCollection AddKnockProblemDetails(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.AddProblemDetails();
+        services.AddProblemDetails(options =>
+            options.CustomizeProblemDetails = context =>
+                context.ProblemDetails.Instance = context.HttpContext.GetEndpoint() is RouteEndpoint { RoutePattern.RawText: { } route }
+                    ? "/" + route.TrimStart('/')
+                    : context.HttpContext.Request.Path);
         return services;
     }
 

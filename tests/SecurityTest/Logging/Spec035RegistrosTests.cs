@@ -1,3 +1,4 @@
+using System.Net;
 using AwesomeAssertions;
 using Knock.IntegrationTest.Support;
 using Knock.SecurityTest.Support;
@@ -20,6 +21,69 @@ public sealed class Spec035RegistrosTests
     private const string _messagingPath = "/sonda/protegida";
 
     private static readonly Dictionary<string, string?> _verbose = new(QueryLeakDetector.VerboseSettings);
+
+    [Fact]
+    public async Task Identity_ProblemDetails_Y_Traza_CA_035_07_CA_035_16()
+    {
+        using var factory = await SecurityIdentityFactory.CreateAsync();
+        await CheckProblemAndTraceAsync(factory, HttpMethod.Post, "/api/v1/auth/refresh", "/api/v{version:apiVersion}/auth/refresh", HttpStatusCode.BadRequest, "{");
+    }
+
+    [Fact]
+    public async Task Market_ProblemDetails_Y_Traza_CA_035_07_CA_035_16()
+    {
+        using var factory = await SecurityMarketFactory.CreateAsync();
+        await CheckProblemAndTraceAsync(factory, HttpMethod.Get, "/api/v1/colonias/en-punto", "/api/v{version:apiVersion}/colonias/en-punto", HttpStatusCode.UnprocessableEntity, bearer: TokenForge.Valid());
+    }
+
+    [Fact]
+    public async Task Messaging_ProblemDetails_Y_Traza_CA_035_07_CA_035_16()
+    {
+        using var factory = await SecurityMessagingFactory.CreateAsync();
+        await CheckProblemAndTraceAsync(factory, HttpMethod.Get, "/sonda/protegida", "/sonda/protegida", HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Market_Error_500_Y_Registro_Sin_Consulta_CA_035_07()
+    {
+        using var factory = await SecurityMarketFactory.CreateAsync();
+        factory.Locator.Failure = new InvalidOperationException("catalog down");
+        using var client = factory.CreateClient();
+        HttpResponseMessage? response = null;
+        var output = await ConsoleCapture.RunAsync(async () =>
+        {
+            response = await SecureHttp.SendAsync(client, HttpMethod.Get,
+                "/api/v1/colonias/en-punto?lat=19.4&lon=-99.1&q=secreto&token=x", bearer: TokenForge.Valid());
+        });
+        using (response)
+        {
+            response!.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+            var body = await SecureHttp.ReadJsonAsync(response);
+            body.GetProperty("instance").GetString().Should().Be("/api/v1/colonias/en-punto");
+        }
+
+        output.Should().NotBeNullOrWhiteSpace();
+        output.Should().Contain("\"StatusCode\":500");
+        output.Should().NotContain("secreto").And.NotContain("token=x").And.NotContain("q=");
+    }
+
+    private static async Task CheckProblemAndTraceAsync<T>(
+        WebApplicationFactory<T> factory, HttpMethod method, string path, string expectedInstance, HttpStatusCode status, string? json = null, string? bearer = null)
+        where T : class
+    {
+        var capture = new QueryTraceCapture();
+        using var host = factory.WithWebHostBuilder(builder => builder.ConfigureServices(capture.Configure));
+        using var client = host.CreateClient();
+        var url = path + "?q=secreto&token=x";
+        using var response = json is null
+            ? await SecureHttp.SendAsync(client, method, url, bearer: bearer)
+            : await SecureHttp.SendRawJsonAsync(client, method, url, json, bearer);
+        response.StatusCode.Should().Be(status);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("application/problem+json");
+        var body = await SecureHttp.ReadJsonAsync(response);
+        body.GetProperty("instance").GetString().Should().Be(expectedInstance);
+        await capture.AssertNoQueryAsync();
+    }
 
     [Fact]
     public async Task Market_Sin_Consulta_En_Ningun_Nivel_CA_035_01()
