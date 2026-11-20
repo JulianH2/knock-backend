@@ -26,6 +26,30 @@ output "storage_account_name" {
   value = module.shared.storage_account_name
 }
 
+output "storage_account_id" {
+  value = module.shared.storage_account_id
+}
+
+output "quarantine_container_id" {
+  value = module.shared.quarantine_container_id
+}
+
+output "public_images_account_name" {
+  value = module.shared.public_images_account_name
+}
+
+output "public_images_account_id" {
+  value = module.shared.public_images_account_id
+}
+
+output "public_images_container_id" {
+  value = module.shared.public_images_container_id
+}
+
+output "public_images_base_url" {
+  value = module.shared.public_images_base_url
+}
+
 output "application_insights_connection_string" {
   value     = module.shared.application_insights_connection_string
   sensitive = true
