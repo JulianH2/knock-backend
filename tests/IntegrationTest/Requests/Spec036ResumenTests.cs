@@ -48,6 +48,81 @@ public sealed class Spec036ResumenTests
     }
 
     [Fact]
+    public async Task Terminadas_Paginadas_CA_036_03()
+    {
+        await using var host = await Spec020Host.StartAsync();
+        var sub = Guid.NewGuid().ToString();
+        await host.SeedTechnicianAsync(sub, "activo", false, [], host.ColoniaId);
+        var date = new DateTime(2026, 11, 18, 0, 0, 0, DateTimeKind.Utc);
+        var visits = Enumerable.Range(0, 25).Select(i => new BsonDocument
+        {
+            ["_id"] = ObjectId.GenerateNewId(),
+            ["solicitudId"] = ObjectId.GenerateNewId(),
+            ["tecnicoUsuarioId"] = sub,
+            ["estado"] = "terminada",
+            ["terminadaEn"] = date.AddDays(-(i / 10)),
+        }).ToArray();
+        await host.Database.GetCollection<BsonDocument>("visitas").InsertManyAsync(visits);
+        using var first = await host.SendAsync(HttpMethod.Get, _route, sub);
+        Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+        var page = (await Spec020Host.ReadAsync(first)).GetProperty("terminadas");
+        var ids = page.GetProperty("items").EnumerateArray().Select(x => x.GetProperty("solicitudId").GetString()).ToArray();
+        Assert.Equal(20, ids.Length);
+        var cursor = page.GetProperty("nextCursor").GetString();
+        Assert.False(string.IsNullOrEmpty(cursor));
+        Assert.NotNull(cursor);
+        using var second = await host.SendAsync(HttpMethod.Get, _route + "?cursorTerminadas=" + Uri.EscapeDataString(cursor), sub);
+        Assert.Equal(HttpStatusCode.OK, second.StatusCode);
+        var last = (await Spec020Host.ReadAsync(second)).GetProperty("terminadas");
+        var remaining = last.GetProperty("items").EnumerateArray().Select(x => x.GetProperty("solicitudId").GetString()).ToArray();
+        Assert.Equal(5, remaining.Length);
+        Assert.Equal(JsonValueKind.Null, last.GetProperty("nextCursor").ValueKind);
+        var expected = visits.OrderByDescending(x => x["terminadaEn"].ToUniversalTime())
+            .ThenByDescending(x => x["_id"].AsObjectId).Select(x => x["solicitudId"].AsObjectId.ToString());
+        Assert.Equal(expected, ids.Concat(remaining));
+    }
+
+    [Fact]
+    public async Task Base_Caida_Devuelve_503_Sin_Secciones_CA_036_05()
+    {
+        await using var factory = MarketApiFactory.CreateOffline(_ => { });
+        using var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(_route, UriKind.Relative));
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", Spec020Host.Token(Guid.NewGuid().ToString()));
+        using var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.True(response.Headers.CacheControl?.Private);
+        Assert.True(response.Headers.CacheControl?.NoStore);
+        var body = await Spec020Host.ReadAsync(response);
+        Assert.Equal("unavailable", body.GetProperty("code").GetString());
+        Assert.False(body.TryGetProperty("proximasVisitas", out _));
+        Assert.False(body.TryGetProperty("cotizacionesEnviadas", out _));
+        Assert.False(body.TryGetProperty("terminadas", out _));
+        Assert.False(body.TryGetProperty("resumen", out _));
+    }
+
+    [Fact]
+    public async Task Otro_Tecnico_Y_Cursor_Invalido_CA_036_06()
+    {
+        await using var host = await Spec020Host.StartAsync();
+        var owner = Guid.NewGuid().ToString();
+        var other = Guid.NewGuid().ToString();
+        await SeedAsync(host, owner);
+        await host.SeedTechnicianAsync(other, "activo", false, [], host.ColoniaId);
+        using var response = await host.SendAsync(HttpMethod.Get, _route, other);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await Spec020Host.ReadAsync(response);
+        Assert.Empty(body.GetProperty("proximasVisitas").EnumerateArray());
+        Assert.Empty(body.GetProperty("cotizacionesEnviadas").EnumerateArray());
+        Assert.Empty(body.GetProperty("terminadas").GetProperty("items").EnumerateArray());
+        Assert.Equal(0, body.GetProperty("resumen").GetProperty("trabajosTerminados").GetInt32());
+        using var invalid = await host.SendAsync(HttpMethod.Get, _route + "?cursorTerminadas=invalid!", other);
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        var problem = await Spec020Host.ReadAsync(invalid);
+        Assert.Equal("invalid_cursor", problem.GetProperty("code").GetString());
+    }
+
+    [Fact]
     public async Task Motivo_Rechazo_En_Cotizacion_CA_036_04()
     {
         await using var host = await Spec020Host.StartAsync();
