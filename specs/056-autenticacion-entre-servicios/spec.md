@@ -1,6 +1,6 @@
 # Spec 056 — Autenticación entre servicios (TT-ARQ-05)
 
-> **Estado:** Borrador · **Repositorio:** knock-backend · **Rector:** `constitution.md`
+> **Estado:** Aprobada · **Repositorio:** knock-backend · **Rector:** `constitution.md`
 > **Jira:** KNOCK-162 (TT-ARQ-05 · Autenticación entre servicios) · **Épica:** Arquitectura (TT-ARQ) · **Módulo:** gateway, Identidad, Mercado y Mensajería · **Responsable:** Guillermo (G, según `docs/PLAN_ADAPTACION.md`) · **Sprint:** S3 · **Puntos:** 2 · **Capas:** Back (la parte de Terraform y Key Vault la decide el líder, ver §8)
 > **Otra parte en:** — (no hay cambio de contrato público ni de la app)
 > **Fuentes:** `docs/PLAN_ADAPTACION.md` (línea 129) · `docs/DECISION_TECNICA.md` (API interna y autenticación) · `.specify/memory/constitution.md` (microservicios con una puerta de entrada; servicios internos sin dirección pública) · spec 009 (§9, nota del 2026-11-12) · spec 037 (R-11) · spec 041 (R-17) · spec 054 (R-15, D-04) · spec 055 (biblioteca técnica) · `docs/decisiones/ADR-001-microservicios.md`
@@ -164,6 +164,6 @@ Análisis proporcional: cambio de autenticación y permisos entre servicios; sin
   - **Recomendación: (a), sí.** P-07 ya decidió mantener el reenvío; incluirla cambia el alcance y obliga a una enmienda de la 026. Si la respuesta es «no», se abre una spec aparte.
 
 ## Aprobación
-- [ ] Revisor 1 — nombre: ________ fecha: ________
-- [ ] Sin conflicto con la constitución
+- [x] Revisor 1 — nombre: José Julián Hernández Hernández fecha: 2026-11-20
+- [x] Sin conflicto con la constitución
 - **Estados:** Borrador (agente) → Aprobada (persona; habilita el código) → Firmada (tras el merge)
