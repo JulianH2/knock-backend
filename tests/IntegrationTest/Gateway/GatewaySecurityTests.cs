@@ -21,6 +21,28 @@ public sealed class GatewaySecurityTests
     private static readonly Uri _protectedUri = new("/api/v1/colonias/en-punto", UriKind.Relative);
     private static readonly Uri _publicCatalogUri = new("/api/v1/oficios", UriKind.Relative);
     private static readonly Uri _searchUri = new("/api/v1/busqueda?q=boiler", UriKind.Relative);
+    private static readonly Uri _workUri = new("/api/v1/tecnicos/me/trabajo", UriKind.Relative);
+
+    [Fact]
+    public async Task Spec036_Limite_De_Lectura_429_CA_036_09()
+    {
+        await using var host = await StartWithRedisAsync(new Dictionary<string, string?>
+        {
+            ["RateLimiting:Ip:PermitLimit"] = "1000",
+            ["RateLimiting:Auth:PermitLimit"] = "1000",
+            ["RateLimiting:User:PermitLimit"] = "2",
+            ["RateLimiting:User:Window"] = "00:01:00",
+        });
+        var token = GatewayTestSupport.IssueToken(sub: Guid.NewGuid().ToString("D"));
+        using var first = await GetAsync(host.Client, _workUri, token);
+        using var second = await GetAsync(host.Client, _workUri, token);
+        using var limited = await GetAsync(host.Client, _workUri, token);
+        first.StatusCode.Should().Be(HttpStatusCode.OK);
+        second.StatusCode.Should().Be(HttpStatusCode.OK);
+        limited.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
+        limited.Headers.RetryAfter.Should().NotBeNull();
+        host.PathsSeen.Should().Contain("/api/v1/tecnicos/me/trabajo");
+    }
 
     private static async Task<GatewayHost> StartWithRedisAsync(Dictionary<string, string?>? settings = null)
     {

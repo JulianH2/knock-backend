@@ -57,7 +57,7 @@
 
 `GET /api/v1/tecnicos/{id}` es pública y no tiene política propia: rigen los límites globales del gateway y el límite por IP de Mercado. La caché de 1 minuto del perfil reduce las lecturas a MongoDB por técnico.
 
-`PUT /api/v1/tecnicos/me`, `PUT /api/v1/tecnicos/me/disponibilidad` y `GET`/`PUT /api/v1/tecnicos/me/horarios` no tienen política propia: solo los usa el propio técnico y cada escritura toca un único documento, así que rigen los límites globales del gateway y el límite por IP de Mercado. Los cuerpos se limitan a 8 KB, 1 KB y 4 KB (413).
+`PUT /api/v1/tecnicos/me`, `PUT /api/v1/tecnicos/me/disponibilidad`, `GET`/`PUT /api/v1/tecnicos/me/horarios` y `GET /api/v1/tecnicos/me/trabajo` no tienen política propia: rigen los límites globales del gateway y el límite por IP de Mercado. Los cuerpos de las escrituras se limitan a 8 KB, 1 KB y 4 KB (413).
 
 `GET /api/v1/tecnicos/autocompletar` es pública: la frena el límite global por IP del gateway y de Mercado (R-41) y la caché de 30 s por texto. `GET /api/v1/tecnicos/{id}/llega-a-mi-colonia` pide sesión y usa los límites globales; su caché de 1 minuto evita repetir la lectura.
 
