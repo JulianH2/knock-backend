@@ -1,5 +1,19 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — KNOCK-68: documentación de oleadas (T-10)
+- **Estado:** `docs/events.md` documenta los eventos de reparto y las tareas `RepartirOleada` y `RevisarOleada`, su programación y la forma de `tareas_programadas`; distingue `VencerSolicitud`, mencionada por la spec 029. Los nombres y campos de reparto se contrastaron con el código; no se agregaron ejemplos con datos personales.
+- **Verificación:** `docs/endpoints.md` ya incluye bandeja y descarte; ambas rutas figuran en `docs/openapi.v1.json` con `/api/v{version}`. No se regeneró OpenAPI en esta tarea exclusivamente documental ni se ejecutaron pruebas. T-09 y CA-17 siguen pendientes; no se hizo commit.
+
+## 2026-11-20 — KNOCK-68: bandeja y descarte (T-08, verificación parcial)
+- **Estado:** bandeja paginada y descarte para técnicos; el cambio de `activo` a `descartado` compite en la misma colección con la transacción de cotización. Un envío cotizado da 409 `request_not_dismissable` y uno descartado 204. Gateway enruta ambas operaciones y limita el descarte por `sub` a 30/h en Redis. Contrato exportado y matrices actualizadas; sin dependencias nuevas.
+- **Verificación:** build Release sin restauración pasó sin avisos; integración Spec028 y Spec020 85/85, incluidas bandeja, paginación, carrera y límite del gateway con Redis; formato de archivos tocados y 19 pruebas de arquitectura pasaron. `codemap.py` y `--check` pasaron. `sdd_lint.py --trace 028` marca CA-17 pendiente de T-09 y devuelve error; la traza reconoce el resto por nombre, no demuestra por sí sola cobertura completa.
+- **Pendiente:** T-08 no se marca hecha mientras la verificación de traza solicitada no pase; CA-17 y revisión de registros corresponden a T-09. La prueba concurrente no fuerza ambos órdenes de la carrera. No se probó en Azure ni se hizo commit.
+
+## 2026-11-20 — KNOCK-68: cotización y detalle por envío (T-07)
+- **Estado:** con oleadas activas, cotizar requiere envío activo, que pasa a cotizado en la transacción; el detalle exige envío activo o cotizado y mantiene la elegibilidad base. El contador de cotizaciones activas se incrementa con filtro condicionado en la misma transacción que envío, cotización y buzón; el límite usa `Oleadas:MaximoCotizaciones`. La bandera apagada conserva la elegibilidad base.
+- **Decisión:** solicitudes antiguas sin contador o con contador cero se inicializan contando cotizaciones vivas dentro de la transacción antes del incremento condicionado; la versión anterior podía crear cotizaciones dejando cero. Un contador no cero desactualizado no se repara automáticamente; el retiro futuro debe decrementarlo transaccionalmente.
+- **Verificación:** las pruebas nuevas dieron 7 fallos y 3 aprobadas antes del cambio. Build Release sin restauración pasó sin avisos; integración filtrada Spec028 y Spec020 pasó 77/77. Se ajustó la preparación de CA-020-23 para entregar envíos también a técnicos inelegibles con oleadas activas, conservando las aserciones de elegibilidad. No se verificó Azure ni una carrera real contra descarte (T-08 aún no existe).
+- **Pendiente:** el formato global señala diferencias previas en `Spec028RepartoTests.cs`, ajeno a T-07. OpenAPI y documentos de rutas son T-10; no se creó commit.
 ## 2026-11-20 — KNOCK-68: pruebas iniciales de T-08 bloqueadas por T-07
 - **Estado:** se agregaron pruebas iniciales de bandeja, descarte, autenticación y carrera en `tests/IntegrationTest/Requests/Spec028BandejaTests.cs`; T-08 sigue pendiente. No se implementaron rutas ni cambios de producción.
 - **Bloqueo:** en esta rama T-07 figura pendiente y `QuoteStore` no consulta ni cambia el envío al cotizar. Una prueba con envío ya descartado recibió 201 y guardó una cotización, por lo que no se puede garantizar que gane solo una de las operaciones sin modificar la transacción de cotización de T-07. T-08 se pidió como paso único.
