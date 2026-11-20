@@ -63,6 +63,7 @@ Cada carpeta tiene `spec.md`, `plan.md` y `task.md`. Estados: Borrador → Aprob
 | 055 | Biblioteca técnica compartida `Knock.Hosting` (KNOCK-251) | Aprobada | [`055-biblioteca-tecnica-compartida`](055-biblioteca-tecnica-compartida/spec.md) |
 | 056 | Autenticación entre servicios (KNOCK-162) | Borrador | [`056-autenticacion-entre-servicios`](056-autenticacion-entre-servicios/spec.md) |
 | 057 | Borrado de fotos de verificación (KNOCK-87) | Borrador | [`057-borrado-de-fotos-de-verificacion`](057-borrado-de-fotos-de-verificacion/spec.md) |
+| 058 | Colección `archivos` de Media y tope de subidas pendientes (KNOCK-185) | Aprobada | [`058-coleccion-archivos-de-media`](058-coleccion-archivos-de-media/spec.md) |
 | 059 | Suspensión preventiva en casos críticos (KNOCK-97) | Aprobada | [`059-suspension-preventiva`](059-suspension-preventiva/spec.md) |
 | 057 | Borrado de fotos de verificación (KNOCK-87) | Aprobada | [`057-borrado-de-fotos-de-verificacion`](057-borrado-de-fotos-de-verificacion/spec.md) |
 | 059 | Suspensión preventiva en casos críticos (KNOCK-97) | Borrador | [`059-suspension-preventiva`](059-suspension-preventiva/spec.md) |

@@ -1,5 +1,10 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — KNOCK-185: borrador de la spec 058, colección `archivos` de Media
+- **Decisión:** el registro de archivos privados pasa a la colección `archivos` (`_id` ObjectId, `archivoId` UUID v7 único) y el tope de 10 subidas pendientes se cuenta en MongoDB insertando y verificando, no con un contador aparte. Queda en Borrador; el Tech Lead contestó «sí» a D1 a D8 con la recomendación del autor (2026-11-20) y se aplicaron en la spec: tope 10, 30 minutos y 7 días, `limit_exceeded`, `archivoId` de 32 hexadecimales (spec 020 R-04 enmendada, tarea T-08 para validador y OpenAPI), migración solo si Azure tiene JSON, colecciones separadas, índice compuesto y regla de 1 día en `cuarentena` (R-19, la aplica una persona).
+- **Porqué:** la constitución y la spec 003 prohíben dato de negocio en Blob; insertar y verificar no depende de transacciones ni de índices parciales y nunca deja más pendientes que el tope aunque rechace alguna de más.
+- **A evitar:** mezclar `archivos` con `subidas_imagen` (spec 032); contar y luego insertar; borrar el contenedor `registros-temporales` sin revisar antes si tiene registros (no hay inventario de Azure en el repositorio); dejar el validador de `fotos` de la solicitud en 24 hexadecimales cuando se implemente la 058 (T-08).
+
 ## 2026-11-20 — KNOCK-68: documentación de oleadas (T-10)
 - **Estado:** `docs/events.md` documenta los eventos de reparto y las tareas `RepartirOleada` y `RevisarOleada`, su programación y la forma de `tareas_programadas`; distingue `VencerSolicitud`, mencionada por la spec 029. Los nombres y campos de reparto se contrastaron con el código; no se agregaron ejemplos con datos personales.
 - **Verificación:** `docs/endpoints.md` ya incluye bandeja y descarte; ambas rutas figuran en `docs/openapi.v1.json` con `/api/v{version}`. No se regeneró OpenAPI en esta tarea exclusivamente documental ni se ejecutaron pruebas. T-09 y CA-17 siguen pendientes; no se hizo commit.
