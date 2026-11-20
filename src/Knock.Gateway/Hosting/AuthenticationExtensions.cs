@@ -72,15 +72,7 @@ internal static class AuthenticationExtensions
                 options.Events = new JwtBearerEvents
                 {
                     OnTokenValidated = RejectCancelledSessionAsync,
-                    OnChallenge = async context =>
-                    {
-                        context.HandleResponse();
-                        var unavailable = context.HttpContext.Items.ContainsKey(RedisUnavailableItem);
-                        await ProblemResponses.WriteAsync(
-                            context.HttpContext,
-                            unavailable ? StatusCodes.Status503ServiceUnavailable : StatusCodes.Status401Unauthorized,
-                            unavailable ? "Service Unavailable" : "Unauthorized");
-                    },
+                    OnChallenge = ChallengeAsync,
                 };
             });
         services.AddAuthorization(options =>
@@ -91,7 +83,18 @@ internal static class AuthenticationExtensions
         return services;
     }
 
-    private static async Task RejectCancelledSessionAsync(TokenValidatedContext context)
+    /// <summary>Mismo 401 para cualquier fallo (503 si Redis no respondió al revisar la sesión), sin motivo en el cuerpo.</summary>
+    internal static async Task ChallengeAsync(JwtBearerChallengeContext context)
+    {
+        context.HandleResponse();
+        var unavailable = context.HttpContext.Items.ContainsKey(RedisUnavailableItem);
+        await ProblemResponses.WriteAsync(
+            context.HttpContext,
+            unavailable ? StatusCodes.Status503ServiceUnavailable : StatusCodes.Status401Unauthorized,
+            unavailable ? "Service Unavailable" : "Unauthorized");
+    }
+
+    internal static async Task RejectCancelledSessionAsync(TokenValidatedContext context)
     {
         var sessionId = context.Principal?.FindFirst("sid")?.Value;
         if (string.IsNullOrWhiteSpace(sessionId))
