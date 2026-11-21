@@ -1,5 +1,16 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — KNOCK-67: continuación tras restaurar paquetes
+- **Estado:** T-04 y T-05 hechas por Alexis: las nueve pruebas de integración filtradas `Spec036` pasan, incluidas 25 terminadas ordenadas en dos páginas, cursor inválido, aislamiento entre técnicos y respuesta 503 sin secciones con base inaccesible. Las nueve pruebas de base `Spec036` también pasan. La implementación base ya contenía el cursor y el mapeo: las pruebas nuevas pasaron sin cambio de código y no hubo fase roja funcional.
+- **Contrato:** tras compilar, la exportación solicitada pasó y conservó la ruta `/api/v{version}/tecnicos/me/trabajo` sin diff; las matrices documentan ruta y límite. T-07 sigue parcial: `oasdiff` no está instalado y `contracts/openapi.v1.json` no existe en este repositorio.
+- **Verificación:** build Release con `--no-restore -warnaserror -m:1` pasó sin avisos; ArchitectureTest 25/25 y formato de solución pasaron. UnitTest completo: primera corrida 1904/1912, segunda 1911/1912; falló el límite de tiempo de `Spec024FiltroTests.Filtra_4_KB_En_Menos_De_5_Ms_CA_024_01` (15,407 ms, y 5,653 ms aislado). Las otras siete fallas iniciales no se repitieron en la segunda corrida. No se cambiaron pruebas ni umbrales ajenos.
+- **Pendiente:** CI, revisión humana, humo/E2E de T-06, `oasdiff` y resolver o volver a medir la prueba de rendimiento ajena. `codemap.py --check` señaló mapa y grafo desactualizados; no se regeneraron.
+
+## 2026-11-20 — KNOCK-67: pruebas y contrato del resumen de trabajo
+- **Avance:** se agregaron pruebas HTTP para 25 terminadas con empate y cursor, 503 sin secciones con base inaccesible, aislamiento de otro técnico y cursor inválido. La implementación existente ya contiene paginación y mapeo; no se cambió código de producción.
+- **Contrato:** `no_proxy='*' python3 scripts/export_openapi.py --no-build --timeout 240` terminó correctamente, sin cambios en `docs/openapi.v1.json`; contiene `/api/v{version}/tecnicos/me/trabajo`. `oasdiff` no está instalado.
+- **Bloqueo:** build Release y pruebas de integración, UnitTest y ArchitectureTest con `--no-restore` fallan por `Otp.NET` y `QRCoder` ausentes de la caché NuGet. Las pruebas nuevas no se compilaron ni ejecutaron; T-04 y T-05 siguen parciales. `dotnet format` de la solución agotó 240 s y el intento limitado al archivo 180 s; sin verificación de formato completa.
+- **Otras verificaciones:** `sdd_lint --trace 036` encuentra los nombres de todos los criterios, no demuestra que pasen. `codemap.py --check` señala mapa y grafo desactualizados; no se regeneraron. `check_exceptions.py` pasó.
 ## 2026-11-20 — Spec 025, verificación sin fotos (KNOCK-79 y KNOCK-80)
 - **Decisión:** primera entrega de la verificación de identidad sin fotos ni cifrado, por orden de prioridad del Tech Lead. Incluye `POST` y `GET /api/v1/me/verificacion` en el módulo nuevo `Trust` de Identity, el script `db/025-verificaciones.js` y las pruebas.
 - **Porqué:** desbloquea el panel. T-03 (HMAC de la CURP y cifrado, con una llave nueva de Key Vault), T-04 (enlaces de subida, falta la cuenta de almacenamiento privada) y T-06 (vencimiento, depende del ejecutor de tareas) quedan fuera.
