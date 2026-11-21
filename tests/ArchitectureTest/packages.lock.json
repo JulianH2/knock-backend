@@ -36,8 +36,8 @@
       "SonarAnalyzer.CSharp": {
         "type": "Direct",
         "requested": "[10.*, )",
-        "resolved": "10.36.0.15337",
-        "contentHash": "jGLAZUjheSURfe0T/dJYGUrMOrLt1fxaInpChq75YJvrywsxFoUKK/EM6PSfTjkt4pbaq2ywIQjgQzhrmmj5Ow=="
+        "resolved": "10.37.0.15768",
+        "contentHash": "73Qo5UF1HSCwUGqiZ9XOKXWNRAe3WN8dfsj3pWIi5oIuenY1Uo9WuMinGibs3up9zcJ5CFk5Ex/Ei/S17mcBvg=="
       },
       "xunit": {
         "type": "Direct",
@@ -880,6 +880,7 @@
         "dependencies": {
           "Azure.Monitor.OpenTelemetry.Exporter": "[1.10.0, )",
           "Knock.Contracts": "[1.0.0, )",
+          "Knock.Hosting": "[1.0.0, )",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[11.0.0, )",
           "Microsoft.AspNetCore.OpenApi": "[11.0.0, )",
           "OpenTelemetry.Extensions.Hosting": "[1.21.0, )",
@@ -888,6 +889,13 @@
           "Serilog.AspNetCore": "[10.0.0, )",
           "StackExchange.Redis": "[2.13.23, )",
           "Yarp.ReverseProxy": "[2.3.0, )"
+        }
+      },
+      "knock.hosting": {
+        "type": "Project",
+        "dependencies": {
+          "OpenTelemetry.Extensions.Hosting": "[1.21.0, )",
+          "Serilog.AspNetCore": "[10.0.0, )"
         }
       },
       "knock.identity.api": {
@@ -899,6 +907,7 @@
           "FluentValidation": "[12.1.1, )",
           "FluentValidation.DependencyInjectionExtensions": "[12.1.1, )",
           "Knock.Contracts": "[1.0.0, )",
+          "Knock.Hosting": "[1.0.0, )",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[11.0.0, )",
           "Microsoft.AspNetCore.OpenApi": "[11.0.0, )",
           "MongoDB.Driver": "[3.14.0, )",
@@ -921,6 +930,7 @@
           "FluentValidation": "[12.1.1, )",
           "FluentValidation.DependencyInjectionExtensions": "[12.1.1, )",
           "Knock.Contracts": "[1.0.0, )",
+          "Knock.Hosting": "[1.0.0, )",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[11.0.0, )",
           "Microsoft.AspNetCore.OpenApi": "[11.0.0, )",
           "MongoDB.Driver": "[3.14.0, )",
@@ -939,6 +949,7 @@
         "dependencies": {
           "Azure.Monitor.OpenTelemetry.Exporter": "[1.10.0, )",
           "Knock.Contracts": "[1.0.0, )",
+          "Knock.Hosting": "[1.0.0, )",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[11.0.0, )",
           "Microsoft.AspNetCore.OpenApi": "[11.0.0, )",
           "Microsoft.AspNetCore.SignalR.StackExchangeRedis": "[11.0.0, )",

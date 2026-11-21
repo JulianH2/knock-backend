@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Knock.Contracts/Knock.Contracts.csproj" />
+    <Project Path="src/Knock.Hosting/Knock.Hosting.csproj" />
     <Project Path="src/Knock.Gateway/Knock.Gateway.csproj" />
     <Project Path="src/Knock.Identity.Api/Knock.Identity.Api.csproj" />
     <Project Path="src/Knock.Market.Api/Knock.Market.Api.csproj" />

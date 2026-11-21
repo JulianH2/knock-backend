@@ -1,4 +1,5 @@
 using System.Text;
+using Knock.Hosting.Logging;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Serilog;

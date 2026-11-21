@@ -1,4 +1,3 @@
-// jscpd:ignore-start -- EXC-007: copia de src/Knock.Market.Api/Hosting/TelemetryRedactor.cs (spec 011); se unifica en una biblioteca técnica.
 using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Globalization;
@@ -10,7 +9,7 @@ using OpenTelemetry.Logs;
 using Serilog.Events;
 using Serilog.Formatting;
 
-namespace Knock.Messaging.Api.Hosting;
+namespace Knock.Hosting.Logging;
 
 /// <summary>
 /// Segunda barrera de privacidad de la telemetría (TT-OBS-01 §6): la primera es no capturar cuerpos, encabezados ni la query.
@@ -22,12 +21,12 @@ namespace Knock.Messaging.Api.Hosting;
 /// cada una corre solo si el texto trae el carácter que la dispara.
 /// Si una expresión agota su tiempo, el valor se reemplaza entero.
 /// </summary>
-internal static partial class TelemetryRedactor
+public static partial class TelemetryRedactor
 {
-    public const string Placeholder = "[redacted]";
+    internal const string Placeholder = "[redacted]";
 
     /// <summary>Valor de un parámetro de query redactado, el mismo que usa la instrumentación de OpenTelemetry.</summary>
-    public const string QueryPlaceholder = "Redacted";
+    internal const string QueryPlaceholder = "Redacted";
 
     private const int _timeoutMilliseconds = 100;
     private const RegexOptions _options = RegexOptions.CultureInvariant;
@@ -39,9 +38,9 @@ internal static partial class TelemetryRedactor
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     /// <summary><see langword="true"/> si el nombre exacto de la clave (sin importar mayúsculas) es de las que siempre se redactan.</summary>
-    public static bool IsSensitiveKey(string key) => _sensitiveKeys.Contains(key);
+    internal static bool IsSensitiveKey(string key) => _sensitiveKeys.Contains(key);
 
-    public static string Redact(string value)
+    internal static string Redact(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
         if (value.Length == 0)
@@ -73,7 +72,7 @@ internal static partial class TelemetryRedactor
     /// <c>string[]</c>). Los demás tipos (números, booleanos) pasan tal cual: **un tipo nuevo que pueda llevar texto debe agregarse aquí**
     /// y a <c>RedactAttribute_TextContainers_AreRedacted_TC_TT_OBS_01_12</c>.
     /// </summary>
-    public static object? RedactAttribute(string key, object? value)
+    internal static object? RedactAttribute(string key, object? value)
     {
         ArgumentNullException.ThrowIfNull(key);
         if (value is null)
@@ -97,7 +96,7 @@ internal static partial class TelemetryRedactor
     }
 
     /// <summary>URL sin valores de la query (<c>?sig=Redacted&amp;se=Redacted</c>) y con la ruta redactada.</summary>
-    public static string RedactUrl(string url)
+    internal static string RedactUrl(string url)
     {
         ArgumentNullException.ThrowIfNull(url);
         var queryStart = url.IndexOf('?', StringComparison.Ordinal);
@@ -290,7 +289,7 @@ internal static class CoordinatePairs
 /// Redacta cada span antes de que lo vea un exportador (se registra primero): atributos, nombre y descripción del estado. Quita
 /// <c>url.query</c> y cualquier encabezado capturado y deja <c>url.full</c> sin valores de la query.
 /// </summary>
-internal sealed class TelemetryRedactionProcessor : BaseProcessor<Activity>
+public sealed class TelemetryRedactionProcessor : BaseProcessor<Activity>
 {
     private const string _requestHeaderPrefix = "http.request.header.";
     private const string _responseHeaderPrefix = "http.response.header.";
@@ -326,7 +325,7 @@ internal sealed class TelemetryRedactionProcessor : BaseProcessor<Activity>
 }
 
 /// <summary>Redacta cada log antes de que lo vea un exportador (se registra primero): cuerpo, mensaje formateado y atributos.</summary>
-internal sealed class LogRedactionProcessor : BaseProcessor<LogRecord>
+public sealed class LogRedactionProcessor : BaseProcessor<LogRecord>
 {
     public override void OnEnd(LogRecord data)
     {
@@ -355,7 +354,7 @@ internal sealed class LogRedactionProcessor : BaseProcessor<LogRecord>
 /// Los demás campos de control (<c>@t</c>, <c>@l</c>, <c>@i</c>, <c>@tr</c>, <c>@sp</c>) no llevan datos del usuario y no se tocan.
 /// El resultado se vuelve a serializar, así que sigue siendo JSON válido aunque se reemplace un número (<c>"lat":19.4326</c>).
 /// </summary>
-internal sealed class RedactingJsonFormatter(ITextFormatter inner) : ITextFormatter
+public sealed class RedactingJsonFormatter(ITextFormatter inner) : ITextFormatter
 {
     private static readonly FrozenSet<string> _textFields = new[] { "@m", "@mt", "@x" }.ToFrozenSet(StringComparer.Ordinal);
 
@@ -410,4 +409,3 @@ internal sealed class RedactingJsonFormatter(ITextFormatter inner) : ITextFormat
         }
     }
 }
-// jscpd:ignore-end -- EXC-007

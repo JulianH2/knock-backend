@@ -1,5 +1,38 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — Spec 055, etapa 1: biblioteca técnica compartida `Knock.Hosting` (KNOCK-251)
+- **Qué se movió:** nuevo `src/Knock.Hosting` (net11.0; solo `OpenTelemetry.Extensions.Hosting` 1.21.0 y `Serilog.AspNetCore` 10.0.0, las mismas versiones de los servicios). Tiene `ForwardedHeaders/ForwardedHeadersExtensions` y `Logging/TelemetryRedactor` (con `CoordinatePairs`, los dos procesadores y `RedactingJsonFormatter`). Se borraron las 7 copias de los servicios y `AddKnockGatewayForwardedHeaders` de `CorsExtensions`; el gateway ahora llama a `AddKnockForwardedHeaders`.
+- **Sin cambio de comportamiento:** las copias eran idénticas salvo el espacio de nombres (comparadas antes de mover). Solo cambió la visibilidad: es pública solo la API que usan los servicios (`ExceptionEvent`, los procesadores y el formateador); `Redact`, `RedactUrl` y demás quedan `internal`, visibles para las pruebas (R-06). El enum `ForwardedHeaders` de ASP.NET se usa con el alias `ForwardedHeaderFlags`, porque choca con el espacio de nombres `Knock.Hosting.ForwardedHeaders`.
+- **Pruebas:** las que recorrían las cuatro copias ahora apuntan a la implementación compartida, sin borrar ningún caso. Nueva `HostingLibraryBoundaryTests` (CA-01 a CA-03). Stryker incluye `**/Knock.Hosting/**/*.cs` (R-18). Se regeneró `clones-baseline.json`.
+- **Pendiente de una persona (archivos protegidos):**
+  - borrar EXC-020 y quitar `TelemetryRedactor` del alcance de EXC-007 en `security/exceptions.yaml` (R-13);
+  - agregar `^src/Knock\.Hosting/` a `SHARED` en `ci-pr.yml` y `ci-deploy.yml`, y `/src/Knock.Hosting/` a `CODEOWNERS` (R-15).
+- **A evitar:** copiar de nuevo una pieza del catálogo en un servicio (R-09); la prueba de arquitectura de la etapa 1 falla si reaparece.
+## 2026-11-20 — Spec 043 T-01: prueba de scripts de BD (Alexis)
+- **Avance:** `Spec043SafetyScriptTests` prepara una base aislada y comprueba los índices de ambos scripts 043, el rechazo de un bloqueo duplicado y la conservación de índices y documentos al reaplicarlos. Se reutilizan `MongoToolsContainer` y `MongoIndexes`; no se cambiaron los scripts ni se agregaron dependencias. La §6 no exige TTL.
+- **Verificación tras restaurar paquetes:** build Release con advertencias como errores, prueba de BD 043 (1/1), ArchitectureTest (25/25) y `dotnet format --verify-no-changes` pasaron. UnitTest: 1909/1912; fallaron las mediciones de tiempo del filtro de la spec 024 y de dos casos del redactor de la spec 011. Una corrida anterior tuvo 1911/1912, con fallo de la misma prueba 024. No se modificaron sus umbrales.
+- **Límite:** CA-37 se comprueba aquí solo para la unicidad en base de bloqueos, no para el flujo HTTP ni la deduplicación de reportes. CI y revisión humana pendientes.
+## 2026-11-20 — KNOCK-67: continuación tras restaurar paquetes
+- **Estado:** T-04 y T-05 hechas por Alexis: las nueve pruebas de integración filtradas `Spec036` pasan, incluidas 25 terminadas ordenadas en dos páginas, cursor inválido, aislamiento entre técnicos y respuesta 503 sin secciones con base inaccesible. Las nueve pruebas de base `Spec036` también pasan. La implementación base ya contenía el cursor y el mapeo: las pruebas nuevas pasaron sin cambio de código y no hubo fase roja funcional.
+- **Contrato:** tras compilar, la exportación solicitada pasó y conservó la ruta `/api/v{version}/tecnicos/me/trabajo` sin diff; las matrices documentan ruta y límite. T-07 sigue parcial: `oasdiff` no está instalado y `contracts/openapi.v1.json` no existe en este repositorio.
+- **Verificación:** build Release con `--no-restore -warnaserror -m:1` pasó sin avisos; ArchitectureTest 25/25 y formato de solución pasaron. UnitTest completo: primera corrida 1904/1912, segunda 1911/1912; falló el límite de tiempo de `Spec024FiltroTests.Filtra_4_KB_En_Menos_De_5_Ms_CA_024_01` (15,407 ms, y 5,653 ms aislado). Las otras siete fallas iniciales no se repitieron en la segunda corrida. No se cambiaron pruebas ni umbrales ajenos.
+- **Pendiente:** CI, revisión humana, humo/E2E de T-06, `oasdiff` y resolver o volver a medir la prueba de rendimiento ajena. `codemap.py --check` señaló mapa y grafo desactualizados; no se regeneraron.
+
+## 2026-11-20 — KNOCK-67: pruebas y contrato del resumen de trabajo
+- **Avance:** se agregaron pruebas HTTP para 25 terminadas con empate y cursor, 503 sin secciones con base inaccesible, aislamiento de otro técnico y cursor inválido. La implementación existente ya contiene paginación y mapeo; no se cambió código de producción.
+- **Contrato:** `no_proxy='*' python3 scripts/export_openapi.py --no-build --timeout 240` terminó correctamente, sin cambios en `docs/openapi.v1.json`; contiene `/api/v{version}/tecnicos/me/trabajo`. `oasdiff` no está instalado.
+- **Bloqueo:** build Release y pruebas de integración, UnitTest y ArchitectureTest con `--no-restore` fallan por `Otp.NET` y `QRCoder` ausentes de la caché NuGet. Las pruebas nuevas no se compilaron ni ejecutaron; T-04 y T-05 siguen parciales. `dotnet format` de la solución agotó 240 s y el intento limitado al archivo 180 s; sin verificación de formato completa.
+- **Otras verificaciones:** `sdd_lint --trace 036` encuentra los nombres de todos los criterios, no demuestra que pasen. `codemap.py --check` señala mapa y grafo desactualizados; no se regeneraron. `check_exceptions.py` pasó.
+## 2026-11-20 — Spec 025, verificación sin fotos (KNOCK-79 y KNOCK-80)
+- **Decisión:** primera entrega de la verificación de identidad sin fotos ni cifrado, por orden de prioridad del Tech Lead. Incluye `POST` y `GET /api/v1/me/verificacion` en el módulo nuevo `Trust` de Identity, el script `db/025-verificaciones.js` y las pruebas.
+- **Porqué:** desbloquea el panel. T-03 (HMAC de la CURP y cifrado, con una llave nueva de Key Vault), T-04 (enlaces de subida, falta la cuenta de almacenamiento privada) y T-06 (vencimiento, depende del ejecutor de tareas) quedan fuera.
+- **Sin T-03:** la CURP solo se valida y se descarta; no se guarda de ninguna forma y `curpVigente` queda en falso. La detección de CURP duplicada (CA-07 y CA-20) llega con T-03.
+- **Consentimiento:** uno por verificación en `consentimientos`, con el `dispositivoId` de la sesión del `sid` (no del cuerpo). Un `versionAviso` distinto del vigente (`Verificacion:AvisoVersion`) responde `consent_required`.
+- **Catálogo de motivos:** la spec pide un catálogo del servidor y no lo da. Se definió uno mínimo en `VerificationReasons` (`foto_ilegible`, `datos_no_coinciden`, `selfie_no_coincide`, `documento_no_valido`, `fotos_borradas`), con uno o dos consejos por motivo; el panel (HU-067) puede ajustarlo.
+- **Una captura viva:** crear otra deja la anterior en `sin_verificar` con motivo `captura_reemplazada`.
+- **`deletion_scheduled`** pasó a `CommonErrorCodes.DeletionScheduled` (un código por servicio, spec 002).
+- **A evitar:** marcar `curpVigente: true` sin `curpHmac`: el índice único parcial trata los ausentes como iguales y choca.
+
 ## 2026-11-20 — KNOCK-53: auditoría de la exploración sin cuenta (HU-005)
 - **Estado:** el backend ya cubre lo público: `GET /api/v1/oficios`, `GET /api/v1/tecnicos/autocompletar` y `GET /api/v1/tecnicos/{id}` son anónimos en el gateway y en Mercado, con caché y sin datos privados. Se agregaron pruebas TC-HU-005-01, -02, -04 y -05 y una nota en `docs/rate-limit-matrix.md`; no hay código de producción nuevo.
 - **Pendiente de decisión:** CA4 pide 429 tras 60 peticiones por minuto por IP y el límite global vigente es 100. Búsqueda y zonas siguen con sesión (specs 027 y 023). `GET /api/v1/explorar` (spec 046, T-14) no existe todavía. «Continuar donde me quedé» (CA3) es de la app: el backend no guarda acción pendiente.
@@ -1191,6 +1224,12 @@
 - **Qué cambió:** `specs/README.md` agrega la fila 059 (Suspensión preventiva en casos críticos, Borrador), que el PR #182 había dejado fuera.
 - **Por qué:** el índice debe listar toda spec del repositorio; una persona o una herramienta que lea primero el índice no veía la 059.
 - **A evitar:** agregar una carpeta de spec sin su fila en el índice en el mismo cambio.
+## 2026-11-20 · KNOCK-111 · Spec 045, T-01: índices de oficios y colección de oficios pedidos
+- **Qué cambió:** `db/045-catalogos-y-lista-de-espera.js` crea `oficios_pedidos` con los índices `textoNormalizado_1` y único `usuarioId_1_textoNormalizado_1`, y agrega `activo_1_clave_1` a `oficios`; es idempotente. Prueba: `Spec045CatalogScriptTests` (CA-041 por el índice único, R-21).
+- **Por qué:** es la base de OFP-01, OFP-02 y del catálogo; el índice único evita el duplicado de un mismo técnico sin `Idempotency-Key` (R-26).
+- **Decisiones (con porqué):** (1) La lista de espera sigue siendo `listas_espera` con `cp` (spec 023, ya en uso por `POST /zonas/lista-espera`), no se crea `lista_espera` con `codigoPostal` como dice §6: una segunda colección dejaría dos listas distintas. (2) `activo_1_clave_1` es el «compuesto» que §6 pide sin nombrarlo.
+- **Pendiente (decisión de José):** las rutas `/api/v1/admin/*` de la 045 viven en Mercado, pero la 033 valida el token del panel solo en `/api/v1/panel/**` (R-14) y el permiso, la cuenta y la auditoría (`PermisoPanelHandler`, `panel_cuentas`, `panel_auditoria`) están en Identidad. La 033 §7 dejó abierta la duda de compartir o duplicar ese manejador; hasta resolverla no se pueden construir OFI-03 a OFI-05, OFP-02 ni LIS-02. Además la HU-070 pide métricas (solicitudes por semana, tiempo a la primera cotización, etc.) que ninguna spec define.
+- **A evitar:** abrir rutas `/admin` en Mercado o en el gateway sin la política de la 033 (JWT del panel, permiso y auditoría con falla cerrada).
 
 ## 2026-11-20 · KNOCK-75 · Terraform conecta los secretos del panel interno
 - **Qué cambió:** `deploy/apps/main.tf` pasa `PanelJwt__SigningKey` (secreto `panel-jwt-signing-key`) al gateway y a Identity, y `PanelTotp__Keys__1` (secreto `panel-totp-key`) con `PanelTotp__KeyVersion = 1` solo a Identity; `Cors__Panel__Origen` sale de la variable `panel_origin` (vacía por omisión, no es secreto). `deploy/up.sh`, su prueba y `deploy/README.md` agregan los dos nombres a la lista de secretos requeridos.
