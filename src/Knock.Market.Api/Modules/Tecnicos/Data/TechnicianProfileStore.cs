@@ -23,31 +23,57 @@ internal sealed class TechnicianProfileStore(
         await Technicians.Find(Builders<BsonDocument>.Filter.Eq("usuarioId", sub), new FindOptions { MaxTime = options.Value.QueryMaxTime })
             .Project(Builders<BsonDocument>.Projection.Include("_id")).FirstOrDefaultAsync(cancellationToken) is not null;
 
-    public async Task<bool> InsertAsync(NewTechnician technician, CancellationToken cancellationToken)
+    public Task<bool> InsertAsync(NewTechnician technician, CancellationToken cancellationToken) =>
+        InsertOnceAsync(
+            () => Technicians.InsertOneAsync(ToDocument(technician), cancellationToken: cancellationToken),
+            () => ExistsAsync(technician.Sub, cancellationToken),
+            delay => Task.Delay(delay, cancellationToken));
+
+    /// <summary>
+    /// Dos registros simultáneos de la misma cuenta chocan en el índice único de <c>usuarioId</c>: MongoDB responde «llave duplicada» (11000) y DocumentDB puede responder «conflicto
+    /// de escritura» (112). En ambos casos se relee el perfil por <c>usuarioId</c>: si existe, el otro registro ganó (CA-69, <see langword="false"/>); si no, se reintenta con espera
+    /// creciente y, agotados los intentos, se relanza la excepción.
+    /// </summary>
+    internal static async Task<bool> InsertOnceAsync(Func<Task> insert, Func<Task<bool>> exists, Func<TimeSpan, Task> wait)
     {
-        try
+        var attempt = 0;
+        while (true)
         {
-            await Technicians.InsertOneAsync(ToDocument(technician), cancellationToken: cancellationToken);
-            return true;
-        }
-        catch (MongoWriteException exception) when (exception.WriteError.Category == ServerErrorCategory.DuplicateKey
-            || exception.WriteError.Code == _writeConflictCode)
-        {
-            return false;
-        }
-        catch (MongoCommandException exception) when (exception.Code is _duplicateKeyCode or _writeConflictCode)
-        {
-            return false;
+            attempt++;
+            try
+            {
+                await insert();
+                return true;
+            }
+            catch (MongoException exception) when (IsConflict(exception))
+            {
+                if (await exists())
+                {
+                    return false;
+                }
+
+                if (attempt >= _maxWriteConflictAttempts)
+                {
+                    throw;
+                }
+
+                await wait(TimeSpan.FromMilliseconds(_backoffMilliseconds * attempt));
+            }
         }
     }
 
-    /// <summary>
-    /// Dos registros simultáneos de la misma cuenta chocan en el índice único de <c>usuarioId</c>. MongoDB responde «llave duplicada» (11000), pero
-    /// DocumentDB puede responder «conflicto de escritura» (112) a las inserciones concurrentes. En ambos casos el otro registro ganó (CA-69).
-    /// </summary>
+    private static bool IsConflict(MongoException exception) =>
+        exception is MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey }
+        or MongoWriteException { WriteError.Code: _writeConflictCode }
+        or MongoCommandException { Code: _duplicateKeyCode or _writeConflictCode };
+
     private const int _duplicateKeyCode = 11000;
 
     private const int _writeConflictCode = 112;
+
+    private const int _maxWriteConflictAttempts = 6;
+
+    private const int _backoffMilliseconds = 50;
 
     /// <summary>Campos del perfil público: nunca se proyectan <c>tallerDireccion</c>, <c>contactoPublico</c>, <c>ubicacionBase</c> ni <c>usuarioId</c>.</summary>
     private static readonly string[] _profileFields =
