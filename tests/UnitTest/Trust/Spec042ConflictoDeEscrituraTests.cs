@@ -67,4 +67,63 @@ public sealed class Spec042ConflictoDeEscrituraTests
         result.Created.Should().BeFalse();
         result.SavedAtUtc.Should().Be(_earlier);
     }
+
+    [Fact]
+    public async Task Save_DeadlockWithExistingRecord_ReturnsTheExistingOneAsNotCreated_CA_042_19()
+    {
+        var result = await TrustStore.SaveOnceAsync(
+            () => throw MongoConflictErrors.Command(MongoConflictErrors.LockError, MongoConflictErrors.DeadlockMessage),
+            () => Task.FromResult<DateTime?>(_earlier),
+            _now,
+            _ => Task.CompletedTask);
+
+        result.Created.Should().BeFalse();
+        result.SavedAtUtc.Should().Be(_earlier);
+    }
+
+    [Fact]
+    public async Task Save_DeadlockWithoutRecord_RetriesWithGrowingWaitUntilItCreates_CA_042_19()
+    {
+        var calls = 0;
+        var waits = new List<TimeSpan>();
+
+        var result = await TrustStore.SaveOnceAsync(
+            () => ++calls < 3 ? throw MongoConflictErrors.Command(MongoConflictErrors.LockError, MongoConflictErrors.DeadlockMessage) : Task.FromResult(true),
+            () => Task.FromResult<DateTime?>(null),
+            _now,
+            delay => { waits.Add(delay); return Task.CompletedTask; });
+
+        result.Created.Should().BeTrue();
+        waits.Should().Equal(TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100));
+    }
+
+    [Fact]
+    public async Task Save_DeadlockNeverResolves_RethrowsAfterSixAttempts_CA_042_19()
+    {
+        var calls = 0;
+
+        var act = () => TrustStore.SaveOnceAsync(
+            () => { calls++; throw MongoConflictErrors.Command(MongoConflictErrors.LockError, MongoConflictErrors.DeadlockMessage); },
+            () => Task.FromResult<DateTime?>(null),
+            _now,
+            _ => Task.CompletedTask);
+
+        await act.Should().ThrowAsync<MongoCommandException>();
+        calls.Should().Be(6);
+    }
+
+    [Fact]
+    public async Task Save_LockErrorWithoutDeadlockMessage_IsNotSwallowed_CA_042_19()
+    {
+        var calls = 0;
+
+        var act = () => TrustStore.SaveOnceAsync(
+            () => { calls++; throw MongoConflictErrors.Command(MongoConflictErrors.LockError, "Some other lock failure"); },
+            () => Task.FromResult<DateTime?>(_earlier),
+            _now,
+            _ => Task.CompletedTask);
+
+        await act.Should().ThrowAsync<MongoCommandException>();
+        calls.Should().Be(1);
+    }
 }

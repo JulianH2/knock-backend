@@ -65,4 +65,58 @@ public sealed class Spec046ConflictoDeEscrituraTests
 
         await act.Should().ThrowAsync<MongoCommandException>();
     }
+
+    [Fact]
+    public async Task InsertOnce_DeadlockWithExistingProfile_ReportsAlreadyExisted_CA_046_69()
+    {
+        var inserted = await TechnicianProfileStore.InsertOnceAsync(
+            () => throw MongoConflictErrors.Command(MongoConflictErrors.LockError, MongoConflictErrors.DeadlockMessage),
+            () => Task.FromResult(true),
+            _ => Task.CompletedTask);
+
+        inserted.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task InsertOnce_DeadlockWithoutProfile_RetriesWithGrowingWaitUntilItInserts_CA_046_69()
+    {
+        var calls = 0;
+        var waits = new List<TimeSpan>();
+
+        var inserted = await TechnicianProfileStore.InsertOnceAsync(
+            () => ++calls < 3 ? throw MongoConflictErrors.Command(MongoConflictErrors.LockError, MongoConflictErrors.DeadlockMessage) : Task.CompletedTask,
+            () => Task.FromResult(false),
+            delay => { waits.Add(delay); return Task.CompletedTask; });
+
+        inserted.Should().BeTrue();
+        waits.Should().Equal(TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100));
+    }
+
+    [Fact]
+    public async Task InsertOnce_DeadlockNeverResolves_RethrowsAfterSixAttempts_CA_046_69()
+    {
+        var calls = 0;
+
+        var act = () => TechnicianProfileStore.InsertOnceAsync(
+            () => { calls++; throw MongoConflictErrors.Command(MongoConflictErrors.LockError, MongoConflictErrors.DeadlockMessage); },
+            () => Task.FromResult(false),
+            _ => Task.CompletedTask);
+
+        (await act.Should().ThrowAsync<MongoCommandException>()).Which.Code.Should().Be(MongoConflictErrors.LockError);
+        calls.Should().Be(6);
+    }
+
+    [Fact]
+    public async Task InsertOnce_LockErrorWithoutDeadlockMessage_IsNotSwallowed_CA_046_69()
+    {
+        var calls = 0;
+
+        var act = () => TechnicianProfileStore.InsertOnceAsync(
+            () => { calls++; throw MongoConflictErrors.Command(MongoConflictErrors.LockError, "Some other lock failure"); },
+            () => Task.FromResult(true),
+            _ => Task.CompletedTask);
+
+        await act.Should().ThrowAsync<MongoCommandException>();
+        calls.Should().Be(1);
+    }
 }

@@ -31,6 +31,7 @@ internal sealed class TrustStore(
     private const string _idField = "_id";
     private const int _duplicateKey = 11000;
     private const int _writeConflictCode = 112;
+    private const int _lockErrorCode = 24;
     private const int _maxWriteConflictAttempts = 6;
     private const int _backoffMilliseconds = 50;
     private const int _maxScans = 10;
@@ -73,7 +74,7 @@ internal sealed class TrustStore(
     }
 
     /// <summary>
-    /// Lógica de <see cref="SaveAsync"/>: ante «llave duplicada» o conflicto de escritura (112) relee el registro; si existe, el otro guardado ganó (<c>Created: false</c>); si no, reintenta
+    /// Lógica de <see cref="SaveAsync"/>: ante «llave duplicada», conflicto de escritura (112) o interbloqueo (24, solo si el mensaje dice «deadlock») relee el registro; si existe, el otro guardado ganó (<c>Created: false</c>); si no, reintenta
     /// con espera creciente y, agotados los intentos, relanza la excepción. Si el upsert no insertó porque ya estaba, devuelve el registro existente.
     /// </summary>
     internal static async Task<TrustSaveResult> SaveOnceAsync(Func<Task<bool>> upsert, Func<Task<DateTime?>> readSaved, DateTime nowUtc, Func<TimeSpan, Task> wait)
@@ -154,7 +155,11 @@ internal sealed class TrustStore(
     private static bool IsConflict(Exception exception) =>
         exception is MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey }
         or MongoWriteException { WriteError.Code: _writeConflictCode }
-        or MongoCommandException { Code: _duplicateKey or _writeConflictCode };
+        or MongoCommandException { Code: _duplicateKey or _writeConflictCode }
+        || IsDeadlock(exception);
+
+    private static bool IsDeadlock(Exception exception) =>
+        exception is MongoCommandException { Code: _lockErrorCode } command && command.Message.Contains("deadlock", StringComparison.OrdinalIgnoreCase);
 
     private async Task<List<TrustSaved>> ReadBatchAsync(
         string clientId, (DateTime SavedAtUtc, ObjectId Id)? after, int size, CancellationToken cancellationToken)
