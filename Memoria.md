@@ -1273,3 +1273,8 @@
 - **Qué cambió:** `specs/057-borrado-de-fotos-de-verificacion/spec.md` §8: las nueve dudas pasan a ocho decisiones sí/no (D-01 a D-08) con contexto, alternativa y recomendación, y una nota de dependencias. Solo documentación.
 - **Por qué:** la spec seguía con preguntas abiertas sin recomendación; ninguna impide aprobarla, pero D-07 (formato de casos) afecta al trazado `sdd_lint --trace 057`.
 - **A evitar:** redactar una duda sin dar la alternativa y qué cambia si la respuesta es «no».
+## 2026-11-20 · KNOCK-72 · EXC-030: copias de Mensajería ligadas a KNOCK-281
+- **Qué cambió:** `security/exceptions.yaml` (EXC-030, vence 2027-02-18); marcadores `jscpd:ignore-start -- EXC-030` y `jscpd:ignore-end` en cuatro archivos nuevos de Mensajería (`ValidationExtensions.cs`, `InternalControllersExtensions.cs`, `DomainException.cs` y `DomainExceptionHandler.cs`); `docs/architecture/clones-baseline.json` queda en 57 grupos (54 en `sprint-05`) por tres copias de Mensajería de código de Market e Identity.
+- **Por qué:** jscpd marcaba 6 bloques idénticos a Market (125 líneas, 0.18 %) y su paso falla con cualquier clon. Mover las piezas ahora obliga a cambiar Market (`DomainException` aparece en 15 archivos de código y 26 de pruebas) y son piezas de la etapa 3 de la spec 055 (KNOCK-281). La excepción se aparta de R-09 de la spec 055; Market e Identity no se tocan.
+- **Decidido (José, 2026-11-20):** aceptar la copia temporal ligada a KNOCK-281 con EXC-030, apartándose de R-09 de la spec 055.
+- **A evitar:** copiar más piezas del catálogo a un servicio con una excepción nueva; renovar EXC-030 sin haber movido las piezas a `Knock.Hosting`; correr `--update-baseline` sin una excepción registrada.

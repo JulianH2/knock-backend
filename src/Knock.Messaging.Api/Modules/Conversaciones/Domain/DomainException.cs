@@ -13,6 +13,7 @@ public enum DomainErrorKind
     ServiceUnavailable,
 }
 
+// jscpd:ignore-start -- EXC-030
 /// <summary>
 /// Error de dominio con un <c>code</c> estable que la app lee en el ProblemDetails (por ejemplo <c>conversation_closed</c>). El mensaje es solo para el registro del servidor:
 /// nunca lleva datos de la persona, texto de mensajes ni identificadores, y no se devuelve fuera de Development.
@@ -61,3 +62,4 @@ internal static class DomainErrors
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown domain error kind."),
     };
 }
+// jscpd:ignore-end

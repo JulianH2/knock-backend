@@ -17,6 +17,7 @@ internal static class ValidationExtensions
     }
 }
 
+// jscpd:ignore-start -- EXC-030
 /// <summary>
 /// Valida cada argumento de la acción que tenga un <see cref="IValidator{T}"/> registrado y, si falla, responde 422 ProblemDetails con <c>code</c> y <c>errors</c> (campo en camelCase
 /// a motivos) sin ejecutar el controller. Nunca devuelve el valor enviado: si un mensaje lo repite (el texto de un mensaje, por ejemplo), se sustituye por un motivo genérico.
@@ -90,3 +91,4 @@ internal sealed class ValidationFilter : IAsyncActionFilter
         }
     }
 }
+// jscpd:ignore-end
