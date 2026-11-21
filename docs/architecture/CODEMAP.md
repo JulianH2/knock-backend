@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-21T06:02:03Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-21T08:17:44Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -17,7 +17,7 @@
 | `Knock.Contracts` | - | 10 | 19 | 7 |
 | `Knock.Gateway` | -, hosting | 15 | 38 | 50 |
 | `Knock.Hosting` | - | 2 | 6 | 10 |
-| `Knock.Identity.Api` | -, common, hosting | 32 | 62 | 89 |
+| `Knock.Identity.Api` | -, common, hosting | 32 | 62 | 90 |
 | `Knock.Market.Api` | -, common, hosting | 35 | 68 | 93 |
 | `Knock.Messaging.Api` | -, common, hosting | 19 | 41 | 50 |
 | `Media` | -, data, domain, dtos, services, validators | 23 | 40 | 66 |
@@ -591,7 +591,7 @@
 - `src/Knock.Identity.Api/Hosting/MongoExtensions.cs` — class `KnockMongoOptions`, class `KnockMongoOptionsValidator`, class `MongoExtensions`, class `MongoReadinessHealthCheck`
   - `Seconds()`:60, `Validate()`:76, `AddKnockMongo()`:149, `AddKnockMongoDatabase()`:171, `CreateSettings()`:185, `CheckHealthAsync()`:229
 - `src/Knock.Identity.Api/Hosting/MongoWriteErrors.cs` — class `MongoWriteErrors`
-  - `WriteConflictBackoff()`:12, `IsWriteConflict()`:18, `InsertIfAbsentAsync()`:25, `IsDuplicateKey()`:53
+  - `WriteConflictBackoff()`:15, `IsWriteConflict()`:21, `IsDeadlock()`:25, `InsertIfAbsentAsync()`:32, `IsDuplicateKey()`:60
 - `src/Knock.Identity.Api/Hosting/ObservabilityExtensions.cs` — class `ObservabilityOptions`, record `AzureMonitorSignalSettings`, class `AzureMonitorExportStatus`, class `ObservabilityExtensions`, class `TelemetryExceptionRecorder`, class `IgnoreIncomingTraceContextPropagator`, class `OpenTelemetryLogSink`, class `SerilogLogState`
   - `Record()`:48, `AddKnockObservability()`:72, `TryHandleAsync()`:178, `Inject()`:201, `ExtractTraceIdAndState()`:203, `ExtractBaggage()`:209, `Emit()`:225, `GetEnumerator()`:286
 - `src/Knock.Identity.Api/Hosting/OpenApiExtensions.cs` — class `OpenApiExtensions`
@@ -1189,7 +1189,7 @@
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TechnicianLookupStore.cs` — class `TechnicianLookupStore`
   - `FindCoverageAsync()`:19, `ToCoverage()`:28, `FindBusinessNamesAsync()`:45
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TechnicianProfileStore.cs` — class `TechnicianProfileStore`
-  - `ExistsAsync()`:22, `InsertAsync()`:26, `InsertOnceAsync()`:37, `FindByIdAsync()`:85, `ToProfile()`:93, `ToDocument()`:117
+  - `ExistsAsync()`:22, `InsertAsync()`:26, `InsertOnceAsync()`:37, `FindByIdAsync()`:92, `ToProfile()`:100, `ToDocument()`:124
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TechnicianSelfStore.cs` — class `TechnicianSelfStore`
   - `FindOwnAsync()`:26, `ReadOwnAsync()`:37, `SetAvailableUntilAsync()`:60, `ReadScheduleAsync()`:63, `SetScheduleAsync()`:71, `UpdateAsync()`:82
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TrabajoStore.cs` — record `TrabajoVerification`, class `TrabajoStore`
@@ -1255,7 +1255,7 @@
 - `src/Knock.Identity.Api/Modules/Trust/Data/VerificationStore.cs` — record `VerificationAccount`, record `StoredPhoto`, record `StoredVerification`, record `NewVerification`, interface `IVerificationStore`, class `VerificationStore`
   - `EnsureIndexesAsync()`:81, `FindAccountAsync()`:104, `FindSessionDeviceAsync()`:111, `FindLatestAsync()`:124, `CreateAsync()`:133
 - `src/Knock.Market.Api/Modules/Trust/Data/TrustStore.cs` — record `TrustTechnicianView`, record `TrustSaved`, record `TrustSaveResult`, class `TrustStore`
-  - `EnsureIndexesAsync()`:45, `FindVisibleTechnicianAsync()`:53, `SaveAsync()`:60, `SaveOnceAsync()`:79, `RemoveAsync()`:112
+  - `EnsureIndexesAsync()`:46, `FindVisibleTechnicianAsync()`:54, `SaveAsync()`:61, `SaveOnceAsync()`:80, `RemoveAsync()`:113
 
 **domain**
 

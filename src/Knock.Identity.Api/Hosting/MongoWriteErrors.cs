@@ -8,6 +8,9 @@ internal static class MongoWriteErrors
     /// <summary>Código de «write conflict» de MongoDB y documentdb-local para escrituras concurrentes en transacciones.</summary>
     public const int WriteConflictCode = 112;
 
+    /// <summary>Código con el que documentdb-local aborta una de dos escrituras simultáneas sobre la misma clave única («Could not acquire lock ... due to deadlock»).</summary>
+    public const int LockErrorCode = 24;
+
     /// <summary>Pausa técnica antes de reintentar una transacción que chocó con otra (50 ms por intento); no es un plazo de negocio.</summary>
     public static TimeSpan WriteConflictBackoff(int attempt) => TimeSpan.FromMilliseconds(50 * attempt);
 
@@ -18,8 +21,12 @@ internal static class MongoWriteErrors
     public static bool IsWriteConflict(Exception exception) =>
         exception is MongoCommandException { Code: WriteConflictCode } or MongoWriteException { WriteError.Code: WriteConflictCode };
 
+    /// <summary>Interbloqueo (código 24 con «deadlock» en el mensaje): la escritura no se aplicó. Un código 24 con otro mensaje no cuenta.</summary>
+    public static bool IsDeadlock(Exception exception) =>
+        exception is MongoCommandException { Code: LockErrorCode } command && command.Message.Contains("deadlock", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>
-    /// Inserta un documento cuya clave única decide una carrera. Ante «llave duplicada» o conflicto de escritura (112) relee por esa clave: si ya existe, la otra petición ganó y devuelve
+    /// Inserta un documento cuya clave única decide una carrera. Ante «llave duplicada», conflicto de escritura (112) o interbloqueo (24) relee por esa clave: si ya existe, la otra petición ganó y devuelve
     /// <see langword="false"/>; si no existe, reintenta con espera creciente y, agotados los intentos, relanza la excepción. Devuelve <see langword="true"/> si insertó.
     /// </summary>
     public static async Task<bool> InsertIfAbsentAsync(Func<Task> insert, Func<Task<bool>> exists, Func<TimeSpan, Task> wait)
@@ -33,7 +40,7 @@ internal static class MongoWriteErrors
                 await insert();
                 return true;
             }
-            catch (Exception exception) when (IsDuplicateKey(exception) || IsWriteConflict(exception))
+            catch (Exception exception) when (IsDuplicateKey(exception) || IsWriteConflict(exception) || IsDeadlock(exception))
             {
                 if (await exists())
                 {
