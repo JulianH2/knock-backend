@@ -1,5 +1,6 @@
 using Knock.Contracts.Correlation;
 using Knock.Gateway.Hosting;
+using Knock.Hosting.ForwardedHeaders;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 
@@ -15,7 +16,7 @@ builder.Services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSecti
 builder.Services
     .AddKnockGatewayProblemDetails()
     .AddKnockGatewayHsts()
-    .AddKnockGatewayForwardedHeaders()
+    .AddKnockForwardedHeaders()
     .AddKnockGatewayCors(builder.Configuration)
     .AddKnockData()
     .AddKnockGatewayRateLimiting()

@@ -27,10 +27,10 @@ public sealed class Spec035RedaccionTests
 
     private static readonly (string Project, Func<string, string> Redact)[] _redactors =
     [
-        ("gateway", GatewayHosting.TelemetryRedactor.Redact),
-        ("identity", Knock.Identity.Api.Hosting.TelemetryRedactor.Redact),
-        ("messaging", MessagingHosting.TelemetryRedactor.Redact),
-        ("market", Knock.Market.Api.Hosting.TelemetryRedactor.Redact),
+        ("gateway", Knock.Hosting.Logging.TelemetryRedactor.Redact),
+        ("identity", Knock.Hosting.Logging.TelemetryRedactor.Redact),
+        ("messaging", Knock.Hosting.Logging.TelemetryRedactor.Redact),
+        ("market", Knock.Hosting.Logging.TelemetryRedactor.Redact),
     ];
 
     public static TheoryData<string> Projects
@@ -104,13 +104,7 @@ public sealed class Spec035RedaccionTests
     {
         using var source = new ActivitySource("Spec035." + project);
         using var capture = new TraceCapture();
-        using BaseProcessor<Activity> redactor = project switch
-        {
-            "gateway" => new GatewayHosting.TelemetryRedactionProcessor(),
-            "identity" => new Knock.Identity.Api.Hosting.TelemetryRedactionProcessor(),
-            "messaging" => new MessagingHosting.TelemetryRedactionProcessor(),
-            _ => new Knock.Market.Api.Hosting.TelemetryRedactionProcessor(),
-        };
+        using BaseProcessor<Activity> redactor = new Knock.Hosting.Logging.TelemetryRedactionProcessor();
         using var provider = Sdk.CreateTracerProviderBuilder()
             .AddSource(source.Name)
             .AddProcessor(redactor)

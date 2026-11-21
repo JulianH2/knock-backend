@@ -17,6 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Knock.Contracts\Knock.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Knock.Hosting\Knock.Hosting.csproj" />
     <ProjectReference Include="..\..\src\Knock.Gateway\Knock.Gateway.csproj" />
     <ProjectReference Include="..\..\src\Knock.Identity.Api\Knock.Identity.Api.csproj" />
     <ProjectReference Include="..\..\src\Knock.Market.Api\Knock.Market.Api.csproj" />

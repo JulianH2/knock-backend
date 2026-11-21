@@ -1,5 +1,13 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — Spec 055, etapa 1: biblioteca técnica compartida `Knock.Hosting` (KNOCK-251)
+- **Qué se movió:** nuevo `src/Knock.Hosting` (net11.0; solo `OpenTelemetry.Extensions.Hosting` 1.21.0 y `Serilog.AspNetCore` 10.0.0, las mismas versiones de los servicios). Tiene `ForwardedHeaders/ForwardedHeadersExtensions` y `Logging/TelemetryRedactor` (con `CoordinatePairs`, los dos procesadores y `RedactingJsonFormatter`). Se borraron las 7 copias de los servicios y `AddKnockGatewayForwardedHeaders` de `CorsExtensions`; el gateway ahora llama a `AddKnockForwardedHeaders`.
+- **Sin cambio de comportamiento:** las copias eran idénticas salvo el espacio de nombres (comparadas antes de mover). Solo cambió la visibilidad: es pública solo la API que usan los servicios (`ExceptionEvent`, los procesadores y el formateador); `Redact`, `RedactUrl` y demás quedan `internal`, visibles para las pruebas (R-06). El enum `ForwardedHeaders` de ASP.NET se usa con el alias `ForwardedHeaderFlags`, porque choca con el espacio de nombres `Knock.Hosting.ForwardedHeaders`.
+- **Pruebas:** las que recorrían las cuatro copias ahora apuntan a la implementación compartida, sin borrar ningún caso. Nueva `HostingLibraryBoundaryTests` (CA-01 a CA-03). Stryker incluye `**/Knock.Hosting/**/*.cs` (R-18). Se regeneró `clones-baseline.json`.
+- **Pendiente de una persona (archivos protegidos):**
+  - borrar EXC-020 y quitar `TelemetryRedactor` del alcance de EXC-007 en `security/exceptions.yaml` (R-13);
+  - agregar `^src/Knock\.Hosting/` a `SHARED` en `ci-pr.yml` y `ci-deploy.yml`, y `/src/Knock.Hosting/` a `CODEOWNERS` (R-15).
+- **A evitar:** copiar de nuevo una pieza del catálogo en un servicio (R-09); la prueba de arquitectura de la etapa 1 falla si reaparece.
 ## 2026-11-20 — Spec 043 T-01: prueba de scripts de BD (Alexis)
 - **Avance:** `Spec043SafetyScriptTests` prepara una base aislada y comprueba los índices de ambos scripts 043, el rechazo de un bloqueo duplicado y la conservación de índices y documentos al reaplicarlos. Se reutilizan `MongoToolsContainer` y `MongoIndexes`; no se cambiaron los scripts ni se agregaron dependencias. La §6 no exige TTL.
 - **Verificación tras restaurar paquetes:** build Release con advertencias como errores, prueba de BD 043 (1/1), ArchitectureTest (25/25) y `dotnet format --verify-no-changes` pasaron. UnitTest: 1909/1912; fallaron las mediciones de tiempo del filtro de la spec 024 y de dos casos del redactor de la spec 011. Una corrida anterior tuvo 1911/1912, con fallo de la misma prueba 024. No se modificaron sus umbrales.
