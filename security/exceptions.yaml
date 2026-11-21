@@ -356,3 +356,16 @@ excepciones:
     creada: 2026-11-20
     vence: 2027-02-18
     plan: cuando exista una CDN o Front Door (ADR-007), servir las imágenes por ahí y cerrar el acceso anónimo directo, o renovar con decisión del líder; retirar los #checkov:skip de esa cuenta y de ese contenedor y esta excepción.
+  - id: EXC-030
+    herramienta: jscpd, codemap
+    regla: código duplicado (jscpd:ignore) y huella estructural de codemap
+    alcance: solo los bloques copiados de Market e Identity en cuatro archivos nuevos de Mensajería, entre «// jscpd:ignore-start -- EXC-030» y «// jscpd:ignore-end»: src/Knock.Messaging.Api/Hosting/ValidationExtensions.cs (la clase ValidationFilter), src/Knock.Messaging.Api/Hosting/InternalControllersExtensions.cs (AddInternalControllers y InternalControllerFeatureProvider), src/Knock.Messaging.Api/Modules/Conversaciones/Domain/DomainException.cs (DomainException y DomainErrors) y src/Knock.Messaging.Api/Modules/Conversaciones/DomainExceptionHandler.cs. No se toca Market ni Identity.
+    justificacion: >-
+      KNOCK-72 (spec 030, infraestructura de controllers de Mensajería, PR #206): Mensajería necesita el filtro de validación (422 sin valores), el catálogo de errores de dominio con su manejador y el descubrimiento de controllers internal que ya tienen Market e Identity.
+      La constitución no permite compartir código entre servicios fuera de Knock.Contracts y Knock.Hosting, y esas piezas aún no están en la biblioteca (spec 055, etapa 3, KNOCK-281), por lo que se copian sin cambios y cada servicio las prueba por separado.
+      Son 6 bloques de 14 a 42 líneas (125 líneas, 0.18 % del código) y 3 grupos nuevos en la línea base de codemap (57 contra 54 en sprint-05).
+      Esta excepción se aparta de R-09 de la spec 055 (desde la etapa 1, una copia nueva de una pieza del catálogo no se acepta con una excepción nueva). Moverlas ahora exige cambiar Market (DomainException se usa en 15 archivos de código y 26 de pruebas). Decisión del Tech Lead del 2026-11-20: aceptar la copia temporal ligada a KNOCK-281.
+    responsable: José Guillermo Rangel Hernández
+    creada: 2026-11-20
+    vence: 2027-02-18
+    plan: mover estas piezas a Knock.Hosting en la etapa 3 (KNOCK-281), borrar las copias de Mensajería y de Market con sus marcadores y retirar esta excepción antes de vencer.

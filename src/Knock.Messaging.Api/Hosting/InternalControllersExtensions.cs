@@ -5,6 +5,7 @@ namespace Knock.Messaging.Api.Hosting;
 
 internal static class InternalControllersExtensions
 {
+    // jscpd:ignore-start -- EXC-030
     /// <summary>Los controllers de los módulos son <c>internal</c>: MVC solo descubre públicos, así que se amplía el descubrimiento al ensamblado de la API.</summary>
     public static IMvcBuilder AddInternalControllers(this IMvcBuilder builder)
     {
@@ -37,3 +38,4 @@ internal sealed class InternalControllerFeatureProvider : ControllerFeatureProvi
         && !typeInfo.IsDefined(typeof(NonControllerAttribute), inherit: true)
         && typeInfo.Name.EndsWith("Controller", StringComparison.Ordinal);
 }
+// jscpd:ignore-end

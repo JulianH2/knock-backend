@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace Knock.Messaging.Api.Modules.Conversaciones;
 
+// jscpd:ignore-start -- EXC-030
 /// <summary>
 /// Traduce <see cref="DomainException"/> al código de su catálogo en ProblemDetails. Solo escribe el título estándar del código: ni el mensaje ni los datos de la excepción salen
 /// (el detalle de Development lo agrega <c>CustomizeProblemDetails</c>). Vive en el módulo con la excepción porque Hosting no puede leer el dominio de un módulo. Cualquier otra excepción sigue su camino y termina en 500.
@@ -24,3 +25,4 @@ internal sealed class DomainExceptionHandler : IExceptionHandler
         return true;
     }
 }
+// jscpd:ignore-end
