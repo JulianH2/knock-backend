@@ -86,7 +86,7 @@ internal sealed class AddressesHost : IAsyncDisposable
         return new Spec040Person(sub, userId, Token(sub));
     }
 
-    public static string Token(string sub, TimeSpan? lifetime = null, string? key = null)
+    public static string Token(string sub, TimeSpan? lifetime = null, string? key = null, string? sid = null)
     {
         var now = DateTime.UtcNow;
         var expired = lifetime is { } span && span < TimeSpan.Zero;
@@ -94,7 +94,7 @@ internal sealed class AddressesHost : IAsyncDisposable
         {
             Issuer = "knock-api",
             Audience = "knock-app",
-            Claims = new Dictionary<string, object> { ["sub"] = sub, ["sid"] = ObjectId.GenerateNewId().ToString() },
+            Claims = new Dictionary<string, object> { ["sub"] = sub, ["sid"] = sid ?? ObjectId.GenerateNewId().ToString() },
             IssuedAt = expired ? now.AddMinutes(-30) : now,
             NotBefore = expired ? now.AddMinutes(-30) : now,
             Expires = expired ? now.Add(lifetime!.Value) : now.Add(lifetime ?? TimeSpan.FromMinutes(15)),
