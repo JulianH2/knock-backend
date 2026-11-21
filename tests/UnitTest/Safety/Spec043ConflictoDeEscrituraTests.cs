@@ -47,4 +47,58 @@ public sealed class Spec043ConflictoDeEscrituraTests
         await act.Should().ThrowAsync<MongoCommandException>();
         calls.Should().Be(6);
     }
+
+    [Fact]
+    public async Task InsertIfAbsent_DeadlockWithExistingBlock_ReportsAlreadyExisted_CA_043_37()
+    {
+        var inserted = await MongoWriteErrors.InsertIfAbsentAsync(
+            () => throw MongoConflictErrors.Command(MongoConflictErrors.LockError, MongoConflictErrors.DeadlockMessage),
+            () => Task.FromResult(true),
+            _ => Task.CompletedTask);
+
+        inserted.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task InsertIfAbsent_DeadlockWithoutBlock_RetriesWithGrowingWaitUntilItInserts_CA_043_37()
+    {
+        var calls = 0;
+        var waits = new List<TimeSpan>();
+
+        var inserted = await MongoWriteErrors.InsertIfAbsentAsync(
+            () => ++calls < 3 ? throw MongoConflictErrors.Command(MongoConflictErrors.LockError, MongoConflictErrors.DeadlockMessage) : Task.CompletedTask,
+            () => Task.FromResult(false),
+            delay => { waits.Add(delay); return Task.CompletedTask; });
+
+        inserted.Should().BeTrue();
+        waits.Should().Equal(TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100));
+    }
+
+    [Fact]
+    public async Task InsertIfAbsent_DeadlockNeverResolves_RethrowsAfterSixAttempts_CA_043_37()
+    {
+        var calls = 0;
+
+        var act = () => MongoWriteErrors.InsertIfAbsentAsync(
+            () => { calls++; throw MongoConflictErrors.Command(MongoConflictErrors.LockError, MongoConflictErrors.DeadlockMessage); },
+            () => Task.FromResult(false),
+            _ => Task.CompletedTask);
+
+        await act.Should().ThrowAsync<MongoCommandException>();
+        calls.Should().Be(6);
+    }
+
+    [Fact]
+    public async Task InsertIfAbsent_LockErrorWithoutDeadlockMessage_IsNotSwallowed_CA_043_37()
+    {
+        var calls = 0;
+
+        var act = () => MongoWriteErrors.InsertIfAbsentAsync(
+            () => { calls++; throw MongoConflictErrors.Command(MongoConflictErrors.LockError, "Some other lock failure"); },
+            () => Task.FromResult(true),
+            _ => Task.CompletedTask);
+
+        await act.Should().ThrowAsync<MongoCommandException>();
+        calls.Should().Be(1);
+    }
 }

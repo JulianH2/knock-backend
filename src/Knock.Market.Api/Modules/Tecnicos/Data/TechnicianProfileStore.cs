@@ -31,7 +31,7 @@ internal sealed class TechnicianProfileStore(
 
     /// <summary>
     /// Dos registros simultáneos de la misma cuenta chocan en el índice único de <c>usuarioId</c>: MongoDB responde «llave duplicada» (11000) y DocumentDB puede responder «conflicto
-    /// de escritura» (112). En ambos casos se relee el perfil por <c>usuarioId</c>: si existe, el otro registro ganó (CA-69, <see langword="false"/>); si no, se reintenta con espera
+    /// de escritura» (112) o «interbloqueo» (24). En todos los casos se relee el perfil por <c>usuarioId</c>: si existe, el otro registro ganó (CA-69, <see langword="false"/>); si no, se reintenta con espera
     /// creciente y, agotados los intentos, se relanza la excepción.
     /// </summary>
     internal static async Task<bool> InsertOnceAsync(Func<Task> insert, Func<Task<bool>> exists, Func<TimeSpan, Task> wait)
@@ -65,11 +65,18 @@ internal sealed class TechnicianProfileStore(
     private static bool IsConflict(MongoException exception) =>
         exception is MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey }
         or MongoWriteException { WriteError.Code: _writeConflictCode }
-        or MongoCommandException { Code: _duplicateKeyCode or _writeConflictCode };
+        or MongoCommandException { Code: _duplicateKeyCode or _writeConflictCode }
+        || IsDeadlock(exception);
+
+    private static bool IsDeadlock(Exception exception) =>
+        exception is MongoCommandException { Code: _lockErrorCode } command && command.Message.Contains("deadlock", StringComparison.OrdinalIgnoreCase);
 
     private const int _duplicateKeyCode = 11000;
 
     private const int _writeConflictCode = 112;
+
+    /// <summary>Código 24 de documentdb-local («Could not acquire lock ... due to deadlock»): la escritura no se aplicó. Solo cuenta si el mensaje dice «deadlock».</summary>
+    private const int _lockErrorCode = 24;
 
     private const int _maxWriteConflictAttempts = 6;
 
