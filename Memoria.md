@@ -1230,6 +1230,12 @@
 - **Qué cambió:** `specs/README.md` agrega la fila 059 (Suspensión preventiva en casos críticos, Borrador), que el PR #182 había dejado fuera.
 - **Por qué:** el índice debe listar toda spec del repositorio; una persona o una herramienta que lea primero el índice no veía la 059.
 - **A evitar:** agregar una carpeta de spec sin su fila en el índice en el mismo cambio.
+
+## 2026-11-20 · KNOCK-162 · Spec 056: dudas D-01 a D-04 redactadas como decisiones sí/no
+- **Qué cambió:** en `specs/056-autenticacion-entre-servicios/spec.md` §8, las cuatro dudas que quedaban (D-01 a D-04) pasan a decisiones sí/no con contexto, opciones y recomendación; `plan.md` y `task.md` apuntan a ellas. Solo documentación.
+- **Por qué:** el Tech Lead respondió P-01 a P-08 y las dos correcciones (PR #180); lo que faltaba era formularlo de modo que se pueda contestar con un sí o un no.
+- **Decisiones (con porqué):** la recomendación del autor queda marcada, pero no se aplica como decidida hasta que el Tech Lead conteste; no se inventó ningún bloqueo (ninguna impide aprobar la spec, D-01 y D-02 solo anteceden a T-07).
+- **A evitar:** dejar una duda abierta sin opciones ni recomendación.
 ## 2026-11-20 · KNOCK-111 · Spec 045, T-01: índices de oficios y colección de oficios pedidos
 - **Qué cambió:** `db/045-catalogos-y-lista-de-espera.js` crea `oficios_pedidos` con los índices `textoNormalizado_1` y único `usuarioId_1_textoNormalizado_1`, y agrega `activo_1_clave_1` a `oficios`; es idempotente. Prueba: `Spec045CatalogScriptTests` (CA-041 por el índice único, R-21).
 - **Por qué:** es la base de OFP-01, OFP-02 y del catálogo; el índice único evita el duplicado de un mismo técnico sin `Idempotency-Key` (R-26).
@@ -1273,3 +1279,7 @@
 - **Por qué:** jscpd marcaba 6 bloques idénticos a Market (125 líneas, 0.18 %) y su paso falla con cualquier clon. Mover las piezas ahora obliga a cambiar Market (`DomainException` aparece en 15 archivos de código y 26 de pruebas) y son piezas de la etapa 3 de la spec 055 (KNOCK-281). La excepción se aparta de R-09 de la spec 055; Market e Identity no se tocan.
 - **Decidido (José, 2026-11-20):** aceptar la copia temporal ligada a KNOCK-281 con EXC-030, apartándose de R-09 de la spec 055.
 - **A evitar:** copiar más piezas del catálogo a un servicio con una excepción nueva; renovar EXC-030 sin haber movido las piezas a `Knock.Hosting`; correr `--update-baseline` sin una excepción registrada.
+## 2026-11-20 · KNOCK-295 · TT-API: conflicto de escritura (112) en registros simultáneos: releer y reintentar
+- **Qué cambió:** `TechnicianProfileStore.InsertAsync`, `TrustStore.SaveAsync` y `BloqueosStore.AddAsync` siguen el patrón de relectura y reintento del proyecto: ante «llave duplicada» o conflicto de escritura (112, en `MongoCommandException` o `MongoWriteException`) releen el documento por su clave única; si existe, el otro registro ganó (`false` / `Created: false`); si no, reintentan hasta 6 veces con espera de 50 ms por intento y, agotados, relanzan la excepción. Identity usa `MongoWriteErrors.InsertIfAbsentAsync`; Market lleva su ayuda privada en cada almacén (sin biblioteca nueva). Se conserva el diagnóstico de códigos HTTP de CA-69 y se añaden pruebas unitarias con errores de comando reales del driver.
+- **Por qué:** DocumentDB responde 112 a inserciones concurrentes sobre un índice único; tratar el 112 como «ya existe» sin releer daba falsos 409/200 cuando la otra escritura aún no era visible, y el 112 en `TrustStore` y `BloqueosStore` salía como 500.
+- **A evitar:** devolver «ya existía» ante un 112 sin comprobar que el documento existe, o reintentar sin cota ni espera creciente.

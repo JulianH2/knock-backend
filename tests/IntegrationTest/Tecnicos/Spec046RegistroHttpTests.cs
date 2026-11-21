@@ -145,8 +145,9 @@ public sealed class Spec046RegistroHttpTests
 
         var responses = await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => host.SendAsync(HttpMethod.Post, _route, sub, Body(host))));
 
-        responses.Count(r => r.StatusCode == HttpStatusCode.Created).Should().Be(1);
-        responses.Count(r => r.StatusCode == HttpStatusCode.Conflict).Should().Be(3);
+        var statuses = string.Join(", ", responses.Select(r => (int)r.StatusCode));
+        responses.Count(r => r.StatusCode == HttpStatusCode.Created).Should().Be(1, statuses);
+        responses.Count(r => r.StatusCode == HttpStatusCode.Conflict).Should().Be(3, statuses);
         (await Technicians(host).CountDocumentsAsync(Builders<BsonDocument>.Filter.Eq("usuarioId", sub))).Should().Be(1);
         foreach (var response in responses) response.Dispose();
     }
