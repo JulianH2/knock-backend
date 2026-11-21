@@ -5,7 +5,7 @@
 
 | Tarea | Qué se hace | Cubre | Depende de | Paralelo con | Responsable sugerido | Estado |
 |---|---|---|---|---|---|---|
-| T-00 | Prerrequisitos y dudas que hoy bloquean: spec 053 (REP-05) y 033 sin implementar; enmiendas a las specs 037 (tipo de aviso) y 054 (catálogo de `outbox`); respuestas a las dudas 1 a 6 de §15 | §8 · §15 | — | T-01 | por asignar | pendiente |
+| T-00 | Prerrequisitos y dudas que hoy bloquean: spec 053 (REP-05) y 033 sin implementar; enmiendas a las specs 037 (tipo de aviso) y 054 (catálogo de `outbox`); respuestas sí/no a las decisiones 1 a 6 de §15 | §8 · §15 | — | T-01 | por asignar | pendiente |
 | T-01 | [BD] Script de `db/` que documenta `usuarios.suspension` (sin índices) y prueba de base de datos | §6 · R-04 | — | T-02 | José Guillermo Rangel Hernández | pendiente |
 | T-02 | [Back] Dominio: `Suspender`, `Reactivar` y regla gradual con configuración `Suspension:*` validada al arrancar; pruebas unitarias | R-03, R-05, R-07, R-15 a R-17 · CA-04, CA-06, CA-11, CA-13, CA-15 | T-01 | T-01 | José Guillermo Rangel Hernández | pendiente |
 | T-03 | [Back] Servicio `AccountSuspension`: transacción de estado, sesiones de la app y del panel, `outbox` y auditoría; cancelación en Redis con reintento | R-04, R-08, R-09 · CA-01, CA-02, CA-05, CA-07, CA-08, CA-18 | T-02 | T-04 | José Guillermo Rangel Hernández | pendiente |

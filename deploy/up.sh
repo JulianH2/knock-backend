@@ -25,7 +25,7 @@ APPS_ENV="${APPS_ENV:-dev}"
 
 # Nombres fijos de los secretos en Key Vault (deploy/README.md, «Secretos»).
 REQUIRED_SECRETS=(jwt-signing-key redis-password redis-connection-string pii-encryption-key pii-hmac-key
-  mongo-identity mongo-market mongo-messaging field-encryption-key identity-field-encryption-key search-cursor-key interno-key-identity)
+  mongo-identity mongo-market mongo-messaging field-encryption-key identity-field-encryption-key search-cursor-key interno-key-identity panel-jwt-signing-key panel-totp-key)
 
 usage() {
   cat <<'EOF'

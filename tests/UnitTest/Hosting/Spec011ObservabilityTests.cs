@@ -60,25 +60,25 @@ public sealed class Spec011ObservabilityTests
             "knock-identity",
             (services, configuration, environment) => IdentityHosting.ObservabilityExtensions.AddKnockObservability(
                 IdentityHosting.LoggingExtensions.AddKnockLogging(services, configuration), configuration, environment),
-            IdentityHosting.TelemetryRedactor.Redact,
-            IdentityHosting.TelemetryRedactor.RedactAttribute,
-            IdentityHosting.TelemetryRedactor.Placeholder),
+            Knock.Hosting.Logging.TelemetryRedactor.Redact,
+            Knock.Hosting.Logging.TelemetryRedactor.RedactAttribute,
+            Knock.Hosting.Logging.TelemetryRedactor.Placeholder),
         ["messaging"] = new(
             "Knock.Messaging.Api",
             "knock-messaging",
             (services, configuration, environment) => MessagingHosting.ObservabilityExtensions.AddKnockObservability(
                 MessagingHosting.LoggingExtensions.AddKnockLogging(services, configuration), configuration, environment),
-            MessagingHosting.TelemetryRedactor.Redact,
-            MessagingHosting.TelemetryRedactor.RedactAttribute,
-            MessagingHosting.TelemetryRedactor.Placeholder),
+            Knock.Hosting.Logging.TelemetryRedactor.Redact,
+            Knock.Hosting.Logging.TelemetryRedactor.RedactAttribute,
+            Knock.Hosting.Logging.TelemetryRedactor.Placeholder),
         ["gateway"] = new(
             "Knock.Gateway",
             "knock-gateway",
             (services, configuration, environment) => GatewayHosting.ObservabilityExtensions.AddKnockObservability(
                 GatewayHosting.LoggingExtensions.AddKnockLogging(services, configuration), configuration, environment),
-            GatewayHosting.TelemetryRedactor.Redact,
-            GatewayHosting.TelemetryRedactor.RedactAttribute,
-            GatewayHosting.TelemetryRedactor.Placeholder),
+            Knock.Hosting.Logging.TelemetryRedactor.Redact,
+            Knock.Hosting.Logging.TelemetryRedactor.RedactAttribute,
+            Knock.Hosting.Logging.TelemetryRedactor.Placeholder),
     };
 
     public static TheoryData<string> Services() => [.. _services.Keys];

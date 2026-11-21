@@ -74,6 +74,10 @@
 
 `POST /api/v1/solicitudes/{id}/cotizaciones` añade una ventana fija de **3 peticiones por minuto por `sub`** y por proceso, además de los límites generales. La cuarta responde 429 con `Retry-After`. Con dos réplicas pueden pasar hasta 6 por minuto; el límite compartido queda para KNOCK-247.
 
+## Descarte en el gateway (spec 028, KNOCK-68)
+
+`POST /api/v1/solicitudes/{id}/descartar` suma una ventana fija de **30 peticiones por hora por `sub`**, compartida mediante Redis (`ratelimit:descarte:*`). La petición 31 responde 429 con `Retry-After`; si Redis falla responde 503. También aplican los límites generales del gateway. La bandeja no tiene límite específico adicional.
+
 ## Direcciones del cliente en Identidad (spec 040, KNOCK-285)
 
 `GET` y `POST /api/v1/me/direcciones` y `PUT` y `DELETE /api/v1/me/direcciones/{id}` no tienen política propia: usan la política global por IP de Identidad y los límites del gateway por IP y usuario; la respuesta 429 incluye `Retry-After`. `POST` y `PUT` limitan el cuerpo a 4 KB (413). El tope de 10 direcciones por persona es una regla de negocio (409 `address_limit_reached`), no un límite de peticiones.
@@ -107,3 +111,10 @@ Las cinco rutas de `/api/v1/me/casa-y-auto` (CAS-01 a CAS-05) no tienen polític
 ## Cuenta y datos personales en Identidad (spec 039, KNOCK-284)
 
 Políticas por `sub` del JWT (ventana fija, por proceso; con dos réplicas el límite efectivo se duplica), todas con 429 y `Retry-After`: `POST /me/cambio-numero` **3 por hora** (R-20), `POST /me/cambio-numero/confirmar` **5 por hora**, `POST /me/exportaciones` **3 por hora** y `POST /me/eliminacion` **5 por hora**; estos tres últimos son valores propuestos porque la spec no los fija. `POST /recuperacion-acceso` (pública) tiene **3 por hora por IP** y además **3 por hora por número** (nuevo y anterior, contados por su HMAC en `RecoveryAttemptLimiter`, en memoria del proceso). `GET/PUT /me/consentimientos`, `GET /me/pendientes` y `POST /me/eliminacion/cancelar` usan solo el límite general. Cuerpos: 4 KiB en cambio de número y recuperación, 8 KiB en eliminación, 1 KiB en consentimientos, exportaciones y cancelar (413). Para que las políticas por persona lean el `sub`, Identidad ejecuta `UseAuthentication` antes de `UseRateLimiter`.
+
+## Verificación de identidad en Identidad (spec 025, KNOCK-79)
+
+`POST /api/v1/me/verificacion` tiene una política por `sub` de **3 creaciones por hora** (`RateLimitingExtensions.VerificationCreatePolicy`, con `SubjectPolicy` y partición compartida); la respuesta 429 incluye `Retry-After`. Frena el uso de la creación como oráculo de CURP (§9). `GET /api/v1/me/verificacion` usa los límites globales. El cuerpo se limita a 8 KB (413).
+## Exploración sin cuenta (HU-005, KNOCK-53)
+
+Las lecturas públicas de exploración son `GET /api/v1/oficios`, `GET /api/v1/tecnicos/autocompletar` y `GET /api/v1/tecnicos/{id}`; no tienen política propia: las frena el límite global por IP del gateway y de Mercado (100 por minuto), no uno de 60. El criterio CA4 de la HU-005 pide 429 tras 60 peticiones por minuto por IP; bajar el valor es una decisión pendiente del equipo, porque la matriz parte de TT-API-03 con 100 y afectaría a toda la API. `/api/v1/busqueda` y `/api/v1/zonas/cp/{cp}` piden sesión por decisión de las specs 027 y 023 (la apertura de zonas a la exploración sigue como pregunta abierta en la 023). TC-HU-005-04 comprueba en el gateway que las tres rutas públicas responden sin token y dan 429 con `Retry-After` al pasar el límite configurado.

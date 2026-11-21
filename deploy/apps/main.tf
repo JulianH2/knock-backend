@@ -40,23 +40,33 @@ locals {
   # Red de confianza para X-Forwarded-For (gateway, Identity, Market y Messaging; spec 009 R-04 y spec 006 R-03).
   forwarded = { ForwardedHeaders__KnownNetworks__0 = var.container_apps_subnet_cidr }
 
+  # Panel interno (spec 033, R-13 y R-27): el origen exacto (https, sin ruta) que el gateway e Identity aceptan para el panel.
+  # Vacío = ningún origen permitido (el panel no abre desde un navegador), así que no se declara la variable de entorno.
+  panel_origin = var.panel_origin == "" ? {} : { Cors__Panel__Origen = var.panel_origin }
+
   services = {
     gateway = {
       external = true
-      env = merge(local.forwarded, {
+      env = merge(local.forwarded, local.panel_origin, {
         ReverseProxy__Clusters__identidad__Destinations__principal__Address  = local.cluster_address.identity
         ReverseProxy__Clusters__mercado__Destinations__principal__Address    = local.cluster_address.market
         ReverseProxy__Clusters__mensajeria__Destinations__principal__Address = local.cluster_address.messaging
       })
-      secret_env = merge(local.redis_secret, { Jwt__SigningKey = "jwt-signing-key" })
+      # La llave propia del panel (`PanelJwt:SigningKey`, Base64 de al menos 32 bytes) es distinta de `jwt-signing-key`: el gateway valida con ella los tokens de /api/v1/panel/**.
+      secret_env = merge(local.redis_secret, {
+        Jwt__SigningKey      = "jwt-signing-key"
+        PanelJwt__SigningKey = "panel-jwt-signing-key"
+      })
     }
     identity = {
       external = false
       # Identity lee la sección Identity:PhoneProtection (PhoneProtectionOptions): llaves numeradas y su versión vigente.
       # Firebase:ProjectId ya trae su valor en appsettings.json (knock-0).
-      env = merge(local.forwarded, {
+      env = merge(local.forwarded, local.panel_origin, {
         Identity__PhoneProtection__EncryptionKeyVersion = "1"
-        Identity__PhoneProtection__HmacKeyVersion       = "1"
+        # Cifrado del secreto TOTP del panel (spec 033, R-26): la versión vigente no es secreta y la llave sí.
+        PanelTotp__KeyVersion                     = "1"
+        Identity__PhoneProtection__HmacKeyVersion = "1"
         # Cifrado de campos de Identity (spec 040, direcciones del cliente): la versión vigente no es secreta y la llave sí.
         Security__FieldEncryption__ActiveVersion = "1"
         # Dirección interna de Mercado: Identity valida la colonia del perfil con GET /api/v1/colonias/existe (spec 017, R-06). Sin esto, PUT /me con colonia da 503.
@@ -73,6 +83,9 @@ locals {
         Security__FieldEncryption__Keys__1 = "identity-field-encryption-key"
         # Token de servicio de Identidad hacia Mercado (historial de «Mi casa y mi auto», spec 041): Identidad lo firma y Mercado lo valida.
         Services__Market__InternalKey = "interno-key-identity"
+        # Panel interno (spec 033): llave de firma del token del panel (la misma que lee el gateway) y llave AES-256 versionada del secreto TOTP; ninguna es la de la app.
+        PanelJwt__SigningKey = "panel-jwt-signing-key"
+        PanelTotp__Keys__1   = "panel-totp-key"
       })
     }
     # BUG-004 (KNOCK-241): Mensajería valida el JWT de Knock y lee la lista de sesiones canceladas en Redis; sin estos dos secretos no arranca.

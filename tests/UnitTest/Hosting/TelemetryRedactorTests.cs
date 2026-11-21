@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using AwesomeAssertions;
+using Knock.Hosting.Logging;
 using Knock.Market.Api.Hosting;
 using Xunit;
 

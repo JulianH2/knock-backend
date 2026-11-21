@@ -1,5 +1,6 @@
 // jscpd:ignore-start -- EXC-007: copia de src/Knock.Market.Api/Hosting/LoggingExtensions.cs (spec 011); se unifica en una biblioteca técnica.
 using System.Text;
+using Knock.Hosting.Logging;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Serilog;

@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using AwesomeAssertions;
+using Knock.Hosting.Logging;
 using Knock.Market.Api.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
