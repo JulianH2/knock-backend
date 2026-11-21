@@ -5,8 +5,8 @@
 
 | Tarea | Qué se hace | Cubre | Depende de | Paralelo con | Responsable sugerido | Estado |
 |---|---|---|---|---|---|---|
-| T-00 | Prerrequisitos que hoy no existen y no son parte de esta spec: Panel con doble factor, permisos y auditoría de la spec 033 (hoy no implementados) | §8 | — | T-01 | por asignar | pendiente |
-| T-01 | Script de `db/` con colecciones e índices de §6 y prueba de base de datos | §6 | — | T-02 en adelante (con datos de prueba) | por asignar | pendiente |
+| T-00 | Prerrequisitos que hoy no existen y no son parte de esta spec: Panel con doble factor, permisos y auditoría de la spec 033 (hoy no implementados) | §8 | — | T-01 | por asignar | el panel de la 033 ya existe en Identity; falta decidir cómo autorizan las rutas `/admin` en Mercado (ver Memoria, KNOCK-111) |
+| T-01 | Script de `db/` con colecciones e índices de §6 y prueba de base de datos | §6 | — | T-02 en adelante (con datos de prueba) | por asignar | hecha (KNOCK-111): `db/045-catalogos-y-lista-de-espera.js`; la lista de espera sigue en `listas_espera` (spec 023) |
 | T-02 | `GET /api/v1/oficios/{clave}` (OFI-02): DTO, validador, servicio, almacén, controlador y pruebas | R-01 a R-04 · CA-01 a CA-04 | T-01 | otras rutas | por asignar | pendiente |
 | T-03 | `GET /api/v1/admin/oficios` (OFI-03): DTO, validador, servicio, almacén, controlador y pruebas | R-05 · CA-05 a CA-07 | T-01 | otras rutas | por asignar | pendiente |
 | T-04 | `POST /api/v1/admin/oficios` (OFI-04): DTO, validador, servicio, almacén, controlador y pruebas | R-06 a R-08 · CA-08 a CA-13 | T-01 | otras rutas | por asignar | pendiente |

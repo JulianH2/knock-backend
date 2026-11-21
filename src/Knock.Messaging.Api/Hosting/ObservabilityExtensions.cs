@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using Azure.Monitor.OpenTelemetry.Exporter;
+using Knock.Hosting.Logging;
 using Microsoft.AspNetCore.Diagnostics;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;

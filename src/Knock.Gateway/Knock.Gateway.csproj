@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Knock.Contracts\Knock.Contracts.csproj" />
+    <ProjectReference Include="..\Knock.Hosting\Knock.Hosting.csproj" />
   </ItemGroup>
 
   <ItemGroup>

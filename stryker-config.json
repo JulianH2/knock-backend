@@ -9,6 +9,7 @@
       "**/Knock.Market.Api/Modules/Catalog/**/*.cs",
       "**/Knock.Market.Api/Modules/Requests/**/*.cs",
       "**/Knock.Gateway/**/*.cs",
+      "**/Knock.Hosting/**/*.cs",
       "!**/obj/**",
       "!**/bin/**",
       "!**/*.g.cs",

@@ -297,6 +297,264 @@
         }
       }
     },
+    "/api/v{version}/me/verificacion": {
+      "post": {
+        "tags": [
+          "MeVerificacion"
+        ],
+        "summary": "Crea la verificación en `en_captura` con su consentimiento. Las fotos llegan con la tarea T-04 (enlaces de subida).",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVerificationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVerificationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationCreatedResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationCreatedResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationCreatedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "MeVerificacion"
+        ],
+        "summary": "Estado de la verificación más reciente; sin ninguna, `sin_verificar` (nunca 404).",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationStatusResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationStatusResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationStatusResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v{version}/auth/firebase": {
       "post": {
         "tags": [
@@ -5193,6 +5451,42 @@
         },
         "description": "Cuerpo de `POST /reportes` (spec 043, R-10). Ningún campo acepta el identificador de quien reporta: sale del token (R-24)."
       },
+      "CreateVerificationRequest": {
+        "required": [
+          "nivel",
+          "aceptaBiometria",
+          "versionAviso",
+          "curp"
+        ],
+        "type": "object",
+        "properties": {
+          "nivel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "aceptaBiometria": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "versionAviso": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "curp": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Cuerpo de `POST /me/verificacion` (spec 025, R-01). `aceptaBiometria` no tiene valor por omisión (R-02); la CURP solo se valida y nunca se guarda en\nclaro (R-05). La persona es siempre la del `sub` del token."
+      },
       "CursorPageOfHistoryItemResponse": {
         "required": [
           "items",
@@ -5924,6 +6218,175 @@
             }
           }
         }
+      },
+      "VerificationCreatedResponse": {
+        "required": [
+          "id",
+          "estado",
+          "nivel",
+          "fotos",
+          "capturaVenceEn"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "nivel": {
+            "type": "string"
+          },
+          "fotos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VerificationPhotoResponse"
+            }
+          },
+          "capturaVenceEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Respuesta 201 de la creación (R-08)."
+      },
+      "VerificationPhotoResponse": {
+        "required": [
+          "tipo",
+          "estado",
+          "urlSubida",
+          "venceEn"
+        ],
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "urlSubida": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "venceEn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        },
+        "description": "Una foto del nivel. `urlSubida` y `venceEn` son el enlace firmado de 5 minutos (R-08); llegan con la tarea T-04 (cuenta de almacenamiento privada), así\nque por ahora van en `null`."
+      },
+      "VerificationPhotoStateResponse": {
+        "required": [
+          "tipo",
+          "estado"
+        ],
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          }
+        },
+        "description": "Una foto en la consulta del estado: solo el tipo y el estado, nunca la dirección (R-14)."
+      },
+      "VerificationStatusResponse": {
+        "required": [
+          "id",
+          "nivel",
+          "estado",
+          "motivo",
+          "consejos",
+          "nivelOtorgado",
+          "fotos",
+          "creadoEn",
+          "enviadoEn",
+          "decididoEn",
+          "expiraEn",
+          "puedeReintentar"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nivel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "estado": {
+            "type": "string"
+          },
+          "motivo": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "consejos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "nivelOtorgado": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "fotos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VerificationPhotoStateResponse"
+            }
+          },
+          "creadoEn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "enviadoEn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "decididoEn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "expiraEn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "puedeReintentar": {
+            "type": "boolean"
+          }
+        },
+        "description": "Estado de la verificación más reciente (R-14 y R-15). Nunca trae fotos, direcciones, CURP ni su HMAC."
       }
     }
   },
@@ -5969,6 +6432,9 @@
     },
     {
       "name": "MeSesiones"
+    },
+    {
+      "name": "MeVerificacion"
     },
     {
       "name": "PanelActivacion"
