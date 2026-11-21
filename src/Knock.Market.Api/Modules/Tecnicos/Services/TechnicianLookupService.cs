@@ -29,6 +29,8 @@ internal interface ITechnicianLookupReader
 
     /// <summary>Hasta <paramref name="limit"/> negocios de técnicos visibles cuyo nombre contiene <paramref name="text"/> (sin mayúsculas).</summary>
     Task<IReadOnlyList<BusinessName>> FindBusinessNamesAsync(string text, int limit, CancellationToken cancellationToken);
+
+    Task<TechnicianListPage> FindListAsync(TechnicianListQuery query, CancellationToken cancellationToken);
 }
 
 internal enum CoverageStatus
@@ -147,4 +149,65 @@ internal sealed class TechnicianLookupService(
         var a = (Math.Sin(dLat / 2) * Math.Sin(dLat / 2)) + (Math.Cos(Radians(lat1)) * Math.Cos(Radians(lat2)) * Math.Sin(dLon / 2) * Math.Sin(dLon / 2));
         return 2 * _earthRadiusKm * Math.Asin(Math.Min(1, Math.Sqrt(a)));
     }
+
+    /// <summary>TEC-02 (spec 046, R-04): filtros estructurados, orden y cursor por página. La caché de la réplica dura
+    /// 30 segundos por consulta; su clave no lleva datos de otra persona, y se invalida al escribir (R-07).</summary>
+    public async Task<TechnicianListOutcome> SearchAsync(TechnicianListQuery query, CancellationToken cancellationToken)
+    {
+        var key = CacheKey(query);
+        if (cache.TryGetValue(key, out TechnicianListResponse? cached) && cached is not null)
+        {
+            return new TechnicianListOutcome(TechnicianListStatus.Ok, cached);
+        }
+
+        if (query.Oficio is not null && await catalog.FindActiveTradeAsync(query.Oficio, cancellationToken) is null)
+        {
+            return new TechnicianListOutcome(TechnicianListStatus.OficioInvalid, null);
+        }
+
+        if (query.Colonia is not null && await catalog.FindNeighborhoodAsync(query.Colonia, cancellationToken) is null)
+        {
+            return new TechnicianListOutcome(TechnicianListStatus.ColoniaNotFound, null);
+        }
+
+        if (query.Orden == "distancia" && (query.Lat is null || query.Lng is null))
+        {
+            return new TechnicianListOutcome(TechnicianListStatus.MissingPosition, null);
+        }
+
+        var page = await reader.FindListAsync(query, cancellationToken);
+        var response = new TechnicianListResponse(page.Tecnicos.Select(ToResponse).ToList(), page.NextCursor);
+        cache.Set(key, response, SuggestionsLifetime);
+        lock (_listKeysLock)
+        {
+            _listKeys.Add(key);
+        }
+
+        return new TechnicianListOutcome(TechnicianListStatus.Ok, response);
+    }
+
+    /// <summary>Quita de la caché de esta réplica todas las consultas de lista (llamada por las escrituras del perfil).</summary>
+    public void ForgetListCache()
+    {
+        lock (_listKeysLock)
+        {
+            foreach (var key in _listKeys)
+            {
+                cache.Remove(key);
+            }
+
+            _listKeys.Clear();
+        }
+    }
+
+    private static TechnicianProfileResponse ToResponse(TechnicianProfileRecord record) =>
+        new(record.Id.ToString(), record.Nombre, record.NombreNegocio, record.FotoUrl, record.Verificacion,
+            record.Calificacion is { } rating ? Math.Round(rating, 1, MidpointRounding.AwayFromZero) : null, record.Anios,
+            TechnicianProfileService.Shorten(record.Descripcion), record.Oficios, Detalle: null);
+
+    internal static string CacheKey(TechnicianListQuery query) =>
+        $"tecnicos:lista:{query.Oficio ?? ""}|{query.Colonia ?? ""}|{query.Lat ?? ""}|{query.Lng ?? ""}|{query.RadioKm ?? ""}|{query.DisponibleHoy ?? ""}|{query.SoloVerificados ?? ""}|{query.Orden ?? ""}|{query.Cursor ?? ""}|{query.Limite ?? ""}";
+
+    private readonly HashSet<string> _listKeys = [];
+    private readonly object _listKeysLock = new();
 }

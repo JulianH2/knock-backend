@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-21T01:27:10Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-21T04:51:49Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -25,7 +25,7 @@
 | `Requests` | -, controllers, data, domain, dtos, services, validators | 78 | 161 | 162 |
 | `Safety` | -, controllers, data, domain, dtos, services, validators | 15 | 38 | 33 |
 | `Sesiones` | -, controllers, data, domain, dtos, services, validators | 28 | 50 | 56 |
-| `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 26 | 67 | 68 |
+| `Tecnicos` | -, controllers, data, domain, dtos, services, validators | 27 | 73 | 73 |
 | `Trust` | -, controllers, data, domain, dtos, services, validators | 14 | 40 | 34 |
 | `Usuarios` | -, controllers, data, domain, dtos, services | 16 | 29 | 37 |
 
@@ -1143,7 +1143,7 @@
 - `src/Knock.Market.Api/Modules/Tecnicos/Controllers/TechnicianProblems.cs` — class `TechnicianProblems`
   - `Rule()`:12
 - `src/Knock.Market.Api/Modules/Tecnicos/Controllers/V1/TecnicosController.cs` — class `TecnicosController`
-  - `Register()`:38, `Profile()`:67, `Autocomplete()`:81, `Coverage()`:95
+  - `Register()`:38, `Profile()`:67, `Autocomplete()`:81, `List()`:97, `Coverage()`:118
 - `src/Knock.Market.Api/Modules/Tecnicos/Controllers/V1/TecnicosMeController.cs` — class `TecnicosMeController`
   - `Update()`:32, `Availability()`:54, `Schedule()`:67, `ReplaceSchedule()`:84
 - `src/Knock.Market.Api/Modules/Tecnicos/Controllers/V1/TrabajoController.cs` — class `TrabajoController`
@@ -1152,11 +1152,11 @@
 **data**
 
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TechnicianLookupStore.cs` — class `TechnicianLookupStore`
-  - `FindCoverageAsync()`:19, `ToCoverage()`:28, `FindBusinessNamesAsync()`:45
+  - `FindCoverageAsync()`:22, `ToCoverage()`:31, `FindBusinessNamesAsync()`:48, `FindListAsync()`:64
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TechnicianProfileStore.cs` — class `TechnicianProfileStore`
-  - `ExistsAsync()`:22, `InsertAsync()`:26, `FindByIdAsync()`:46, `ToProfile()`:54, `ToDocument()`:78
+  - `ExistsAsync()`:22, `InsertAsync()`:26, `FindByIdAsync()`:45, `ToProfile()`:53, `ToDocument()`:77
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TechnicianSelfStore.cs` — class `TechnicianSelfStore`
-  - `FindOwnAsync()`:26, `ReadOwnAsync()`:37, `SetAvailableUntilAsync()`:60, `ReadScheduleAsync()`:63, `SetScheduleAsync()`:71, `UpdateAsync()`:82
+  - `FindOwnAsync()`:27, `ReadOwnAsync()`:38, `SetAvailableUntilAsync()`:61, `ReadScheduleAsync()`:68, `SetScheduleAsync()`:76, `UpdateAsync()`:89
 - `src/Knock.Market.Api/Modules/Tecnicos/Data/TrabajoStore.cs` — record `TrabajoVerification`, class `TrabajoStore`
   - `ReadTechnicianAsync()`:14, `ReadUpcomingAsync()`:19, `ReadQuotesAsync()`:29, `CountFinishedAsync()`:35, `ReadRequestsAsync()`:43, `ReadVerificationAsync()`:71
 
@@ -1165,7 +1165,7 @@
 - `src/Knock.Market.Api/Modules/Tecnicos/Domain/ScheduleRules.cs` — class `ScheduleRules`
   - `EndOfCityDayUtc()`:14, `AllClosed()`:23, `TryParseTime()`:25, `IsValid()`:31, `Normalize()`:61
 - `src/Knock.Market.Api/Modules/Tecnicos/Domain/TechnicianRules.cs` — class `TechnicianRules`
-  - `IsVisible()`:30, `IsAvailable()`:33, `IsKnownAttention()`:35, `UsesWorkshop()`:37, `VisitsHomes()`:39
+  - `IsVisible()`:33, `IsAvailable()`:36, `IsKnownAttention()`:38, `UsesWorkshop()`:40, `VisitsHomes()`:42
 - `src/Knock.Market.Api/Modules/Tecnicos/Domain/TrabajoRules.cs` — class `TrabajoRules`
   - `CanShowAddress()`:5, `RejectionReason()`:7, `CompareFinished()`:10
 
@@ -1175,7 +1175,7 @@
   - `AvailabilityBody()`:4, `UpdateTechnicianBody()`:17, `ScheduleBody()`:39
 - `src/Knock.Market.Api/Modules/Tecnicos/Dtos/RegisterTechnicianBody.cs` — record `RegisterTechnicianBody`, record `TechnicianProfileBody`, record `TechnicianResponse`
   - `RegisterTechnicianBody()`:13
-- `src/Knock.Market.Api/Modules/Tecnicos/Dtos/TechnicianLookupDtos.cs` — class `CoverageQuery`, record `CoverageResponse`, class `AutocompleteQuery`, record `Suggestion`, record `AutocompleteResponse`
+- `src/Knock.Market.Api/Modules/Tecnicos/Dtos/TechnicianLookupDtos.cs` — class `CoverageQuery`, record `CoverageResponse`, class `AutocompleteQuery`, record `Suggestion`, record `AutocompleteResponse`, class `TechnicianListQuery`, record `TechnicianListResponse`, record `TechnicianListPage`, enum `TechnicianListStatus`, record `TechnicianListOutcome`
 - `src/Knock.Market.Api/Modules/Tecnicos/Dtos/TechnicianProfileDtos.cs` — class `TechnicianIdRoute`, record `TechnicianProfileResponse`, record `TechnicianProfileDetail`
 - `src/Knock.Market.Api/Modules/Tecnicos/Dtos/TrabajoResponse.cs` — record `TrabajoResponse`, record `TrabajoVerificationResponse`, record `TrabajoClient`, record `TrabajoPlace`, record `TrabajoVisitResponse`, record `TrabajoQuoteResponse`, record `TrabajoFinishedItem`, record `TrabajoFinishedPage`, record `TrabajoSummary`
 
@@ -1184,7 +1184,7 @@
 - `src/Knock.Market.Api/Modules/Tecnicos/Services/MyTechnicianService.cs` — class `TecnicosOptions`, record `OwnTechnician`, interface `ITechnicianSelfStore`, enum `UpdateTechnicianStatus`, record `UpdateTechnicianOutcome`, class `MyTechnicianService`
   - `MyTechnicianService()`:52, `SetAvailabilityAsync()`:61, `GetScheduleAsync()`:76, `SetScheduleAsync()`:88, `UpdateAsync()`:102
 - `src/Knock.Market.Api/Modules/Tecnicos/Services/TechnicianLookupService.cs` — record `TechnicianCoverage`, record `BusinessName`, interface `ITechnicianLookupReader`, enum `CoverageStatus`, record `CoverageOutcome`, class `TechnicianLookupService`
-  - `TechnicianLookupService()`:47, `CoverageAsync()`:61, `AutocompleteAsync()`:104, `Normalize()`:130, `DistanceKm()`:142
+  - `TechnicianLookupService()`:49, `CoverageAsync()`:63, `AutocompleteAsync()`:106, `Normalize()`:132, `DistanceKm()`:144, `SearchAsync()`:155, `ForgetListCache()`:190, `CacheKey()`:208
 - `src/Knock.Market.Api/Modules/Tecnicos/Services/TechnicianProfileService.cs` — record `TechnicianProfileRecord`, interface `ITechnicianProfileReader`, class `TechnicianProfileService`
   - `TechnicianProfileService()`:37, `CacheKey()`:44, `GetAsync()`:46, `Forget()`:73, `IsVisible()`:75, `Shorten()`:78
 - `src/Knock.Market.Api/Modules/Tecnicos/Services/TechnicianRegistrationService.cs` — enum `RegisterTechnicianStatus`, record `RegisterTechnicianOutcome`, record `NewTechnician`, interface `ITechnicianProfileStore`, class `TechnicianRegistrationService`
@@ -1197,6 +1197,7 @@
 - `src/Knock.Market.Api/Modules/Tecnicos/Validators/MyTechnicianValidators.cs` — class `AvailabilityBodyValidator`, class `ScheduleBodyValidator`, class `UpdateTechnicianBodyValidator`
 - `src/Knock.Market.Api/Modules/Tecnicos/Validators/RegisterTechnicianBodyValidator.cs` — class `RegisterTechnicianBodyValidator`
 - `src/Knock.Market.Api/Modules/Tecnicos/Validators/TechnicianIdRouteValidator.cs` — class `TechnicianIdRouteValidator`
+- `src/Knock.Market.Api/Modules/Tecnicos/Validators/TechnicianListQueryValidator.cs` — class `TechnicianListQueryValidator`
 - `src/Knock.Market.Api/Modules/Tecnicos/Validators/TechnicianLookupValidators.cs` — class `CoverageQueryValidator`, class `AutocompleteQueryValidator`
 
 ### Trust

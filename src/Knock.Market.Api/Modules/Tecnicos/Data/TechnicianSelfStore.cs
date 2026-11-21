@@ -15,7 +15,8 @@ namespace Knock.Market.Api.Modules.Tecnicos.Data;
 internal sealed class TechnicianSelfStore(
     [FromKeyedServices(TecnicosModuleExtensions.ModuleKey)] IMongoDatabase database,
     IOptions<KnockMongoOptions> options,
-    TimeProvider clock) : ITechnicianSelfStore
+    TimeProvider clock,
+    TechnicianLookupService lookup) : ITechnicianSelfStore
 {
     private IMongoCollection<BsonDocument> Technicians => database.GetCollection<BsonDocument>(TechnicianProfileStore.CollectionName);
 
@@ -57,8 +58,12 @@ internal sealed class TechnicianSelfStore(
             d.TryGetValue("creadoEn", out var created) && created.IsValidDateTime ? created.ToUniversalTime() : DateTime.MinValue);
     }
 
-    public async Task<ObjectId?> SetAvailableUntilAsync(string sub, DateTime untilUtc, CancellationToken cancellationToken) =>
-        await UpdateOneAsync(sub, Builders<BsonDocument>.Update.Set("disponibleHasta", untilUtc), cancellationToken);
+    public async Task<ObjectId?> SetAvailableUntilAsync(string sub, DateTime untilUtc, CancellationToken cancellationToken)
+    {
+        var id = await UpdateOneAsync(sub, Builders<BsonDocument>.Update.Set("disponibleHasta", untilUtc), cancellationToken);
+        lookup.ForgetListCache();
+        return id;
+    }
 
     public async Task<IReadOnlyList<DayScheduleDto>?> ReadScheduleAsync(string sub, CancellationToken cancellationToken)
     {
@@ -76,7 +81,9 @@ internal sealed class TechnicianSelfStore(
             ["abierto"] = day.Abierto == true,
             ["franjas"] = new BsonArray((day.Franjas ?? []).Select(r => new BsonDocument { ["inicio"] = r.Inicio, ["fin"] = r.Fin })),
         }));
-        return await UpdateOneAsync(sub, Builders<BsonDocument>.Update.Set("horarios", days), cancellationToken);
+        var id = await UpdateOneAsync(sub, Builders<BsonDocument>.Update.Set("horarios", days), cancellationToken);
+        lookup.ForgetListCache();
+        return id;
     }
 
     public async Task UpdateAsync(ObjectId id, IReadOnlyDictionary<string, BsonValue?> changes, CancellationToken cancellationToken)
@@ -85,6 +92,7 @@ internal sealed class TechnicianSelfStore(
             ? Builders<BsonDocument>.Update.Unset(change.Key)
             : Builders<BsonDocument>.Update.Set(change.Key, change.Value)));
         await Technicians.UpdateOneAsync(Builders<BsonDocument>.Filter.Eq("_id", id), update, cancellationToken: cancellationToken);
+        lookup.ForgetListCache();
     }
 
     private async Task<ObjectId?> UpdateOneAsync(string sub, UpdateDefinition<BsonDocument> update, CancellationToken cancellationToken)

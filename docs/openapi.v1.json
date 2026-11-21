@@ -411,6 +411,134 @@
             }
           }
         }
+      },
+      "get": {
+        "tags": [
+          "Tecnicos"
+        ],
+        "summary": "Busca técnicos por filtros, orden y cursor (TEC-02, spec 046, R-04): solo técnicos `activo` y visibles; es pública y la\nrespuesta no se cachea (ninguna clave lleva datos de otra persona). `radioKm` es 3, 5, 8 o 12; por defecto devuelve 20 técnicos\n(máx. 50) y el cursor de la página siguiente; un cursor mal formado o `limite` fuera de rango responde 422.",
+        "parameters": [
+          {
+            "name": "oficio",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "colonia",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "radioKm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "disponibleHoy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "soloVerificados",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orden",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianListResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianListResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicianListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v{version}/tecnicos/{id}": {
@@ -5310,6 +5438,28 @@
           }
         },
         "description": "Una sugerencia de TEC-03: `tipo` es `oficio` (con su `clave`) o `negocio` (con el `id` del técnico). Los servicios con precio\n(spec 047) se suman cuando exista su colección."
+      },
+      "TechnicianListResponse": {
+        "required": [
+          "tecnicos",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "tecnicos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechnicianProfileResponse"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Respuesta de TEC-02: técnicos visibles para la página y el cursor de la siguiente (nula si no hay más)."
       },
       "TechnicianProfileBody": {
         "required": [

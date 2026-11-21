@@ -84,6 +84,29 @@ internal sealed class TecnicosController(TechnicianRegistrationService registrat
         return Ok(await lookup.AutocompleteAsync(query.Q!, cancellationToken));
     }
 
+    /// <summary>
+    /// Busca técnicos por filtros, orden y cursor (TEC-02, spec 046, R-04): solo técnicos <c>activo</c> y visibles; es pública y la
+    /// respuesta no se cachea (ninguna clave lleva datos de otra persona). <c>radioKm</c> es 3, 5, 8 o 12; por defecto devuelve 20 técnicos
+    /// (máx. 50) y el cursor de la página siguiente; un cursor mal formado o <c>limite</c> fuera de rango responde 422.
+    /// </summary>
+    [HttpGet]
+    [AllowAnonymous]
+    [ProducesResponseType<TechnicianListResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity, _problemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests, _problemJson)]
+    public async Task<IActionResult> List([FromQuery] TechnicianListQuery query, CancellationToken cancellationToken)
+    {
+        var outcome = await lookup.SearchAsync(query, cancellationToken);
+        return outcome.Status switch
+        {
+            TechnicianListStatus.Ok => Ok(outcome.Response),
+            TechnicianListStatus.OficioInvalid => Rule(StatusCodes.Status422UnprocessableEntity, ErrorCodes.TradeInvalidCode, "oficio"),
+            TechnicianListStatus.ColoniaNotFound => Rule(StatusCodes.Status422UnprocessableEntity, ErrorCodes.ColoniaNotFoundCode, "colonia"),
+            TechnicianListStatus.MissingPosition => Rule(StatusCodes.Status422UnprocessableEntity, TechnicianRules.MissingPositionCode, "lat"),
+            _ => Rule(StatusCodes.Status422UnprocessableEntity, TechnicianRules.MissingPositionCode, "lat"),
+        };
+    }
+
     /// <summary>Dice si el técnico atiende la colonia de la persona (TEC-06). 404 si el técnico no existe o está oculto; 422 si la colonia no está en el catálogo.</summary>
     [HttpGet("{id}/llega-a-mi-colonia")]
     [Authorize]

@@ -1,10 +1,13 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Knock.Market.Api.Hosting;
 using Knock.Market.Api.Modules.Tecnicos.Domain;
+using Knock.Market.Api.Modules.Tecnicos.Dtos;
 using Knock.Market.Api.Modules.Tecnicos.Services;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.GeoJsonObjectModel;
 
 namespace Knock.Market.Api.Modules.Tecnicos.Data;
 
@@ -54,5 +57,53 @@ internal sealed class TechnicianLookupStore(
             .Project(Builders<BsonDocument>.Projection.Include("nombreNegocio")).Sort(Builders<BsonDocument>.Sort.Ascending("nombreNegocio"))
             .Limit(limit).ToListAsync(cancellationToken);
         return [.. documents.Where(d => d["nombreNegocio"].IsString).Select(d => new BusinessName(d["_id"].AsObjectId.ToString(), d["nombreNegocio"].AsString))];
+    }
+
+    /// <summary>TEC-02 (spec 046, R-04): técnicos visibles con filtros estructurados (oficio, colonia, distancia), «disponibleHoy» y «solo verificados».
+    /// El cursor es el <c>_id</c> del último ítem de la página, con <c>limite</c> de 20 por defecto y 50 como máximo.</summary>
+    public async Task<TechnicianListPage> FindListAsync(TechnicianListQuery query, CancellationToken cancellationToken)
+    {
+        var find = Technicians.Find(BuildFilter(query, clock.GetUtcNow().UtcDateTime), new FindOptions { MaxTime = options.Value.QueryMaxTime });
+        if (query.Orden != "distancia")
+        {
+            find = find.Sort(Builders<BsonDocument>.Sort.Combine(
+                Builders<BsonDocument>.Sort.Descending("calificacion"),
+                Builders<BsonDocument>.Sort.Descending("_id")));
+        }
+
+        var limit = int.TryParse(query.Limite, NumberStyles.Integer, CultureInfo.InvariantCulture, out var requested) && requested is >= 1 and <= TechnicianListQuery.MaxLimit
+            ? requested : TechnicianListQuery.DefaultLimit;
+        var projection = Builders<BsonDocument>.Projection.Combine(TechnicianProfileStore.ProfileFields.Select(f => Builders<BsonDocument>.Projection.Include(f)));
+        var documents = await find.Project(projection).Limit(limit + 1).ToListAsync(cancellationToken);
+        var page = documents.Take(limit).Select(TechnicianProfileStore.ToProfile).ToList();
+        return new TechnicianListPage(page, documents.Count > limit ? page[^1].Id.ToString() : null);
+    }
+
+    private static FilterDefinition<BsonDocument> BuildFilter(TechnicianListQuery query, DateTime now)
+    {
+        var filters = Builders<BsonDocument>.Filter;
+        var condition = filters.Eq("estado", TechnicianRules.ActiveState)
+            & filters.Eq("oculto", false)
+            & (filters.Exists("ocultoHasta", false) | filters.Lte("ocultoHasta", now));
+        if (query.Oficio is not null) condition &= filters.AnyIn("oficios", [query.Oficio]);
+        if (query.Colonia is not null) condition &= filters.Eq("coloniaBaseId", query.Colonia);
+        if (bool.TryParse(query.DisponibleHoy, out var disponible) && disponible) condition &= filters.Gt("disponibleHasta", now);
+        if (bool.TryParse(query.SoloVerificados, out var verificados) && verificados) condition &= filters.Ne("nivelVerificacion", TechnicianRules.NoVerification);
+        if (query.Cursor is not null) condition &= filters.Gt("_id", ObjectId.Parse(query.Cursor));
+        var position = PositionFilter(filters, query);
+        return position is null ? condition : condition & position;
+    }
+
+    private static FilterDefinition<BsonDocument>? PositionFilter(FilterDefinitionBuilder<BsonDocument> filters, TechnicianListQuery query)
+    {
+        if (query.Lat is null || query.Lng is null)
+        {
+            return null;
+        }
+
+        var point = GeoJson.Point(GeoJson.Geographic(double.Parse(query.Lng, CultureInfo.InvariantCulture), double.Parse(query.Lat, CultureInfo.InvariantCulture)));
+        return query.RadioKm is not null && int.TryParse(query.RadioKm, out var radius)
+            ? filters.NearSphere("ubicacionBase", point, radius * 1000.0)
+            : filters.NearSphere("ubicacionBase", point);
     }
 }

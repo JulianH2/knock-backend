@@ -19,6 +19,9 @@ internal static class TechnicianRules
     /// <summary>404 de TEC-05, TEC-06 y TEC-07: el técnico no existe o está oculto (spec 046, §5).</summary>
     public const string TechnicianNotFoundCode = "technician_not_found";
 
+    /// <summary>422 de TEC-02 (spec 046, R-05): <c>lat</c> y <c>lng</c> son obligatorios cuando <c>orden</c> es <c>distancia</c>.</summary>
+    public const string MissingPositionCode = "missing_position";
+
     /// <summary>
     /// Tope técnico de claves en el cuerpo para acotar la entrada; la regla de negocio no tiene máximo (D-07) y el catálogo es más corto que esto.
     /// </summary>

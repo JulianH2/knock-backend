@@ -136,6 +136,9 @@ public sealed class Spec046BusquedaTests : IDisposable
             BusinessCalls++;
             return Task.FromResult<IReadOnlyList<BusinessName>>([.. Businesses.Take(limit)]);
         }
+
+        public Task<TechnicianListPage> FindListAsync(TechnicianListQuery query, CancellationToken cancellationToken) =>
+            Task.FromResult(new TechnicianListPage([], null));
     }
 
     private sealed class FakeCenters : INeighborhoodCenterCatalog
