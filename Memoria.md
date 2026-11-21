@@ -1,5 +1,9 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — Spec 043 T-01: prueba de scripts de BD (Alexis)
+- **Avance:** `Spec043SafetyScriptTests` prepara una base aislada y comprueba los índices de ambos scripts 043, el rechazo de un bloqueo duplicado y la conservación de índices y documentos al reaplicarlos. Se reutilizan `MongoToolsContainer` y `MongoIndexes`; no se cambiaron los scripts ni se agregaron dependencias. La §6 no exige TTL.
+- **Verificación tras restaurar paquetes:** build Release con advertencias como errores, prueba de BD 043 (1/1), ArchitectureTest (25/25) y `dotnet format --verify-no-changes` pasaron. UnitTest: 1909/1912; fallaron las mediciones de tiempo del filtro de la spec 024 y de dos casos del redactor de la spec 011. Una corrida anterior tuvo 1911/1912, con fallo de la misma prueba 024. No se modificaron sus umbrales.
+- **Límite:** CA-37 se comprueba aquí solo para la unicidad en base de bloqueos, no para el flujo HTTP ni la deduplicación de reportes. CI y revisión humana pendientes.
 ## 2026-11-20 — KNOCK-67: continuación tras restaurar paquetes
 - **Estado:** T-04 y T-05 hechas por Alexis: las nueve pruebas de integración filtradas `Spec036` pasan, incluidas 25 terminadas ordenadas en dos páginas, cursor inválido, aislamiento entre técnicos y respuesta 503 sin secciones con base inaccesible. Las nueve pruebas de base `Spec036` también pasan. La implementación base ya contenía el cursor y el mapeo: las pruebas nuevas pasaron sin cambio de código y no hubo fase roja funcional.
 - **Contrato:** tras compilar, la exportación solicitada pasó y conservó la ruta `/api/v{version}/tecnicos/me/trabajo` sin diff; las matrices documentan ruta y límite. T-07 sigue parcial: `oasdiff` no está instalado y `contracts/openapi.v1.json` no existe en este repositorio.
