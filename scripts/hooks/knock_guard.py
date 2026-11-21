@@ -305,8 +305,8 @@ def stop_checks() -> list[str]:
         return []
     problems = []
     code = [f for f in files if matches(f, CODE_DIRS) or re.search(r"\.(cs|dart|ts|sql)$", f)]
-    if code and "Memoria.md" not in files:
-        problems.append("Cambiaste código pero no actualizaste `Memoria.md` (estado, decisiones con porqué, errores a evitar).")
+    if code and "Memoria.md" not in files and not any(re.fullmatch(r"docs/memoria/(?!README\.md$|INDEX\.md$)[^/]+\.md", f) for f in files):
+        problems.append("Cambiaste código pero no actualizaste la memoria del proyecto: un archivo propio `docs/memoria/AAAA-MM-DD-KNOCK-N.md` (o `Memoria.md` para el historial) con estado, decisiones con porqué y errores a evitar.")
     py = sys.executable
     for name, cmd in (("sdd_lint", [py, "scripts/sdd_lint.py"]), ("sync de agentes", [py, "scripts/sync_agents.py", "--check"]),
                       ("excepciones de seguridad", [py, "scripts/ci/check_exceptions.py"])):
