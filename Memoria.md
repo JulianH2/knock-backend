@@ -1,5 +1,7 @@
 # Memoria — knock-backend
 
+> **Desde 2026-11-21** cada PR registra su entrada en un archivo propio, `docs/memoria/AAAA-MM-DD-KNOCK-N[-slug].md` (formato en `docs/memoria/README.md`; constitución 1.2.1), para que dos PR no choquen en este archivo. Este archivo conserva el historial hasta esa fecha; `python scripts/memoria.py --index` genera el índice de todo lo posterior.
+
 ## 2026-11-20 — Spec 055, etapa 1: biblioteca técnica compartida `Knock.Hosting` (KNOCK-251)
 - **Qué se movió:** nuevo `src/Knock.Hosting` (net11.0; solo `OpenTelemetry.Extensions.Hosting` 1.21.0 y `Serilog.AspNetCore` 10.0.0, las mismas versiones de los servicios). Tiene `ForwardedHeaders/ForwardedHeadersExtensions` y `Logging/TelemetryRedactor` (con `CoordinatePairs`, los dos procesadores y `RedactingJsonFormatter`). Se borraron las 7 copias de los servicios y `AddKnockGatewayForwardedHeaders` de `CorsExtensions`; el gateway ahora llama a `AddKnockForwardedHeaders`.
 - **Sin cambio de comportamiento:** las copias eran idénticas salvo el espacio de nombres (comparadas antes de mover). Solo cambió la visibilidad: es pública solo la API que usan los servicios (`ExceptionEvent`, los procesadores y el formateador); `Redact`, `RedactUrl` y demás quedan `internal`, visibles para las pruebas (R-06). El enum `ForwardedHeaders` de ASP.NET se usa con el alias `ForwardedHeaderFlags`, porque choca con el espacio de nombres `Knock.Hosting.ForwardedHeaders`.

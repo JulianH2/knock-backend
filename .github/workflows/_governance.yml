@@ -47,19 +47,28 @@ jobs:
         run: python scripts/ci/test_version.py
       - name: Arquitectura y código duplicado (mapa de código)
         run: python scripts/codemap.py --check
-      - name: Mapa de código actualizado en el commit
-        run: git diff --quiet -- docs/architecture/CODEMAP.md || { echo "::error::docs/architecture/CODEMAP.md no está al día. Corre python scripts/codemap.py y súbelo."; exit 1; }
+      - name: Entradas de memoria por tarea (docs/memoria)
+        run: python scripts/memoria.py --check
+      - name: Pruebas del índice de memoria por tarea (KNOCK-189)
+        if: hashFiles('scripts/test_memoria.py') != ''
+        run: python scripts/test_memoria.py
       - name: Duplicación textual (jscpd)
         run: npx --yes jscpd@4 --config .jscpd.json .
       - name: Lint de workflows (actionlint)
         run: |
           pip install --quiet actionlint-py
           actionlint -color
+      - name: Generar mapa de código e índice de memoria para el artefacto (no se versionan)
+        if: always()
+        run: |
+          python scripts/codemap.py
+          python scripts/memoria.py --index
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: always()
         with:
           name: arquitectura
           path: |
             docs/architecture/
+            docs/memoria/INDEX.md
             reports/jscpd/
           if-no-files-found: ignore
