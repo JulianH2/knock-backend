@@ -1224,6 +1224,12 @@
 - **Qué cambió:** `specs/README.md` agrega la fila 059 (Suspensión preventiva en casos críticos, Borrador), que el PR #182 había dejado fuera.
 - **Por qué:** el índice debe listar toda spec del repositorio; una persona o una herramienta que lea primero el índice no veía la 059.
 - **A evitar:** agregar una carpeta de spec sin su fila en el índice en el mismo cambio.
+
+## 2026-11-20 · KNOCK-162 · Spec 056: dudas D-01 a D-04 redactadas como decisiones sí/no
+- **Qué cambió:** en `specs/056-autenticacion-entre-servicios/spec.md` §8, las cuatro dudas que quedaban (D-01 a D-04) pasan a decisiones sí/no con contexto, opciones y recomendación; `plan.md` y `task.md` apuntan a ellas. Solo documentación.
+- **Por qué:** el Tech Lead respondió P-01 a P-08 y las dos correcciones (PR #180); lo que faltaba era formularlo de modo que se pueda contestar con un sí o un no.
+- **Decisiones (con porqué):** la recomendación del autor queda marcada, pero no se aplica como decidida hasta que el Tech Lead conteste; no se inventó ningún bloqueo (ninguna impide aprobar la spec, D-01 y D-02 solo anteceden a T-07).
+- **A evitar:** dejar una duda abierta sin opciones ni recomendación.
 ## 2026-11-20 · KNOCK-111 · Spec 045, T-01: índices de oficios y colección de oficios pedidos
 - **Qué cambió:** `db/045-catalogos-y-lista-de-espera.js` crea `oficios_pedidos` con los índices `textoNormalizado_1` y único `usuarioId_1_textoNormalizado_1`, y agrega `activo_1_clave_1` a `oficios`; es idempotente. Prueba: `Spec045CatalogScriptTests` (CA-041 por el índice único, R-21).
 - **Por qué:** es la base de OFP-01, OFP-02 y del catálogo; el índice único evita el duplicado de un mismo técnico sin `Idempotency-Key` (R-26).
