@@ -1,6 +1,9 @@
 using System.Net;
 using AwesomeAssertions;
 using Knock.IntegrationTest.Requests;
+using Knock.IntegrationTest.Support;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -139,15 +142,17 @@ public sealed class Spec046RegistroHttpTests
     [Fact]
     public async Task Dos_Registros_A_La_Vez_Dejan_Un_Solo_Perfil_CA_046_69()
     {
-        await using var host = await Spec020Host.StartAsync();
+        using var logs = new CapturingLoggerProvider();
+        await using var host = await Spec020Host.StartAsync(configure: services => services.AddLogging(logging => logging.AddProvider(logs)));
         await UniqueIndexAsync(host);
         var sub = Guid.NewGuid().ToString("D");
 
         var responses = await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => host.SendAsync(HttpMethod.Post, _route, sub, Body(host))));
 
         var statuses = string.Join(", ", responses.Select(r => (int)r.StatusCode));
-        responses.Count(r => r.StatusCode == HttpStatusCode.Created).Should().Be(1, statuses);
-        responses.Count(r => r.StatusCode == HttpStatusCode.Conflict).Should().Be(3, statuses);
+        var diagnostics = $"{statuses}; errores registrados por el servidor: {logs.Errors()}";
+        responses.Count(r => r.StatusCode == HttpStatusCode.Created).Should().Be(1, "{0}", diagnostics);
+        responses.Count(r => r.StatusCode == HttpStatusCode.Conflict).Should().Be(3, "{0}", diagnostics);
         (await Technicians(host).CountDocumentsAsync(Builders<BsonDocument>.Filter.Eq("usuarioId", sub))).Should().Be(1);
         foreach (var response in responses) response.Dispose();
     }
