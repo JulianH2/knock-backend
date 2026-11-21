@@ -1,5 +1,5 @@
 ---
-version: 1.2.0
+version: 1.2.1
 status: borrador
 methodology: SDD (Spec Driven Development)
 applies_to: knock-backend
@@ -45,7 +45,7 @@ applies_to: knock-backend
 | Pruebas | xUnit, Testcontainers y NetArchTest |
 | Integración y entrega continua | GitHub Actions |
 
-No se agregan dependencias sin evaluar necesidad, licencia, mantenimiento y vulnerabilidades, y se registran en `Memoria.md`.
+No se agregan dependencias sin evaluar necesidad, licencia, mantenimiento y vulnerabilidades, y se registran en la memoria del proyecto (`Memoria.md` y `docs/memoria/`).
 
 ## 4. Arquitectura
 - **Microservicios con una puerta de entrada.** Tres servicios pequeños —Identidad y confianza, Mensajería y notificaciones y Mercado— y un gateway que recibe todo el tráfico, valida el token, limita las peticiones y reparte la petición al servicio correcto. Los servicios internos no tienen dirección pública.
@@ -100,7 +100,7 @@ specs/                        spec.md, plan.md y task.md de cada cambio
 ## 8. Pruebas y calidad
 - Tipos de prueba posibles: unitarias, integración, arquitectura, seguridad negativa, contrato, accesibilidad y de aceptación; cada spec declara cuáles aplican y por qué.
 - Cobertura mínima definida en la spec de calidad; los umbrales no se bajan para que el CI pase.
-- Un cambio está terminado cuando cumple sus criterios, sus pruebas pasan, el CI está en verde, un par lo revisó y `Memoria.md` está al día.
+- Un cambio está terminado cuando cumple sus criterios, sus pruebas pasan, el CI está en verde, un par lo revisó y la memoria del proyecto (`Memoria.md` y `docs/memoria/`) está al día.
 
 ## 9. Flujo de trabajo
 - Ramas: `main` (listo para publicar) ← `develop` (integración) ← `<tipo>/<descripcion-en-ingles>` (una por cambio).
@@ -111,10 +111,10 @@ specs/                        spec.md, plan.md y task.md de cada cambio
 - La plantilla de PR tiene las secciones Descripción, Pruebas, Seguridad, Riesgos y «Uso de IA».
 
 ## 10. Agentes de IA
-- Los agentes leen `AGENTS.md`, esta constitución y `Memoria.md` antes de actuar.
+- Los agentes leen `AGENTS.md`, esta constitución y la memoria del proyecto (`Memoria.md` y `docs/memoria/`) antes de actuar.
 - Un agente nunca aprueba una spec, nunca fusiona y nunca opera sobre producción.
 - Prohibido: omitir pruebas, desactivar reglas o escáneres, exponer secretos, afirmar ejecuciones que no se hicieron y agregar dependencias sin evaluar.
 
 ## 11. Gobernanza
 - Estados de una spec: **Borrador** (la escribe un agente o una persona) → **Aprobada** (una persona; habilita el código) → **Implementada** (tras el merge).
-- Cambios a esta constitución: pull request con la aprobación de al menos dos integrantes, `version` incrementada y registro en `Memoria.md`.
+- Cambios a esta constitución: pull request con la aprobación de al menos dos integrantes, `version` incrementada y registro en la memoria del proyecto (`Memoria.md` y `docs/memoria/`).
