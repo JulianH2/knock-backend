@@ -7,9 +7,11 @@ FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 WORKDIR /src
 COPY global.json Directory.Build.props .editorconfig ./
 COPY src/Knock.Contracts/Knock.Contracts.csproj src/Knock.Contracts/packages.lock.json src/Knock.Contracts/
+COPY src/Knock.Hosting/Knock.Hosting.csproj src/Knock.Hosting/packages.lock.json src/Knock.Hosting/
 COPY src/Knock.Gateway/Knock.Gateway.csproj src/Knock.Gateway/packages.lock.json src/Knock.Gateway/
 RUN dotnet restore src/Knock.Gateway/Knock.Gateway.csproj --locked-mode
 COPY src/Knock.Contracts/ src/Knock.Contracts/
+COPY src/Knock.Hosting/ src/Knock.Hosting/
 COPY src/Knock.Gateway/ src/Knock.Gateway/
 RUN dotnet publish src/Knock.Gateway/Knock.Gateway.csproj -c Release --no-restore -o /app/publish /p:UseAppHost=false
 

@@ -7,9 +7,11 @@ FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 WORKDIR /src
 COPY global.json Directory.Build.props .editorconfig ./
 COPY src/Knock.Contracts/Knock.Contracts.csproj src/Knock.Contracts/packages.lock.json src/Knock.Contracts/
+COPY src/Knock.Hosting/Knock.Hosting.csproj src/Knock.Hosting/packages.lock.json src/Knock.Hosting/
 COPY src/Knock.Market.Api/Knock.Market.Api.csproj src/Knock.Market.Api/packages.lock.json src/Knock.Market.Api/
 RUN dotnet restore src/Knock.Market.Api/Knock.Market.Api.csproj --locked-mode
 COPY src/Knock.Contracts/ src/Knock.Contracts/
+COPY src/Knock.Hosting/ src/Knock.Hosting/
 COPY src/Knock.Market.Api/ src/Knock.Market.Api/
 COPY db/seeds/demo/market/tecnicos.json db/seeds/demo/market/solicitudes.json db/seeds/demo/market/cotizaciones.json db/seeds/demo/market/
 RUN dotnet publish src/Knock.Market.Api/Knock.Market.Api.csproj -c Release --no-restore -o /app/publish /p:UseAppHost=false

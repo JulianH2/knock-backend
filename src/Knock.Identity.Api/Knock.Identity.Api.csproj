@@ -31,6 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Knock.Contracts\Knock.Contracts.csproj" />
+    <ProjectReference Include="..\Knock.Hosting\Knock.Hosting.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\db\seeds\demo\identity\usuarios.json" Link="db\seeds\demo\identity\usuarios.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
