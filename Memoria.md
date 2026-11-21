@@ -1,5 +1,15 @@
 # Memoria — knock-backend
 
+## 2026-11-20 — Spec 025, verificación sin fotos (KNOCK-79 y KNOCK-80)
+- **Decisión:** primera entrega de la verificación de identidad sin fotos ni cifrado, por orden de prioridad del Tech Lead. Incluye `POST` y `GET /api/v1/me/verificacion` en el módulo nuevo `Trust` de Identity, el script `db/025-verificaciones.js` y las pruebas.
+- **Porqué:** desbloquea el panel. T-03 (HMAC de la CURP y cifrado, con una llave nueva de Key Vault), T-04 (enlaces de subida, falta la cuenta de almacenamiento privada) y T-06 (vencimiento, depende del ejecutor de tareas) quedan fuera.
+- **Sin T-03:** la CURP solo se valida y se descarta; no se guarda de ninguna forma y `curpVigente` queda en falso. La detección de CURP duplicada (CA-07 y CA-20) llega con T-03.
+- **Consentimiento:** uno por verificación en `consentimientos`, con el `dispositivoId` de la sesión del `sid` (no del cuerpo). Un `versionAviso` distinto del vigente (`Verificacion:AvisoVersion`) responde `consent_required`.
+- **Catálogo de motivos:** la spec pide un catálogo del servidor y no lo da. Se definió uno mínimo en `VerificationReasons` (`foto_ilegible`, `datos_no_coinciden`, `selfie_no_coincide`, `documento_no_valido`, `fotos_borradas`), con uno o dos consejos por motivo; el panel (HU-067) puede ajustarlo.
+- **Una captura viva:** crear otra deja la anterior en `sin_verificar` con motivo `captura_reemplazada`.
+- **`deletion_scheduled`** pasó a `CommonErrorCodes.DeletionScheduled` (un código por servicio, spec 002).
+- **A evitar:** marcar `curpVigente: true` sin `curpHmac`: el índice único parcial trata los ausentes como iguales y choca.
+
 ## 2026-11-20 — KNOCK-53: auditoría de la exploración sin cuenta (HU-005)
 - **Estado:** el backend ya cubre lo público: `GET /api/v1/oficios`, `GET /api/v1/tecnicos/autocompletar` y `GET /api/v1/tecnicos/{id}` son anónimos en el gateway y en Mercado, con caché y sin datos privados. Se agregaron pruebas TC-HU-005-01, -02, -04 y -05 y una nota en `docs/rate-limit-matrix.md`; no hay código de producción nuevo.
 - **Pendiente de decisión:** CA4 pide 429 tras 60 peticiones por minuto por IP y el límite global vigente es 100. Búsqueda y zonas siguen con sesión (specs 027 y 023). `GET /api/v1/explorar` (spec 046, T-14) no existe todavía. «Continuar donde me quedé» (CA3) es de la app: el backend no guarda acción pendiente.
