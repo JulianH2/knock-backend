@@ -1,9 +1,13 @@
 using System.Net;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using ForwardedHeaderFlags = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders;
 
-namespace Knock.Market.Api.Hosting;
+namespace Knock.Hosting.ForwardedHeaders;
 
-internal static class ForwardedHeadersExtensions
+public static class ForwardedHeadersExtensions
 {
     public const string SectionName = "ForwardedHeaders";
 
@@ -38,8 +42,8 @@ internal static class ForwardedHeadersExtensions
             // Con proxies de confianza también se lee X-Forwarded-Proto (sin él `IsHttps` sería siempre falso detrás del ingress y HSTS no
             // saldría nunca); X-Forwarded-Host no se procesa.
             options.ForwardedHeaders = options.KnownProxies.Count > 0 || options.KnownIPNetworks.Count > 0
-                ? ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-                : ForwardedHeaders.None;
+                ? ForwardedHeaderFlags.XForwardedFor | ForwardedHeaderFlags.XForwardedProto
+                : ForwardedHeaderFlags.None;
         });
         return services;
     }

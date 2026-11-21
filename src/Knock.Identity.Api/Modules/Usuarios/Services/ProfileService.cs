@@ -18,7 +18,7 @@ internal sealed partial class ProfileService(
 {
     public const string ColoniaNotFoundCode = "colonia_not_found";
     public const string MarketUnavailableCode = CommonErrorCodes.MarketUnavailable;
-    public const string DeletionScheduledCode = "deletion_scheduled";
+    public const string DeletionScheduledCode = CommonErrorCodes.DeletionScheduled;
 
     public async Task<UserProfile> GetAsync(string sub, CancellationToken cancellationToken)
     {
