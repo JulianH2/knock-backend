@@ -61,3 +61,11 @@ crash.log
 *.auto.tfvars
 override.tf
 override.tf.json
+
+# Mapa de código e índice de memoria: se generan (python scripts/codemap.py, python scripts/memoria.py --index) y no se versionan (KNOCK-189).
+# clones-baseline.json sí se versiona.
+docs/architecture/CODEMAP.md
+docs/architecture/codemap.json
+docs/architecture/graph.html
+docs/architecture/modules.mmd
+docs/memoria/INDEX.md

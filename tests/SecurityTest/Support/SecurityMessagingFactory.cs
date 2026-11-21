@@ -1,12 +1,17 @@
 extern alias MessagingApi;
-
 using System.Reflection;
+using Asp.Versioning;
+using FluentValidation;
 using Knock.IntegrationTest.Support;
+using MessagingApi::Knock.Messaging.Api.Hosting;
+using MessagingApi::Knock.Messaging.Api.Modules.Conversaciones.Domain;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
@@ -15,11 +20,56 @@ namespace Knock.SecurityTest.Support;
 
 /// <summary>Ruta protegida de mentira: Mensajería todavía no tiene endpoints de negocio, y la política por defecto «exigir sesión» solo se ve en uno.</summary>
 [ApiController]
+[ApiVersionNeutral]
 [Route("sonda/protegida")]
 internal sealed class ProtectedProbeController : ControllerBase
 {
     [HttpGet]
     public IActionResult Get() => Ok(new { sub = User.FindFirst("sub")?.Value });
+}
+
+/// <summary>Cuerpo de la sonda de validación (spec 030, T-04: la infraestructura de controllers de Mensajería).</summary>
+internal sealed record ProbeBody(string? Texto);
+
+/// <summary>Validador de la sonda: el segundo mensaje repite el valor enviado a propósito, para comprobar que el filtro nunca lo devuelve.</summary>
+internal sealed class ProbeBodyValidator : AbstractValidator<ProbeBody>
+{
+    public ProbeBodyValidator()
+    {
+        RuleFor(x => x.Texto).NotEmpty().WithMessage("Texto is required.");
+        RuleFor(x => x.Texto).MaximumLength(10).WithMessage("'{PropertyValue}' is too long.");
+    }
+}
+
+/// <summary>
+/// Sonda de la infraestructura de controllers de Mensajería: versión en la ruta, filtro de validación (422), <c>DomainException</c> con su <c>code</c>, <c>[PrivateNoStore]</c> y la
+/// política de límite por <c>sub</c>. Mensajería aún no tiene endpoints de negocio (llegan con T-05 a T-07).
+/// </summary>
+[ApiController]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/sonda/infra")]
+internal sealed class InfraProbeController : ControllerBase
+{
+    [HttpPost("validar")]
+    public IActionResult Validate(ProbeBody body) => Ok(new { recibido = body.Texto?.Length });
+
+    [HttpGet("dominio/{kind}")]
+    public IActionResult Domain(string kind) =>
+        throw new DomainException(Enum.Parse<DomainErrorKind>(kind), $"detalle interno con datos de la persona en {Request.Path}", "probe_code");
+
+    [HttpGet("explota")]
+    public IActionResult Explode() => throw new InvalidOperationException($"detalle interno que no debe salir en {Request.Path}");
+
+    [HttpGet("privado")]
+    [PrivateNoStore]
+    public IActionResult Private() => Ok();
+
+    [HttpGet("publico")]
+    public IActionResult Public() => Ok(new ProbeBody("ok"));
+
+    [HttpPost("crear")]
+    [EnableRateLimiting(RateLimitingExtensions.CreateConversationPolicy)]
+    public IActionResult Create() => StatusCode(StatusCodes.Status201Created);
 }
 
 /// <summary>MVC solo descubre controllers públicos; el de prueba es interno, así que se agrega al descubrimiento a mano.</summary>
@@ -30,6 +80,7 @@ internal sealed class ProtectedProbeFeatureProvider : IApplicationFeatureProvide
         ArgumentNullException.ThrowIfNull(feature);
         // MVC lo instancia por reflexión; crearlo aquí también evita el aviso CA1812 de «clase interna nunca instanciada».
         feature.Controllers.Add(new ProtectedProbeController().GetType().GetTypeInfo());
+        feature.Controllers.Add(new InfraProbeController().GetType().GetTypeInfo());
     }
 }
 
@@ -89,6 +140,7 @@ internal sealed class SecurityMessagingFactory(IReadOnlyDictionary<string, strin
         builder.ConfigureServices(services =>
         {
             services.AddSingleton<IStartupFilter>(new RemoteIpStartupFilter());
+            services.AddSingleton<IValidator<ProbeBody>>(new ProbeBodyValidator());
             services.AddControllers().ConfigureApplicationPartManager(manager => manager.FeatureProviders.Add(new ProtectedProbeFeatureProvider()));
         });
     }

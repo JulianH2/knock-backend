@@ -2,17 +2,18 @@
 """Mapa de código de Knock: índice de símbolos, grafo de dependencias,
 duplicados y violaciones de arquitectura. Sin dependencias externas.
 
-Lee C# (backend/) y Dart (app/, packages/) y genera en docs/architecture/:
+Lee C# (backend/) y Dart (app/, packages/) y genera en docs/architecture/ (archivos generados:
+no se versionan; el CI los reconstruye y los publica como artefacto, y quien los necesita corre este script):
   codemap.json   índice completo (lo consultan agentes y scripts)
   CODEMAP.md     índice legible: módulo → capa → archivo → símbolos
   modules.mmd    grafo Mermaid de dependencias entre módulos
   graph.html     grafo interactivo de clases y módulos (abrir en el navegador)
 
 Uso:
-  python scripts/codemap.py                      # regenera lo que cambió (no reescribe si solo cambian fecha o ruta)
+  python scripts/codemap.py                      # regenera los 4 archivos que cambiaron (no reescribe si solo cambian fecha o ruta)
   python scripts/codemap.py --query "enmascarar telefono"   # ¿ya existe algo así?
   python scripts/codemap.py --similar PhoneMasker MaskPhone # nombres parecidos
-  python scripts/codemap.py --check              # CI: NO escribe; falla por violaciones, clones nuevos o mapa desactualizado
+  python scripts/codemap.py --check              # CI: NO escribe; falla por violaciones o clones nuevos (los generados no se comparan: no se versionan)
   python scripts/codemap.py --root ../otro-repo --out /tmp/mapa   # otro proyecto
 """
 from __future__ import annotations
@@ -554,7 +555,7 @@ def write_outputs(data: dict, out: Path) -> None:
 
 
 def stale_outputs(fresh: Path, out: Path) -> list[str]:
-    """Archivos de `out` ausentes o distintos de los recién generados (sin contar fecha ni ruta)."""
+    """Archivos de `out` ausentes o distintos de los recién generados (sin contar fecha ni ruta). Solo decide qué reescribir; --check ya no lo usa."""
     stale = []
     for name in OUTPUT_FILES:
         current = out / name
@@ -571,7 +572,7 @@ def main() -> int:
     parser.add_argument("--out", type=Path, default=None)
     parser.add_argument("--query", metavar="TEXTO")
     parser.add_argument("--similar", nargs="+", metavar="NOMBRE")
-    parser.add_argument("--check", action="store_true", help="no escribe; falla si hay violaciones, clones fuera de la línea base o el mapa está desactualizado")
+    parser.add_argument("--check", action="store_true", help="no escribe; falla si hay violaciones o clones fuera de la línea base (los archivos generados no se versionan y no se comparan)")
     parser.add_argument("--update-baseline", action="store_true")
     args = parser.parse_args()
     root = args.root.resolve()
@@ -611,15 +612,10 @@ def main() -> int:
             print(f"VIOLACIÓN {v['rule']}: {v['file']} — {v['detail']}")
         for c in new_clones:
             print("DUPLICADO: " + " · ".join(c["places"]))
-        for name in stale:
-            print(f"DESACTUALIZADO: {out.name}/{name}")
-        if data["violations"] or new_clones or stale:
-            if stale:
-                print("\nEl mapa de docs/architecture no coincide con el código: corre `python scripts/codemap.py` y sube el resultado.")
-            if data["violations"] or new_clones:
-                print("\nReutiliza lo existente o extrae una función común; si el duplicado es intencional, corre --update-baseline en un PR revisado.")
+        if data["violations"] or new_clones:
+            print("\nReutiliza lo existente o extrae una función común; si el duplicado es intencional, corre --update-baseline en un PR revisado.")
             return 1
-        print("OK — sin violaciones ni duplicados nuevos y mapa al día")
+        print("OK — sin violaciones ni duplicados nuevos")
     return 0
 
 

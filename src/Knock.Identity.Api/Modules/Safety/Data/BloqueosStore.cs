@@ -21,7 +21,6 @@ internal sealed class BloqueosStore(
     private const string _blockedField = "bloqueadoId";
     private const string _createdField = "creadoEn";
     private const string _idField = "_id";
-    private const int _duplicateKey = 11000;
 
     private readonly FindOptions _findOptions = new() { MaxTime = mongoOptions.Value.QueryMaxTime };
 
@@ -38,12 +37,12 @@ internal sealed class BloqueosStore(
             ],
             cancellationToken);
 
-    /// <summary>Guarda el bloqueo; falso si ya existía (el índice único decide también una carrera entre dos peticiones iguales).</summary>
+    /// <summary>Guarda el bloqueo; falso si ya existía (el índice único decide también una carrera entre dos peticiones iguales; ante un conflicto de escritura relee el bloqueo y reintenta).</summary>
     public async Task<bool> AddAsync(string blockerId, string blockedId, DateTime nowUtc, CancellationToken cancellationToken)
     {
-        try
-        {
-            await Blocks.InsertOneAsync(
+        var filters = Builders<BsonDocument>.Filter;
+        return await MongoWriteErrors.InsertIfAbsentAsync(
+            () => Blocks.InsertOneAsync(
                 new BsonDocument
                 {
                     [_idField] = ObjectId.GenerateNewId(),
@@ -51,17 +50,10 @@ internal sealed class BloqueosStore(
                     [_blockedField] = blockedId,
                     [_createdField] = new BsonDateTime(nowUtc),
                 },
-                cancellationToken: cancellationToken);
-            return true;
-        }
-        catch (MongoWriteException exception) when (exception.WriteError.Category == ServerErrorCategory.DuplicateKey)
-        {
-            return false;
-        }
-        catch (MongoCommandException exception) when (exception.Code == _duplicateKey)
-        {
-            return false;
-        }
+                cancellationToken: cancellationToken),
+            async () => await Blocks.Find(filters.Eq(_blockerField, blockerId) & filters.Eq(_blockedField, blockedId), _findOptions)
+                .Project(Builders<BsonDocument>.Projection.Include(_idField)).FirstOrDefaultAsync(cancellationToken) is not null,
+            delay => Task.Delay(delay, cancellationToken));
     }
 
     /// <summary>Quita el bloqueo de quien llama; falso si no había.</summary>

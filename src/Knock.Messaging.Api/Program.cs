@@ -2,6 +2,7 @@ using Knock.Contracts.Correlation;
 using Knock.Hosting.ForwardedHeaders;
 using Knock.Messaging.Api.Hosting;
 using Knock.Messaging.Api.Modules.Chat;
+using Knock.Messaging.Api.Modules.Conversaciones;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,10 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 // BUG-003: Kestrel agrega «Server: Kestrel» al final de la respuesta, después de cualquier middleware; solo se apaga aquí.
 builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options => options.Filters.Add<ValidationFilter>()).AddInternalControllers();
 // BUG-004: JWT, encabezados de seguridad y límite por IP como en Identidad y Mercado, antes del primer endpoint.
 builder.Services
     .AddKnockProblemDetails()
+    .AddKnockValidation()
+    .AddKnockApiVersioning()
     .AddKnockRateLimiting()
     .AddKnockAuthentication();
 // Más información sobre OpenAPI: https://aka.ms/aspnet/openapi
@@ -24,6 +27,8 @@ builder.Services.AddKnockForwardedHeaders();
 builder.Services.AddKnockData();
 // Spec 026: chat de visita en tiempo real con SignalR y Redis como puente entre copias.
 builder.Services.AddChatModule().AddKnockChatBridge();
+// Spec 030: errores de dominio de Conversaciones como ProblemDetails y cliente del permiso de Mercado con caché de 60 s (usa Services:Market que valida AddChatModule).
+builder.Services.AddConversacionesModule();
 
 var app = builder.Build();
 
@@ -39,9 +44,10 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseRateLimiter();
 app.UseKnockChatGate();
+// Como en Mercado: la sesión se resuelve antes del limitador para que las políticas por persona (sub) vean al usuario; el límite por IP sigue valiendo para todas las rutas.
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
