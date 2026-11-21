@@ -1224,6 +1224,12 @@
 - **Qué cambió:** `specs/README.md` agrega la fila 059 (Suspensión preventiva en casos críticos, Borrador), que el PR #182 había dejado fuera.
 - **Por qué:** el índice debe listar toda spec del repositorio; una persona o una herramienta que lea primero el índice no veía la 059.
 - **A evitar:** agregar una carpeta de spec sin su fila en el índice en el mismo cambio.
+## 2026-11-20 · KNOCK-111 · Spec 045, T-01: índices de oficios y colección de oficios pedidos
+- **Qué cambió:** `db/045-catalogos-y-lista-de-espera.js` crea `oficios_pedidos` con los índices `textoNormalizado_1` y único `usuarioId_1_textoNormalizado_1`, y agrega `activo_1_clave_1` a `oficios`; es idempotente. Prueba: `Spec045CatalogScriptTests` (CA-041 por el índice único, R-21).
+- **Por qué:** es la base de OFP-01, OFP-02 y del catálogo; el índice único evita el duplicado de un mismo técnico sin `Idempotency-Key` (R-26).
+- **Decisiones (con porqué):** (1) La lista de espera sigue siendo `listas_espera` con `cp` (spec 023, ya en uso por `POST /zonas/lista-espera`), no se crea `lista_espera` con `codigoPostal` como dice §6: una segunda colección dejaría dos listas distintas. (2) `activo_1_clave_1` es el «compuesto» que §6 pide sin nombrarlo.
+- **Pendiente (decisión de José):** las rutas `/api/v1/admin/*` de la 045 viven en Mercado, pero la 033 valida el token del panel solo en `/api/v1/panel/**` (R-14) y el permiso, la cuenta y la auditoría (`PermisoPanelHandler`, `panel_cuentas`, `panel_auditoria`) están en Identidad. La 033 §7 dejó abierta la duda de compartir o duplicar ese manejador; hasta resolverla no se pueden construir OFI-03 a OFI-05, OFP-02 ni LIS-02. Además la HU-070 pide métricas (solicitudes por semana, tiempo a la primera cotización, etc.) que ninguna spec define.
+- **A evitar:** abrir rutas `/admin` en Mercado o en el gateway sin la política de la 033 (JWT del panel, permiso y auditoría con falla cerrada).
 
 ## 2026-11-20 · KNOCK-75 · Terraform conecta los secretos del panel interno
 - **Qué cambió:** `deploy/apps/main.tf` pasa `PanelJwt__SigningKey` (secreto `panel-jwt-signing-key`) al gateway y a Identity, y `PanelTotp__Keys__1` (secreto `panel-totp-key`) con `PanelTotp__KeyVersion = 1` solo a Identity; `Cors__Panel__Origen` sale de la variable `panel_origin` (vacía por omisión, no es secreto). `deploy/up.sh`, su prueba y `deploy/README.md` agregan los dos nombres a la lista de secretos requeridos.
