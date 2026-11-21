@@ -1,6 +1,6 @@
 # Mapa de código
 
-> Generado por `scripts/codemap.py` el 2026-11-21T04:29:32Z. No editar a mano.
+> Generado por `scripts/codemap.py` el 2026-11-21T06:02:03Z. No editar a mano.
 > **Antes de crear una clase, método o archivo, busca aquí o corre `python scripts/codemap.py --query "<qué necesitas>"`.**
 
 ## Resumen
@@ -12,9 +12,9 @@
 | `Assistant` | data, services | 3 | 13 | 8 |
 | `Catalog` | -, controllers, data, domain, dtos, services, validators | 49 | 87 | 113 |
 | `Chat` | -, data, hubs, services | 6 | 18 | 26 |
-| `Conversaciones` | -, domain | 4 | 7 | 4 |
+| `Conversaciones` | -, data, domain | 6 | 10 | 8 |
 | `HomeAndCar` | -, controllers, data, domain, dtos, services, validators | 8 | 32 | 29 |
-| `Knock.Contracts` | - | 9 | 16 | 7 |
+| `Knock.Contracts` | - | 10 | 19 | 7 |
 | `Knock.Gateway` | -, hosting | 15 | 38 | 50 |
 | `Knock.Hosting` | - | 2 | 6 | 10 |
 | `Knock.Identity.Api` | -, common, hosting | 32 | 62 | 89 |
@@ -425,9 +425,16 @@
 **-**
 
 - `src/Knock.Messaging.Api/Modules/Conversaciones/ConversacionesModuleExtensions.cs` — class `ConversacionesModuleExtensions`
-  - `AddConversacionesModule()`:7
+  - `AddConversacionesModule()`:15
 - `src/Knock.Messaging.Api/Modules/Conversaciones/DomainExceptionHandler.cs` — class `DomainExceptionHandler`
   - `TryHandleAsync()`:15
+
+**data**
+
+- `src/Knock.Messaging.Api/Modules/Conversaciones/Data/MarketPermisoDeConversacion.cs` — class `MarketPermisoDeConversacion`
+  - `ConsultarAsync()`:18
+- `src/Knock.Messaging.Api/Modules/Conversaciones/Data/PermisoCache.cs` — interface `IPermisoCache`, class `PermisoRedisCache`
+  - `GetAsync()`:32, `SetAsync()`:46, `Key()`:60
 
 **domain**
 
@@ -480,6 +487,7 @@
 
 - `src/Knock.Contracts/Catalog/INeighborhoodCenterCatalog.cs` — interface `INeighborhoodCenterCatalog`
 - `src/Knock.Contracts/Colonias/IColoniaCatalog.cs` — interface `IColoniaCatalog`
+- `src/Knock.Contracts/Conversations/IPermisoDeConversacion.cs` — enum `EstadoPermisoConversacion`, record `ResultadoPermisoConversacion`, interface `IPermisoDeConversacion`
 - `src/Knock.Contracts/Conversations/PermisoConversacion.cs` — record `TecnicoPublicoConversacion`, record `PermisoConversacion`
 - `src/Knock.Contracts/Correlation/CorrelationId.cs` — class `CorrelationId`
   - `IsValid()`:24, `Create()`:44, `Current()`:47

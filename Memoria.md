@@ -1231,6 +1231,10 @@
 - **Por qué:** el índice debe listar toda spec del repositorio; una persona o una herramienta que lea primero el índice no veía la 059.
 - **A evitar:** agregar una carpeta de spec sin su fila en el índice en el mismo cambio.
 
+## 2026-11-19 — KNOCK-72 (spec 030, T-04): cliente del permiso de conversación
+- **Estado:** `IPermisoDeConversacion` (en `Knock.Contracts`), `MarketPermisoDeConversacion` y `PermisoRedisCache` (60 s) en `Modules/Conversaciones/Data`. Sin permiso en caché y con Mercado caído responde `NoDisponible`; el 503 `market_unavailable` lo escribe el servicio de envío (T-06).
+- **Decisiones (con porqué):** (1) la llave de la caché lleva una huella del `sub` (`conv:permiso:{conversacionId}:{huella}`) y no solo la conversación como dice la spec, porque el permiso trae el `rol` de quien pregunta y el del técnico no sirve al cliente; la huella evita guardar el `sub` en claro. (2) Solo se cachea el permiso concedido de una conversación que ya existe; un 404 no se guarda (cambia en cuanto el técnico cotiza) y la creación (sin `conversacionId`) siempre pregunta a Mercado. (3) La caché nunca lanza: si Redis falla, leer da «no hay» y guardar no hace nada.
+- **A evitar:** copiar al cliente el 404 uniforme como error: un 400, 401, 403 y 404 de Mercado son «no encontrado» y cualquier otro fallo es «no disponible».
 ## 2026-11-20 · KNOCK-162 · Spec 056: dudas D-01 a D-04 redactadas como decisiones sí/no
 - **Qué cambió:** en `specs/056-autenticacion-entre-servicios/spec.md` §8, las cuatro dudas que quedaban (D-01 a D-04) pasan a decisiones sí/no con contexto, opciones y recomendación; `plan.md` y `task.md` apuntan a ellas. Solo documentación.
 - **Por qué:** el Tech Lead respondió P-01 a P-08 y las dos correcciones (PR #180); lo que faltaba era formularlo de modo que se pueda contestar con un sí o un no.
