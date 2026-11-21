@@ -1,6 +1,6 @@
 # Tareas 036 — Resumen de trabajo del técnico
 
-> **Estado:** spec aprobada; T-03 hecha en su alcance de lectura y las demás tareas pendientes. Una persona activa cada tarea o grupo.
+> **Estado:** spec aprobada; el estado de cada tarea se indica abajo. Una persona activa cada tarea o grupo.
 > «Depende de» = tareas que deben estar fusionadas antes; «Paralelo con» = tareas que se pueden trabajar a la vez.
 
 | Tarea | Qué se hace | Cubre | Depende de | Paralelo con | Responsable sugerido | Estado |
@@ -8,10 +8,10 @@
 | T-01 | Índices de `visitas` (por técnico, estado y `terminadaEn`) y de `cotizaciones` (por técnico y `enviadaEn`) en `db/` y prueba de base de datos | §6 | spec 020 y 021 fusionadas | T-02, T-03 | Alexis | hecha (cotizaciones usa `creadoEn`, campo persistido; prueba `Spec036TrabajoScriptTests`) |
 | T-02 | Reglas puras: dirección según estado, `motivoRechazo`, `disponibleHoy` por omisión, orden y desempate de `terminadas` (unitarias y mutación acotada) | R-03, R-04, R-05 · CA-01, CA-04, CA-07 | — | T-04 | Alexis | hecha (mutación en CI); Alexis |
 | T-03 | Lectura de `verificacion` y `nivel` desde `tecnicos` en `TrabajoStore`, con falla de la base mapeada a `unavailable` | R-06, R-07 · CA-05, CA-08 | — | T-01, T-02 | Alexis | hecha (lectura; respuesta HTTP y cabeceras corresponden a T-04) |
-| T-04 | `TecnicoTrabajoService` y `TrabajoController`: cuatro consultas, respuesta única, cursor de `terminadas`, `Cache-Control: private, no-store` y límite de lectura | R-01, R-02, R-07, R-08, R-10 · CA-03, CA-05, CA-09 | T-02, T-03 | T-05 | Alexis | parcial (endpoint y CA-09 probados; paginación y caída completas por HTTP pendientes) |
-| T-05 | Pruebas de integración (MongoDB y Redis reales) y seguridad negativa (cliente, técnico inactivo, cursor manipulado, base caída) | CA-01, CA-02, CA-06 | T-04 | T-06, T-07 | Guillermo (revisa Alexis) | pendiente |
+| T-04 | `TecnicoTrabajoService` y `TrabajoController`: cuatro consultas, respuesta única, cursor de `terminadas`, `Cache-Control: private, no-store` y límite de lectura | R-01, R-02, R-07, R-08, R-10 · CA-03, CA-05, CA-09 | T-02, T-03 | T-05 | Alexis | hecha (Alexis: paginación y caída verificadas por HTTP; CA-09 en gateway) |
+| T-05 | Pruebas de integración (MongoDB y Redis reales) y seguridad negativa (cliente, técnico inactivo, cursor manipulado, base caída) | CA-01, CA-02, CA-06 | T-04 | T-06, T-07 | Guillermo (revisa Alexis) | hecha (Alexis: integración y casos negativos 036 en verde; base inaccesible mediante host offline) |
 | T-06 | Humo en evaluación (401 sin token, 403 para cliente) y recorrido E2E de la pestaña Trabajo con datos de semilla (frontend 019) | CA-01, CA-02 | T-05 | T-07 | Guillermo | pendiente |
-| T-07 | Contrato: `oasdiff` contra `contracts/openapi.v1.json`, `docs/endpoints.md` y `docs/rate-limit-matrix.md` | §4, R-10 | T-04 | T-05, T-06 | Alexis | parcial (matrices actualizadas; exportación agotó tiempo y falta `oasdiff`) |
+| T-07 | Contrato: `oasdiff` contra `contracts/openapi.v1.json`, `docs/endpoints.md` y `docs/rate-limit-matrix.md` | §4, R-10 | T-04 | T-05, T-06 | Alexis | parcial (Alexis: exportación correcta, ruta presente y sin cambios; falta `oasdiff` y no existe aquí `contracts/openapi.v1.json`) |
 | T-08 | Pasar las puertas de CI (análisis, formato, pruebas, cobertura, escáneres) y actualizar la memoria (`Memoria.md`), con revisión de par | §7 | T-05, T-06, T-07 | — | Guillermo | pendiente |
 
 ## Dependencias con otras specs
